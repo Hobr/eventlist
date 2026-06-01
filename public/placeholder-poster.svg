@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
-  <rect width="300" height="400" fill="#e5e7eb"/>
-  <text x="150" y="190" text-anchor="middle" fill="#9ca3af" font-family="sans-serif" font-size="16">暂无海报</text>
-  <text x="150" y="220" text-anchor="middle" fill="#9ca3af" font-family="sans-serif" font-size="12">No Poster</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e0e7ff"/>
+      <stop offset="100%" style="stop-color:#fce7f3"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="url(#bg)" rx="8"/>
+  <rect x="110" y="155" width="80" height="80" rx="12" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-dasharray="6 4"/>
+  <circle cx="135" cy="180" r="6" fill="#c7d2fe"/>
+  <polygon points="170,215 185,195 155,195" fill="#c7d2fe"/>
+  <text x="150" y="260" text-anchor="middle" fill="#6366f1" font-family="Inter, sans-serif" font-size="14" font-weight="500">暂无海报</text>
 </svg>

@@ -116,13 +116,27 @@ const allEvents: EventWithWorks[] = (allRows.results as Record<string, unknown>[
 ---
 
 <Base title="ACG 活动查询 - 发现你身边的二次元活动">
+  <section class="relative -mx-4 sm:-mx-6 px-4 sm:px-6 py-12 mb-8 bg-gradient-to-br from-indigo-50 via-white to-purple-50 border-b border-slate-200/60">
+    <div class="max-w-2xl">
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+        发现你身边的
+        <span class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          二次元活动
+        </span>
+      </h1>
+      <p class="text-slate-500 text-base sm:text-lg">
+        漫展、同人展、演唱会、Live…… 全国 ACG 线下活动，一网打尽。
+      </p>
+    </div>
+  </section>
+
   <FilterBar initialFilters={filters} client:load />
 
   <NearbyEvents events={nearbyEvents} r2BaseUrl={r2BaseUrl} />
   <PopularEvents events={popularEvents} r2BaseUrl={r2BaseUrl} />
 
   <section>
-    <h2 class="text-lg font-semibold mb-4">📋 全部活动</h2>
+    <h2 class="section-title mb-5">📋 全部活动</h2>
     <EventList
       initialItems={allEvents}
       initialTotal={total}

@@ -12,7 +12,7 @@ const { events, r2BaseUrl } = Astro.props;
 
 {events.length > 0 && (
   <section class="mb-8">
-    <h2 class="text-lg font-semibold mb-4">🔥 热门即将举办的活动</h2>
+    <h2 class="section-title mb-5">🔥 热门即将举办的活动</h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       {events.map((event) => (
         <EventCard event={event} r2BaseUrl={r2BaseUrl} />

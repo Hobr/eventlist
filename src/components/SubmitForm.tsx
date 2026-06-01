@@ -109,16 +109,16 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
 
     if (success) {
         return (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-                <h2 className="text-xl font-semibold text-green-800 mb-2">
+            <div className="card p-8 text-center">
+                <h2 className="text-xl font-semibold text-slate-900 mb-2">
                     提交成功!
                 </h2>
-                <p className="text-green-700">
+                <p className="text-slate-500">
                     活动已提交，待管理员审核后发布。
                 </p>
                 <a
                     href="/"
-                    className="text-indigo-600 hover:underline mt-4 inline-block"
+                    className="btn-primary inline-block mt-4"
                 >
                     返回首页
                 </a>
@@ -130,10 +130,10 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
         <form
             ref={formRef}
             onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-sm p-6 space-y-4"
+            className="card p-6 lg:p-8 space-y-5"
         >
             {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm">
                     {error}
                 </div>
             )}
@@ -145,7 +145,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                 <input
                     name="title"
                     required
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="input-field"
                 />
             </div>
 
@@ -162,7 +162,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                             setProvince(e.target.value);
                             setCity("");
                         }}
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     >
                         <option value="">请选择</option>
                         {provincesData.map((p) => (
@@ -181,7 +181,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                         required
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                         disabled={!province}
                     >
                         <option value="">请选择</option>
@@ -201,7 +201,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                 <input
                     name="venue"
                     required
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="input-field"
                 />
             </div>
 
@@ -211,7 +211,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                 </label>
                 <input
                     name="address"
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="input-field"
                 />
             </div>
 
@@ -224,7 +224,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                         name="startDate"
                         type="date"
                         required
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     />
                 </div>
                 <div>
@@ -234,7 +234,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                     <input
                         name="endDate"
                         type="date"
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     />
                 </div>
             </div>
@@ -247,7 +247,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                     <select
                         name="eventType"
                         required
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     >
                         <option value="doujin">漫展/同人展</option>
                         <option value="concert">演唱会/Live</option>
@@ -259,7 +259,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                     </label>
                     <select
                         name="scale"
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     >
                         <option value="">不限</option>
                         {SCALES.map((s) => (
@@ -282,23 +282,23 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                         onKeyDown={(e) =>
                             e.key === "Enter" && (e.preventDefault(), addWork())
                         }
-                        className="flex-1 border rounded px-3 py-2 text-sm"
+                        className="flex-1 input-field"
                         placeholder="输入作品名后按回车"
                     />
                     <button
                         type="button"
                         onClick={addWork}
-                        className="bg-gray-100 px-3 py-2 rounded text-sm hover:bg-gray-200"
+                        className="btn-ghost"
                     >
                         添加
                     </button>
                 </div>
                 {works.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="flex flex-wrap gap-1.5 mt-2">
                         {works.map((w) => (
                             <span
                                 key={w}
-                                className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs flex items-center gap-1"
+                                className="badge bg-indigo-50 text-indigo-700 flex items-center gap-1"
                             >
                                 {w}
                                 <button
@@ -321,7 +321,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                     </label>
                     <input
                         name="qqGroup"
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     />
                 </div>
                 <div>
@@ -331,7 +331,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                     <input
                         name="ticketUrl"
                         type="url"
-                        className="w-full border rounded px-3 py-2 text-sm"
+                        className="input-field"
                     />
                 </div>
             </div>
@@ -342,7 +342,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                 </label>
                 <input
                     name="priceInfo"
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="input-field"
                     placeholder="如: 预售50元/现场60元"
                 />
             </div>
@@ -364,7 +364,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
                 <textarea
                     name="description"
                     rows={4}
-                    className="w-full border rounded px-3 py-2 text-sm"
+                    className="input-field"
                 />
             </div>
 
@@ -373,7 +373,7 @@ export default function SubmitForm({ turnstileSiteKey }: Props) {
             <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
+                className="btn-primary w-full"
             >
                 {submitting ? "提交中..." : "提交活动"}
             </button>
