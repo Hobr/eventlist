@@ -28,22 +28,69 @@ const siteUrl = env.PUBLIC_SITE_URL ?? "";
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
   </head>
-  <body>
-    <header class="bg-white shadow-sm">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="/" class="text-xl font-bold text-indigo-600">ACG 活动查询</a>
-        <nav class="flex gap-4 text-sm">
-          <a href="/" class="hover:text-indigo-600">首页</a>
-          <a href="/submit" class="hover:text-indigo-600">提交活动</a>
+  <body class="flex flex-col min-h-screen">
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200/60">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-indigo-500/25">
+            A
+          </div>
+          <span class="text-lg font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+            ACG 活动查询
+          </span>
+        </a>
+        <nav class="flex items-center gap-1">
+          <a href="/" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100/80 transition-all">
+            首页
+          </a>
+          <a href="/submit" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100/80 transition-all">
+            提交活动
+          </a>
+          <a href="/submit" class="ml-2 btn-primary !py-2 !text-xs">
+            + 提交
+          </a>
         </nav>
       </div>
     </header>
-    <main class="max-w-6xl mx-auto px-4 py-6">
+
+    <main class="flex-1">
       <slot />
     </main>
-    <footer class="bg-gray-100 mt-12">
-      <div class="max-w-6xl mx-auto px-4 py-6 text-sm text-gray-500 text-center">
-        ACG 活动查询 · 数据由用户提交，管理员审核后发布
+
+    <footer class="mt-auto border-t border-slate-200/60 bg-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-8">
+          <div>
+            <div class="flex items-center gap-2.5 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                A
+              </div>
+              <span class="font-semibold text-slate-900">ACG 活动查询</span>
+            </div>
+            <p class="text-sm text-slate-500 max-w-xs">
+              发现你身边的二次元活动。数据由用户提交，管理员审核后发布。
+            </p>
+          </div>
+          <div class="flex gap-12">
+            <div>
+              <h4 class="text-sm font-medium text-slate-900 mb-3">浏览</h4>
+              <div class="flex flex-col gap-2">
+                <a href="/" class="text-sm text-slate-500 hover:text-indigo-600 transition-colors">全部活动</a>
+                <a href="/submit" class="text-sm text-slate-500 hover:text-indigo-600 transition-colors">提交活动</a>
+              </div>
+            </div>
+            <div>
+              <h4 class="text-sm font-medium text-slate-900 mb-3">关于</h4>
+              <div class="flex flex-col gap-2">
+                <span class="text-sm text-slate-500">数据来源</span>
+                <span class="text-sm text-slate-500">联系方式</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 pt-6 border-t border-slate-100 text-xs text-slate-400 text-center">
+          ACG 活动查询 · 仅供学习交流
+        </div>
       </div>
     </footer>
   </body>
