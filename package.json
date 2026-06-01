@@ -22,24 +22,24 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.6.0",
-    "@astrojs/react": "^4.3.0",
-    "@astrojs/tailwind": "^6.0.0",
+    "@astrojs/react": "^5.0.6",
+    "@astrojs/tailwind": "^6.0.2",
     "astro": "^6.4.2",
     "browser-image-compression": "^2.0.2",
-    "drizzle-orm": "^0.44.0",
-    "lucide-react": "^0.511.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "yet-another-react-lightbox": "^3.23.0"
+    "drizzle-orm": "^0.45.2",
+    "lucide-react": "^1.17.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "yet-another-react-lightbox": "^3.32.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@cloudflare/workers-types": "^4.20250529.0",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
-    "drizzle-kit": "^0.31.0",
+    "@cloudflare/workers-types": "^4.20260601.1",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.10",
     "typescript": "^6.0.3",
-    "vitest": "^3.1.0",
-    "wrangler": "^4.17.0"
+    "vitest": "^4.1.8",
+    "wrangler": "^4.96.0"
   }
 }
