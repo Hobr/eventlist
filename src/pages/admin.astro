@@ -1,9 +1,10 @@
 ---
 import Base from "../layouts/Base.astro";
+import { env } from "cloudflare:workers";
 
 const email =
   Astro.request.headers.get("Cf-Access-Authenticated-User-Email") ??
-  Astro.locals.runtime.env.DEV_ADMIN_EMAIL ??
+  env.DEV_ADMIN_EMAIL ??
   "未知用户";
 ---
 

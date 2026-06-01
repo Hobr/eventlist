@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildEventsQuery } from "../../src/pages/api/events";
+import { buildEventsQuery } from "../../src/lib/events-query";
 
 describe("buildEventsQuery", () => {
     it("returns base query with no filters", () => {

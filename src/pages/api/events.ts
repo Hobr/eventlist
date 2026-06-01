@@ -1,56 +1,9 @@
 import type { APIRoute } from "astro";
 import type { EventFilters, EventWithWorks } from "../../types/event";
+import { env } from "cloudflare:workers";
+import { buildEventsQuery } from "../../lib/events-query";
 
-interface QueryResult {
-    where: string;
-    join: string;
-    params: unknown[];
-    limit: number;
-    offset: number;
-}
-
-export function buildEventsQuery(filters: EventFilters): QueryResult {
-    const conditions: string[] = ["status = 'approved'", "deleted_at IS NULL"];
-    const params: unknown[] = [];
-    let join = "";
-
-    conditions.push("start_date >= ?");
-    params.push(new Date().toISOString().slice(0, 10));
-
-    if (filters.province) {
-        conditions.push("province = ?");
-        params.push(filters.province);
-    }
-    if (filters.city) {
-        conditions.push("city = ?");
-        params.push(filters.city);
-    }
-    if (filters.eventType) {
-        conditions.push("event_type = ?");
-        params.push(filters.eventType);
-    }
-    if (filters.scale) {
-        conditions.push("scale = ?");
-        params.push(filters.scale);
-    }
-    if (filters.month) {
-        conditions.push("start_date LIKE ?");
-        params.push(`${filters.month}%`);
-    }
-    if (filters.work) {
-        join = `INNER JOIN event_works ON events.id = event_works.event_id`;
-        conditions.push("work_name = ?");
-        params.push(filters.work);
-    }
-
-    const page = filters.page ?? 1;
-    const limit = 20;
-    const offset = (page - 1) * limit;
-
-    return { where: conditions.join(" AND "), join, params, limit, offset };
-}
-
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request }) => {
     const url = new URL(request.url);
 
     const typeParam = url.searchParams.get("type");
@@ -72,13 +25,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const q = buildEventsQuery(filters);
 
     const countSql = `SELECT COUNT(*) as total FROM events ${q.join} WHERE ${q.where}`;
-    const countResult = await locals.runtime.env.DB.prepare(countSql)
+    const countResult = await env.DB.prepare(countSql)
         .bind(...q.params)
         .first<{ total: number }>();
     const total = countResult?.total ?? 0;
 
     const dataSql = `SELECT events.* FROM events ${q.join} WHERE ${q.where} ORDER BY start_date ASC LIMIT ? OFFSET ?`;
-    const rows = await locals.runtime.env.DB.prepare(dataSql)
+    const rows = await env.DB.prepare(dataSql)
         .bind(...q.params, q.limit, q.offset)
         .all();
 
@@ -89,7 +42,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     if (eventIds.length > 0) {
         const placeholders = eventIds.map(() => "?").join(",");
-        const worksRows = await locals.runtime.env.DB.prepare(
+        const worksRows = await env.DB.prepare(
             `SELECT event_id, work_name FROM event_works WHERE event_id IN (${placeholders})`,
         )
             .bind(...eventIds)

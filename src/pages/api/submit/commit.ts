@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
 import { verifyTicket } from "../../../lib/hmac";
 import { generateUlid } from "../../../lib/ulid";
+import { env } from "cloudflare:workers";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export const POST: APIRoute = async ({ request, locals }) => {
-    const env = locals.runtime.env;
+export const POST: APIRoute = async ({ request }) => {
 
     let formData: FormData;
     try {

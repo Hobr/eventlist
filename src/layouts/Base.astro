@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { env } from "cloudflare:workers";
 
 interface Props {
   title?: string;
@@ -13,7 +14,7 @@ const {
   ogImage,
 } = Astro.props;
 
-const siteUrl = Astro.locals.runtime.env.PUBLIC_SITE_URL ?? "";
+const siteUrl = env.PUBLIC_SITE_URL ?? "";
 ---
 
 <!doctype html>

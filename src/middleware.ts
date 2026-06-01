@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { env } from "cloudflare:workers";
 
 export const onRequest = defineMiddleware((context, next) => {
     const { pathname } = new URL(context.request.url);
@@ -6,18 +7,18 @@ export const onRequest = defineMiddleware((context, next) => {
     if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
         const email =
             context.request.headers.get("Cf-Access-Authenticated-User-Email") ??
-            context.locals.runtime.env.DEV_ADMIN_EMAIL ??
+            env.DEV_ADMIN_EMAIL ??
             null;
 
         if (!email) {
             return new Response("Unauthorized", { status: 401 });
         }
 
-        const allowedEmails = context.locals.runtime.env.ADMIN_EMAILS;
+        const allowedEmails: string = env.ADMIN_EMAILS ?? "";
         if (allowedEmails) {
             const allowed = allowedEmails
                 .split(",")
-                .map((e) => e.trim().toLowerCase());
+                .map((e: string) => e.trim().toLowerCase());
             if (!allowed.includes(email.toLowerCase())) {
                 return new Response("Forbidden", { status: 403 });
             }

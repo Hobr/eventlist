@@ -3,11 +3,10 @@ import Base from "../../layouts/Base.astro";
 import CopyButton from "../../components/CopyButton";
 import PosterLightbox from "../../components/PosterLightbox";
 import { getPosterUrl } from "../../lib/poster-url";
+import { env } from "cloudflare:workers";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/");
-
-const env = Astro.locals.runtime.env;
 
 const row = await env.DB.prepare(
   "SELECT * FROM events WHERE id = ? AND status = 'approved' AND deleted_at IS NULL"

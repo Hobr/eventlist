@@ -1,8 +1,9 @@
 ---
 import Base from "../layouts/Base.astro";
 import SubmitForm from "../components/SubmitForm";
+import { env } from "cloudflare:workers";
 
-const turnstileSiteKey = Astro.locals.runtime.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const turnstileSiteKey = env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 ---
 
 <Base title="提交活动 - ACG 活动查询">

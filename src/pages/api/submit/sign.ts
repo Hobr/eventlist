@@ -2,11 +2,11 @@ import type { APIRoute } from "astro";
 import { verifyTurnstile } from "../../../lib/turnstile";
 import { checkRateLimit, hashIp } from "../../../lib/rate-limit";
 import { signTicket } from "../../../lib/hmac";
+import { env } from "cloudflare:workers";
 
 const MAX_FIELD_LEN = 2000;
 
-export const POST: APIRoute = async ({ request, locals }) => {
-    const env = locals.runtime.env;
+export const POST: APIRoute = async ({ request }) => {
 
     let body: Record<string, unknown>;
     try {

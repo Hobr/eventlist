@@ -2,9 +2,10 @@ import type { APIRoute } from "astro";
 import { getDB } from "../../../../server/db";
 import { events } from "../../../../server/db/schema";
 import { eq } from "drizzle-orm";
+import { env } from "cloudflare:workers";
 
-export const POST: APIRoute = async ({ params, request, locals }) => {
-    const db = getDB(locals.runtime.env);
+export const POST: APIRoute = async ({ params, request }) => {
+    const db = getDB(env);
     const { id } = params;
     if (!id) return new Response("Missing id", { status: 400 });
 
@@ -30,8 +31,8 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     return new Response("Invalid action", { status: 400 });
 };
 
-export const PUT: APIRoute = async ({ params, request, locals }) => {
-    const db = getDB(locals.runtime.env);
+export const PUT: APIRoute = async ({ params, request }) => {
+    const db = getDB(env);
     const { id } = params;
     if (!id) return new Response("Missing id", { status: 400 });
 
@@ -66,8 +67,8 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     return new Response(JSON.stringify({ ok: true }));
 };
 
-export const DELETE: APIRoute = async ({ params, locals }) => {
-    const db = getDB(locals.runtime.env);
+export const DELETE: APIRoute = async ({ params }) => {
+    const db = getDB(env);
     const { id } = params;
     if (!id) return new Response("Missing id", { status: 400 });
 

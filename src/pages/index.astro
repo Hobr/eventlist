@@ -5,8 +5,8 @@ import NearbyEvents from "../components/NearbyEvents.astro";
 import PopularEvents from "../components/PopularEvents.astro";
 import EventList from "../components/EventList";
 import type { EventWithWorks } from "../types/event";
+import { env } from "cloudflare:workers";
 
-const env = Astro.locals.runtime.env;
 const cf = Astro.locals.cf;
 const today = new Date().toISOString().slice(0, 10);
 
