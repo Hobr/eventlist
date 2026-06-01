@@ -43,14 +43,14 @@ function mapEvent(r: Record<string, unknown>): EventWithWorks {
   };
 }
 
-const nearbyRegion = cf?.region ?? "";
+const nearbyCity = cf?.city ?? "";
 
 let nearbyEvents: EventWithWorks[] = [];
-if (nearbyRegion) {
+if (nearbyCity) {
   const rows = await env.DB.prepare(
-    "SELECT * FROM events WHERE status = 'approved' AND deleted_at IS NULL AND province = ? AND start_date >= ? ORDER BY start_date ASC LIMIT 8"
+    "SELECT * FROM events WHERE status = 'approved' AND deleted_at IS NULL AND city = ? AND start_date >= ? ORDER BY start_date ASC LIMIT 8"
   )
-    .bind(nearbyRegion, today)
+    .bind(nearbyCity, today)
     .all();
   nearbyEvents = (rows.results as Record<string, unknown>[]).map(mapEvent);
 }
