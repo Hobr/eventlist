@@ -1,0 +1,104 @@
+---
+import Base from "../../layouts/Base.astro";
+import CopyButton from "../../components/CopyButton";
+import PosterLightbox from "../../components/PosterLightbox";
+import { getPosterUrl } from "../../lib/poster-url";
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect("/");
+
+const env = Astro.locals.runtime.env;
+
+const row = await env.DB.prepare(
+  "SELECT * FROM events WHERE id = ? AND status = 'approved' AND deleted_at IS NULL"
+)
+  .bind(id)
+  .first();
+
+if (!row) return Astro.redirect("/");
+
+const event = row as Record<string, unknown>;
+
+const worksRows = await env.DB.prepare(
+  "SELECT work_name FROM event_works WHERE event_id = ?"
+)
+  .bind(id)
+  .all();
+const works = (worksRows.results as Record<string, unknown>[]).map(
+  (r) => r.work_name as string
+);
+
+const posterUrl = getPosterUrl(
+  event.poster_key as string | null,
+  env.PUBLIC_R2_BASE_URL ?? ""
+);
+const typeLabel = event.event_type === "doujin" ? "漫展" : "演唱会";
+const dateStr = event.end_date
+  ? `${event.start_date} ~ ${event.end_date}`
+  : (event.start_date as string);
+const siteUrl = env.PUBLIC_SITE_URL ?? "";
+const ogImage = event.poster_key
+  ? `${siteUrl}${posterUrl}`
+  : undefined;
+---
+
+<Base
+  title={`${event.title as string} - ACG 活动查询`}
+  description={`查看活动详情：${event.title as string}，${dateStr}，${event.city as string} ${event.venue as string}`}
+  ogImage={ogImage}
+>
+  <a href="/" class="text-indigo-600 text-sm hover:underline mb-4 inline-block">← 返回列表</a>
+
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex flex-col md:flex-row gap-6">
+      <div class="flex-shrink-0">
+        <PosterLightbox src={posterUrl} alt={event.title as string} client:load />
+      </div>
+      <div class="flex-1">
+        <h1 class="text-2xl font-bold mb-2">{event.title as string}</h1>
+        <div class="flex items-center gap-2 mb-4">
+          <span class={`text-xs px-2 py-0.5 rounded ${
+            event.event_type === "doujin" ? "bg-pink-100 text-pink-700" : "bg-blue-100 text-blue-700"
+          }`}>{typeLabel}</span>
+          {event.scale && <span class="text-xs text-gray-500">{event.scale as string}</span>}
+          <span class="text-xs text-gray-400">🔥 {(event.view_count as number).toLocaleString()} 人关注</span>
+        </div>
+
+        <dl class="space-y-3 text-sm">
+          <div><dt class="inline font-medium">📅 日期：</dt><dd class="inline">{dateStr}</dd></div>
+          <div><dt class="inline font-medium">📍 地点：</dt><dd class="inline">{event.city as string} {event.venue as string}{event.address ? ` · ${event.address as string}` : ""}</dd></div>
+          {event.price_info && <div><dt class="inline font-medium">💰 票价：</dt><dd class="inline">{event.price_info as string}</dd></div>}
+          {event.ticket_url && (
+            <div>
+              <dt class="inline font-medium">🎫 购票：</dt>
+              <a href={event.ticket_url as string} target="_blank" rel="noopener" class="text-indigo-600 hover:underline">前往购票</a>
+            </div>
+          )}
+          {event.qq_group && (
+            <div>
+              <dt class="inline font-medium">💬 QQ群：</dt>
+              <dd class="inline">{event.qq_group as string}</dd>
+              <CopyButton text={event.qq_group as string} client:load />
+            </div>
+          )}
+          {works.length > 0 && (
+            <div>
+              <dt class="inline font-medium">🏷️ 关联作品：</dt>
+              <dd class="inline">{works.join(" | ")}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    </div>
+
+    {event.description && (
+      <div class="mt-6 pt-6 border-t">
+        <p class="text-sm text-gray-700 whitespace-pre-wrap">{event.description as string}</p>
+      </div>
+    )}
+  </div>
+</Base>
+
+<script define:vars={{ id }}>
+  fetch(`/api/events/${id}/view`, { method: "POST" }).catch(() => {});
+</script>
