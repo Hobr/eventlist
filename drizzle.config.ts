@@ -5,6 +5,6 @@ export default defineConfig({
   out: "./migrations",
   dialect: "sqlite",
   dbCredentials: {
-    url: ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/eventlist.sqlite",
+    url: ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/acg-events.sqlite",
   },
 });
