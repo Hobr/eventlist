@@ -82,6 +82,7 @@ eventlist/
 ## Task 1: Project Scaffolding
 
 **Files:**
+
 - Create: `package.json`, `astro.config.mjs`, `wrangler.jsonc`, `tsconfig.json`, `drizzle.config.ts`, `vitest.config.ts`
 - Create: `src/env.d.ts`, `src/styles/global.css`
 
@@ -112,9 +113,9 @@ import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
 
 export default defineConfig({
-  output: "server",
-  adapter: cloudflare(),
-  integrations: [react(), tailwind()],
+    output: "server",
+    adapter: cloudflare(),
+    integrations: [react(), tailwind()],
 });
 ```
 
@@ -124,42 +125,42 @@ export default defineConfig({
 
 ```jsonc
 {
-  "name": "acg-events",
-  "main": "./dist/server/entry.mjs",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "directory": "./dist/client",
-    "binding": "ASSETS"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "acg-events",
-      "database_id": "placeholder"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "BUCKET",
-      "bucket_name": "acg-events-posters"
-    }
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "RATE_LIMIT",
-      "id": "placeholder"
+    "name": "acg-events",
+    "main": "./dist/server/entry.mjs",
+    "compatibility_date": "2025-01-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "assets": {
+        "directory": "./dist/client",
+        "binding": "ASSETS",
     },
-    {
-      "binding": "SESSION",
-      "id": "placeholder"
-    }
-  ],
-  "vars": {
-    "PUBLIC_TURNSTILE_SITE_KEY": "",
-    "PUBLIC_R2_BASE_URL": "",
-    "PUBLIC_SITE_URL": "http://localhost:4321"
-  }
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "acg-events",
+            "database_id": "placeholder",
+        },
+    ],
+    "r2_buckets": [
+        {
+            "binding": "BUCKET",
+            "bucket_name": "acg-events-posters",
+        },
+    ],
+    "kv_namespaces": [
+        {
+            "binding": "RATE_LIMIT",
+            "id": "placeholder",
+        },
+        {
+            "binding": "SESSION",
+            "id": "placeholder",
+        },
+    ],
+    "vars": {
+        "PUBLIC_TURNSTILE_SITE_KEY": "",
+        "PUBLIC_R2_BASE_URL": "",
+        "PUBLIC_SITE_URL": "http://localhost:4321",
+    },
 }
 ```
 
@@ -169,12 +170,12 @@ export default defineConfig({
 
 ```json
 {
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "types": ["@cloudflare/workers-types"]
-  }
+    "extends": "astro/tsconfigs/strict",
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
+        "types": ["@cloudflare/workers-types"]
+    }
 }
 ```
 
@@ -186,22 +187,22 @@ export default defineConfig({
 /// <reference path="../.astro/types.d.ts" />
 
 interface CloudflareEnv {
-  DB: D1Database;
-  BUCKET: R2Bucket;
-  RATE_LIMIT: KVNamespace;
-  SESSION: KVNamespace;
-  TURNSTILE_SECRET_KEY: string;
-  PUBLIC_TURNSTILE_SITE_KEY: string;
-  PUBLIC_R2_BASE_URL: string;
-  PUBLIC_SITE_URL: string;
-  DEV_ADMIN_EMAIL?: string;
+    DB: D1Database;
+    BUCKET: R2Bucket;
+    RATE_LIMIT: KVNamespace;
+    SESSION: KVNamespace;
+    TURNSTILE_SECRET_KEY: string;
+    PUBLIC_TURNSTILE_SITE_KEY: string;
+    PUBLIC_R2_BASE_URL: string;
+    PUBLIC_SITE_URL: string;
+    DEV_ADMIN_EMAIL?: string;
 }
 
 declare namespace App {
-  interface Locals {
-    cf: IncomingRequestCfProperties;
-    runtime: { env: CloudflareEnv };
-  }
+    interface Locals {
+        cf: IncomingRequestCfProperties;
+        runtime: { env: CloudflareEnv };
+    }
 }
 ```
 
@@ -215,12 +216,12 @@ declare namespace App {
 @tailwind utilities;
 
 :root {
-  --color-primary: #6366f1;
-  --color-accent: #f59e0b;
+    --color-primary: #6366f1;
+    --color-accent: #f59e0b;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 min-h-screen;
+    @apply bg-gray-50 text-gray-900 min-h-screen;
 }
 ```
 
@@ -232,11 +233,11 @@ body {
 import { getViteConfig } from "astro/config";
 
 export default getViteConfig({
-  test: {
-    globals: true,
-    environment: "node",
-    include: ["tests/**/*.test.ts"],
-  },
+    test: {
+        globals: true,
+        environment: "node",
+        include: ["tests/**/*.test.ts"],
+    },
 });
 ```
 
@@ -248,12 +249,12 @@ export default getViteConfig({
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-  schema: "./src/server/db/schema.ts",
-  out: "./migrations",
-  dialect: "sqlite",
-  dbCredentials: {
-    url: ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/eventlist.sqlite",
-  },
+    schema: "./src/server/db/schema.ts",
+    out: "./migrations",
+    dialect: "sqlite",
+    dbCredentials: {
+        url: ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/eventlist.sqlite",
+    },
 });
 ```
 
@@ -263,20 +264,20 @@ Add to `package.json`:
 
 ```json
 {
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro build && wrangler dev -c dist/server/wrangler.json",
-    "typecheck": "astro check",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "format": "prettier --write .",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply acg-events --local",
-    "db:migrate:prod": "wrangler d1 migrations apply acg-events --remote",
-    "cf-typegen": "wrangler types",
-    "deploy": "astro build && wrangler deploy -c dist/server/wrangler.json"
-  }
+    "scripts": {
+        "dev": "astro dev",
+        "build": "astro build",
+        "preview": "astro build && wrangler dev -c dist/server/wrangler.json",
+        "typecheck": "astro check",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "format": "prettier --write .",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate:local": "wrangler d1 migrations apply acg-events --local",
+        "db:migrate:prod": "wrangler d1 migrations apply acg-events --remote",
+        "cf-typegen": "wrangler types",
+        "deploy": "astro build && wrangler deploy -c dist/server/wrangler.json"
+    }
 }
 ```
 
@@ -299,6 +300,7 @@ git add -A && git commit -m "chore: scaffold Astro 6 + React + Tailwind + Cloudf
 ## Task 2: Database Schema & Migration
 
 **Files:**
+
 - Create: `src/server/db/schema.ts`, `src/server/db/index.ts`
 - Create: `migrations/0000_initial.sql`
 
@@ -307,46 +309,47 @@ git add -A && git commit -m "chore: scaffold Astro 6 + React + Tailwind + Cloudf
 `src/server/db/schema.ts`:
 
 ```ts
-import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core";
+import {
+    sqliteTable,
+    text,
+    integer,
+    primaryKey,
+} from "drizzle-orm/sqlite-core";
 
 export const events = sqliteTable("events", {
-  id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  province: text("province").notNull(),
-  city: text("city").notNull(),
-  venue: text("venue").notNull(),
-  address: text("address"),
-  startDate: text("start_date").notNull(),
-  endDate: text("end_date"),
-  eventType: text("event_type", { enum: ["doujin", "concert"] }).notNull(),
-  scale: text("scale"),
-  qqGroup: text("qq_group"),
-  ticketUrl: text("ticket_url"),
-  posterKey: text("poster_key"),
-  priceInfo: text("price_info"),
-  description: text("description"),
-  viewCount: integer("view_count").notNull().default(0),
-  status: text("status", { enum: ["pending", "approved", "rejected"] })
-    .notNull()
-    .default("pending"),
-  deletedAt: text("deleted_at"),
-  createdAt: text("created_at")
-    .notNull()
-    .default("(datetime('now'))"),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default("(datetime('now'))"),
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    province: text("province").notNull(),
+    city: text("city").notNull(),
+    venue: text("venue").notNull(),
+    address: text("address"),
+    startDate: text("start_date").notNull(),
+    endDate: text("end_date"),
+    eventType: text("event_type", { enum: ["doujin", "concert"] }).notNull(),
+    scale: text("scale"),
+    qqGroup: text("qq_group"),
+    ticketUrl: text("ticket_url"),
+    posterKey: text("poster_key"),
+    priceInfo: text("price_info"),
+    description: text("description"),
+    viewCount: integer("view_count").notNull().default(0),
+    status: text("status", { enum: ["pending", "approved", "rejected"] })
+        .notNull()
+        .default("pending"),
+    deletedAt: text("deleted_at"),
+    createdAt: text("created_at").notNull().default("(datetime('now'))"),
+    updatedAt: text("updated_at").notNull().default("(datetime('now'))"),
 });
 
 export const eventWorks = sqliteTable(
-  "event_works",
-  {
-    eventId: text("event_id")
-      .notNull()
-      .references(() => events.id, { onDelete: "cascade" }),
-    workName: text("work_name").notNull(),
-  },
-  (t) => [primaryKey({ columns: [t.eventId, t.workName] })]
+    "event_works",
+    {
+        eventId: text("event_id")
+            .notNull()
+            .references(() => events.id, { onDelete: "cascade" }),
+        workName: text("work_name").notNull(),
+    },
+    (t) => [primaryKey({ columns: [t.eventId, t.workName] })],
 );
 ```
 
@@ -359,7 +362,7 @@ import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 
 export function getDB(env: CloudflareEnv) {
-  return drizzle(env.DB, { schema });
+    return drizzle(env.DB, { schema });
 }
 ```
 
@@ -426,6 +429,7 @@ git add -A && git commit -m "feat: add Drizzle schema with events + event_works 
 ## Task 3: Core Utilities
 
 **Files:**
+
 - Create: `src/lib/ulid.ts`, `src/lib/hmac.ts`, `src/lib/poster-url.ts`
 - Create: `tests/ulid.test.ts`, `tests/hmac.test.ts`, `tests/poster-url.test.ts`
 
@@ -438,31 +442,31 @@ import { describe, it, expect } from "vitest";
 import { generateUlid } from "../src/lib/ulid";
 
 describe("generateUlid", () => {
-  it("returns a 26-character string", () => {
-    const id = generateUlid();
-    expect(id).toHaveLength(26);
-  });
+    it("returns a 26-character string", () => {
+        const id = generateUlid();
+        expect(id).toHaveLength(26);
+    });
 
-  it("starts with a valid Crockford base32 character", () => {
-    const id = generateUlid();
-    expect(id[0]).toMatch(/^[0-9A-HJKMNP-TV-Z]$/);
-  });
+    it("starts with a valid Crockford base32 character", () => {
+        const id = generateUlid();
+        expect(id[0]).toMatch(/^[0-9A-HJKMNP-TV-Z]$/);
+    });
 
-  it("generates unique IDs", () => {
-    const ids = new Set(Array.from({ length: 1000 }, () => generateUlid()));
-    expect(ids.size).toBe(1000);
-  });
+    it("generates unique IDs", () => {
+        const ids = new Set(Array.from({ length: 1000 }, () => generateUlid()));
+        expect(ids.size).toBe(1000);
+    });
 
-  it("encodes timestamp in first 10 characters (sortable)", () => {
-    const before = Date.now();
-    const id = generateUlid();
-    const after = Date.now();
+    it("encodes timestamp in first 10 characters (sortable)", () => {
+        const before = Date.now();
+        const id = generateUlid();
+        const after = Date.now();
 
-    const timestampChars = id.slice(0, 10);
-    const decoded = decodeUlidTimestamp(timestampChars);
-    expect(decoded).toBeGreaterThanOrEqual(before);
-    expect(decoded).toBeLessThanOrEqual(after + 1);
-  });
+        const timestampChars = id.slice(0, 10);
+        const decoded = decodeUlidTimestamp(timestampChars);
+        expect(decoded).toBeGreaterThanOrEqual(before);
+        expect(decoded).toBeLessThanOrEqual(after + 1);
+    });
 });
 ```
 
@@ -483,35 +487,35 @@ const ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const ENCODING_LEN = ENCODING.length;
 
 function encodeTime(now: number, len: number): string {
-  let str = "";
-  for (let i = len - 1; i >= 0; i--) {
-    const mod = now % ENCODING_LEN;
-    str = ENCODING[mod] + str;
-    now = (now - mod) / ENCODING_LEN;
-  }
-  return str;
+    let str = "";
+    for (let i = len - 1; i >= 0; i--) {
+        const mod = now % ENCODING_LEN;
+        str = ENCODING[mod] + str;
+        now = (now - mod) / ENCODING_LEN;
+    }
+    return str;
 }
 
 function encodeRandom(len: number): string {
-  const bytes = new Uint8Array(len);
-  crypto.getRandomValues(bytes);
-  let str = "";
-  for (let i = 0; i < len; i++) {
-    str += ENCODING[bytes[i] % ENCODING_LEN];
-  }
-  return str;
+    const bytes = new Uint8Array(len);
+    crypto.getRandomValues(bytes);
+    let str = "";
+    for (let i = 0; i < len; i++) {
+        str += ENCODING[bytes[i] % ENCODING_LEN];
+    }
+    return str;
 }
 
 export function generateUlid(): string {
-  return encodeTime(Date.now(), 10) + encodeRandom(16);
+    return encodeTime(Date.now(), 10) + encodeRandom(16);
 }
 
-export export function decodeUlidTimestamp(encoded: string): number {
-  let t = 0;
-  for (let i = 0; i < encoded.length; i++) {
-    t = t * ENCODING_LEN + ENCODING.indexOf(encoded[i]);
-  }
-  return t;
+export function decodeUlidTimestamp(encoded: string): number {
+    let t = 0;
+    for (let i = 0; i < encoded.length; i++) {
+        t = t * ENCODING_LEN + ENCODING.indexOf(encoded[i]);
+    }
+    return t;
 }
 ```
 
@@ -534,25 +538,25 @@ import { signTicket, verifyTicket } from "../src/lib/hmac";
 const SECRET = "test-secret-key-at-least-32-chars!!";
 
 describe("signTicket / verifyTicket", () => {
-  it("signs and verifies a ticket", async () => {
-    const payload = { title: "Test Event", city: "上海" };
-    const ticket = await signTicket(payload, SECRET, 60);
-    const result = await verifyTicket(ticket, SECRET);
-    expect(result).toEqual(payload);
-  });
+    it("signs and verifies a ticket", async () => {
+        const payload = { title: "Test Event", city: "上海" };
+        const ticket = await signTicket(payload, SECRET, 60);
+        const result = await verifyTicket(ticket, SECRET);
+        expect(result).toEqual(payload);
+    });
 
-  it("rejects expired ticket", async () => {
-    const payload = { title: "Test" };
-    const ticket = await signTicket(payload, SECRET, -1);
-    await expect(verifyTicket(ticket, SECRET)).rejects.toThrow("expired");
-  });
+    it("rejects expired ticket", async () => {
+        const payload = { title: "Test" };
+        const ticket = await signTicket(payload, SECRET, -1);
+        await expect(verifyTicket(ticket, SECRET)).rejects.toThrow("expired");
+    });
 
-  it("rejects tampered ticket", async () => {
-    const payload = { title: "Test" };
-    const ticket = await signTicket(payload, SECRET, 60);
-    const tampered = ticket.slice(0, -2) + "XX";
-    await expect(verifyTicket(tampered, SECRET)).rejects.toThrow("invalid");
-  });
+    it("rejects tampered ticket", async () => {
+        const payload = { title: "Test" };
+        const ticket = await signTicket(payload, SECRET, 60);
+        const tampered = ticket.slice(0, -2) + "XX";
+        await expect(verifyTicket(tampered, SECRET)).rejects.toThrow("invalid");
+    });
 });
 ```
 
@@ -572,56 +576,59 @@ Expected: FAIL
 const encoder = new TextEncoder();
 
 async function hmacKey(secret: string) {
-  return crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
+    return crypto.subtle.importKey(
+        "raw",
+        encoder.encode(secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign", "verify"],
+    );
 }
 
 async function hmacSign(data: string, secret: string): Promise<string> {
-  const key = await hmacKey(secret);
-  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
-  return btoa(String.fromCharCode(...new Uint8Array(sig)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+    const key = await hmacKey(secret);
+    const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
+    return btoa(String.fromCharCode(...new Uint8Array(sig)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
 }
 
 export async function signTicket(
-  payload: Record<string, unknown>,
-  secret: string,
-  ttlSeconds: number
+    payload: Record<string, unknown>,
+    secret: string,
+    ttlSeconds: number,
 ): Promise<string> {
-  const body = {
-    p: payload,
-    exp: Math.floor(Date.now() / 1000) + ttlSeconds,
-  };
-  const json = JSON.stringify(body);
-  const b64 = btoa(json).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  const sig = await hmacSign(b64, secret);
-  return `${b64}.${sig}`;
+    const body = {
+        p: payload,
+        exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+    };
+    const json = JSON.stringify(body);
+    const b64 = btoa(json)
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    const sig = await hmacSign(b64, secret);
+    return `${b64}.${sig}`;
 }
 
 export async function verifyTicket(
-  ticket: string,
-  secret: string
+    ticket: string,
+    secret: string,
 ): Promise<Record<string, unknown>> {
-  const [b64, sig] = ticket.split(".");
-  if (!b64 || !sig) throw new Error("invalid ticket format");
+    const [b64, sig] = ticket.split(".");
+    if (!b64 || !sig) throw new Error("invalid ticket format");
 
-  const expectedSig = await hmacSign(b64, secret);
-  if (sig !== expectedSig) throw new Error("invalid signature");
+    const expectedSig = await hmacSign(b64, secret);
+    if (sig !== expectedSig) throw new Error("invalid signature");
 
-  const json = atob(b64.replace(/-/g, "+").replace(/_/g, "/"));
-  const body = JSON.parse(json);
+    const json = atob(b64.replace(/-/g, "+").replace(/_/g, "/"));
+    const body = JSON.parse(json);
 
-  if (body.exp < Math.floor(Date.now() / 1000)) {
-    throw new Error("ticket expired");
-  }
-  return body.p;
+    if (body.exp < Math.floor(Date.now() / 1000)) {
+        throw new Error("ticket expired");
+    }
+    return body.p;
 }
 ```
 
@@ -642,20 +649,20 @@ import { describe, it, expect } from "vitest";
 import { getPosterUrl } from "../src/lib/poster-url";
 
 describe("getPosterUrl", () => {
-  it("returns R2 base URL when configured", () => {
-    const url = getPosterUrl("posters/abc.webp", "https://cdn.example.com");
-    expect(url).toBe("https://cdn.example.com/posters/abc.webp");
-  });
+    it("returns R2 base URL when configured", () => {
+        const url = getPosterUrl("posters/abc.webp", "https://cdn.example.com");
+        expect(url).toBe("https://cdn.example.com/posters/abc.webp");
+    });
 
-  it("returns same-origin fallback when base is empty", () => {
-    const url = getPosterUrl("posters/abc.webp", "");
-    expect(url).toBe("/r2/posters/abc.webp");
-  });
+    it("returns same-origin fallback when base is empty", () => {
+        const url = getPosterUrl("posters/abc.webp", "");
+        expect(url).toBe("/r2/posters/abc.webp");
+    });
 
-  it("returns placeholder when key is null", () => {
-    const url = getPosterUrl(null, "https://cdn.example.com");
-    expect(url).toBe("/placeholder-poster.svg");
-  });
+    it("returns placeholder when key is null", () => {
+        const url = getPosterUrl(null, "https://cdn.example.com");
+        expect(url).toBe("/placeholder-poster.svg");
+    });
 });
 ```
 
@@ -673,12 +680,12 @@ Expected: FAIL
 
 ```ts
 export function getPosterUrl(
-  key: string | null | undefined,
-  r2BaseUrl: string
+    key: string | null | undefined,
+    r2BaseUrl: string,
 ): string {
-  if (!key) return "/placeholder-poster.svg";
-  if (r2BaseUrl) return `${r2BaseUrl}/${key}`;
-  return `/r2/${key}`;
+    if (!key) return "/placeholder-poster.svg";
+    if (r2BaseUrl) return `${r2BaseUrl}/${key}`;
+    return `/r2/${key}`;
 }
 ```
 
@@ -701,6 +708,7 @@ git add -A && git commit -m "feat: add ULID, HMAC signing, and poster URL utilit
 ## Task 4: Turnstile Verification & Rate Limiting
 
 **Files:**
+
 - Create: `src/lib/turnstile.ts`, `src/lib/rate-limit.ts`
 - Create: `tests/turnstile.test.ts`, `tests/rate-limit.test.ts`
 
@@ -713,31 +721,45 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { verifyTurnstile } from "../src/lib/turnstile";
 
 describe("verifyTurnstile", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
+    beforeEach(() => {
+        vi.restoreAllMocks();
+    });
 
-  it("returns true for valid token", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ success: true }),
-    }));
+    it("returns true for valid token", async () => {
+        vi.stubGlobal(
+            "fetch",
+            vi.fn().mockResolvedValue({
+                json: () => Promise.resolve({ success: true }),
+            }),
+        );
 
-    const result = await verifyTurnstile("valid-token", "secret", "1.2.3.4");
-    expect(result).toBe(true);
-    expect(fetch).toHaveBeenCalledWith(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      expect.objectContaining({ method: "POST" })
-    );
-  });
+        const result = await verifyTurnstile(
+            "valid-token",
+            "secret",
+            "1.2.3.4",
+        );
+        expect(result).toBe(true);
+        expect(fetch).toHaveBeenCalledWith(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            expect.objectContaining({ method: "POST" }),
+        );
+    });
 
-  it("returns false for invalid token", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ success: false, "error-codes": ["invalid-input-response"] }),
-    }));
+    it("returns false for invalid token", async () => {
+        vi.stubGlobal(
+            "fetch",
+            vi.fn().mockResolvedValue({
+                json: () =>
+                    Promise.resolve({
+                        success: false,
+                        "error-codes": ["invalid-input-response"],
+                    }),
+            }),
+        );
 
-    const result = await verifyTurnstile("bad-token", "secret");
-    expect(result).toBe(false);
-  });
+        const result = await verifyTurnstile("bad-token", "secret");
+        expect(result).toBe(false);
+    });
 });
 ```
 
@@ -757,18 +779,18 @@ Expected: FAIL
 const VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 export async function verifyTurnstile(
-  token: string,
-  secret: string,
-  ip?: string
+    token: string,
+    secret: string,
+    ip?: string,
 ): Promise<boolean> {
-  const formData = new FormData();
-  formData.append("secret", secret);
-  formData.append("response", token);
-  if (ip) formData.append("remoteip", ip);
+    const formData = new FormData();
+    formData.append("secret", secret);
+    formData.append("response", token);
+    if (ip) formData.append("remoteip", ip);
 
-  const res = await fetch(VERIFY_URL, { method: "POST", body: formData });
-  const data = await res.json();
-  return data.success === true;
+    const res = await fetch(VERIFY_URL, { method: "POST", body: formData });
+    const data = await res.json();
+    return data.success === true;
 }
 ```
 
@@ -789,47 +811,55 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { checkRateLimit } from "../src/lib/rate-limit";
 
 function createMockKV(): KVNamespace {
-  const store = new Map<string, string>();
-  return {
-    get: (key: string) => Promise.resolve(store.get(key) ?? null),
-    put: (key: string, value: string, opts?: KVNamespacePutOptions) => {
-      store.set(key, value);
-      return Promise.resolve();
-    },
-    delete: (key: string) => { store.delete(key); return Promise.resolve(); },
-    list: () => Promise.resolve({ keys: [], list_complete: true, cacheStatus: null }),
-    getWithMetadata: () => Promise.resolve({ value: null, metadata: null }),
-  } as unknown as KVNamespace;
+    const store = new Map<string, string>();
+    return {
+        get: (key: string) => Promise.resolve(store.get(key) ?? null),
+        put: (key: string, value: string, opts?: KVNamespacePutOptions) => {
+            store.set(key, value);
+            return Promise.resolve();
+        },
+        delete: (key: string) => {
+            store.delete(key);
+            return Promise.resolve();
+        },
+        list: () =>
+            Promise.resolve({
+                keys: [],
+                list_complete: true,
+                cacheStatus: null,
+            }),
+        getWithMetadata: () => Promise.resolve({ value: null, metadata: null }),
+    } as unknown as KVNamespace;
 }
 
 describe("checkRateLimit", () => {
-  let kv: KVNamespace;
+    let kv: KVNamespace;
 
-  beforeEach(() => {
-    kv = createMockKV();
-  });
+    beforeEach(() => {
+        kv = createMockKV();
+    });
 
-  it("allows first request", async () => {
-    const result = await checkRateLimit(kv, "test-ip", 10, 30);
-    expect(result.allowed).toBe(true);
-    expect(result.remaining).toBe(9);
-  });
+    it("allows first request", async () => {
+        const result = await checkRateLimit(kv, "test-ip", 10, 30);
+        expect(result.allowed).toBe(true);
+        expect(result.remaining).toBe(9);
+    });
 
-  it("blocks after daily limit", async () => {
-    for (let i = 0; i < 10; i++) {
-      await checkRateLimit(kv, "test-ip", 10, 30);
-    }
-    const result = await checkRateLimit(kv, "test-ip", 10, 30);
-    expect(result.allowed).toBe(false);
-    expect(result.remaining).toBe(0);
-  });
+    it("blocks after daily limit", async () => {
+        for (let i = 0; i < 10; i++) {
+            await checkRateLimit(kv, "test-ip", 10, 30);
+        }
+        const result = await checkRateLimit(kv, "test-ip", 10, 30);
+        expect(result.allowed).toBe(false);
+        expect(result.remaining).toBe(0);
+    });
 
-  it("blocks during cooldown period", async () => {
-    await checkRateLimit(kv, "test-ip", 10, 30);
-    const result = await checkRateLimit(kv, "test-ip", 10, 30);
-    expect(result.allowed).toBe(false);
-    expect(result.cooldown).toBe(true);
-  });
+    it("blocks during cooldown period", async () => {
+        await checkRateLimit(kv, "test-ip", 10, 30);
+        const result = await checkRateLimit(kv, "test-ip", 10, 30);
+        expect(result.allowed).toBe(false);
+        expect(result.cooldown).toBe(true);
+    });
 });
 ```
 
@@ -847,51 +877,51 @@ Expected: FAIL
 
 ```ts
 interface RateLimitResult {
-  allowed: boolean;
-  remaining: number;
-  cooldown?: boolean;
+    allowed: boolean;
+    remaining: number;
+    cooldown?: boolean;
 }
 
 export async function checkRateLimit(
-  kv: KVNamespace,
-  ipHash: string,
-  dailyLimit: number,
-  cooldownSeconds: number
+    kv: KVNamespace,
+    ipHash: string,
+    dailyLimit: number,
+    cooldownSeconds: number,
 ): Promise<RateLimitResult> {
-  const today = new Date().toISOString().slice(0, 10);
-  const dayKey = `rl:${ipHash}:${today}`;
-  const cooldownKey = `rl:cd:${ipHash}`;
+    const today = new Date().toISOString().slice(0, 10);
+    const dayKey = `rl:${ipHash}:${today}`;
+    const cooldownKey = `rl:cd:${ipHash}`;
 
-  const [dayData, cooldownData] = await Promise.all([
-    kv.get(dayKey, "json") as Promise<{ count: number } | null>,
-    kv.get(cooldownKey),
-  ]);
+    const [dayData, cooldownData] = await Promise.all([
+        kv.get(dayKey, "json") as Promise<{ count: number } | null>,
+        kv.get(cooldownKey),
+    ]);
 
-  if (cooldownData) {
-    return { allowed: false, remaining: 0, cooldown: true };
-  }
+    if (cooldownData) {
+        return { allowed: false, remaining: 0, cooldown: true };
+    }
 
-  const count = dayData?.count ?? 0;
-  if (count >= dailyLimit) {
-    return { allowed: false, remaining: 0 };
-  }
+    const count = dayData?.count ?? 0;
+    if (count >= dailyLimit) {
+        return { allowed: false, remaining: 0 };
+    }
 
-  await Promise.all([
-    kv.put(dayKey, JSON.stringify({ count: count + 1 }), {
-      expirationTtl: 86400,
-    }),
-    kv.put(cooldownKey, "1", { expirationTtl: cooldownSeconds }),
-  ]);
+    await Promise.all([
+        kv.put(dayKey, JSON.stringify({ count: count + 1 }), {
+            expirationTtl: 86400,
+        }),
+        kv.put(cooldownKey, "1", { expirationTtl: cooldownSeconds }),
+    ]);
 
-  return { allowed: true, remaining: dailyLimit - count - 1 };
+    return { allowed: true, remaining: dailyLimit - count - 1 };
 }
 
 export async function hashIp(ip: string): Promise<string> {
-  const data = new TextEncoder().encode(ip);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+    const data = new TextEncoder().encode(ip);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hash))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 }
 ```
 
@@ -914,6 +944,7 @@ git add -A && git commit -m "feat: add Turnstile verification and KV-based rate 
 ## Task 5: Type Definitions & Province Data
 
 **Files:**
+
 - Create: `src/types/event.ts`
 - Create: `data/provinces.json`
 
@@ -926,40 +957,40 @@ export type EventType = "doujin" | "concert";
 export type EventStatus = "pending" | "approved" | "rejected";
 
 export interface Event {
-  id: string;
-  title: string;
-  province: string;
-  city: string;
-  venue: string;
-  address: string | null;
-  startDate: string;
-  endDate: string | null;
-  eventType: EventType;
-  scale: string | null;
-  qqGroup: string | null;
-  ticketUrl: string | null;
-  posterKey: string | null;
-  priceInfo: string | null;
-  description: string | null;
-  viewCount: number;
-  status: EventStatus;
-  deletedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    title: string;
+    province: string;
+    city: string;
+    venue: string;
+    address: string | null;
+    startDate: string;
+    endDate: string | null;
+    eventType: EventType;
+    scale: string | null;
+    qqGroup: string | null;
+    ticketUrl: string | null;
+    posterKey: string | null;
+    priceInfo: string | null;
+    description: string | null;
+    viewCount: number;
+    status: EventStatus;
+    deletedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface EventWithWorks extends Event {
-  works: string[];
+    works: string[];
 }
 
 export interface EventFilters {
-  province?: string;
-  city?: string;
-  eventType?: EventType;
-  work?: string;
-  scale?: string;
-  month?: string;
-  page?: number;
+    province?: string;
+    city?: string;
+    eventType?: EventType;
+    work?: string;
+    scale?: string;
+    month?: string;
+    page?: number;
 }
 ```
 
@@ -969,40 +1000,40 @@ export interface EventFilters {
 
 ```json
 [
-  { "province": "北京", "cities": ["北京"] },
-  { "province": "上海", "cities": ["上海"] },
-  { "province": "广东", "cities": ["广州", "深圳", "东莞", "佛山", "珠海"] },
-  { "province": "浙江", "cities": ["杭州", "宁波", "温州", "嘉兴"] },
-  { "province": "江苏", "cities": ["南京", "苏州", "无锡", "常州"] },
-  { "province": "四川", "cities": ["成都", "绵阳"] },
-  { "province": "湖北", "cities": ["武汉"] },
-  { "province": "湖南", "cities": ["长沙"] },
-  { "province": "山东", "cities": ["济南", "青岛"] },
-  { "province": "河南", "cities": ["郑州"] },
-  { "province": "河北", "cities": ["石家庄"] },
-  { "province": "福建", "cities": ["福州", "厦门"] },
-  { "province": "安徽", "cities": ["合肥"] },
-  { "province": "江西", "cities": ["南昌"] },
-  { "province": "辽宁", "cities": ["沈阳", "大连"] },
-  { "province": "吉林", "cities": ["长春"] },
-  { "province": "黑龙江", "cities": ["哈尔滨"] },
-  { "province": "陕西", "cities": ["西安"] },
-  { "province": "甘肃", "cities": ["兰州"] },
-  { "province": "重庆", "cities": ["重庆"] },
-  { "province": "天津", "cities": ["天津"] },
-  { "province": "云南", "cities": ["昆明"] },
-  { "province": "贵州", "cities": ["贵阳"] },
-  { "province": "广西", "cities": ["南宁", "桂林"] },
-  { "province": "山西", "cities": ["太原"] },
-  { "province": "内蒙古", "cities": ["呼和浩特"] },
-  { "province": "西藏", "cities": ["拉萨"] },
-  { "province": "新疆", "cities": ["乌鲁木齐"] },
-  { "province": "宁夏", "cities": ["银川"] },
-  { "province": "青海", "cities": ["西宁"] },
-  { "province": "海南", "cities": ["海口"] },
-  { "province": "台湾", "cities": ["台北"] },
-  { "province": "香港", "cities": ["香港"] },
-  { "province": "澳门", "cities": ["澳门"] }
+    { "province": "北京", "cities": ["北京"] },
+    { "province": "上海", "cities": ["上海"] },
+    { "province": "广东", "cities": ["广州", "深圳", "东莞", "佛山", "珠海"] },
+    { "province": "浙江", "cities": ["杭州", "宁波", "温州", "嘉兴"] },
+    { "province": "江苏", "cities": ["南京", "苏州", "无锡", "常州"] },
+    { "province": "四川", "cities": ["成都", "绵阳"] },
+    { "province": "湖北", "cities": ["武汉"] },
+    { "province": "湖南", "cities": ["长沙"] },
+    { "province": "山东", "cities": ["济南", "青岛"] },
+    { "province": "河南", "cities": ["郑州"] },
+    { "province": "河北", "cities": ["石家庄"] },
+    { "province": "福建", "cities": ["福州", "厦门"] },
+    { "province": "安徽", "cities": ["合肥"] },
+    { "province": "江西", "cities": ["南昌"] },
+    { "province": "辽宁", "cities": ["沈阳", "大连"] },
+    { "province": "吉林", "cities": ["长春"] },
+    { "province": "黑龙江", "cities": ["哈尔滨"] },
+    { "province": "陕西", "cities": ["西安"] },
+    { "province": "甘肃", "cities": ["兰州"] },
+    { "province": "重庆", "cities": ["重庆"] },
+    { "province": "天津", "cities": ["天津"] },
+    { "province": "云南", "cities": ["昆明"] },
+    { "province": "贵州", "cities": ["贵阳"] },
+    { "province": "广西", "cities": ["南宁", "桂林"] },
+    { "province": "山西", "cities": ["太原"] },
+    { "province": "内蒙古", "cities": ["呼和浩特"] },
+    { "province": "西藏", "cities": ["拉萨"] },
+    { "province": "新疆", "cities": ["乌鲁木齐"] },
+    { "province": "宁夏", "cities": ["银川"] },
+    { "province": "青海", "cities": ["西宁"] },
+    { "province": "海南", "cities": ["海口"] },
+    { "province": "台湾", "cities": ["台北"] },
+    { "province": "香港", "cities": ["香港"] },
+    { "province": "澳门", "cities": ["澳门"] }
 ]
 ```
 
@@ -1025,6 +1056,7 @@ git add -A && git commit -m "feat: add Event types and province/city data"
 ## Task 6: Seed Data
 
 **Files:**
+
 - Create: `seeds/demo.sql`
 
 - [ ] **Step 1: Create seed SQL**
@@ -1079,6 +1111,7 @@ git add -A && git commit -m "feat: add demo seed data with 5 events and work ass
 ## Task 7: Events List API
 
 **Files:**
+
 - Create: `src/pages/api/events.ts`
 - Create: `tests/api/events.test.ts`
 
@@ -1091,36 +1124,36 @@ import { describe, it, expect } from "vitest";
 import { buildEventsQuery } from "../../src/pages/api/events";
 
 describe("buildEventsQuery", () => {
-  it("returns base query with no filters", () => {
-    const result = buildEventsQuery({});
-    expect(result.where).toContain("status = 'approved'");
-    expect(result.where).toContain("deleted_at IS NULL");
-    expect(result.where).toContain("start_date >= ?");
-  });
+    it("returns base query with no filters", () => {
+        const result = buildEventsQuery({});
+        expect(result.where).toContain("status = 'approved'");
+        expect(result.where).toContain("deleted_at IS NULL");
+        expect(result.where).toContain("start_date >= ?");
+    });
 
-  it("adds province filter", () => {
-    const result = buildEventsQuery({ province: "上海" });
-    expect(result.where).toContain("province = ?");
-    expect(result.params).toContain("上海");
-  });
+    it("adds province filter", () => {
+        const result = buildEventsQuery({ province: "上海" });
+        expect(result.where).toContain("province = ?");
+        expect(result.params).toContain("上海");
+    });
 
-  it("adds event_type filter", () => {
-    const result = buildEventsQuery({ eventType: "doujin" });
-    expect(result.where).toContain("event_type = ?");
-    expect(result.params).toContain("doujin");
-  });
+    it("adds event_type filter", () => {
+        const result = buildEventsQuery({ eventType: "doujin" });
+        expect(result.where).toContain("event_type = ?");
+        expect(result.params).toContain("doujin");
+    });
 
-  it("adds work join filter", () => {
-    const result = buildEventsQuery({ work: "原神" });
-    expect(result.join).toContain("event_works");
-    expect(result.where).toContain("work_name = ?");
-  });
+    it("adds work join filter", () => {
+        const result = buildEventsQuery({ work: "原神" });
+        expect(result.join).toContain("event_works");
+        expect(result.where).toContain("work_name = ?");
+    });
 
-  it("sets offset for pagination", () => {
-    const result = buildEventsQuery({ page: 3 });
-    expect(result.limit).toBe(20);
-    expect(result.offset).toBe(40);
-  });
+    it("sets offset for pagination", () => {
+        const result = buildEventsQuery({ page: 3 });
+        expect(result.limit).toBe(20);
+        expect(result.offset).toBe(40);
+    });
 });
 ```
 
@@ -1144,127 +1177,139 @@ import { events, eventWorks } from "../../server/db/schema";
 import type { EventFilters, EventWithWorks } from "../../types/event";
 
 interface QueryResult {
-  where: string;
-  join: string;
-  params: unknown[];
-  limit: number;
-  offset: number;
+    where: string;
+    join: string;
+    params: unknown[];
+    limit: number;
+    offset: number;
 }
 
 export function buildEventsQuery(filters: EventFilters): QueryResult {
-  const conditions: string[] = ["status = 'approved'", "deleted_at IS NULL"];
-  const params: unknown[] = [];
-  let join = "";
+    const conditions: string[] = ["status = 'approved'", "deleted_at IS NULL"];
+    const params: unknown[] = [];
+    let join = "";
 
-  conditions.push("start_date >= ?");
-  params.push(new Date().toISOString().slice(0, 10));
+    conditions.push("start_date >= ?");
+    params.push(new Date().toISOString().slice(0, 10));
 
-  if (filters.province) {
-    conditions.push("province = ?");
-    params.push(filters.province);
-  }
-  if (filters.city) {
-    conditions.push("city = ?");
-    params.push(filters.city);
-  }
-  if (filters.eventType) {
-    conditions.push("event_type = ?");
-    params.push(filters.eventType);
-  }
-  if (filters.scale) {
-    conditions.push("scale = ?");
-    params.push(filters.scale);
-  }
-  if (filters.month) {
-    conditions.push("start_date LIKE ?");
-    params.push(`${filters.month}%`);
-  }
-  if (filters.work) {
-    join = `INNER JOIN event_works ON events.id = event_works.event_id`;
-    conditions.push("work_name = ?");
-    params.push(filters.work);
-  }
+    if (filters.province) {
+        conditions.push("province = ?");
+        params.push(filters.province);
+    }
+    if (filters.city) {
+        conditions.push("city = ?");
+        params.push(filters.city);
+    }
+    if (filters.eventType) {
+        conditions.push("event_type = ?");
+        params.push(filters.eventType);
+    }
+    if (filters.scale) {
+        conditions.push("scale = ?");
+        params.push(filters.scale);
+    }
+    if (filters.month) {
+        conditions.push("start_date LIKE ?");
+        params.push(`${filters.month}%`);
+    }
+    if (filters.work) {
+        join = `INNER JOIN event_works ON events.id = event_works.event_id`;
+        conditions.push("work_name = ?");
+        params.push(filters.work);
+    }
 
-  const page = filters.page ?? 1;
-  const limit = 20;
-  const offset = (page - 1) * limit;
+    const page = filters.page ?? 1;
+    const limit = 20;
+    const offset = (page - 1) * limit;
 
-  return { where: conditions.join(" AND "), join, params, limit, offset };
+    return { where: conditions.join(" AND "), join, params, limit, offset };
 }
 
 export const GET: APIRoute = async ({ request, locals }) => {
-  const db = getDB(locals.runtime.env);
-  const url = new URL(request.url);
+    const db = getDB(locals.runtime.env);
+    const url = new URL(request.url);
 
-  const typeParam = url.searchParams.get("type");
-  const filters: EventFilters = {
-    province: url.searchParams.get("province") ?? undefined,
-    city: url.searchParams.get("city") ?? undefined,
-    eventType: typeParam === "doujin" || typeParam === "concert" ? typeParam : undefined,
-    work: url.searchParams.get("work") ?? undefined,
-    scale: url.searchParams.get("scale") ?? undefined,
-    month: url.searchParams.get("month") ?? undefined,
-    page: url.searchParams.get("page") ? Number(url.searchParams.get("page")) : 1,
-  };
+    const typeParam = url.searchParams.get("type");
+    const filters: EventFilters = {
+        province: url.searchParams.get("province") ?? undefined,
+        city: url.searchParams.get("city") ?? undefined,
+        eventType:
+            typeParam === "doujin" || typeParam === "concert"
+                ? typeParam
+                : undefined,
+        work: url.searchParams.get("work") ?? undefined,
+        scale: url.searchParams.get("scale") ?? undefined,
+        month: url.searchParams.get("month") ?? undefined,
+        page: url.searchParams.get("page")
+            ? Number(url.searchParams.get("page"))
+            : 1,
+    };
 
-  const q = buildEventsQuery(filters);
+    const q = buildEventsQuery(filters);
 
-  const countSql = `SELECT COUNT(*) as total FROM events ${q.join} WHERE ${q.where}`;
-  const countResult = await locals.runtime.env.DB.prepare(countSql)
-    .bind(...q.params)
-    .first<{ total: number }>();
-  const total = countResult?.total ?? 0;
+    const countSql = `SELECT COUNT(*) as total FROM events ${q.join} WHERE ${q.where}`;
+    const countResult = await locals.runtime.env.DB.prepare(countSql)
+        .bind(...q.params)
+        .first<{ total: number }>();
+    const total = countResult?.total ?? 0;
 
-  const dataSql = `SELECT events.* FROM events ${q.join} WHERE ${q.where} ORDER BY start_date ASC LIMIT ? OFFSET ?`;
-  const rows = await locals.runtime.env.DB.prepare(dataSql)
-    .bind(...q.params, q.limit, q.offset)
-    .all();
+    const dataSql = `SELECT events.* FROM events ${q.join} WHERE ${q.where} ORDER BY start_date ASC LIMIT ? OFFSET ?`;
+    const rows = await locals.runtime.env.DB.prepare(dataSql)
+        .bind(...q.params, q.limit, q.offset)
+        .all();
 
-  const eventIds = (rows.results as Record<string, unknown>[]).map((r) => r.id as string);
-  let worksMap: Record<string, string[]> = {};
+    const eventIds = (rows.results as Record<string, unknown>[]).map(
+        (r) => r.id as string,
+    );
+    let worksMap: Record<string, string[]> = {};
 
-  if (eventIds.length > 0) {
-    const placeholders = eventIds.map(() => "?").join(",");
-    const worksRows = await locals.runtime.env.DB.prepare(
-      `SELECT event_id, work_name FROM event_works WHERE event_id IN (${placeholders})`
-    )
-      .bind(...eventIds)
-      .all();
+    if (eventIds.length > 0) {
+        const placeholders = eventIds.map(() => "?").join(",");
+        const worksRows = await locals.runtime.env.DB.prepare(
+            `SELECT event_id, work_name FROM event_works WHERE event_id IN (${placeholders})`,
+        )
+            .bind(...eventIds)
+            .all();
 
-    for (const w of worksRows.results as Record<string, unknown>[]) {
-      const eid = w.event_id as string;
-      if (!worksMap[eid]) worksMap[eid] = [];
-      worksMap[eid].push(w.work_name as string);
+        for (const w of worksRows.results as Record<string, unknown>[]) {
+            const eid = w.event_id as string;
+            if (!worksMap[eid]) worksMap[eid] = [];
+            worksMap[eid].push(w.work_name as string);
+        }
     }
-  }
 
-  const items: EventWithWorks[] = (rows.results as Record<string, unknown>[]).map((r) => ({
-    id: r.id as string,
-    title: r.title as string,
-    province: r.province as string,
-    city: r.city as string,
-    venue: r.venue as string,
-    address: r.address as string | null,
-    startDate: r.start_date as string,
-    endDate: r.end_date as string | null,
-    eventType: r.event_type as "doujin" | "concert",
-    scale: r.scale as string | null,
-    qqGroup: r.qq_group as string | null,
-    ticketUrl: r.ticket_url as string | null,
-    posterKey: r.poster_key as string | null,
-    priceInfo: r.price_info as string | null,
-    description: r.description as string | null,
-    viewCount: r.view_count as number,
-    status: r.status as "pending" | "approved" | "rejected",
-    deletedAt: r.deleted_at as string | null,
-    createdAt: r.created_at as string,
-    updatedAt: r.updated_at as string,
-    works: worksMap[r.id as string] ?? [],
-  }));
+    const items: EventWithWorks[] = (
+        rows.results as Record<string, unknown>[]
+    ).map((r) => ({
+        id: r.id as string,
+        title: r.title as string,
+        province: r.province as string,
+        city: r.city as string,
+        venue: r.venue as string,
+        address: r.address as string | null,
+        startDate: r.start_date as string,
+        endDate: r.end_date as string | null,
+        eventType: r.event_type as "doujin" | "concert",
+        scale: r.scale as string | null,
+        qqGroup: r.qq_group as string | null,
+        ticketUrl: r.ticket_url as string | null,
+        posterKey: r.poster_key as string | null,
+        priceInfo: r.price_info as string | null,
+        description: r.description as string | null,
+        viewCount: r.view_count as number,
+        status: r.status as "pending" | "approved" | "rejected",
+        deletedAt: r.deleted_at as string | null,
+        createdAt: r.created_at as string,
+        updatedAt: r.updated_at as string,
+        works: worksMap[r.id as string] ?? [],
+    }));
 
-  return new Response(JSON.stringify({ items, total, page: filters.page ?? 1 }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    return new Response(
+        JSON.stringify({ items, total, page: filters.page ?? 1 }),
+        {
+            headers: { "Content-Type": "application/json" },
+        },
+    );
 };
 ```
 
@@ -1287,6 +1332,7 @@ git add -A && git commit -m "feat: add events list API with filtering and pagina
 ## Task 8: View Count API
 
 **Files:**
+
 - Create: `src/pages/api/events/[id]/view.ts`
 
 - [ ] **Step 1: Implement view count API**
@@ -1298,30 +1344,30 @@ import type { APIRoute } from "astro";
 import { hashIp } from "../../../../lib/rate-limit";
 
 export const POST: APIRoute = async ({ params, request, locals }) => {
-  const { id } = params;
-  if (!id) return new Response("Missing id", { status: 400 });
+    const { id } = params;
+    if (!id) return new Response("Missing id", { status: 400 });
 
-  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
-  const ipHash = await hashIp(ip);
-  const key = `event:${id}:ip:${ipHash}`;
+    const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+    const ipHash = await hashIp(ip);
+    const key = `event:${id}:ip:${ipHash}`;
 
-  const existing = await locals.runtime.env.RATE_LIMIT.get(key);
-  if (existing) {
-    return new Response(JSON.stringify({ counted: false }), {
-      headers: { "Content-Type": "application/json" },
+    const existing = await locals.runtime.env.RATE_LIMIT.get(key);
+    if (existing) {
+        return new Response(JSON.stringify({ counted: false }), {
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    await locals.runtime.env.RATE_LIMIT.put(key, "1", { expirationTtl: 86400 });
+    await locals.runtime.env.DB.prepare(
+        "UPDATE events SET view_count = view_count + 1 WHERE id = ?",
+    )
+        .bind(id)
+        .run();
+
+    return new Response(JSON.stringify({ counted: true }), {
+        headers: { "Content-Type": "application/json" },
     });
-  }
-
-  await locals.runtime.env.RATE_LIMIT.put(key, "1", { expirationTtl: 86400 });
-  await locals.runtime.env.DB.prepare(
-    "UPDATE events SET view_count = view_count + 1 WHERE id = ?"
-  )
-    .bind(id)
-    .run();
-
-  return new Response(JSON.stringify({ counted: true }), {
-    headers: { "Content-Type": "application/json" },
-  });
 };
 ```
 
@@ -1344,6 +1390,7 @@ git add -A && git commit -m "feat: add view count API with KV-based IP dedup"
 ## Task 9: Submit Sign API
 
 **Files:**
+
 - Create: `src/pages/api/submit/sign.ts`
 
 - [ ] **Step 1: Implement submit sign endpoint**
@@ -1359,78 +1406,108 @@ import { signTicket } from "../../../lib/hmac";
 const MAX_FIELD_LEN = 2000;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const env = locals.runtime.env;
+    const env = locals.runtime.env;
 
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response(JSON.stringify({ error: "无效的请求格式" }), { status: 400 });
-  }
+    let body: Record<string, unknown>;
+    try {
+        body = await request.json();
+    } catch {
+        return new Response(JSON.stringify({ error: "无效的请求格式" }), {
+            status: 400,
+        });
+    }
 
-  const turnstileToken = body.turnstileToken as string | undefined;
-  if (!turnstileToken) {
-    return new Response(JSON.stringify({ error: "请完成验证码" }), { status: 400 });
-  }
+    const turnstileToken = body.turnstileToken as string | undefined;
+    if (!turnstileToken) {
+        return new Response(JSON.stringify({ error: "请完成验证码" }), {
+            status: 400,
+        });
+    }
 
-  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
-  const ipHash = await hashIp(ip);
+    const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+    const ipHash = await hashIp(ip);
 
-  const turnstileOk = await verifyTurnstile(turnstileToken, env.TURNSTILE_SECRET_KEY, ip);
-  if (!turnstileOk) {
-    return new Response(JSON.stringify({ error: "验证码验证失败" }), { status: 400 });
-  }
-
-  const rateLimit = await checkRateLimit(env.RATE_LIMIT, ipHash, 10, 30);
-  if (!rateLimit.allowed) {
-    return new Response(
-      JSON.stringify({
-        error: rateLimit.cooldown ? "提交过于频繁，请30秒后重试" : "今日提交次数已达上限",
-      }),
-      { status: 429 }
+    const turnstileOk = await verifyTurnstile(
+        turnstileToken,
+        env.TURNSTILE_SECRET_KEY,
+        ip,
     );
-  }
-
-  const required = ["title", "province", "city", "venue", "startDate", "eventType"];
-  for (const field of required) {
-    if (!body[field] || String(body[field]).trim() === "") {
-      return new Response(JSON.stringify({ error: `缺少必填字段: ${field}` }), { status: 400 });
+    if (!turnstileOk) {
+        return new Response(JSON.stringify({ error: "验证码验证失败" }), {
+            status: 400,
+        });
     }
-  }
 
-  for (const [key, val] of Object.entries(body)) {
-    if (typeof val === "string" && val.length > MAX_FIELD_LEN) {
-      return new Response(JSON.stringify({ error: `字段 ${key} 过长` }), { status: 400 });
+    const rateLimit = await checkRateLimit(env.RATE_LIMIT, ipHash, 10, 30);
+    if (!rateLimit.allowed) {
+        return new Response(
+            JSON.stringify({
+                error: rateLimit.cooldown
+                    ? "提交过于频繁，请30秒后重试"
+                    : "今日提交次数已达上限",
+            }),
+            { status: 429 },
+        );
     }
-  }
 
-  const works = Array.isArray(body.works)
-    ? (body.works as string[]).filter((w) => typeof w === "string" && w.trim()).slice(0, 20)
-    : [];
+    const required = [
+        "title",
+        "province",
+        "city",
+        "venue",
+        "startDate",
+        "eventType",
+    ];
+    for (const field of required) {
+        if (!body[field] || String(body[field]).trim() === "") {
+            return new Response(
+                JSON.stringify({ error: `缺少必填字段: ${field}` }),
+                { status: 400 },
+            );
+        }
+    }
 
-  const ticketPayload = {
-    title: String(body.title).trim(),
-    province: String(body.province).trim(),
-    city: String(body.city).trim(),
-    venue: String(body.venue).trim(),
-    address: body.address ? String(body.address).trim() : null,
-    startDate: String(body.startDate),
-    endDate: body.endDate ? String(body.endDate) : null,
-    eventType: String(body.eventType),
-    scale: body.scale ? String(body.scale) : null,
-    works,
-    qqGroup: body.qqGroup ? String(body.qqGroup).trim() : null,
-    ticketUrl: body.ticketUrl ? String(body.ticketUrl).trim() : null,
-    priceInfo: body.priceInfo ? String(body.priceInfo).trim() : null,
-    description: body.description ? String(body.description).trim() : null,
-    ipHash,
-  };
+    for (const [key, val] of Object.entries(body)) {
+        if (typeof val === "string" && val.length > MAX_FIELD_LEN) {
+            return new Response(JSON.stringify({ error: `字段 ${key} 过长` }), {
+                status: 400,
+            });
+        }
+    }
 
-  const ticket = await signTicket(ticketPayload, env.TURNSTILE_SECRET_KEY, 300);
+    const works = Array.isArray(body.works)
+        ? (body.works as string[])
+              .filter((w) => typeof w === "string" && w.trim())
+              .slice(0, 20)
+        : [];
 
-  return new Response(JSON.stringify({ ticket }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    const ticketPayload = {
+        title: String(body.title).trim(),
+        province: String(body.province).trim(),
+        city: String(body.city).trim(),
+        venue: String(body.venue).trim(),
+        address: body.address ? String(body.address).trim() : null,
+        startDate: String(body.startDate),
+        endDate: body.endDate ? String(body.endDate) : null,
+        eventType: String(body.eventType),
+        scale: body.scale ? String(body.scale) : null,
+        works,
+        qqGroup: body.qqGroup ? String(body.qqGroup).trim() : null,
+        ticketUrl: body.ticketUrl ? String(body.ticketUrl).trim() : null,
+        priceInfo: body.priceInfo ? String(body.priceInfo).trim() : null,
+        description: body.description ? String(body.description).trim() : null,
+        ipHash,
+    };
+
+    const ticket = await signTicket(
+        ticketPayload,
+        env.TURNSTILE_SECRET_KEY,
+        300,
+    );
+
+    return new Response(JSON.stringify({ ticket }), {
+        headers: { "Content-Type": "application/json" },
+    });
 };
 ```
 
@@ -1453,6 +1530,7 @@ git add -A && git commit -m "feat: add submit sign API with Turnstile, rate limi
 ## Task 10: Submit Commit API
 
 **Files:**
+
 - Create: `src/pages/api/submit/commit.ts`
 
 - [ ] **Step 1: Implement submit commit endpoint**
@@ -1468,88 +1546,103 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const env = locals.runtime.env;
+    const env = locals.runtime.env;
 
-  let formData: FormData;
-  try {
-    formData = await request.formData();
-  } catch {
-    return new Response(JSON.stringify({ error: "无效的表单数据" }), { status: 400 });
-  }
-
-  const ticket = formData.get("ticket") as string | null;
-  if (!ticket) {
-    return new Response(JSON.stringify({ error: "缺少签名票据" }), { status: 400 });
-  }
-
-  let payload: Record<string, unknown>;
-  try {
-    payload = await verifyTicket(ticket, env.TURNSTILE_SECRET_KEY);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "验证失败";
-    return new Response(JSON.stringify({ error: msg }), { status: 400 });
-  }
-
-  const posterFile = formData.get("poster") as File | null;
-  let posterKey: string | null = null;
-
-  if (posterFile && posterFile.size > 0) {
-    if (posterFile.size > MAX_FILE_SIZE) {
-      return new Response(JSON.stringify({ error: "图片文件不能超过5MB" }), { status: 400 });
-    }
-    if (!ALLOWED_TYPES.includes(posterFile.type)) {
-      return new Response(JSON.stringify({ error: "仅支持 JPG/PNG/WebP 格式" }), { status: 400 });
+    let formData: FormData;
+    try {
+        formData = await request.formData();
+    } catch {
+        return new Response(JSON.stringify({ error: "无效的表单数据" }), {
+            status: 400,
+        });
     }
 
-    const ext = posterFile.type === "image/png" ? "png" : posterFile.type === "image/webp" ? "webp" : "jpg";
-    posterKey = `posters/${generateUlid()}.${ext}`;
-    await env.BUCKET.put(posterKey, posterFile.stream(), {
-      httpMetadata: { contentType: posterFile.type },
-    });
-  }
+    const ticket = formData.get("ticket") as string | null;
+    if (!ticket) {
+        return new Response(JSON.stringify({ error: "缺少签名票据" }), {
+            status: 400,
+        });
+    }
 
-  const eventId = generateUlid();
-  const now = new Date().toISOString();
+    let payload: Record<string, unknown>;
+    try {
+        payload = await verifyTicket(ticket, env.TURNSTILE_SECRET_KEY);
+    } catch (e) {
+        const msg = e instanceof Error ? e.message : "验证失败";
+        return new Response(JSON.stringify({ error: msg }), { status: 400 });
+    }
 
-  await env.DB.prepare(
-    `INSERT INTO events (id, title, province, city, venue, address, start_date, end_date, event_type, scale, qq_group, ticket_url, poster_key, price_info, description, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
-  )
-    .bind(
-      eventId,
-      payload.title,
-      payload.province,
-      payload.city,
-      payload.venue,
-      payload.address,
-      payload.startDate,
-      payload.endDate,
-      payload.eventType,
-      payload.scale,
-      payload.qqGroup,
-      payload.ticketUrl,
-      posterKey,
-      payload.priceInfo,
-      payload.description,
-      now,
-      now
+    const posterFile = formData.get("poster") as File | null;
+    let posterKey: string | null = null;
+
+    if (posterFile && posterFile.size > 0) {
+        if (posterFile.size > MAX_FILE_SIZE) {
+            return new Response(
+                JSON.stringify({ error: "图片文件不能超过5MB" }),
+                { status: 400 },
+            );
+        }
+        if (!ALLOWED_TYPES.includes(posterFile.type)) {
+            return new Response(
+                JSON.stringify({ error: "仅支持 JPG/PNG/WebP 格式" }),
+                { status: 400 },
+            );
+        }
+
+        const ext =
+            posterFile.type === "image/png"
+                ? "png"
+                : posterFile.type === "image/webp"
+                  ? "webp"
+                  : "jpg";
+        posterKey = `posters/${generateUlid()}.${ext}`;
+        await env.BUCKET.put(posterKey, posterFile.stream(), {
+            httpMetadata: { contentType: posterFile.type },
+        });
+    }
+
+    const eventId = generateUlid();
+    const now = new Date().toISOString();
+
+    await env.DB.prepare(
+        `INSERT INTO events (id, title, province, city, venue, address, start_date, end_date, event_type, scale, qq_group, ticket_url, poster_key, price_info, description, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
     )
-    .run();
-
-  const works = payload.works as string[] | undefined;
-  if (works && works.length > 0) {
-    for (const work of works) {
-      await env.DB.prepare(
-        "INSERT INTO event_works (event_id, work_name) VALUES (?, ?)"
-      )
-        .bind(eventId, work)
+        .bind(
+            eventId,
+            payload.title,
+            payload.province,
+            payload.city,
+            payload.venue,
+            payload.address,
+            payload.startDate,
+            payload.endDate,
+            payload.eventType,
+            payload.scale,
+            payload.qqGroup,
+            payload.ticketUrl,
+            posterKey,
+            payload.priceInfo,
+            payload.description,
+            now,
+            now,
+        )
         .run();
-    }
-  }
 
-  return new Response(JSON.stringify({ id: eventId, status: "pending" }), {
-    headers: { "Content-Type": "application/json" },
-  });
+    const works = payload.works as string[] | undefined;
+    if (works && works.length > 0) {
+        for (const work of works) {
+            await env.DB.prepare(
+                "INSERT INTO event_works (event_id, work_name) VALUES (?, ?)",
+            )
+                .bind(eventId, work)
+                .run();
+        }
+    }
+
+    return new Response(JSON.stringify({ id: eventId, status: "pending" }), {
+        headers: { "Content-Type": "application/json" },
+    });
 };
 ```
 
@@ -1572,6 +1665,7 @@ git add -A && git commit -m "feat: add submit commit API with R2 upload and D1 i
 ## Task 11: Admin API
 
 **Files:**
+
 - Create: `src/middleware.ts`
 - Create: `src/pages/api/admin/events.ts`, `src/pages/api/admin/events/[id].ts`
 
@@ -1583,20 +1677,20 @@ git add -A && git commit -m "feat: add submit commit API with R2 upload and D1 i
 import { defineMiddleware } from "astro:middleware";
 
 export const onRequest = defineMiddleware((context, next) => {
-  const { pathname } = new URL(context.request.url);
+    const { pathname } = new URL(context.request.url);
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    const email =
-      context.request.headers.get("Cf-Access-Authenticated-User-Email") ??
-      context.locals.runtime.env.DEV_ADMIN_EMAIL ??
-      null;
+    if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+        const email =
+            context.request.headers.get("Cf-Access-Authenticated-User-Email") ??
+            context.locals.runtime.env.DEV_ADMIN_EMAIL ??
+            null;
 
-    if (!email) {
-      return new Response("Unauthorized", { status: 401 });
+        if (!email) {
+            return new Response("Unauthorized", { status: 401 });
+        }
     }
-  }
 
-  return next();
+    return next();
 });
 ```
 
@@ -1611,19 +1705,19 @@ import { events } from "../../../server/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export const GET: APIRoute = async ({ request, locals }) => {
-  const db = getDB(locals.runtime.env);
-  const url = new URL(request.url);
-  const status = url.searchParams.get("status") ?? "pending";
+    const db = getDB(locals.runtime.env);
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") ?? "pending";
 
-  const rows = await db
-    .select()
-    .from(events)
-    .where(eq(events.status, status as "pending" | "approved" | "rejected"))
-    .orderBy(desc(events.createdAt));
+    const rows = await db
+        .select()
+        .from(events)
+        .where(eq(events.status, status as "pending" | "approved" | "rejected"))
+        .orderBy(desc(events.createdAt));
 
-  return new Response(JSON.stringify(rows), {
-    headers: { "Content-Type": "application/json" },
-  });
+    return new Response(JSON.stringify(rows), {
+        headers: { "Content-Type": "application/json" },
+    });
 };
 ```
 
@@ -1638,66 +1732,91 @@ import { events } from "../../../../server/db/schema";
 import { eq } from "drizzle-orm";
 
 export const POST: APIRoute = async ({ params, request, locals }) => {
-  const db = getDB(locals.runtime.env);
-  const { id } = params;
-  if (!id) return new Response("Missing id", { status: 400 });
+    const db = getDB(locals.runtime.env);
+    const { id } = params;
+    if (!id) return new Response("Missing id", { status: 400 });
 
-  const body = await request.json();
-  const action = body.action as string;
+    const body = await request.json();
+    const action = body.action as string;
 
-  if (action === "approve") {
-    await db.update(events).set({ status: "approved", updatedAt: new Date().toISOString() }).where(eq(events.id, id));
-    return new Response(JSON.stringify({ status: "approved" }));
-  }
+    if (action === "approve") {
+        await db
+            .update(events)
+            .set({ status: "approved", updatedAt: new Date().toISOString() })
+            .where(eq(events.id, id));
+        return new Response(JSON.stringify({ status: "approved" }));
+    }
 
-  if (action === "reject") {
-    await db.update(events).set({ status: "rejected", updatedAt: new Date().toISOString() }).where(eq(events.id, id));
-    return new Response(JSON.stringify({ status: "rejected" }));
-  }
+    if (action === "reject") {
+        await db
+            .update(events)
+            .set({ status: "rejected", updatedAt: new Date().toISOString() })
+            .where(eq(events.id, id));
+        return new Response(JSON.stringify({ status: "rejected" }));
+    }
 
-  return new Response("Invalid action", { status: 400 });
+    return new Response("Invalid action", { status: 400 });
 };
 
 export const PUT: APIRoute = async ({ params, request, locals }) => {
-  const db = getDB(locals.runtime.env);
-  const { id } = params;
-  if (!id) return new Response("Missing id", { status: 400 });
+    const db = getDB(locals.runtime.env);
+    const { id } = params;
+    if (!id) return new Response("Missing id", { status: 400 });
 
-  const body = await request.json();
-  const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+    const body = await request.json();
+    const updates: Record<string, unknown> = {
+        updatedAt: new Date().toISOString(),
+    };
 
-  const allowedFields = ["title", "province", "city", "venue", "address", "startDate", "endDate", "eventType", "scale", "qqGroup", "ticketUrl", "priceInfo", "description"];
-  const dbFieldMap: Record<string, string> = {
-    startDate: "start_date",
-    endDate: "end_date",
-    eventType: "event_type",
-    qqGroup: "qq_group",
-    ticketUrl: "ticket_url",
-    priceInfo: "price_info",
-  };
+    const allowedFields = [
+        "title",
+        "province",
+        "city",
+        "venue",
+        "address",
+        "startDate",
+        "endDate",
+        "eventType",
+        "scale",
+        "qqGroup",
+        "ticketUrl",
+        "priceInfo",
+        "description",
+    ];
+    const dbFieldMap: Record<string, string> = {
+        startDate: "start_date",
+        endDate: "end_date",
+        eventType: "event_type",
+        qqGroup: "qq_group",
+        ticketUrl: "ticket_url",
+        priceInfo: "price_info",
+    };
 
-  for (const field of allowedFields) {
-    if (body[field] !== undefined) {
-      const dbField = dbFieldMap[field] ?? field;
-      updates[dbField] = body[field];
+    for (const field of allowedFields) {
+        if (body[field] !== undefined) {
+            const dbField = dbFieldMap[field] ?? field;
+            updates[dbField] = body[field];
+        }
     }
-  }
 
-  await db.update(events).set(updates).where(eq(events.id, id));
-  return new Response(JSON.stringify({ ok: true }));
+    await db.update(events).set(updates).where(eq(events.id, id));
+    return new Response(JSON.stringify({ ok: true }));
 };
 
 export const DELETE: APIRoute = async ({ params, locals }) => {
-  const db = getDB(locals.runtime.env);
-  const { id } = params;
-  if (!id) return new Response("Missing id", { status: 400 });
+    const db = getDB(locals.runtime.env);
+    const { id } = params;
+    if (!id) return new Response("Missing id", { status: 400 });
 
-  await db
-    .update(events)
-    .set({ deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
-    .where(eq(events.id, id));
+    await db
+        .update(events)
+        .set({
+            deletedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        })
+        .where(eq(events.id, id));
 
-  return new Response(JSON.stringify({ ok: true }));
+    return new Response(JSON.stringify({ ok: true }));
 };
 ```
 
@@ -1720,6 +1839,7 @@ git add -A && git commit -m "feat: add admin API with middleware auth, approve/r
 ## Task 12: Placeholder Poster & Base Layout
 
 **Files:**
+
 - Create: `public/placeholder-poster.svg`
 - Create: `src/layouts/Base.astro`
 
@@ -1802,6 +1922,7 @@ git add -A && git commit -m "feat: add placeholder poster SVG and base layout"
 ## Task 13: EventCard Component
 
 **Files:**
+
 - Create: `src/components/EventCard.tsx`, `src/components/EventCard.astro`
 
 - [ ] **Step 1: Create React EventCard component**
@@ -1813,51 +1934,55 @@ import type { EventWithWorks } from "../types/event";
 import { getPosterUrl } from "../lib/poster-url";
 
 interface Props {
-  event: EventWithWorks;
-  r2BaseUrl: string;
+    event: EventWithWorks;
+    r2BaseUrl: string;
 }
 
 export default function EventCard({ event, r2BaseUrl }: Props) {
-  const posterUrl = getPosterUrl(event.posterKey, r2BaseUrl);
-  const typeLabel = event.eventType === "doujin" ? "漫展" : "演唱会";
-  const dateStr = event.endDate
-    ? `${event.startDate} ~ ${event.endDate}`
-    : event.startDate;
+    const posterUrl = getPosterUrl(event.posterKey, r2BaseUrl);
+    const typeLabel = event.eventType === "doujin" ? "漫展" : "演唱会";
+    const dateStr = event.endDate
+        ? `${event.startDate} ~ ${event.endDate}`
+        : event.startDate;
 
-  return (
-    <a
-      href={`/event/${event.id}`}
-      className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-    >
-      <div className="aspect-[3/4] bg-gray-100 overflow-hidden">
-        <img
-          src={posterUrl}
-          alt={event.title}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-      <div className="p-3">
-        <h3 className="font-semibold text-sm line-clamp-2 mb-1">{event.title}</h3>
-        <p className="text-xs text-gray-500 mb-1">{dateStr}</p>
-        <p className="text-xs text-gray-500 mb-2">
-          {event.city} · {event.venue}
-        </p>
-        <div className="flex items-center justify-between">
-          <span
-            className={`text-xs px-2 py-0.5 rounded ${
-              event.eventType === "doujin"
-                ? "bg-pink-100 text-pink-700"
-                : "bg-blue-100 text-blue-700"
-            }`}
-          >
-            {typeLabel}
-          </span>
-          <span className="text-xs text-gray-400">🔥 {event.viewCount}</span>
-        </div>
-      </div>
-    </a>
-  );
+    return (
+        <a
+            href={`/event/${event.id}`}
+            className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+        >
+            <div className="aspect-[3/4] bg-gray-100 overflow-hidden">
+                <img
+                    src={posterUrl}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                />
+            </div>
+            <div className="p-3">
+                <h3 className="font-semibold text-sm line-clamp-2 mb-1">
+                    {event.title}
+                </h3>
+                <p className="text-xs text-gray-500 mb-1">{dateStr}</p>
+                <p className="text-xs text-gray-500 mb-2">
+                    {event.city} · {event.venue}
+                </p>
+                <div className="flex items-center justify-between">
+                    <span
+                        className={`text-xs px-2 py-0.5 rounded ${
+                            event.eventType === "doujin"
+                                ? "bg-pink-100 text-pink-700"
+                                : "bg-blue-100 text-blue-700"
+                        }`}
+                    >
+                        {typeLabel}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                        🔥 {event.viewCount}
+                    </span>
+                </div>
+            </div>
+        </a>
+    );
 }
 ```
 
@@ -1892,6 +2017,7 @@ git add -A && git commit -m "feat: add EventCard component with poster, type bad
 ## Task 14: FilterBar Component
 
 **Files:**
+
 - Create: `src/components/FilterBar.tsx`
 
 - [ ] **Step 1: Create FilterBar React Island**
@@ -1903,127 +2029,148 @@ import { useState, useEffect } from "react";
 import provincesData from "../../data/provinces.json";
 
 interface Props {
-  initialFilters: Record<string, string>;
+    initialFilters: Record<string, string>;
 }
 
 const SCALES = ["全国大型", "区域中型", "地方小型"];
 
 function getMonths() {
-  const months: string[] = [];
-  const now = new Date();
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    months.push(d.toISOString().slice(0, 7));
-  }
-  return months;
+    const months: string[] = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        months.push(d.toISOString().slice(0, 7));
+    }
+    return months;
 }
 
 export default function FilterBar({ initialFilters }: Props) {
-  const [province, setProvince] = useState(initialFilters.province ?? "");
-  const [city, setCity] = useState(initialFilters.city ?? "");
-  const [type, setType] = useState(initialFilters.type ?? "");
-  const [work, setWork] = useState(initialFilters.work ?? "");
-  const [scale, setScale] = useState(initialFilters.scale ?? "");
-  const [month, setMonth] = useState(initialFilters.month ?? "");
+    const [province, setProvince] = useState(initialFilters.province ?? "");
+    const [city, setCity] = useState(initialFilters.city ?? "");
+    const [type, setType] = useState(initialFilters.type ?? "");
+    const [work, setWork] = useState(initialFilters.work ?? "");
+    const [scale, setScale] = useState(initialFilters.scale ?? "");
+    const [month, setMonth] = useState(initialFilters.month ?? "");
 
-  const cities = province
-    ? provincesData.find((p) => p.province === province)?.cities ?? []
-    : [];
+    const cities = province
+        ? (provincesData.find((p) => p.province === province)?.cities ?? [])
+        : [];
 
-  function applyFilters() {
-    const params = new URLSearchParams();
-    if (province) params.set("province", province);
-    if (city) params.set("city", city);
-    if (type) params.set("type", type);
-    if (work) params.set("work", work);
-    if (scale) params.set("scale", scale);
-    if (month) params.set("month", month);
-    window.location.search = params.toString();
-  }
+    function applyFilters() {
+        const params = new URLSearchParams();
+        if (province) params.set("province", province);
+        if (city) params.set("city", city);
+        if (type) params.set("type", type);
+        if (work) params.set("work", work);
+        if (scale) params.set("scale", scale);
+        if (month) params.set("month", month);
+        window.location.search = params.toString();
+    }
 
-  function clearFilters() {
-    window.location.search = "";
-  }
+    function clearFilters() {
+        window.location.search = "";
+    }
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <select
-          value={province}
-          onChange={(e) => { setProvince(e.target.value); setCity(""); }}
-          className="border rounded px-2 py-1.5 text-sm"
-        >
-          <option value="">全部省份</option>
-          {provincesData.map((p) => (
-            <option key={p.province} value={p.province}>{p.province}</option>
-          ))}
-        </select>
+    return (
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <select
+                    value={province}
+                    onChange={(e) => {
+                        setProvince(e.target.value);
+                        setCity("");
+                    }}
+                    className="border rounded px-2 py-1.5 text-sm"
+                >
+                    <option value="">全部省份</option>
+                    {provincesData.map((p) => (
+                        <option key={p.province} value={p.province}>
+                            {p.province}
+                        </option>
+                    ))}
+                </select>
 
-        <select
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          className="border rounded px-2 py-1.5 text-sm"
-          disabled={!province}
-        >
-          <option value="">全部城市</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+                <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="border rounded px-2 py-1.5 text-sm"
+                    disabled={!province}
+                >
+                    <option value="">全部城市</option>
+                    {cities.map((c) => (
+                        <option key={c} value={c}>
+                            {c}
+                        </option>
+                    ))}
+                </select>
 
-        <div className="flex border rounded overflow-hidden text-sm">
-          {["", "doujin", "concert"].map((t) => (
-            <button
-              key={t}
-              onClick={() => setType(t)}
-              className={`flex-1 px-2 py-1.5 ${type === t ? "bg-indigo-600 text-white" : "hover:bg-gray-50"}`}
-            >
-              {t === "" ? "全部" : t === "doujin" ? "漫展" : "演唱会"}
-            </button>
-          ))}
+                <div className="flex border rounded overflow-hidden text-sm">
+                    {["", "doujin", "concert"].map((t) => (
+                        <button
+                            key={t}
+                            onClick={() => setType(t)}
+                            className={`flex-1 px-2 py-1.5 ${type === t ? "bg-indigo-600 text-white" : "hover:bg-gray-50"}`}
+                        >
+                            {t === ""
+                                ? "全部"
+                                : t === "doujin"
+                                  ? "漫展"
+                                  : "演唱会"}
+                        </button>
+                    ))}
+                </div>
+
+                <input
+                    type="text"
+                    value={work}
+                    onChange={(e) => setWork(e.target.value)}
+                    placeholder="关联作品"
+                    className="border rounded px-2 py-1.5 text-sm"
+                />
+
+                <select
+                    value={scale}
+                    onChange={(e) => setScale(e.target.value)}
+                    className="border rounded px-2 py-1.5 text-sm"
+                >
+                    <option value="">不限规模</option>
+                    {SCALES.map((s) => (
+                        <option key={s} value={s}>
+                            {s}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={month}
+                    onChange={(e) => setMonth(e.target.value)}
+                    className="border rounded px-2 py-1.5 text-sm"
+                >
+                    <option value="">全部月份</option>
+                    {getMonths().map((m) => (
+                        <option key={m} value={m}>
+                            {m}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="flex gap-2 mt-3">
+                <button
+                    onClick={applyFilters}
+                    className="bg-indigo-600 text-white px-4 py-1.5 rounded text-sm hover:bg-indigo-700"
+                >
+                    筛选
+                </button>
+                <button
+                    onClick={clearFilters}
+                    className="text-gray-500 px-4 py-1.5 rounded text-sm hover:bg-gray-100"
+                >
+                    清除
+                </button>
+            </div>
         </div>
-
-        <input
-          type="text"
-          value={work}
-          onChange={(e) => setWork(e.target.value)}
-          placeholder="关联作品"
-          className="border rounded px-2 py-1.5 text-sm"
-        />
-
-        <select
-          value={scale}
-          onChange={(e) => setScale(e.target.value)}
-          className="border rounded px-2 py-1.5 text-sm"
-        >
-          <option value="">不限规模</option>
-          {SCALES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-
-        <select
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="border rounded px-2 py-1.5 text-sm"
-        >
-          <option value="">全部月份</option>
-          {getMonths().map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="flex gap-2 mt-3">
-        <button onClick={applyFilters} className="bg-indigo-600 text-white px-4 py-1.5 rounded text-sm hover:bg-indigo-700">
-          筛选
-        </button>
-        <button onClick={clearFilters} className="text-gray-500 px-4 py-1.5 rounded text-sm hover:bg-gray-100">
-          清除
-        </button>
-      </div>
-    </div>
-  );
+    );
 }
 ```
 
@@ -2046,6 +2193,7 @@ git add -A && git commit -m "feat: add FilterBar component with province/city/ty
 ## Task 15: Homepage
 
 **Files:**
+
 - Create: `src/pages/index.astro`
 - Create: `src/components/NearbyEvents.astro`, `src/components/PopularEvents.astro`, `src/components/EventList.tsx`
 
@@ -2059,59 +2207,65 @@ import EventCard from "./EventCard";
 import type { EventWithWorks } from "../types/event";
 
 interface Props {
-  initialItems: EventWithWorks[];
-  initialTotal: number;
-  initialPage: number;
-  filters: Record<string, string>;
-  r2BaseUrl: string;
+    initialItems: EventWithWorks[];
+    initialTotal: number;
+    initialPage: number;
+    filters: Record<string, string>;
+    r2BaseUrl: string;
 }
 
 export default function EventList({
-  initialItems,
-  initialTotal,
-  initialPage,
-  filters,
-  r2BaseUrl,
+    initialItems,
+    initialTotal,
+    initialPage,
+    filters,
+    r2BaseUrl,
 }: Props) {
-  const [items, setItems] = useState(initialItems);
-  const [page, setPage] = useState(initialPage);
-  const [loading, setLoading] = useState(false);
-  const totalPages = Math.ceil(initialTotal / 20);
+    const [items, setItems] = useState(initialItems);
+    const [page, setPage] = useState(initialPage);
+    const [loading, setLoading] = useState(false);
+    const totalPages = Math.ceil(initialTotal / 20);
 
-  async function loadMore() {
-    setLoading(true);
-    const params = new URLSearchParams(filters);
-    params.set("page", String(page + 1));
-    const res = await fetch(`/api/events?${params}`);
-    const data = await res.json();
-    setItems((prev) => [...prev, ...data.items]);
-    setPage(page + 1);
-    setLoading(false);
-  }
+    async function loadMore() {
+        setLoading(true);
+        const params = new URLSearchParams(filters);
+        params.set("page", String(page + 1));
+        const res = await fetch(`/api/events?${params}`);
+        const data = await res.json();
+        setItems((prev) => [...prev, ...data.items]);
+        setPage(page + 1);
+        setLoading(false);
+    }
 
-  return (
-    <div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {items.map((event) => (
-          <EventCard key={event.id} event={event} r2BaseUrl={r2BaseUrl} />
-        ))}
-      </div>
-      {items.length === 0 && (
-        <p className="text-center text-gray-400 py-12">暂无符合条件的活动</p>
-      )}
-      {page < totalPages && (
-        <div className="text-center mt-6">
-          <button
-            onClick={loadMore}
-            disabled={loading}
-            className="bg-white border px-6 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
-          >
-            {loading ? "加载中..." : "加载更多"}
-          </button>
+    return (
+        <div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {items.map((event) => (
+                    <EventCard
+                        key={event.id}
+                        event={event}
+                        r2BaseUrl={r2BaseUrl}
+                    />
+                ))}
+            </div>
+            {items.length === 0 && (
+                <p className="text-center text-gray-400 py-12">
+                    暂无符合条件的活动
+                </p>
+            )}
+            {page < totalPages && (
+                <div className="text-center mt-6">
+                    <button
+                        onClick={loadMore}
+                        disabled={loading}
+                        className="bg-white border px-6 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
+                    >
+                        {loading ? "加载中..." : "加载更多"}
+                    </button>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 ```
 
@@ -2377,6 +2531,7 @@ git add -A && git commit -m "feat: add homepage with nearby, popular, and filter
 ## Task 16: Event Detail Page
 
 **Files:**
+
 - Create: `src/pages/event/[id].astro`
 - Create: `src/components/PosterLightbox.tsx`, `src/components/CopyButton.tsx`
 
@@ -2388,27 +2543,27 @@ git add -A && git commit -m "feat: add homepage with nearby, popular, and filter
 import { useState } from "react";
 
 interface Props {
-  text: string;
-  label?: string;
+    text: string;
+    label?: string;
 }
 
 export default function CopyButton({ text, label = "复制" }: Props) {
-  const [copied, setCopied] = useState(false);
+    const [copied, setCopied] = useState(false);
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+    async function handleCopy() {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
 
-  return (
-    <button
-      onClick={handleCopy}
-      className="text-indigo-600 text-sm hover:underline ml-2"
-    >
-      {copied ? "已复制!" : label}
-    </button>
-  );
+    return (
+        <button
+            onClick={handleCopy}
+            className="text-indigo-600 text-sm hover:underline ml-2"
+        >
+            {copied ? "已复制!" : label}
+        </button>
+    );
 }
 ```
 
@@ -2422,28 +2577,28 @@ import "yet-another-react-lightbox/styles.css";
 import { useState } from "react";
 
 interface Props {
-  src: string;
-  alt: string;
+    src: string;
+    alt: string;
 }
 
 export default function PosterLightbox({ src, alt }: Props) {
-  const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(false);
 
-  return (
-    <>
-      <img
-        src={src}
-        alt={alt}
-        className="w-full max-w-sm rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-        onClick={() => setOpen(true)}
-      />
-      <Lightbox
-        open={open}
-        close={() => setOpen(false)}
-        slides={[{ src }]}
-      />
-    </>
-  );
+    return (
+        <>
+            <img
+                src={src}
+                alt={alt}
+                className="w-full max-w-sm rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setOpen(true)}
+            />
+            <Lightbox
+                open={open}
+                close={() => setOpen(false)}
+                slides={[{ src }]}
+            />
+        </>
+    );
 }
 ```
 
@@ -2578,6 +2733,7 @@ git add -A && git commit -m "feat: add event detail page with lightbox, copy but
 ## Task 17: Submit Page
 
 **Files:**
+
 - Create: `src/pages/submit.astro`
 - Create: `src/components/SubmitForm.tsx`
 
@@ -2592,247 +2748,381 @@ import provincesData from "../../data/provinces.json";
 const SCALES = ["全国大型", "区域中型", "地方小型"];
 
 interface Props {
-  turnstileSiteKey: string;
+    turnstileSiteKey: string;
 }
 
 export default function SubmitForm({ turnstileSiteKey }: Props) {
-  const [province, setProvince] = useState("");
-  const [city, setCity] = useState("");
-  const [works, setWorks] = useState<string[]>([]);
-  const [workInput, setWorkInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+    const [province, setProvince] = useState("");
+    const [city, setCity] = useState("");
+    const [works, setWorks] = useState<string[]>([]);
+    const [workInput, setWorkInput] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(false);
+    const [posterFile, setPosterFile] = useState<File | null>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
-  const cities = province
-    ? provincesData.find((p) => p.province === province)?.cities ?? []
-    : [];
+    const cities = province
+        ? (provincesData.find((p) => p.province === province)?.cities ?? [])
+        : [];
 
-  function addWork() {
-    const trimmed = workInput.trim();
-    if (trimmed && !works.includes(trimmed) && works.length < 20) {
-      setWorks([...works, trimmed]);
-      setWorkInput("");
+    function addWork() {
+        const trimmed = workInput.trim();
+        if (trimmed && !works.includes(trimmed) && works.length < 20) {
+            setWorks([...works, trimmed]);
+            setWorkInput("");
+        }
     }
-  }
 
-  function removeWork(w: string) {
-    setWorks(works.filter((x) => x !== w));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    setError("");
-
-    try {
-      const form = formRef.current!;
-      const fd = new FormData(form);
-      const turnstileToken = (document.querySelector('[name="cf-turnstile-response"]') as HTMLInputElement)?.value;
-
-      if (!turnstileToken) {
-        setError("请完成验证码");
-        setSubmitting(false);
-        return;
-      }
-
-      const signBody = {
-        title: fd.get("title"),
-        province: fd.get("province"),
-        city: fd.get("city"),
-        venue: fd.get("venue"),
-        address: fd.get("address"),
-        startDate: fd.get("startDate"),
-        endDate: fd.get("endDate") || null,
-        eventType: fd.get("eventType"),
-        scale: fd.get("scale") || null,
-        works,
-        qqGroup: fd.get("qqGroup") || null,
-        ticketUrl: fd.get("ticketUrl") || null,
-        priceInfo: fd.get("priceInfo") || null,
-        description: fd.get("description") || null,
-        turnstileToken,
-      };
-
-      const signRes = await fetch("/api/submit/sign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(signBody),
-      });
-
-      if (!signRes.ok) {
-        const data = await signRes.json();
-        throw new Error(data.error ?? "签名失败");
-      }
-
-      const { ticket } = await signRes.json();
-
-      const commitFd = new FormData();
-      commitFd.append("ticket", ticket);
-      if (posterFile) commitFd.append("poster", posterFile);
-
-      const commitRes = await fetch("/api/submit/commit", {
-        method: "POST",
-        body: commitFd,
-      });
-
-      if (!commitRes.ok) {
-        const data = await commitRes.json();
-        throw new Error(data.error ?? "提交失败");
-      }
-
-      setSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "提交失败");
-    } finally {
-      setSubmitting(false);
+    function removeWork(w: string) {
+        setWorks(works.filter((x) => x !== w));
     }
-  }
 
-  if (success) {
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setSubmitting(true);
+        setError("");
+
+        try {
+            const form = formRef.current!;
+            const fd = new FormData(form);
+            const turnstileToken = (
+                document.querySelector(
+                    '[name="cf-turnstile-response"]',
+                ) as HTMLInputElement
+            )?.value;
+
+            if (!turnstileToken) {
+                setError("请完成验证码");
+                setSubmitting(false);
+                return;
+            }
+
+            const signBody = {
+                title: fd.get("title"),
+                province: fd.get("province"),
+                city: fd.get("city"),
+                venue: fd.get("venue"),
+                address: fd.get("address"),
+                startDate: fd.get("startDate"),
+                endDate: fd.get("endDate") || null,
+                eventType: fd.get("eventType"),
+                scale: fd.get("scale") || null,
+                works,
+                qqGroup: fd.get("qqGroup") || null,
+                ticketUrl: fd.get("ticketUrl") || null,
+                priceInfo: fd.get("priceInfo") || null,
+                description: fd.get("description") || null,
+                turnstileToken,
+            };
+
+            const signRes = await fetch("/api/submit/sign", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(signBody),
+            });
+
+            if (!signRes.ok) {
+                const data = await signRes.json();
+                throw new Error(data.error ?? "签名失败");
+            }
+
+            const { ticket } = await signRes.json();
+
+            const commitFd = new FormData();
+            commitFd.append("ticket", ticket);
+            if (posterFile) commitFd.append("poster", posterFile);
+
+            const commitRes = await fetch("/api/submit/commit", {
+                method: "POST",
+                body: commitFd,
+            });
+
+            if (!commitRes.ok) {
+                const data = await commitRes.json();
+                throw new Error(data.error ?? "提交失败");
+            }
+
+            setSuccess(true);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "提交失败");
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    if (success) {
+        return (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
+                <h2 className="text-xl font-semibold text-green-800 mb-2">
+                    提交成功!
+                </h2>
+                <p className="text-green-700">
+                    活动已提交，待管理员审核后发布。
+                </p>
+                <a
+                    href="/"
+                    className="text-indigo-600 hover:underline mt-4 inline-block"
+                >
+                    返回首页
+                </a>
+            </div>
+        );
+    }
+
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-        <h2 className="text-xl font-semibold text-green-800 mb-2">提交成功!</h2>
-        <p className="text-green-700">活动已提交，待管理员审核后发布。</p>
-        <a href="/" className="text-indigo-600 hover:underline mt-4 inline-block">返回首页</a>
-      </div>
+        <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow-sm p-6 space-y-4"
+        >
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
+                    {error}
+                </div>
+            )}
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    活动名称 *
+                </label>
+                <input
+                    name="title"
+                    required
+                    className="w-full border rounded px-3 py-2 text-sm"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        省/直辖市 *
+                    </label>
+                    <select
+                        name="province"
+                        required
+                        value={province}
+                        onChange={(e) => {
+                            setProvince(e.target.value);
+                            setCity("");
+                        }}
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    >
+                        <option value="">请选择</option>
+                        {provincesData.map((p) => (
+                            <option key={p.province} value={p.province}>
+                                {p.province}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        城市 *
+                    </label>
+                    <select
+                        name="city"
+                        required
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="w-full border rounded px-3 py-2 text-sm"
+                        disabled={!province}
+                    >
+                        <option value="">请选择</option>
+                        {cities.map((c) => (
+                            <option key={c} value={c}>
+                                {c}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    具体场馆 *
+                </label>
+                <input
+                    name="venue"
+                    required
+                    className="w-full border rounded px-3 py-2 text-sm"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    场馆地址
+                </label>
+                <input
+                    name="address"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        开始日期 *
+                    </label>
+                    <input
+                        name="startDate"
+                        type="date"
+                        required
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        结束日期
+                    </label>
+                    <input
+                        name="endDate"
+                        type="date"
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        活动类型 *
+                    </label>
+                    <select
+                        name="eventType"
+                        required
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    >
+                        <option value="doujin">漫展/同人展</option>
+                        <option value="concert">演唱会/Live</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        规模
+                    </label>
+                    <select
+                        name="scale"
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    >
+                        <option value="">不限</option>
+                        {SCALES.map((s) => (
+                            <option key={s} value={s}>
+                                {s}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    关联作品
+                </label>
+                <div className="flex gap-2">
+                    <input
+                        value={workInput}
+                        onChange={(e) => setWorkInput(e.target.value)}
+                        onKeyDown={(e) =>
+                            e.key === "Enter" && (e.preventDefault(), addWork())
+                        }
+                        className="flex-1 border rounded px-3 py-2 text-sm"
+                        placeholder="输入作品名后按回车"
+                    />
+                    <button
+                        type="button"
+                        onClick={addWork}
+                        className="bg-gray-100 px-3 py-2 rounded text-sm hover:bg-gray-200"
+                    >
+                        添加
+                    </button>
+                </div>
+                {works.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {works.map((w) => (
+                            <span
+                                key={w}
+                                className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs flex items-center gap-1"
+                            >
+                                {w}
+                                <button
+                                    type="button"
+                                    onClick={() => removeWork(w)}
+                                    className="hover:text-red-500"
+                                >
+                                    ×
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        QQ群号
+                    </label>
+                    <input
+                        name="qqGroup"
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        购票链接
+                    </label>
+                    <input
+                        name="ticketUrl"
+                        type="url"
+                        className="w-full border rounded px-3 py-2 text-sm"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    票价信息
+                </label>
+                <input
+                    name="priceInfo"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    placeholder="如: 预售50元/现场60元"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">海报图</label>
+                <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => setPosterFile(e.target.files?.[0] ?? null)}
+                    className="w-full text-sm"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    补充描述
+                </label>
+                <textarea
+                    name="description"
+                    rows={4}
+                    className="w-full border rounded px-3 py-2 text-sm"
+                />
+            </div>
+
+            <div className="cf-turnstile" data-sitekey={turnstileSiteKey} />
+
+            <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
+            >
+                {submitting ? "提交中..." : "提交活动"}
+            </button>
+        </form>
     );
-  }
-
-  return (
-    <form ref={formRef} onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">{error}</div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium mb-1">活动名称 *</label>
-        <input name="title" required className="w-full border rounded px-3 py-2 text-sm" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">省/直辖市 *</label>
-          <select name="province" required value={province} onChange={(e) => { setProvince(e.target.value); setCity(""); }} className="w-full border rounded px-3 py-2 text-sm">
-            <option value="">请选择</option>
-            {provincesData.map((p) => <option key={p.province} value={p.province}>{p.province}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">城市 *</label>
-          <select name="city" required value={city} onChange={(e) => setCity(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" disabled={!province}>
-            <option value="">请选择</option>
-            {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">具体场馆 *</label>
-        <input name="venue" required className="w-full border rounded px-3 py-2 text-sm" />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">场馆地址</label>
-        <input name="address" className="w-full border rounded px-3 py-2 text-sm" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">开始日期 *</label>
-          <input name="startDate" type="date" required className="w-full border rounded px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">结束日期</label>
-          <input name="endDate" type="date" className="w-full border rounded px-3 py-2 text-sm" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">活动类型 *</label>
-          <select name="eventType" required className="w-full border rounded px-3 py-2 text-sm">
-            <option value="doujin">漫展/同人展</option>
-            <option value="concert">演唱会/Live</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">规模</label>
-          <select name="scale" className="w-full border rounded px-3 py-2 text-sm">
-            <option value="">不限</option>
-            {SCALES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">关联作品</label>
-        <div className="flex gap-2">
-          <input
-            value={workInput}
-            onChange={(e) => setWorkInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addWork())}
-            className="flex-1 border rounded px-3 py-2 text-sm"
-            placeholder="输入作品名后按回车"
-          />
-          <button type="button" onClick={addWork} className="bg-gray-100 px-3 py-2 rounded text-sm hover:bg-gray-200">添加</button>
-        </div>
-        {works.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {works.map((w) => (
-              <span key={w} className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs flex items-center gap-1">
-                {w}
-                <button type="button" onClick={() => removeWork(w)} className="hover:text-red-500">×</button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">QQ群号</label>
-          <input name="qqGroup" className="w-full border rounded px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">购票链接</label>
-          <input name="ticketUrl" type="url" className="w-full border rounded px-3 py-2 text-sm" />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">票价信息</label>
-        <input name="priceInfo" className="w-full border rounded px-3 py-2 text-sm" placeholder="如: 预售50元/现场60元" />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">海报图</label>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(e) => setPosterFile(e.target.files?.[0] ?? null)}
-          className="w-full text-sm"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">补充描述</label>
-        <textarea name="description" rows={4} className="w-full border rounded px-3 py-2 text-sm" />
-      </div>
-
-      <div className="cf-turnstile" data-sitekey={turnstileSiteKey} />
-
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
-      >
-        {submitting ? "提交中..." : "提交活动"}
-      </button>
-    </form>
-  );
 }
 ```
 
@@ -2879,6 +3169,7 @@ git add -A && git commit -m "feat: add submit page with form, image upload, and 
 ## Task 18: Admin Page
 
 **Files:**
+
 - Create: `src/pages/admin.astro`
 
 - [ ] **Step 1: Create admin page**
@@ -3012,6 +3303,7 @@ git add -A && git commit -m "feat: add admin page with pending/approved/rejected
 ## Task 19: Final Polish & Deployment Config
 
 **Files:**
+
 - Modify: `wrangler.jsonc`
 - Create: `.dev.vars.example`, `.env.development`, `.env.production`
 
@@ -3066,21 +3358,21 @@ git add -A && git commit -m "chore: add env templates and final build verificati
 
 ### Spec Coverage
 
-| Spec Section | Covered In |
-|---|---|
-| §2 Tech Stack (Astro 6, React 19, Tailwind v4, CF Workers, Drizzle) | Task 1 |
-| §3 Page Routes (/, /event/[id], /submit, /admin, API routes) | Tasks 15-18 |
-| §4 Data Model (events, event_works, indexes, ULID) | Tasks 2, 3, 6 |
-| §5 Homepage (nearby/popular/all, filter bar, event cards) | Tasks 14, 15 |
-| §6 Event Detail (poster lightbox, copy, view count, SEO) | Task 16 |
-| §7 Submit Flow (form, compression, sign, commit, HMAC) | Tasks 9, 10, 17 |
-| §8 Admin (CF Access auth, approve/reject/edit/delete) | Tasks 11, 18 |
-| §9 Anti-abuse (rate limiting, Turnstile, soft delete) | Tasks 4, 9 |
-| §10 Env vars / bindings | Tasks 1, 19 |
-| §11 Project structure | All tasks |
-| §12 Init commands | Task 1 |
-| §13 Deployment | Task 19 |
-| §14 pnpm scripts | Task 1 |
+| Spec Section                                                        | Covered In      |
+| ------------------------------------------------------------------- | --------------- |
+| §2 Tech Stack (Astro 6, React 19, Tailwind v4, CF Workers, Drizzle) | Task 1          |
+| §3 Page Routes (/, /event/[id], /submit, /admin, API routes)        | Tasks 15-18     |
+| §4 Data Model (events, event_works, indexes, ULID)                  | Tasks 2, 3, 6   |
+| §5 Homepage (nearby/popular/all, filter bar, event cards)           | Tasks 14, 15    |
+| §6 Event Detail (poster lightbox, copy, view count, SEO)            | Task 16         |
+| §7 Submit Flow (form, compression, sign, commit, HMAC)              | Tasks 9, 10, 17 |
+| §8 Admin (CF Access auth, approve/reject/edit/delete)               | Tasks 11, 18    |
+| §9 Anti-abuse (rate limiting, Turnstile, soft delete)               | Tasks 4, 9      |
+| §10 Env vars / bindings                                             | Tasks 1, 19     |
+| §11 Project structure                                               | All tasks       |
+| §12 Init commands                                                   | Task 1          |
+| §13 Deployment                                                      | Task 19         |
+| §14 pnpm scripts                                                    | Task 1          |
 
 ### Uncovered Items (intentional scope limits)
 

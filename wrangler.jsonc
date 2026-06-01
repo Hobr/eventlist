@@ -1,33 +1,33 @@
 {
-  "name": "acg-events",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "acg-events",
-      "database_id": "placeholder"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "BUCKET",
-      "bucket_name": "acg-events-posters"
-    }
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "RATE_LIMIT",
-      "id": "placeholder"
+    "name": "acg-events",
+    "compatibility_date": "2025-01-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "acg-events",
+            "database_id": "placeholder",
+        },
+    ],
+    "r2_buckets": [
+        {
+            "binding": "BUCKET",
+            "bucket_name": "acg-events-posters",
+        },
+    ],
+    "kv_namespaces": [
+        {
+            "binding": "RATE_LIMIT",
+            "id": "placeholder",
+        },
+        {
+            "binding": "SESSION",
+            "id": "placeholder",
+        },
+    ],
+    "vars": {
+        "PUBLIC_TURNSTILE_SITE_KEY": "",
+        "PUBLIC_R2_BASE_URL": "",
+        "PUBLIC_SITE_URL": "http://localhost:4321",
     },
-    {
-      "binding": "SESSION",
-      "id": "placeholder"
-    }
-  ],
-  "vars": {
-    "PUBLIC_TURNSTILE_SITE_KEY": "",
-    "PUBLIC_R2_BASE_URL": "",
-    "PUBLIC_SITE_URL": "http://localhost:4321"
-  }
 }

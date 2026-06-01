@@ -9,39 +9,40 @@
 一个查询中国境内 ACG（动画、漫画、游戏）线下活动的网站。数据由用户提交，管理员审核后发布。支持按地点、时间、类型、关联作品、活动规模等条件筛选。
 
 覆盖的活动类型：
+
 - **漫展/同人展**：Comicup、CP、BW 等同人展会，各地商业漫展
 - **演唱会/Live**：二次元相关演唱会、声优活动、偶像演出等
 
 ## 2. 技术栈
 
-| 层 | 选型 | 说明 |
-|----|------|------|
-| 前端框架 | **Astro 6** + React 19 Islands | 大部分 SSR，交互组件用 React |
-| 部署适配器 | **`@astrojs/cloudflare`** | Cloudflare Workers（SSR + 静态资源同一 Worker） |
-| 运行时绑定 | `import { env } from "cloudflare:workers"` | 类型见 `src/env.d.ts` 的 `Cloudflare.Env` |
-| 样式 | **Tailwind v4**（Vite 插件 `@tailwindcss/vite`） | 设计 token 写在 `src/styles/global.css` |
-| 数据库 | **Cloudflare D1 + Drizzle ORM** | schema 见 `src/server/db/schema.ts` |
-| 图片存储 | **Cloudflare R2**（绑定直写） | Worker 经 `BUCKET` 绑定直写，非 presigned URL |
-| 限频 | **Cloudflare KV**（`RATE_LIMIT`） | 每日计数 + 30s 冷却，TTL 自动过期 |
-| 防机器人 | **Cloudflare Turnstile** | 前端 token → 后端 siteverify |
-| 图片处理 | `browser-image-compression` | 长边 1920px / WebP / 去 EXIF / ~500KB |
-| 海报放大 | `yet-another-react-lightbox` v3 | Lightbox 组件 |
-| 图标 | `lucide-react` | |
-| ID 生成 | 自实现 ULID（`crypto.getRandomValues`） | 避免 `ulid` 包在 workerd 报错 |
+| 层         | 选型                                             | 说明                                            |
+| ---------- | ------------------------------------------------ | ----------------------------------------------- |
+| 前端框架   | **Astro 6** + React 19 Islands                   | 大部分 SSR，交互组件用 React                    |
+| 部署适配器 | **`@astrojs/cloudflare`**                        | Cloudflare Workers（SSR + 静态资源同一 Worker） |
+| 运行时绑定 | `import { env } from "cloudflare:workers"`       | 类型见 `src/env.d.ts` 的 `Cloudflare.Env`       |
+| 样式       | **Tailwind v4**（Vite 插件 `@tailwindcss/vite`） | 设计 token 写在 `src/styles/global.css`         |
+| 数据库     | **Cloudflare D1 + Drizzle ORM**                  | schema 见 `src/server/db/schema.ts`             |
+| 图片存储   | **Cloudflare R2**（绑定直写）                    | Worker 经 `BUCKET` 绑定直写，非 presigned URL   |
+| 限频       | **Cloudflare KV**（`RATE_LIMIT`）                | 每日计数 + 30s 冷却，TTL 自动过期               |
+| 防机器人   | **Cloudflare Turnstile**                         | 前端 token → 后端 siteverify                    |
+| 图片处理   | `browser-image-compression`                      | 长边 1920px / WebP / 去 EXIF / ~500KB           |
+| 海报放大   | `yet-another-react-lightbox` v3                  | Lightbox 组件                                   |
+| 图标       | `lucide-react`                                   |                                                 |
+| ID 生成    | 自实现 ULID（`crypto.getRandomValues`）          | 避免 `ulid` 包在 workerd 报错                   |
 
 ## 3. 页面路由
 
-| 路由 | 渲染 | 说明 |
-|------|------|------|
-| `/` | SSR | 首页：附近活动 + 热门活动 + 全部活动列表 + 筛选器 |
-| `/event/[id]` | SSR | 事件详情页 |
-| `/submit` | SSR | 用户提交活动表单 |
-| `/admin` | SSR | 管理员后台（Cloudflare Access 保护） |
-| `/api/submit/sign` | API | 提交签名端点 |
-| `/api/submit/commit` | API | 提交确认端点 |
-| `/api/events` | API | 事件列表查询（支持筛选参数） |
-| `/api/events/[id]/view` | API | 记录浏览（去重计数） |
-| `/api/admin/*` | API | 管理员操作端点 |
+| 路由                    | 渲染 | 说明                                              |
+| ----------------------- | ---- | ------------------------------------------------- |
+| `/`                     | SSR  | 首页：附近活动 + 热门活动 + 全部活动列表 + 筛选器 |
+| `/event/[id]`           | SSR  | 事件详情页                                        |
+| `/submit`               | SSR  | 用户提交活动表单                                  |
+| `/admin`                | SSR  | 管理员后台（Cloudflare Access 保护）              |
+| `/api/submit/sign`      | API  | 提交签名端点                                      |
+| `/api/submit/commit`    | API  | 提交确认端点                                      |
+| `/api/events`           | API  | 事件列表查询（支持筛选参数）                      |
+| `/api/events/[id]/view` | API  | 记录浏览（去重计数）                              |
+| `/api/admin/*`          | API  | 管理员操作端点                                    |
 
 不引入 i18n，全中文界面。
 
@@ -147,6 +148,7 @@ CREATE INDEX idx_works_name ON event_works(work_name);
 ### 活动卡片
 
 每张卡片展示：
+
 - 海报图（缩略图，R2 同源或占位图）
 - 活动名称
 - 日期
@@ -156,13 +158,13 @@ CREATE INDEX idx_works_name ON event_works(work_name);
 
 ### 筛选器
 
-| 维度 | UI 组件 | 数据来源 |
-|------|---------|----------|
-| 地点 | 二级联动：省 dropdown → 市 dropdown | 中国省市静态数据（`data/provinces.json`，34省级 + 主要城市） |
-| 时间 | 月份选择器（横向滚动月份标签） | 前端组件 |
-| 活动类型 | Tab 切换：全部 / 漫展 / 演唱会 | 固定选项 |
-| 关联作品 | 搜索输入框 + 标签选择 | D1 `event_works` 表去重 |
-| 活动规模 | Dropdown | 固定选项：全国大型/区域中型/地方小型/不限 |
+| 维度     | UI 组件                             | 数据来源                                                     |
+| -------- | ----------------------------------- | ------------------------------------------------------------ |
+| 地点     | 二级联动：省 dropdown → 市 dropdown | 中国省市静态数据（`data/provinces.json`，34省级 + 主要城市） |
+| 时间     | 月份选择器（横向滚动月份标签）      | 前端组件                                                     |
+| 活动类型 | Tab 切换：全部 / 漫展 / 演唱会      | 固定选项                                                     |
+| 关联作品 | 搜索输入框 + 标签选择               | D1 `event_works` 表去重                                      |
+| 活动规模 | Dropdown                            | 固定选项：全国大型/区域中型/地方小型/不限                    |
 
 筛选条件同步到 URL query params（`/?province=上海&type=doujin&work=原神`），支持分享链接。
 
@@ -218,36 +220,36 @@ CREATE INDEX idx_works_name ON event_works(work_name);
 1. **`/submit` 页面**：表单填写所有字段 + 海报图上传
 2. **客户端**：图片用 `browser-image-compression` 压缩（长边 1920px / WebP / 去 EXIF / ~500KB）
 3. **`POST /api/submit/sign`**：
-   - 校验 Turnstile token
-   - IP 限频检查（KV：每日 10 次 + 30s 冷却）
-   - 签发 HMAC ticket（绑定所有字段 + image_key + ip_hash + 过期时间）
+    - 校验 Turnstile token
+    - IP 限频检查（KV：每日 10 次 + 30s 冷却）
+    - 签发 HMAC ticket（绑定所有字段 + image_key + ip_hash + 过期时间）
 4. **`POST /api/submit/commit`**（multipart）：
-   - 校验 HMAC ticket + 过期
-   - 海报图写入 R2（`BUCKET` 绑定直写）
-   - 用 ticket 字段（不信任请求体）插入 D1 `events` 表（`status=pending`）
-   - 插入 `event_works` 关联记录
-   - 扣每日配额 + 启动冷却
+    - 校验 HMAC ticket + 过期
+    - 海报图写入 R2（`BUCKET` 绑定直写）
+    - 用 ticket 字段（不信任请求体）插入 D1 `events` 表（`status=pending`）
+    - 插入 `event_works` 关联记录
+    - 扣每日配额 + 启动冷却
 5. **提交成功页**：提示"已提交，待审核"
 
 ### 表单字段
 
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| 活动名称 | ✅ | |
-| 省/市 | ✅ | 二级联动 |
-| 具体场馆 | ✅ | |
-| 场馆地址 | | |
-| 开始日期 | ✅ | |
-| 结束日期 | | |
-| 活动类型 | ✅ | 漫展/演唱会 |
-| 规模描述 | | 全国大型/区域中型/地方小型 |
-| 关联作品 | | 可添加多个标签 |
-| QQ 群号 | | |
-| 购票链接 | | |
-| 票价信息 | | |
-| 海报图 | | 图片上传 |
-| 补充描述 | | |
-| Turnstile | ✅ | 验证码 |
+| 字段      | 必填 | 说明                       |
+| --------- | ---- | -------------------------- |
+| 活动名称  | ✅   |                            |
+| 省/市     | ✅   | 二级联动                   |
+| 具体场馆  | ✅   |                            |
+| 场馆地址  |      |                            |
+| 开始日期  | ✅   |                            |
+| 结束日期  |      |                            |
+| 活动类型  | ✅   | 漫展/演唱会                |
+| 规模描述  |      | 全国大型/区域中型/地方小型 |
+| 关联作品  |      | 可添加多个标签             |
+| QQ 群号   |      |                            |
+| 购票链接  |      |                            |
+| 票价信息  |      |                            |
+| 海报图    |      | 图片上传                   |
+| 补充描述  |      |                            |
+| Turnstile | ✅   | 验证码                     |
 
 ## 8. 管理员后台
 
@@ -259,13 +261,13 @@ CREATE INDEX idx_works_name ON event_works(work_name);
 
 ### 功能
 
-| 功能 | 说明 |
-|------|------|
-| 待审核列表 | 显示所有 `status=pending` 的事件，按提交时间排序 |
-| 审核操作 | 通过（→`approved`）/ 拒绝（→`rejected`），可附审核备注 |
-| 已通过列表 | 查看/编辑/删除已发布的事件 |
-| 已拒绝列表 | 查看被拒绝的事件 |
-| 软删除 | 置 `deleted_at`，前端过滤 `deleted_at IS NULL` |
+| 功能       | 说明                                                   |
+| ---------- | ------------------------------------------------------ |
+| 待审核列表 | 显示所有 `status=pending` 的事件，按提交时间排序       |
+| 审核操作   | 通过（→`approved`）/ 拒绝（→`rejected`），可附审核备注 |
+| 已通过列表 | 查看/编辑/删除已发布的事件                             |
+| 已拒绝列表 | 查看被拒绝的事件                                       |
+| 软删除     | 置 `deleted_at`，前端过滤 `deleted_at IS NULL`         |
 
 ### API 端点
 
@@ -278,24 +280,24 @@ CREATE INDEX idx_works_name ON event_works(work_name);
 ## 9. 防滥用方案
 
 - **IP 限频**：Cloudflare KV，键用哈希后的 IP
-  - 提交：每日 10 次 + 30s 冷却
-  - 浏览计数：每日每事件 1 次去重
+    - 提交：每日 10 次 + 30s 冷却
+    - 浏览计数：每日每事件 1 次去重
 - **Cloudflare Turnstile**：提交表单时前端渲染，后端 siteverify
 - **软删除**：管理员删除时置 `deleted_at`，不物理删除，可恢复
 
 ## 10. 环境变量 / 绑定
 
-| 名称 | 类型 | 用途 | 本地 | 生产 |
-|------|------|------|------|------|
-| `DB` | D1 | events + event_works | miniflare 自动 | `wrangler.jsonc` 填真实 `database_id` |
-| `BUCKET` | R2 | 海报图存储 | miniflare 自动 | `wrangler.jsonc`（`bucket_name`） |
-| `RATE_LIMIT` | KV | IP 限频计数 + 冷却 | miniflare 自动 | `wrangler.jsonc` 填真实 KV id |
-| `SESSION` | KV | Astro CF 适配器 session API 要求的绑定（不实际写） | miniflare 自动 | `wrangler.jsonc` 填真实 KV id |
-| `TURNSTILE_SECRET_KEY` | 密钥 | 后端 siteverify | `.dev.vars`（测试 secret） | `wrangler secret put` |
-| `PUBLIC_TURNSTILE_SITE_KEY` | 公共 var | 前端 Turnstile widget | `.env.development` | `.env.production` |
-| `PUBLIC_R2_BASE_URL` | 公共 var | 拼接海报图 URL；空 → 同源 `/r2/<key>` 兜底 | `.env.development`（空） | `.env.production` |
-| `PUBLIC_SITE_URL` | 公共 var | 站点基址 | `http://localhost:4321` | 生产域名 |
-| `DEV_ADMIN_EMAIL` | 仅本地 | mock 管理员身份 | `.dev.vars`（任意邮箱） | **绝不设置**（用 Cloudflare Access） |
+| 名称                        | 类型     | 用途                                               | 本地                       | 生产                                  |
+| --------------------------- | -------- | -------------------------------------------------- | -------------------------- | ------------------------------------- |
+| `DB`                        | D1       | events + event_works                               | miniflare 自动             | `wrangler.jsonc` 填真实 `database_id` |
+| `BUCKET`                    | R2       | 海报图存储                                         | miniflare 自动             | `wrangler.jsonc`（`bucket_name`）     |
+| `RATE_LIMIT`                | KV       | IP 限频计数 + 冷却                                 | miniflare 自动             | `wrangler.jsonc` 填真实 KV id         |
+| `SESSION`                   | KV       | Astro CF 适配器 session API 要求的绑定（不实际写） | miniflare 自动             | `wrangler.jsonc` 填真实 KV id         |
+| `TURNSTILE_SECRET_KEY`      | 密钥     | 后端 siteverify                                    | `.dev.vars`（测试 secret） | `wrangler secret put`                 |
+| `PUBLIC_TURNSTILE_SITE_KEY` | 公共 var | 前端 Turnstile widget                              | `.env.development`         | `.env.production`                     |
+| `PUBLIC_R2_BASE_URL`        | 公共 var | 拼接海报图 URL；空 → 同源 `/r2/<key>` 兜底         | `.env.development`（空）   | `.env.production`                     |
+| `PUBLIC_SITE_URL`           | 公共 var | 站点基址                                           | `http://localhost:4321`    | 生产域名                              |
+| `DEV_ADMIN_EMAIL`           | 仅本地   | mock 管理员身份                                    | `.dev.vars`（任意邮箱）    | **绝不设置**（用 Cloudflare Access）  |
 
 ## 11. 项目结构
 
@@ -391,14 +393,14 @@ pnpm run deploy
 
 ## 14. pnpm 脚本
 
-| 命令 | 作用 |
-|------|------|
-| `pnpm run dev` | `astro dev`，页面热更新 |
-| `pnpm run build` | `astro build` |
-| `pnpm run preview` | `astro build` 后 `wrangler dev -c dist/server/wrangler.json` |
-| `pnpm run typecheck` | `astro check` |
-| `pnpm run format` | Prettier 格式化 |
-| `pnpm run db:generate` | `drizzle-kit generate` |
-| `pnpm run db:migrate:local` / `:prod` | `wrangler d1 migrations apply` |
-| `pnpm run cf-typegen` | `wrangler types` |
-| `pnpm run deploy` | `astro build && wrangler deploy -c dist/server/wrangler.json` |
+| 命令                                  | 作用                                                          |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `pnpm run dev`                        | `astro dev`，页面热更新                                       |
+| `pnpm run build`                      | `astro build`                                                 |
+| `pnpm run preview`                    | `astro build` 后 `wrangler dev -c dist/server/wrangler.json`  |
+| `pnpm run typecheck`                  | `astro check`                                                 |
+| `pnpm run format`                     | Prettier 格式化                                               |
+| `pnpm run db:generate`                | `drizzle-kit generate`                                        |
+| `pnpm run db:migrate:local` / `:prod` | `wrangler d1 migrations apply`                                |
+| `pnpm run cf-typegen`                 | `wrangler types`                                              |
+| `pnpm run deploy`                     | `astro build && wrangler deploy -c dist/server/wrangler.json` |

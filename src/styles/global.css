@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #6366f1;
-  --color-accent: #f59e0b;
+    --color-primary: #6366f1;
+    --color-accent: #f59e0b;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 min-h-screen;
+    @apply bg-gray-50 text-gray-900 min-h-screen;
 }

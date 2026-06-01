@@ -1,4 +1,4 @@
-INSERT INTO events (id, title, province, city, venue, address, start_date, end_date, event_type, scale, qq_group, ticket_url, poster_key, price_info, description, view_count, status)
+INSERT OR REPLACE INTO events (id, title, province, city, venue, address, start_date, end_date, event_type, scale, qq_group, ticket_url, poster_key, price_info, description, view_count, status)
 VALUES
   ('01JZ001A2B3C4D5E6F7G8H9J0K', 'Comicup 31', '上海', '上海', '国家会展中心', '青浦区崧泽大道333号', '2026-07-15', '2026-07-16', 'doujin', '全国大型', '123456789', 'https://ticket.example.com/cp31', NULL, '预售50元/现场60元', '国内最大的同人展会之一', 1520, 'approved'),
   ('01JZ002B3C4D5E6F7G8H9J0K1', 'BW2026', '上海', '上海', '上海世博展览馆', '浦东新区国展路1099号', '2026-08-20', '2026-08-22', 'doujin', '全国大型', NULL, NULL, NULL, '待定', 'Bilibili World 2026', 890, 'approved'),

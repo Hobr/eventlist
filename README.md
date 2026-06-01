@@ -4,15 +4,15 @@
 
 ## 技术栈
 
-| 层 | 选型 |
-|----|------|
-| 前端 | Astro 6 + React 19 Islands + Tailwind v4 |
-| 部署 | Cloudflare Workers（SSR + 静态资源） |
-| 数据库 | Cloudflare D1（SQLite） + Drizzle ORM |
-| 图片存储 | Cloudflare R2 |
-| 限频/去重 | Cloudflare KV |
-| 防机器人 | Cloudflare Turnstile |
-| 测试 | Vitest |
+| 层        | 选型                                     |
+| --------- | ---------------------------------------- |
+| 前端      | Astro 6 + React 19 Islands + Tailwind v4 |
+| 部署      | Cloudflare Workers（SSR + 静态资源）     |
+| 数据库    | Cloudflare D1（SQLite） + Drizzle ORM    |
+| 图片存储  | Cloudflare R2                            |
+| 限频/去重 | Cloudflare KV                            |
+| 防机器人  | Cloudflare Turnstile                     |
+| 测试      | Vitest                                   |
 
 ## 开发
 
@@ -90,11 +90,11 @@ wrangler r2 bucket create acg-events-posters
 
 在 Cloudflare Dashboard 或 `.env.production` 中设置：
 
-| 变量 | 说明 |
-|------|------|
-| `PUBLIC_TURNSTILE_SITE_KEY` | Turnstile 公钥 |
-| `PUBLIC_R2_BASE_URL` | R2 自定义域名（可选，留空走同源 `/r2/`） |
-| `PUBLIC_SITE_URL` | 站点基址，如 `https://acg-events.example.com` |
+| 变量                        | 说明                                          |
+| --------------------------- | --------------------------------------------- |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Turnstile 公钥                                |
+| `PUBLIC_R2_BASE_URL`        | R2 自定义域名（可选，留空走同源 `/r2/`）      |
+| `PUBLIC_SITE_URL`           | 站点基址，如 `https://acg-events.example.com` |
 
 ### 4. 配置密钥
 

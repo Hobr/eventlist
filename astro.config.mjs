@@ -4,7 +4,7 @@ import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
 
 export default defineConfig({
-  output: "server",
-  adapter: cloudflare(),
-  integrations: [react(), tailwind()],
+    output: "server",
+    adapter: cloudflare(),
+    integrations: [react(), tailwind()],
 });
