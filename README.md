@@ -42,6 +42,13 @@ pnpm run db:migrate:local
 pnpm run db:seed:local   # 可选：导入 5 条 demo 数据
 ```
 
+如果遇到 `no such table: events` 错误，说明迁移跟踪状态与实际数据库不一致，手动执行 SQL：
+
+```bash
+pnpm exec wrangler d1 execute acg-events --local --file migrations/0000_initial.sql
+pnpm run db:seed:local
+```
+
 ### 启动开发服务器
 
 ```bash
