@@ -179,4 +179,10 @@ dist
 .history
 .ionide
 
+### Astro ###
+.astro/
+
+### Wrangler ###
+.wrangler/
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,direnv,visualstudiocode,node
