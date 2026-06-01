@@ -8,7 +8,7 @@
     "scripts": {
         "dev": "astro dev",
         "build": "astro build",
-        "preview": "astro build && wrangler dev -c wrangler.jsonc --assets dist/client",
+        "preview": "astro build && wrangler dev dist/server/entry.mjs -c wrangler.jsonc --assets dist/client",
         "typecheck": "astro check",
         "test": "vitest run",
         "test:watch": "vitest",
@@ -18,7 +18,7 @@
         "db:migrate:prod": "wrangler d1 migrations apply acg-events --remote",
         "db:seed:local": "wrangler d1 execute acg-events --local --file seeds/demo.sql",
         "cf-typegen": "wrangler types",
-        "deploy": "astro build && wrangler deploy -c wrangler.jsonc --assets dist/client"
+        "deploy": "astro build && wrangler deploy dist/server/entry.mjs -c wrangler.jsonc --assets dist/client"
     },
     "dependencies": {
         "@astrojs/cloudflare": "^13.6.0",
