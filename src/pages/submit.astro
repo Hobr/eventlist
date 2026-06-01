@@ -1,0 +1,17 @@
+---
+import Base from "../layouts/Base.astro";
+import SubmitForm from "../components/SubmitForm";
+
+const turnstileSiteKey = Astro.locals.runtime.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+---
+
+<Base title="提交活动 - ACG 活动查询">
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">提交新活动</h1>
+    <p class="text-sm text-gray-500 mb-4">提交后需管理员审核，审核通过后将在首页展示。</p>
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+    <SubmitForm turnstileSiteKey={turnstileSiteKey} client:load />
+  </div>
+</Base>
