@@ -12,6 +12,6 @@ export async function verifyTurnstile(
   if (ip) formData.append("remoteip", ip);
 
   const res = await fetch(VERIFY_URL, { method: "POST", body: formData });
-  const data = await res.json();
+  const data = (await res.json()) as { success?: boolean };
   return data.success === true;
 }
