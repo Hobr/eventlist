@@ -34,6 +34,10 @@ const email =
   </style>
 
   <script>
+    function escapeHtml(str: string): string {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
     let currentStatus = "pending";
 
     async function loadEvents(status: string) {
@@ -54,17 +58,17 @@ const email =
       container.innerHTML = events
         .map(
           (e: Record<string, unknown>) => `
-        <div class="event-item" data-id="${e.id}">
+        <div class="event-item" data-id="${escapeHtml(String(e.id))}">
           <div>
-            <a href="/event/${e.id}" class="font-medium hover:text-indigo-600">${e.title}</a>
-            <p class="text-xs text-gray-500 mt-1">${e.city} · ${e.venue} · ${e.start_date}</p>
+            <a href="/event/${escapeHtml(String(e.id))}" class="font-medium hover:text-indigo-600">${escapeHtml(String(e.title))}</a>
+            <p class="text-xs text-gray-500 mt-1">${escapeHtml(String(e.city))} · ${escapeHtml(String(e.venue))} · ${escapeHtml(String(e.start_date))}</p>
           </div>
           <div class="flex gap-2">
             ${status === "pending" ? `
-              <button onclick="approveEvent('${e.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">通过</button>
-              <button onclick="rejectEvent('${e.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">拒绝</button>
+              <button onclick="approveEvent('${escapeHtml(String(e.id))}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">通过</button>
+              <button onclick="rejectEvent('${escapeHtml(String(e.id))}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">拒绝</button>
             ` : `
-              <button onclick="deleteEvent('${e.id}')" class="text-red-500 hover:text-red-700 text-sm">删除</button>
+              <button onclick="deleteEvent('${escapeHtml(String(e.id))}')" class="text-red-500 hover:text-red-700 text-sm">删除</button>
             `}
           </div>
         </div>`

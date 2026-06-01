@@ -10,6 +10,7 @@ interface CloudflareEnv {
   PUBLIC_R2_BASE_URL: string;
   PUBLIC_SITE_URL: string;
   DEV_ADMIN_EMAIL?: string;
+  ADMIN_EMAILS?: string;
 }
 
 declare namespace App {

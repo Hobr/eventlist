@@ -45,6 +45,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
+  const eventType = String(body.eventType);
+  if (eventType !== "doujin" && eventType !== "concert") {
+    return new Response(JSON.stringify({ error: "无效的活动类型" }), { status: 400 });
+  }
+
   for (const [key, val] of Object.entries(body)) {
     if (typeof val === "string" && val.length > MAX_FIELD_LEN) {
       return new Response(JSON.stringify({ error: `字段 ${key} 过长` }), { status: 400 });
