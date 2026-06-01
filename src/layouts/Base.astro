@@ -1,0 +1,49 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = "ACG 活动查询",
+  description = "查询中国境内 ACG 线下活动",
+  ogImage,
+} = Astro.props;
+
+const siteUrl = Astro.locals.runtime.env.PUBLIC_SITE_URL ?? "";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+  </head>
+  <body>
+    <header class="bg-white shadow-sm">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/" class="text-xl font-bold text-indigo-600">ACG 活动查询</a>
+        <nav class="flex gap-4 text-sm">
+          <a href="/" class="hover:text-indigo-600">首页</a>
+          <a href="/submit" class="hover:text-indigo-600">提交活动</a>
+        </nav>
+      </div>
+    </header>
+    <main class="max-w-6xl mx-auto px-4 py-6">
+      <slot />
+    </main>
+    <footer class="bg-gray-100 mt-12">
+      <div class="max-w-6xl mx-auto px-4 py-6 text-sm text-gray-500 text-center">
+        ACG 活动查询 · 数据由用户提交，管理员审核后发布
+      </div>
+    </footer>
+  </body>
+</html>
