@@ -5,8 +5,8 @@
 pnpm install
 
 # 预览构建结果
-pnpm run dev
+pnpm astro build && pnpm wrangler dev
 
 # 部署
-pnpm run deploy
+pnpm astro build && pnpm wrangler deploy
 ```
