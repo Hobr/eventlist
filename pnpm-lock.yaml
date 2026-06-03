@@ -32,6 +32,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2
+      fuse.js:
+        specifier: ^7.4.1
+        version: 7.4.1
       react:
         specifier: ^19.2.7
         version: 19.2.7
@@ -1891,6 +1894,10 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  fuse.js@7.4.1:
+    resolution: {integrity: sha512-AY7lKAXK71hi3WgUvDy6oZL67UEHOOtvCAwVdOXHyJd6ZzftBy7QqxuXt4HxmmAhYjmp/YCuOELZtIvAdlZ+fw==}
+    engines: {node: '>=10'}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -4231,6 +4238,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  fuse.js@7.4.1: {}
 
   gensync@1.0.0-beta.2: {}
 

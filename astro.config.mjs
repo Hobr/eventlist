@@ -21,6 +21,7 @@ export default defineConfig({
           "**/.direnv/**",
           "**/.git/**",
           "**/node_modules/**",
+          "**/.wrangler/**",
         ],
       },
     },
