@@ -21,11 +21,15 @@
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "astro": "^6.4.3",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.22.4",
     "wrangler": "^4.97.0"
   },
   "overrides": {
