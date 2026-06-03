@@ -6,11 +6,8 @@
 pnpm install
 
 # 预览构建结果
-pnpm preview
-
-# 使用 Astro CLI
-pnpm astro -- --help
+pnpm run dev
 
 # 部署
-pnpm deploy
+pnpm run deploy
 ```
