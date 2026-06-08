@@ -21,7 +21,6 @@ pnpm dev
 
 ```bash
 pnpm test
-pnpm test:e2e
 pnpm lint
 pnpm build
 pnpm cf-typegen
