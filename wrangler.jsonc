@@ -9,6 +9,38 @@
         "binding": "ASSETS",
     },
 
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "eventlist-db",
+            "database_id": "00000000-0000-0000-0000-000000000000",
+            "migrations_dir": "migrations",
+        },
+    ],
+
+    "kv_namespaces": [
+        {
+            "binding": "RATE_LIMIT",
+            "id": "00000000000000000000000000000000",
+            "preview_id": "00000000000000000000000000000000",
+        },
+    ],
+
+    "r2_buckets": [
+        {
+            "binding": "BUCKET",
+            "bucket_name": "eventlist-covers",
+        },
+    ],
+
+    "vars": {
+        "APP_ENV": "production",
+        "USE_FIXTURE_DATA": "false",
+        "PUBLIC_COVER_BASE_URL": "",
+        "CF_ACCESS_AUD": "",
+        "CF_ACCESS_ISSUER": "",
+    },
+
     "observability": {
         "enabled": true,
     },

@@ -1,0 +1,76 @@
+---
+import AdminShell from "../../components/admin/AdminShell.astro";
+import Layout from "../../layouts/Layout.astro";
+import { listAdminEvents } from "../../server/admin/events";
+
+const status = Astro.url.searchParams.get("status") ?? "pending";
+const q = Astro.url.searchParams.get("q") ?? "";
+const events = await listAdminEvents({ status, q });
+---
+
+<Layout title="维护后台 - ACG 活动目录">
+    <AdminShell title="审核队列">
+        <form class="filter-bar mb-4" method="get" action="/admin">
+            <label>
+                <span>状态</span>
+                <select name="status" value={status}>
+                    <option value="pending">待审核</option>
+                    <option value="approved">已公开</option>
+                    <option value="rejected">已拒绝</option>
+                    <option value="archived">已归档</option>
+                </select>
+            </label>
+            <label>
+                <span>搜索</span>
+                <input name="q" value={q} placeholder="活动、城市、IP" />
+            </label>
+            <div class="filter-actions">
+                <button class="button-primary" type="submit">筛选</button>
+            </div>
+        </form>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>活动</th>
+                    <th>城市/地点</th>
+                    <th>原始词条</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    events.map((event) => (
+                        <tr>
+                            <td>
+                                <strong>{event.name}</strong>
+                                {event.submission?.submitterContact && (
+                                    <div class="text-sm text-[var(--muted)]">
+                                        联系方式：
+                                        {event.submission.submitterContact}
+                                    </div>
+                                )}
+                            </td>
+                            <td>
+                                {event.city} / {event.venue}
+                            </td>
+                            <td>
+                                {event.rawTypeText} / {event.rawEventIpText}
+                            </td>
+                            <td>{event.status}</td>
+                            <td>
+                                <a
+                                    class="button-ghost"
+                                    href={`/admin/events/${event.id}`}
+                                >
+                                    审核
+                                </a>
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+    </AdminShell>
+</Layout>

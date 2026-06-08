@@ -1,0 +1,27 @@
+---
+import AdminShell from "../../components/admin/AdminShell.astro";
+import VocabularyManager from "../../components/admin/VocabularyManager";
+import Layout from "../../layouts/Layout.astro";
+import { listVocabularySnapshot } from "../../server/admin/vocabularies";
+
+const vocabulary = await listVocabularySnapshot({ includeInactive: true });
+---
+
+<Layout title="词表管理 - ACG 活动目录">
+    <AdminShell title="词表管理">
+        <div class="grid gap-6">
+            <VocabularyManager
+                client:load
+                title="活动类型"
+                kind="event_type"
+                terms={vocabulary.eventTypes}
+            />
+            <VocabularyManager
+                client:load
+                title="活动 IP"
+                kind="event_ip"
+                terms={vocabulary.eventIps}
+            />
+        </div>
+    </AdminShell>
+</Layout>

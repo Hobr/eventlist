@@ -1,0 +1,19 @@
+---
+import AdminShell from "../../components/admin/AdminShell.astro";
+import VocabularyManager from "../../components/admin/VocabularyManager";
+import Layout from "../../layouts/Layout.astro";
+import { listVocabularySnapshot } from "../../server/admin/vocabularies";
+
+const vocabulary = await listVocabularySnapshot({ includeInactive: true });
+---
+
+<Layout title="规模标签 - ACG 活动目录">
+    <AdminShell title="规模标签">
+        <VocabularyManager
+            client:load
+            title="活动规模"
+            kind="scale"
+            scales={vocabulary.scales}
+        />
+    </AdminShell>
+</Layout>

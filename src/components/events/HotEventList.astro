@@ -1,0 +1,22 @@
+---
+import type { PublicEventWithHotness } from "../../server/events/types";
+
+interface Props {
+    events: PublicEventWithHotness[];
+}
+
+const { events } = Astro.props;
+---
+
+<ol class="hot-list">
+    {
+        events.map((event) => (
+            <li>
+                <a href={`/events/${event.slug}`}>
+                    <span>{event.name}</span>
+                    <strong>{event.hotness}</strong>
+                </a>
+            </li>
+        ))
+    }
+</ol>

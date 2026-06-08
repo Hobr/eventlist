@@ -1,7 +1,7 @@
 ---
 title: "feat: ACG events maintainer admin"
 type: feat
-status: active
+status: completed
 date: 2026-06-08
 origin: docs/brainstorms/2026-06-08-acg-events-directory-requirements.md
 parent: docs/plans/2026-06-08-001-feat-acg-events-directory-plan.md

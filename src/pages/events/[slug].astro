@@ -1,0 +1,38 @@
+---
+import EventDetail from "../../components/events/EventDetail.astro";
+import Layout from "../../layouts/Layout.astro";
+import { getPublicEventBySlug } from "../../server/events/queries";
+
+const slug = Astro.params.slug;
+const event = slug ? await getPublicEventBySlug(slug) : null;
+
+if (!event) {
+    return Astro.redirect("/", 302);
+}
+---
+
+<Layout title={`${event.name} - ACG 活动目录`}>
+    <main
+        class="min-h-screen bg-[var(--surface)] px-4 py-6 text-[var(--ink)] sm:px-6 lg:px-8"
+    >
+        <div class="mx-auto max-w-5xl">
+            <a class="focus-link mb-4 inline-flex text-sm" href="/"
+                >← 返回目录</a
+            >
+            <EventDetail event={event} />
+        </div>
+    </main>
+    <script is:inline define:vars={{ eventId: event.id }}>
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(
+                `/api/events/${eventId}/view`,
+                new Blob([], { type: "text/plain" }),
+            );
+        } else {
+            fetch(`/api/events/${eventId}/view`, {
+                method: "POST",
+                keepalive: true,
+            });
+        }
+    </script>
+</Layout>

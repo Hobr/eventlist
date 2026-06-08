@@ -1,0 +1,108 @@
+---
+import AdminShell from "../../../components/admin/AdminShell.astro";
+import EventReviewEditor from "../../../components/admin/EventReviewEditor";
+import Layout from "../../../layouts/Layout.astro";
+import { getAdminEvent } from "../../../server/admin/events";
+import { listVocabularySnapshot } from "../../../server/admin/vocabularies";
+
+const id = Astro.params.id;
+const event = id ? await getAdminEvent(id) : null;
+const vocabulary = await listVocabularySnapshot({ includeInactive: true });
+
+if (!event) {
+    return Astro.redirect("/admin", 302);
+}
+---
+
+<Layout title={`${event.name} - 审核`}>
+    <AdminShell title="审核活动">
+        <div class="grid gap-4">
+            <section
+                class="rounded-md border border-[var(--line)] bg-[var(--paper)] p-4"
+            >
+                <div class="mb-3 flex flex-wrap gap-2 text-sm">
+                    <span class="pill">状态：{event.status}</span>
+                    <span class="pill"
+                        >原类型：{event.rawTypeText ?? "未填"}</span
+                    >
+                    <span class="pill"
+                        >原 IP：{event.rawEventIpText ?? "未填"}</span
+                    >
+                </div>
+                <EventReviewEditor
+                    client:load
+                    event={event}
+                    eventTypes={vocabulary.eventTypes}
+                    eventIps={vocabulary.eventIps}
+                    scales={vocabulary.scales}
+                />
+            </section>
+            {
+                event.covers.length > 0 && (
+                    <section class="rounded-md border border-[var(--line)] bg-[var(--paper)] p-4">
+                        <h2 class="mb-3 text-lg font-semibold">封面审核</h2>
+                        <div class="grid gap-3">
+                            {event.covers.map((cover) => (
+                                <form
+                                    class="filter-bar"
+                                    method="post"
+                                    action={`/api/admin/events/${event.id}`}
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="action"
+                                        value="cover"
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="coverId"
+                                        value={cover.id}
+                                    />
+                                    <label>
+                                        <span>文件</span>
+                                        <input
+                                            value={`${cover.filename} / ${cover.mimeType}`}
+                                            readonly
+                                        />
+                                    </label>
+                                    <label>
+                                        <span>状态</span>
+                                        <select
+                                            name="coverStatus"
+                                            value={cover.status}
+                                        >
+                                            <option value="approved">
+                                                批准
+                                            </option>
+                                            <option value="rejected">
+                                                拒绝
+                                            </option>
+                                            <option value="removed">
+                                                移除
+                                            </option>
+                                        </select>
+                                    </label>
+                                    <label>
+                                        <span>公开 URL</span>
+                                        <input
+                                            name="publicUrl"
+                                            value={cover.publicUrl ?? ""}
+                                        />
+                                    </label>
+                                    <div class="filter-actions">
+                                        <button
+                                            class="button-primary"
+                                            type="submit"
+                                        >
+                                            保存封面
+                                        </button>
+                                    </div>
+                                </form>
+                            ))}
+                        </div>
+                    </section>
+                )
+            }
+        </div>
+    </AdminShell>
+</Layout>

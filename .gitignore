@@ -45,6 +45,8 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
+playwright-report/
+test-results/
 
 # nyc test coverage
 .nyc_output
@@ -97,6 +99,7 @@ web_modules/
 
 # dotenv environment variable files
 .env
+.dev.vars
 .env.development.local
 .env.test.local
 .env.production.local

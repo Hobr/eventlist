@@ -1,0 +1,62 @@
+---
+import type { PublicEvent } from "../../server/events/types";
+import { formatDateRange } from "../../server/events/utils";
+import OfficialLinks from "./OfficialLinks.astro";
+
+interface Props {
+    event: PublicEvent;
+}
+
+const { event } = Astro.props;
+---
+
+<article class="detail-shell">
+    <div class="detail-media">
+        {
+            event.cover?.publicUrl ? (
+                <img src={event.cover.publicUrl} alt="" />
+            ) : (
+                <div>{event.city}</div>
+            )
+        }
+    </div>
+    <div class="detail-body">
+        <div class="mb-4 flex flex-wrap gap-2">
+            <span class="pill pill-strong"
+                >{formatDateRange(event.startsAt, event.endsAt)}</span
+            >
+            {event.type && <span class="pill">{event.type.name}</span>}
+            {event.eventIp && <span class="pill">{event.eventIp.name}</span>}
+            {event.scale && <span class="pill">{event.scale.name}</span>}
+        </div>
+        <h1>{event.name}</h1>
+        <dl class="detail-facts">
+            <div>
+                <dt>地点</dt>
+                <dd>{event.city} / {event.venue}</dd>
+            </div>
+            {
+                event.address && (
+                    <div>
+                        <dt>地址</dt>
+                        <dd>{event.address}</dd>
+                    </div>
+                )
+            }
+            <div>
+                <dt>时间</dt>
+                <dd>
+                    {new Date(event.startsAt).toLocaleString("zh-CN")} - {
+                        new Date(event.endsAt).toLocaleString("zh-CN")
+                    }
+                </dd>
+            </div>
+        </dl>
+        {
+            event.description && (
+                <p class="detail-description">{event.description}</p>
+            )
+        }
+        <OfficialLinks event={event} />
+    </div>
+</article>

@@ -1,0 +1,29 @@
+---
+import type { PublicEvent } from "../../server/events/types";
+
+interface Props {
+    event: PublicEvent;
+}
+
+const { event } = Astro.props;
+---
+
+{
+    (event.officialQqGroup || event.ticketUrl) && (
+        <div class="official-links">
+            {event.officialQqGroup && (
+                <a
+                    href={`https://qm.qq.com/cgi-bin/qm/qr?k=${event.officialQqGroup}`}
+                    rel="noreferrer"
+                >
+                    官方 QQ 群 {event.officialQqGroup}
+                </a>
+            )}
+            {event.ticketUrl && (
+                <a href={event.ticketUrl} target="_blank" rel="noreferrer">
+                    购票地址
+                </a>
+            )}
+        </div>
+    )
+}

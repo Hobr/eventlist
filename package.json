@@ -13,8 +13,14 @@
         "generate-types": "wrangler types",
         "deploy": "astro build && wrangler deploy",
         "cf-typegen": "wrangler types",
+        "db:migrate:local": "wrangler d1 migrations apply eventlist-db --local",
+        "db:migrate:remote": "wrangler d1 migrations apply eventlist-db --remote",
         "lint": "prettier --check . && eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "seed": "tsx scripts/seed-events.ts",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:e2e": "playwright test"
     },
     "dependencies": {
         "@astrojs/cloudflare": "^13.6.1",
@@ -31,6 +37,7 @@
         "tailwindcss": "^4.3.0"
     },
     "devDependencies": {
+        "@playwright/test": "^1.60.0",
         "@typescript-eslint/parser": "^8.60.1",
         "drizzle-kit": "^0.31.10",
         "eslint": "^10.4.1",
@@ -41,6 +48,7 @@
         "prettier-plugin-astro": "0.14.1",
         "prettier-plugin-tailwindcss": "0.8.0",
         "tsx": "^4.22.4",
+        "vitest": "^4.1.8",
         "wrangler": "^4.98.0"
     },
     "overrides": {

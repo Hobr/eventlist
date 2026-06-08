@@ -1,7 +1,7 @@
 ---
 title: "feat: ACG events directory plan index"
 type: feat
-status: active
+status: completed
 date: 2026-06-08
 origin: docs/brainstorms/2026-06-08-acg-events-directory-requirements.md
 ---

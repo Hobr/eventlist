@@ -1,0 +1,27 @@
+---
+import EventSubmissionForm from "../components/events/EventSubmissionForm";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="提交活动 - ACG 活动目录">
+    <main
+        class="min-h-screen bg-[var(--surface)] px-4 py-6 text-[var(--ink)] sm:px-6 lg:px-8"
+    >
+        <div class="mx-auto max-w-4xl">
+            <a class="focus-link mb-4 inline-flex text-sm" href="/"
+                >← 返回目录</a
+            >
+            <section
+                class="rounded-md border border-[var(--line)] bg-[var(--paper)] p-5"
+            >
+                <div class="mb-5">
+                    <p class="text-sm font-semibold text-[var(--accent)]">
+                        Anonymous Submission
+                    </p>
+                    <h1 class="mt-1 text-3xl font-semibold">提交 ACG 活动</h1>
+                </div>
+                <EventSubmissionForm client:load />
+            </section>
+        </div>
+    </main>
+</Layout>

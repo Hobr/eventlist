@@ -1,0 +1,13 @@
+dist/
+node_modules/
+.wrangler/
+.astro/
+
+docs/brainstorms/
+docs/plans/
+pnpm-lock.yaml
+worker-configuration.d.ts
+
+.dev.vars.example
+.dev.vars
+migrations/*.sql

@@ -3,7 +3,17 @@
 // Runtime types generated with workerd@1.20260601.1 2026-06-03 global_fetch_strictly_public
 interface __BaseEnv_Env {
     ASSETS: Fetcher;
-    MY_DURABLE_OBJECT: DurableObjectNamespace /* MyDurableObject */;
+    DB: D1Database;
+    RATE_LIMIT: KVNamespace;
+    BUCKET: R2Bucket;
+    APP_ENV: string;
+    USE_FIXTURE_DATA: string;
+    PUBLIC_COVER_BASE_URL: string;
+    ADMIN_DEV_EMAIL: string;
+    CF_ACCESS_AUD: string;
+    CF_ACCESS_ISSUER: string;
+    IP_HASH_SECRET: string;
+    TURNSTILE_SECRET_KEY: string;
 }
 declare namespace Cloudflare {
     interface Env extends __BaseEnv_Env {}
