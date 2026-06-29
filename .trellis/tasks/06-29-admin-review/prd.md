@@ -4,7 +4,7 @@
 
 ## Goal
 
-实现管理后台:Cloudflare Access 鉴权保护 `/admin/*`;对待审核投稿通过/驳回;对已发布活动编辑/下线/重新发布;标签归并。
+实现管理后台:Cloudflare Access 鉴权保护 `/admin` 页面与 `/api/admin` 接口;对待审核投稿通过/驳回;对已发布活动编辑/下线/重新发布;标签归并。
 
 ## Background
 
@@ -15,8 +15,8 @@
 ## Requirements
 
 ### R1 鉴权
-- R1.1 所有 `/admin/*` 路由(页面与 API)必须经过鉴权中间件,未授权返回 401/重定向。
-- R1.2 主方案:校验 `Cf-Access-Jwt-Assertion` JWT(签名 + aud + exp),通过即放行。
+- R1.1 所有 `/admin` 页面路由与 `/api/admin` API 路由必须经过鉴权中间件,未授权 API 返回 401,未授权页面重定向到登录/Access 入口。
+- R1.2 主方案:校验 `Cf-Access-Jwt-Assertion` JWT(签名 + iss + aud + exp),通过即放行。
 - R1.3 降级方案:env `ADMIN_TOKEN` 校验 Cookie `admin_token`(值 = 常量时间比较),登录页 `/admin/login` 设置 Cookie。
 - R1.4 方案开关由 env `AUTH_MODE` 决定(`access` | `token`),默认 `access`。
 
@@ -32,18 +32,19 @@
 
 ### R4 标签归并
 - R4.1 `/admin/tags`:标签列表(`alias_of_id IS NULL`),显示每个规范标签下的活动数。
-- R4.2 归并操作:选源标签 B → 目标标签 A,事务:更新 `event_tags.tag_id` B→A,设 `tags.alias_of_id=B → A`,删除 B 的孤立 `event_tags` 重复行。
+- R4.2 归并操作:选源标签 B → 目标标签 A,事务:更新 `event_tags.tag_id` B→A,设 B 的 `tags.alias_of_id=A`,删除 B 的孤立 `event_tags` 重复行。
 
 ### R5 审计与防误
-- R5.1 关键操作(通过/驳回/下线/重新发布/归并)写一条 `audit_logs`(可选,见 design.md 决策)。
+- R5.1 关键操作(通过/驳回/编辑/下线/重新发布/归并)成功后必须写一条 `audit_logs`;审计查看页可后置,不阻塞 MVP。
 - R5.2 危险操作(下线/归并)需二次确认(UI 二次点击;API 幂等)。
 
 ## Acceptance Criteria
 
-- [ ] 未授权访问 `/admin/*` 被拒绝;Access JWT 校验通过后可访问(或 token 降级方案可登录)。
+- [ ] 未授权访问 `/admin` 页面与 `/api/admin` 接口被拒绝;Access JWT 校验通过后可访问(或 token 降级方案可登录)。
 - [ ] 待审核列表可查看投稿全字段 + 联系方式;通过后活动在前台可见,驳回后不可见且附理由。
 - [ ] 已发布活动可编辑保存、可下线;下线后前台显示下线提示;可重新发布。
 - [ ] 标签归并后,前台按目标标签筛选能命中被归并的活动,源标签不再出现在高频下拉。
+- [ ] 通过/驳回/编辑/下线/重新发布/归并成功后均写入 `audit_logs`。
 - [ ] `pnpm lint` / `pnpm build` 通过;本地 `wrangler dev` 跑通:投稿(pending)→ 通过 → 前台可见 → 下线 → 前台下线提示 → 归并标签。
 
 ## Out of Scope
