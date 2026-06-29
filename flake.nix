@@ -13,7 +13,6 @@
           corepack
           typescript
           typescript-language-server
-          pre-commit
         ];
     };
 }
