@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "Admin UI visual contract — Material 3 patterns required (data table, nav drawer/rail, top app bar, dialog, snackbar) and forbidden patterns (no Tailwind, no Material 2). design.md references this."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Task spans middleware->D1 queries->API routes->Astro pages (3+ layers); auth state and event-status data flow across layers. Catches cross-layer data-flow bugs."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Admin reuses public-site src/components/ui/ (Button/TextField/Chip/Dialog/Snackbar) and the event form; design.md mandates no second UI kit. Enforces search-before-create for shared components/tokens."}
