@@ -92,9 +92,9 @@ max_journal_lines: 2000
 # `max_live_workers: 0` disables the spawn-time budget check.
 #
 channel:
-  worker_guard:
-    idle_timeout: 5m
-    max_live_workers: 6
+    worker_guard:
+        idle_timeout: 5m
+        max_live_workers: 6
 
 #-------------------------------------------------------------------------------
 # Codex (dispatch behavior)

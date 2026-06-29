@@ -1,31 +1,31 @@
 {
-  "name": "eventlist",
-  "type": "module",
-  "version": "0.0.1",
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
-    "generate-types": "wrangler types"
-  },
-  "dependencies": {
-    "@astrojs/cloudflare": "^14.0.1",
-    "@astrojs/sitemap": "^3.7.3",
-    "@astrojs/svelte": "^9.0.0",
-    "astro": "^7.0.3",
-    "svelte": "^5.56.4",
-    "typescript": "^6.0.3",
-    "wrangler": "^4.105.0"
-  },
-  "devDependencies": {
-    "@typescript-eslint/parser": "^8.62.0",
-    "eslint": "^10.6.0",
-    "eslint-plugin-astro": "^2.1.1",
-    "prettier": "3.9.1",
-    "prettier-plugin-astro": "0.14.1"
-  }
+    "name": "eventlist",
+    "type": "module",
+    "version": "0.0.1",
+    "engines": {
+        "node": ">=22.12.0"
+    },
+    "scripts": {
+        "dev": "astro dev",
+        "build": "astro build",
+        "preview": "astro preview",
+        "astro": "astro",
+        "generate-types": "wrangler types"
+    },
+    "dependencies": {
+        "@astrojs/cloudflare": "^14.0.1",
+        "@astrojs/sitemap": "^3.7.3",
+        "@astrojs/svelte": "^9.0.0",
+        "astro": "^7.0.3",
+        "svelte": "^5.56.4",
+        "typescript": "^6.0.3",
+        "wrangler": "^4.105.0"
+    },
+    "devDependencies": {
+        "@typescript-eslint/parser": "^8.62.0",
+        "eslint": "^10.6.0",
+        "eslint-plugin-astro": "^2.1.1",
+        "prettier": "3.9.1",
+        "prettier-plugin-astro": "0.14.1"
+    }
 }
