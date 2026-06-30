@@ -18,14 +18,14 @@
    - `src/pages/admin/_AdminLayout.astro`:侧栏(待审核/已发布/已下线/标签)。
    - `index.astro`(pending)、`published.astro`、`offline.astro`:调 `listByStatus(status)` 渲染表格 + 操作按钮。
 4. **状态迁移 API**
-   - `approve.ts` / `reject.ts` / `offline.ts` / `republish.ts`:SQL 见 design.md;成功更新 1 行后写审计。
+   - `approve.ts` / `reject.ts` / `offline.ts` / `republish.ts`:SQL 见 design.md;成功更新 1 行后写审计;已处于目标状态的重复提交返回成功但不重复写审计。
    - 前端按钮 → fetch 对应 API → 成功后刷新列表;危险操作二次确认。
 5. **编辑页与 API**
    - `events/[id]/edit.astro`:加载 `getEvent` → 表单(同投稿字段,复用组件或简化版)→ `PATCH /api/admin/events/[id]`。
-   - `index.ts`(PATCH):校验 → 事务更新 events + 全量替换 event_tags → 写审计。
+   - `index.ts`(PATCH):校验 → 确认 event 存在 → 规范化/创建标签 → D1 `batch()` 更新 events + 全量替换 event_tags → 写审计。
 6. **标签归并**
    - `tags.astro`:列出 `alias_of_id IS NULL` 标签 + 活动数;归并 UI(选 from→to)。
-   - `tags/merge.ts`:校验 `from != to` 且目标为规范标签;事务(见 design.md);成功后写审计。
+   - `tags/merge.ts`:校验 `from != to` 且源/目标为规范标签;D1 `batch()` 事务(见 design.md);成功后写审计;源已归并到目标时返回成功且不重复写审计。
 7. **审计**
    - 新增 `migrations/0003_audit.sql` 建 `audit_logs`;`insertAudit(db, action, targetId, meta)`;可选 `/admin/audit` 查看页(可后置)。
 8. **Cloudflare Access 配置(生产)**
@@ -43,7 +43,7 @@
   - published → 下线 → 前台显示下线提示 → 重新发布 → 前台恢复。
   - 编辑保存生效;event_tags 同步。
   - 标签归并后前台按目标标签筛选命中被归并活动;源标签不出现在下拉。
-  - approve/reject/edit/offline/republish/merge 成功后 `audit_logs` 均新增对应记录。
+  - approve/reject/edit/offline/republish/merge 实际变更成功后 `audit_logs` 均新增对应记录;状态迁移和标签归并重复提交不重复新增审计。
 - (生产前)切 `AUTH_MODE=access`,验证 Access JWT 校验通过。
 
 ## 风险点与回滚

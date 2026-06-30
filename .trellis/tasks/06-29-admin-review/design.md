@@ -47,24 +47,27 @@ offline:  UPDATE events SET status='offline', updated_at=datetime('now') WHERE i
 republish:UPDATE events SET status='published', updated_at=datetime('now') WHERE id=? AND status='offline'
 edit(PATCH): UPDATE events SET ... WHERE id=? (校验 type/scale/city 合法, 更新 updated_at, 同步 event_tags 事务)
 ```
-所有 API 返回 JSON `{ok:true}` 或 `{ok:false,error}`。状态迁移只有在更新命中 1 行时才算成功并写审计;未命中返回 404/409,避免重复点击产生误审计。
+所有 API 返回 JSON `{ok:true}` 或 `{ok:false,error}`。状态迁移只有在更新命中 1 行时才写审计;如果活动已处于目标状态,重复提交返回 `{ok:true}` 且不重复写审计;其它状态不匹配返回 409。
+
+编辑保存同样按“先确认 event 存在 → 规范化/创建标签 → D1 batch 更新 events、删除旧 event_tags、插入新 event_tags”的顺序执行;只有实际更新成功才写 edit 审计。
 
 ## 标签归并(事务)
 
+用 D1 `db.batch([...])` 提交下列语句;D1 batch 是一个 SQL transaction,任一语句失败会中止并回滚整批。
+
 ```sql
-BEGIN;
 -- 删除归并后会产生重复的 (event_id, tag_id) 行
 DELETE FROM event_tags WHERE tag_id=:from
   AND event_id IN (SELECT event_id FROM event_tags WHERE tag_id=:to);
 UPDATE event_tags SET tag_id=:to WHERE tag_id=:from;
 UPDATE tags SET alias_of_id=:to WHERE id=:from;
-COMMIT;
 ```
 接口需校验 `from != to`,且目标标签 `alias_of_id IS NULL`;前台取规范标签:`WHERE alias_of_id IS NULL`。
+若源标签已经 `alias_of_id=to`,重复归并返回 `{ok:true}` 且不重复写审计;源/目标缺失或非规范标签返回 409。
 
 ## 审计日志(轻量,必做)
 
-表 `audit_logs(id, action, target_id, meta TEXT, at TEXT)`(本任务迁移新增 `0003_audit.sql`)。关键操作成功后写一行:`action` ∈ {approve,reject,edit,offline,republish,merge},`meta` 存 JSON(如 reject_reason、merge from/to)。后台可加 `/admin/audit` 查看页(可后置,不阻塞 MVP)。
+表 `audit_logs(id, action, target_id, meta TEXT, at TEXT)`(本任务迁移新增 `0003_audit.sql`)。关键操作实际变更成功后写一行:`action` ∈ {approve,reject,edit,offline,republish,merge},`meta` 存 JSON(如 reject_reason、merge from/to)。状态迁移与标签归并的幂等重试不重复写审计。后台可加 `/admin/audit` 查看页(可后置,不阻塞 MVP)。
 
 ## 组件结构(src,本任务新增)
 
