@@ -4,6 +4,7 @@ import { getDB, STATUS } from "../../lib/db";
 import { getPublicEvent } from "../../lib/db/queries";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 import { buildEventJsonLd } from "../../lib/seo";
+import { getDivisionLabel } from "../../lib/divisions";
 
 export const prerender = false;
 
@@ -28,6 +29,7 @@ try {
 }
 
 const tags = event?.tags ? event.tags.split("、").filter(Boolean) : [];
+const divisionLabel = event ? getDivisionLabel(event.division_code) : null;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
 const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
 ---
@@ -99,13 +101,8 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                                     </dd>
                                 </div>
                                 <div>
-                                    <dt>城市</dt>
-                                    <dd>
-                                        {event.city_name}
-                                        {event.province
-                                            ? ` / ${event.province}`
-                                            : ""}
-                                    </dd>
+                                    <dt>地区</dt>
+                                    <dd>{divisionLabel ?? "未知地区"}</dd>
                                 </div>
                                 <div>
                                     <dt>地点</dt>

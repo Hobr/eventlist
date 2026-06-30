@@ -1,13 +1,5 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS cities (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    province TEXT NOT NULL,
-    sort INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
 CREATE TABLE IF NOT EXISTS event_types (
     name TEXT PRIMARY KEY,
     label TEXT NOT NULL,
@@ -35,7 +27,7 @@ CREATE TABLE IF NOT EXISTS events (
     title TEXT NOT NULL,
     type TEXT NOT NULL,
     scale TEXT NOT NULL,
-    city_id INTEGER NOT NULL,
+    division_code TEXT NOT NULL,
     venue TEXT NOT NULL,
     address TEXT,
     start_date TEXT NOT NULL,
@@ -54,9 +46,9 @@ CREATE TABLE IF NOT EXISTS events (
     CHECK (date(start_date) IS NOT NULL),
     CHECK (date(end_date) IS NOT NULL),
     CHECK (date(end_date) >= date(start_date)),
+    CHECK (division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]' OR division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
     FOREIGN KEY (type) REFERENCES event_types(name),
-    FOREIGN KEY (scale) REFERENCES event_scales(name),
-    FOREIGN KEY (city_id) REFERENCES cities(id)
+    FOREIGN KEY (scale) REFERENCES event_scales(name)
 );
 
 CREATE TABLE IF NOT EXISTS event_tags (
@@ -68,7 +60,7 @@ CREATE TABLE IF NOT EXISTS event_tags (
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_status_start ON events(status, start_date);
-CREATE INDEX IF NOT EXISTS idx_events_city_end ON events(city_id, end_date);
-CREATE INDEX IF NOT EXISTS idx_events_status_city_start ON events(status, city_id, start_date);
+CREATE INDEX IF NOT EXISTS idx_events_division_end ON events(division_code, end_date);
+CREATE INDEX IF NOT EXISTS idx_events_status_division_start ON events(status, division_code, start_date);
 CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
 CREATE INDEX IF NOT EXISTS idx_event_tags_tag ON event_tags(tag_id);

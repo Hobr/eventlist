@@ -1,5 +1,6 @@
 ---
 import type { EventRecord } from "../../lib/db/queries";
+import { getDivisionLabel } from "../../lib/divisions";
 
 interface Props {
     events: EventRecord[];
@@ -49,7 +50,7 @@ function statusLabel(status: string) {
                                         <div>
                                             {event.start_date} - {event.end_date}
                                         </div>
-                                        <div>{event.city_name ?? "未设置城市"}</div>
+                                        <div>{getDivisionLabel(event.division_code) ?? "未设置地区"}</div>
                                         <div class="muted">{event.venue}</div>
                                         {event.address ? <div class="muted">{event.address}</div> : null}
                                     </td>

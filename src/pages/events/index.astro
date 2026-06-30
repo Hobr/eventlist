@@ -4,7 +4,6 @@ import EventCard from "../../components/EventCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { getDB } from "../../lib/db";
 import {
-    listCities,
     listPublishedEvents,
     listScales,
     listTypes,
@@ -12,6 +11,7 @@ import {
     type EventSort,
     type PublishedEventFilters,
 } from "../../lib/db/queries";
+import { isDivisionCode, listDivisionOptions } from "../../lib/divisions";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 
 export const prerender = false;
@@ -21,6 +21,10 @@ function parsePositiveInt(value: string | null) {
     return Number.isInteger(numberValue) && numberValue > 0
         ? numberValue
         : undefined;
+}
+
+function parseDivisionCode(value: string | null) {
+    return value && isDivisionCode(value) ? value : undefined;
 }
 
 function parseDate(value: string | null) {
@@ -39,7 +43,7 @@ function nextHref(page: number) {
 }
 
 const filters: PublishedEventFilters = {
-    cityId: parsePositiveInt(Astro.url.searchParams.get("city")),
+    divisionCode: parseDivisionCode(Astro.url.searchParams.get("city")),
     type: Astro.url.searchParams.get("type") || undefined,
     scale: Astro.url.searchParams.get("scale") || undefined,
     tag: Astro.url.searchParams.get("tag") || undefined,
@@ -50,7 +54,7 @@ const filters: PublishedEventFilters = {
     sort: parseSort(Astro.url.searchParams.get("sort")),
 };
 
-let cities = [];
+const divisionOptions = listDivisionOptions();
 let types = [];
 let scales = [];
 let tags = [];
@@ -60,16 +64,14 @@ let errorMessage = "";
 
 try {
     const db = await getDB(getRuntimeEnv());
-    const [loadedCities, loadedTypes, loadedScales, loadedTags, page] =
+    const [loadedTypes, loadedScales, loadedTags, page] =
         await Promise.all([
-            listCities(db),
             listTypes(db),
             listScales(db),
             topTags(db, 20),
             listPublishedEvents(db, filters),
         ]);
 
-    cities = loadedCities;
     types = loadedTypes;
     scales = loadedScales;
     tags = loadedTags;
@@ -92,7 +94,7 @@ try {
             </div>
 
             <FilterBar
-                cities={cities}
+                divisions={divisionOptions}
                 types={types}
                 scales={scales}
                 tags={tags}

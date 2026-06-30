@@ -17,9 +17,9 @@ function readOptional(formData: FormData, name: string) {
 }
 
 export function parseEventForm(formData: FormData): AdminEventInput {
-    const cityId = Number.parseInt(readRequired(formData, "city_id"), 10);
-    if (!Number.isInteger(cityId) || cityId <= 0) {
-        throw new Error("city_id must be a positive integer");
+    const divisionCode = readRequired(formData, "division_code");
+    if (!/^\d{6}(\d{6})?$/.test(divisionCode)) {
+        throw new Error("division_code must be a county code");
     }
 
     const tagsValue = readOptional(formData, "tags") ?? "";
@@ -28,7 +28,7 @@ export function parseEventForm(formData: FormData): AdminEventInput {
         title: readRequired(formData, "title"),
         type: readRequired(formData, "type"),
         scale: readRequired(formData, "scale"),
-        city_id: cityId,
+        division_code: divisionCode,
         venue: readRequired(formData, "venue"),
         address: readOptional(formData, "address"),
         start_date: readRequired(formData, "start_date"),

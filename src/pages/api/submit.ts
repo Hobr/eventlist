@@ -2,10 +2,10 @@ import type { APIRoute } from "astro";
 import { getDB } from "../../lib/db";
 import {
     insertSubmission,
-    listCities,
     listScales,
     listTypes,
 } from "../../lib/db/queries";
+import { isDivisionCode } from "../../lib/divisions";
 import { jsonError, jsonOk } from "../../lib/http/json";
 import { parseSubmissionForm } from "../../lib/public/form";
 import { getRuntimeEnv } from "../../lib/runtime/env";
@@ -15,10 +15,6 @@ export const prerender = false;
 
 function hasName(rows: Array<{ name: string }>, name: string) {
     return rows.some((row) => row.name === name);
-}
-
-function hasCity(rows: Array<{ id?: number }>, id: number) {
-    return rows.some((row) => row.id === id);
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -36,12 +32,12 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const db = await getDB(runtimeEnv);
-        const [cities, types, scales] = await Promise.all([
-            listCities(db),
+        const [types, scales] = await Promise.all([
             listTypes(db),
             listScales(db),
         ]);
-        if (!hasCity(cities, input.city_id)) return jsonError("城市无效", 400);
+        if (!isDivisionCode(input.division_code))
+            return jsonError("行政区无效", 400);
         if (!hasName(types, input.type)) return jsonError("类型无效", 400);
         if (!hasName(scales, input.scale)) return jsonError("规模无效", 400);
 

@@ -5,16 +5,17 @@
         PublishedEventFilters,
         TagSummary,
     } from "../lib/db/queries";
+    import type { DivisionOption } from "../lib/divisions";
 
     interface Props {
-        cities: OptionRow[];
+        divisions: DivisionOption[];
         types: OptionRow[];
         scales: OptionRow[];
         tags: TagSummary[];
         filters: PublishedEventFilters;
     }
 
-    let { cities, types, scales, tags, filters }: Props = $props();
+    let { divisions, types, scales, tags, filters }: Props = $props();
     let tagValue = filters.tag ?? "";
     let suggestions = tags;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -52,9 +53,9 @@
         <span>城市</span>
         <select name="city">
             <option value="">全部城市</option>
-            {#each cities as city}
-                <option value={city.id} selected={filters.cityId === city.id}>
-                    {city.name}{city.province ? ` / ${city.province}` : ""}
+            {#each divisions as division}
+                <option value={division.code} selected={filters.divisionCode === division.code}>
+                    {division.label}
                 </option>
             {/each}
         </select>

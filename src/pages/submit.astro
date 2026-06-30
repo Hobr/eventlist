@@ -3,25 +3,22 @@ import TagInput from "../components/TagInput.svelte";
 import Turnstile from "../components/Turnstile.svelte";
 import Layout from "../layouts/Layout.astro";
 import { getDB } from "../lib/db";
-import { listCities, listScales, listTypes } from "../lib/db/queries";
+import { listScales, listTypes } from "../lib/db/queries";
+import { listDivisionOptions } from "../lib/divisions";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;
 
 const runtimeEnv = getRuntimeEnv();
 const sent = Astro.url.searchParams.get("sent") === "1";
-let cities = [];
 let types = [];
 let scales = [];
+const divisionOptions = listDivisionOptions();
 let errorMessage = "";
 
 try {
     const db = await getDB(runtimeEnv);
-    [cities, types, scales] = await Promise.all([
-        listCities(db),
-        listTypes(db),
-        listScales(db),
-    ]);
+    [types, scales] = await Promise.all([listTypes(db), listScales(db)]);
 } catch (error) {
     errorMessage = error instanceof Error ? error.message : "无法加载投稿表单";
 }
@@ -83,15 +80,10 @@ try {
                         </label>
 
                         <label class="field">
-                            <span>城市</span>
-                            <select name="city_id" required>
-                                {cities.map((city) => (
-                                    <option value={city.id}>
-                                        {city.name}
-                                        {city.province
-                                            ? ` / ${city.province}`
-                                            : ""}
-                                    </option>
+                            <span>地区</span>
+                            <select name="division_code" required>
+                                {divisionOptions.map((division) => (
+                                    <option value={division.code}>{division.label}</option>
                                 ))}
                             </select>
                         </label>

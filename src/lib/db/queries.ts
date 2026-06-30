@@ -8,9 +8,7 @@ export interface EventRecord {
     type_label: string | null;
     scale: string;
     scale_label: string | null;
-    city_id: number;
-    city_name: string | null;
-    province: string | null;
+    division_code: string;
     venue: string;
     address: string | null;
     start_date: string;
@@ -33,7 +31,7 @@ export interface AdminEventInput {
     title: string;
     type: string;
     scale: string;
-    city_id: number;
+    division_code: string;
     venue: string;
     address: string | null;
     start_date: string;
@@ -51,7 +49,7 @@ export type SubmissionInput = AdminEventInput;
 export type EventSort = "start_asc" | "start_desc";
 
 export interface PublishedEventFilters {
-    cityId?: number;
+    divisionCode?: string;
     type?: string;
     scale?: string;
     tag?: string;
@@ -84,7 +82,6 @@ export interface OptionRow {
     id?: number;
     name: string;
     label?: string;
-    province?: string;
     sort: number;
 }
 
@@ -96,13 +93,10 @@ export type TagMergeOutcome = "changed" | "already-target" | "conflict";
 const EVENT_SELECT = `
     SELECT
         events.*,
-        cities.name AS city_name,
-        cities.province AS province,
         event_types.label AS type_label,
         event_scales.label AS scale_label,
         group_concat(tags.name, '、') AS tags
     FROM events
-    LEFT JOIN cities ON cities.id = events.city_id
     LEFT JOIN event_types ON event_types.name = events.type
     LEFT JOIN event_scales ON event_scales.name = events.scale
     LEFT JOIN event_tags ON event_tags.event_id = events.id
@@ -207,24 +201,6 @@ export async function updateEventStatus(
     return "conflict" satisfies StatusUpdateOutcome;
 }
 
-export async function listCities(db: D1Database) {
-    const result = await db
-        .prepare(
-            "SELECT id, name, province, sort FROM cities ORDER BY sort ASC, name ASC",
-        )
-        .all<OptionRow>();
-    return requireSuccess(result, "Failed to list cities").results ?? [];
-}
-
-export async function getCityById(db: D1Database, id: number) {
-    return db
-        .prepare(
-            "SELECT id, name, province, sort FROM cities WHERE id = ? LIMIT 1",
-        )
-        .bind(id)
-        .first<OptionRow>();
-}
-
 export async function listTypes(db: D1Database) {
     const result = await db
         .prepare(
@@ -316,9 +292,9 @@ export async function listPublishedEvents(
     ];
     const values: Array<number | string> = [STATUS.PUBLISHED];
 
-    if (filters.cityId) {
-        clauses.push("events.city_id = ?");
-        values.push(filters.cityId);
+    if (filters.divisionCode) {
+        clauses.push("events.division_code = ?");
+        values.push(filters.divisionCode);
     }
 
     if (filters.type) {
@@ -402,7 +378,7 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
     const inserted = await db
         .prepare(
             `INSERT INTO events(
-                 title, type, scale, city_id, venue, address,
+                 title, type, scale, division_code, venue, address,
                  start_date, end_date, cover_url, description,
                  qq_group, ticket_url, source_url, submitter_contact, status
              )
@@ -412,7 +388,7 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
             input.title,
             input.type,
             input.scale,
-            input.city_id,
+            input.division_code,
             input.venue,
             input.address,
             input.start_date,
@@ -464,7 +440,7 @@ export async function editEvent(
         db
             .prepare(
                 `UPDATE events
-                 SET title = ?, type = ?, scale = ?, city_id = ?, venue = ?, address = ?,
+                 SET title = ?, type = ?, scale = ?, division_code = ?, venue = ?, address = ?,
                      start_date = ?, end_date = ?, cover_url = ?, description = ?,
                      qq_group = ?, ticket_url = ?, source_url = ?, submitter_contact = ?,
                      updated_at = datetime('now')
@@ -474,7 +450,7 @@ export async function editEvent(
                 input.title,
                 input.type,
                 input.scale,
-                input.city_id,
+                input.division_code,
                 input.venue,
                 input.address,
                 input.start_date,

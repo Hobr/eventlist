@@ -2,18 +2,18 @@
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import {
     getEvent,
-    listCities,
     listScales,
     listTypes,
 } from "../../../../lib/db/queries";
 import { getDB } from "../../../../lib/db";
+import { listDivisionOptions } from "../../../../lib/divisions";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;
 
 const id = Number.parseInt(Astro.params.id ?? "", 10);
 let eventRecord = null;
-let cities = [];
+const divisionOptions = listDivisionOptions();
 let types = [];
 let scales = [];
 let errorMessage = "";
@@ -24,20 +24,17 @@ try {
     }
 
     const db = await getDB(getRuntimeEnv());
-    const [loadedEvent, loadedCities, loadedTypes, loadedScales] =
-        await Promise.all([
-            getEvent(db, id),
-            listCities(db),
-            listTypes(db),
-            listScales(db),
-        ]);
+    const [loadedEvent, loadedTypes, loadedScales] = await Promise.all([
+        getEvent(db, id),
+        listTypes(db),
+        listScales(db),
+    ]);
 
     if (!loadedEvent) {
         throw new Error("活动不存在");
     }
 
     eventRecord = loadedEvent;
-    cities = loadedCities;
     types = loadedTypes;
     scales = loadedScales;
 } catch (error) {
@@ -94,16 +91,14 @@ try {
                 </div>
 
                 <div class="field">
-                    <label for="city_id">城市</label>
-                    <select id="city_id" name="city_id" required>
-                        {cities.map((city) => (
+                    <label for="division_code">地区</label>
+                    <select id="division_code" name="division_code" required>
+                        {divisionOptions.map((division) => (
                             <option
-                                value={city.id}
-                                selected={city.id === eventRecord.city_id}
+                                value={division.code}
+                                selected={division.code === eventRecord.division_code}
                             >
-                                {city.province
-                                    ? `${city.province} · ${city.name}`
-                                    : city.name}
+                                {division.label}
                             </option>
                         ))}
                     </select>

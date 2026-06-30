@@ -19,6 +19,9 @@ importers:
             astro:
                 specifier: ^7.0.3
                 version: 7.0.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@24.13.2)
+            cn-division:
+                specifier: ^2026.0.0
+                version: 2026.0.0
             svelte:
                 specifier: ^5.56.4
                 version: 5.56.4(@typescript-eslint/types@8.62.1)
@@ -1737,6 +1740,12 @@ packages:
                 integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==,
             }
         engines: { node: ">=6" }
+
+    cn-division@2026.0.0:
+        resolution:
+            {
+                integrity: sha512-xVc95lGq5uLxwXUyxfi3b1LOBb47+huxhAxBz4D9fDdeWgRlzX65tmQPGz9BPwb/9L4NFiAWAs9QfMtCNPvv2Q==,
+            }
 
     comma-separated-tokens@2.0.3:
         resolution:
@@ -4861,6 +4870,8 @@ snapshots:
     ci-info@4.4.0: {}
 
     clsx@2.1.1: {}
+
+    cn-division@2026.0.0: {}
 
     comma-separated-tokens@2.0.3: {}
 

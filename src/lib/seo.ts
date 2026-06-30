@@ -1,6 +1,8 @@
 import type { EventRecord } from "./db/queries";
+import { getDivisionLabel } from "./divisions";
 
 export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
+    const divisionLabel = getDivisionLabel(event.division_code);
     const jsonLd: Record<string, unknown> = {
         "@context": "https://schema.org",
         "@type": "Event",
@@ -16,7 +18,7 @@ export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
         location: {
             "@type": "Place",
             name: event.venue,
-            address: event.address ?? event.city_name ?? undefined,
+            address: event.address ?? divisionLabel ?? undefined,
         },
         organizer: {
             "@type": "Organization",

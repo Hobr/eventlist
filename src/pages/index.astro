@@ -2,10 +2,13 @@
 import CitySelector from "../components/CitySelector.svelte";
 import EventCard from "../components/EventCard.astro";
 import Layout from "../layouts/Layout.astro";
-import { FALLBACK_CITY_ID, resolveSelectedCity } from "../lib/geo";
+import {
+    FALLBACK_DIVISION_CODE,
+    listDivisionOptions,
+} from "../lib/divisions";
+import { resolveSelectedDivision } from "../lib/geo";
 import { getDB } from "../lib/db";
 import {
-    listCities,
     listPublishedEvents,
     listTypes,
     topTags,
@@ -15,29 +18,27 @@ import { getRuntimeEnv } from "../lib/runtime/env";
 export const prerender = false;
 
 const runtimeEnv = getRuntimeEnv();
-const defaultCityId =
-    Number.parseInt(runtimeEnv.DEFAULT_CITY_ID ?? "", 10) || FALLBACK_CITY_ID;
-let cities = [];
+const defaultDivisionCode =
+    runtimeEnv.DEFAULT_DIVISION_CODE || FALLBACK_DIVISION_CODE;
+const divisionOptions = listDivisionOptions();
 let events = [];
 let tags = [];
 let types = [];
-let selectedCity = null;
+let selectedDivision = null;
 let sourceLabel = "默认城市";
 let errorMessage = "";
 
 try {
     const db = await getDB(runtimeEnv);
-    const resolved = await resolveSelectedCity(
-        db,
+    const resolved = await resolveSelectedDivision(
         Astro.request,
         Astro.url.searchParams,
-        defaultCityId,
+        defaultDivisionCode,
     );
-    const [loadedCities, eventPage, loadedTags, loadedTypes] =
+    const [eventPage, loadedTags, loadedTypes] =
         await Promise.all([
-            listCities(db),
             listPublishedEvents(db, {
-                cityId: resolved.city.id,
+                divisionCode: resolved.division.code,
                 pageSize: 8,
                 sort: "start_asc",
             }),
@@ -45,11 +46,10 @@ try {
             listTypes(db),
         ]);
 
-    cities = loadedCities;
     events = eventPage.events;
     tags = loadedTags;
     types = loadedTypes;
-    selectedCity = resolved.city;
+    selectedDivision = resolved.division;
     sourceLabel =
         resolved.source === "query"
             ? "手动选择"
@@ -60,7 +60,7 @@ try {
     errorMessage = error instanceof Error ? error.message : "无法加载公共活动";
 }
 
-const selectedCityId = selectedCity?.id ?? defaultCityId;
+const selectedDivisionCode = selectedDivision?.code ?? defaultDivisionCode;
 ---
 
 <Layout
@@ -78,7 +78,7 @@ const selectedCityId = selectedCity?.id ?? defaultCityId;
                 <div class="button-row" style="margin-top: 22px;">
                     <a
                         class="button button-filled"
-                        href={`/events?city=${selectedCityId}`}
+                        href={`/events?city=${selectedDivisionCode}`}
                     >
                         <span
                             class="material-symbols-rounded"
@@ -98,12 +98,12 @@ const selectedCityId = selectedCity?.id ?? defaultCityId;
             <div class="hero-controls">
                 <p class="section-kicker">CITY</p>
                 <CitySelector
-                    cities={cities}
-                    selectedCityId={selectedCityId}
+                    divisions={divisionOptions}
+                    selectedDivisionCode={selectedDivisionCode}
                     client:load
                 />
                 <p class="supporting-copy" style="margin-top: 14px;">
-                    当前城市：{selectedCity?.name ?? "北京"} · {sourceLabel}
+                    当前地区：{selectedDivision?.label ?? "北京 / 东城区"} · {sourceLabel}
                 </p>
             </div>
         </div>
@@ -119,11 +119,11 @@ const selectedCityId = selectedCity?.id ?? defaultCityId;
                         <div class="section-header">
                             <div>
                                 <p class="section-kicker">UPCOMING</p>
-                                <h2>{selectedCity?.name ?? "本地"}近期活动</h2>
+                                <h2>{selectedDivision?.city ?? selectedDivision?.name ?? "本地"}近期活动</h2>
                             </div>
                             <a
                                 class="button button-tonal"
-                                href={`/events?city=${selectedCityId}`}
+                                href={`/events?city=${selectedDivisionCode}`}
                             >
                                 <span
                                     class="material-symbols-rounded"

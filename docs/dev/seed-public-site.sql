@@ -7,7 +7,7 @@ INSERT OR IGNORE INTO tags(name) VALUES
     ('购票开放');
 
 INSERT INTO events(
-    title, type, scale, city_id, venue, address,
+    title, type, scale, division_code, venue, address,
     start_date, end_date, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status, published_at
 )
@@ -15,7 +15,7 @@ SELECT
     'Eventlist Dev 北京演唱会',
     'concert',
     'large',
-    cities.id,
+    '110105',
     '北京展演中心',
     '北京市朝阳区测试路 1 号',
     '2026-08-02',
@@ -28,15 +28,13 @@ SELECT
     'dev@example.com',
     'published',
     datetime('now')
-FROM cities
-WHERE cities.name = '北京'
-  AND NOT EXISTS (
+WHERE NOT EXISTS (
       SELECT 1 FROM events
       WHERE source_url = 'https://example.com/eventlist/dev-beijing-concert'
   );
 
 INSERT INTO events(
-    title, type, scale, city_id, venue, address,
+    title, type, scale, division_code, venue, address,
     start_date, end_date, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status, published_at
 )
@@ -44,7 +42,7 @@ SELECT
     'Eventlist Dev 上海同人展',
     'doujin',
     'mid',
-    cities.id,
+    '310115',
     '上海同好会馆',
     '上海市浦东新区测试路 2 号',
     '2026-08-16',
@@ -57,15 +55,13 @@ SELECT
     'dev@example.com',
     'published',
     datetime('now')
-FROM cities
-WHERE cities.name = '上海'
-  AND NOT EXISTS (
+WHERE NOT EXISTS (
       SELECT 1 FROM events
       WHERE source_url = 'https://example.com/eventlist/dev-shanghai-doujin'
   );
 
 INSERT INTO events(
-    title, type, scale, city_id, venue, address,
+    title, type, scale, division_code, venue, address,
     start_date, end_date, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status, published_at
 )
@@ -73,7 +69,7 @@ SELECT
     'Eventlist Dev 已下线舞台剧',
     'stage',
     'small',
-    cities.id,
+    '440106',
     '广州剧场',
     '广州市天河区测试路 3 号',
     '2026-07-20',
@@ -86,15 +82,13 @@ SELECT
     'dev@example.com',
     'offline',
     datetime('now')
-FROM cities
-WHERE cities.name = '广州'
-  AND NOT EXISTS (
+WHERE NOT EXISTS (
       SELECT 1 FROM events
       WHERE source_url = 'https://example.com/eventlist/dev-offline-stage'
   );
 
 INSERT INTO events(
-    title, type, scale, city_id, venue, address,
+    title, type, scale, division_code, venue, address,
     start_date, end_date, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status
 )
@@ -102,7 +96,7 @@ SELECT
     'Eventlist Dev 待审核活动',
     'comic',
     'small',
-    cities.id,
+    '510104',
     '成都测试展馆',
     '成都市测试路 4 号',
     '2026-09-01',
@@ -114,9 +108,7 @@ SELECT
     'https://example.com/eventlist/dev-pending-comic',
     'dev@example.com',
     'pending'
-FROM cities
-WHERE cities.name = '成都'
-  AND NOT EXISTS (
+WHERE NOT EXISTS (
       SELECT 1 FROM events
       WHERE source_url = 'https://example.com/eventlist/dev-pending-comic'
   );

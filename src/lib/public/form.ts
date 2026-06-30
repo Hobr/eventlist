@@ -24,16 +24,13 @@ function readOptional(formData: FormData, name: string) {
     return trimmed === "" ? null : trimmed;
 }
 
-function readCityId(formData: FormData) {
-    const cityId = Number.parseInt(
-        readRequired(formData, "city_id", "城市"),
-        10,
-    );
-    if (!Number.isInteger(cityId) || cityId <= 0) {
-        throw new Error("城市无效");
+function readDivisionCode(formData: FormData) {
+    const code = readRequired(formData, "division_code", "行政区");
+    if (!/^\d{6}(\d{6})?$/.test(code)) {
+        throw new Error("行政区无效");
     }
 
-    return cityId;
+    return code;
 }
 
 function readDate(formData: FormData, name: string, label: string) {
@@ -112,7 +109,7 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
             title: readRequired(formData, "title", "标题"),
             type: readRequired(formData, "type", "类型"),
             scale: readRequired(formData, "scale", "规模"),
-            city_id: readCityId(formData),
+            division_code: readDivisionCode(formData),
             venue: readRequired(formData, "venue", "地点"),
             address: readOptional(formData, "address"),
             start_date: startDate,

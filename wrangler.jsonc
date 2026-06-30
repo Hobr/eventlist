@@ -12,7 +12,7 @@
         "enabled": true,
     },
     "vars": {
-        "DEFAULT_CITY_ID": "1",
+        "DEFAULT_DIVISION_CODE": "110101",
         "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
     },
     "d1_databases": [
