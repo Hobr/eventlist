@@ -79,59 +79,89 @@ try {
 ---
 
 <Layout title="活动列表" description="筛选近期已发布且未结束的 ACG 活动。">
-    <section class="page-section">
-        <div class="section-inner">
-            <div class="page-heading">
-                <p class="section-kicker">EVENTS</p>
-                <h1>活动列表</h1>
-                <p class="supporting-copy">
-                    已发布且未结束的活动会出现在这里。筛选条件会写入地址栏，方便收藏和分享。
-                </p>
+    <section class="page-section browse-section">
+        <div class="section-inner browse-shell">
+            <aside class="browse-sidebar">
+                <FilterBar
+                    types={types}
+                    scales={scales}
+                    tags={tags}
+                    filters={filters}
+                    client:load
+                />
+            </aside>
+
+            <div class="browse-main">
+                <div class="browse-header">
+                    <div>
+                        <p class="section-kicker">EVENTS</p>
+                        <h1>活动雷达</h1>
+                        <p class="supporting-copy">
+                            当前视图保留在地址栏，可直接收藏或分享。列表以时间线方式展示，方便连续浏览。
+                        </p>
+                    </div>
+                    <div class="browse-count">
+                        <span>{events.length}</span>
+                        <small>本页活动</small>
+                    </div>
+                </div>
+                <div class="browse-modebar" aria-label="浏览模式">
+                    <span class="mode-pill" data-active="true">
+                        <span class="material-symbols-rounded" aria-hidden="true"
+                            >view_timeline</span
+                        >
+                        时间线
+                    </span>
+                    <span class="mode-pill">
+                        <span class="material-symbols-rounded" aria-hidden="true">link</span>
+                        URL 可分享
+                    </span>
+                    <span class="mode-pill">
+                        <span class="material-symbols-rounded" aria-hidden="true">verified</span>
+                        已审核
+                    </span>
+                </div>
+                {
+                    errorMessage ? (
+                        <div class="notice error">{errorMessage}</div>
+                    ) : events.length > 0 ? (
+                        <>
+                            <div class="event-feed">
+                                {events.map((event) => (
+                                    <EventCard event={event} variant="row" />
+                                ))}
+                            </div>
+                            <nav class="pagination" aria-label="活动分页">
+                                {filters.page && filters.page > 1 ? (
+                                    <a
+                                        class="button button-outline"
+                                        href={nextHref(filters.page - 1)}
+                                    >
+                                        <span class="material-symbols-rounded" aria-hidden="true">
+                                            chevron_left
+                                        </span>
+                                        上一页
+                                    </a>
+                                ) : null}
+                                <span class="muted">第 {filters.page} 页</span>
+                                {hasNext ? (
+                                    <a
+                                        class="button button-outline"
+                                        href={nextHref((filters.page ?? 1) + 1)}
+                                    >
+                                        下一页
+                                        <span class="material-symbols-rounded" aria-hidden="true">
+                                            chevron_right
+                                        </span>
+                                    </a>
+                                ) : null}
+                            </nav>
+                        </>
+                    ) : (
+                        <div class="panel empty-state">没有匹配的近期活动。</div>
+                    )
+                }
             </div>
-
-            <FilterBar types={types} scales={scales} tags={tags} filters={filters} client:load />
-
-            {
-                errorMessage ? (
-                    <div class="notice error" style="margin-top: 18px;">
-                        {errorMessage}
-                    </div>
-                ) : events.length > 0 ? (
-                    <>
-                        <div class="event-grid" style="margin-top: 22px;">
-                            {events.map((event) => (
-                                <EventCard event={event} />
-                            ))}
-                        </div>
-                        <nav class="pagination" aria-label="活动分页">
-                            {filters.page && filters.page > 1 ? (
-                                <a class="button button-outline" href={nextHref(filters.page - 1)}>
-                                    <span class="material-symbols-rounded" aria-hidden="true">
-                                        chevron_left
-                                    </span>
-                                    上一页
-                                </a>
-                            ) : null}
-                            <span class="muted">第 {filters.page} 页</span>
-                            {hasNext ? (
-                                <a
-                                    class="button button-outline"
-                                    href={nextHref((filters.page ?? 1) + 1)}
-                                >
-                                    下一页
-                                    <span class="material-symbols-rounded" aria-hidden="true">
-                                        chevron_right
-                                    </span>
-                                </a>
-                            ) : null}
-                        </nav>
-                    </>
-                ) : (
-                    <div class="panel empty-state" style="margin-top: 22px;">
-                        没有匹配的近期活动。
-                    </div>
-                )
-            }
         </div>
     </section>
 </Layout>

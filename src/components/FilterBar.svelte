@@ -66,7 +66,12 @@
     const sortValue: EventSort = filters.sort ?? "start_asc";
 </script>
 
-<form class="panel toolbar" action="/events" method="GET">
+<form class="panel filter-rail" action="/events" method="GET">
+    <div class="filter-rail-heading">
+        <p class="section-kicker">FILTER</p>
+        <h2>筛选视图</h2>
+    </div>
+
     <DivisionPicker
         name="city"
         label="地区"
@@ -109,7 +114,7 @@
         </datalist>
     </label>
 
-    <div class="button-row">
+    <div class="button-row filter-actions">
         <button class="button button-filled" type="submit">
             <span class="material-symbols-rounded" aria-hidden="true">filter_alt</span>
             筛选

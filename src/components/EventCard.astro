@@ -4,17 +4,25 @@ import { getDivisionLabel } from "../lib/divisions";
 
 interface Props {
     event: EventRecord;
+    variant?: "card" | "row";
 }
 
-const { event } = Astro.props;
+const { event, variant = "card" } = Astro.props;
 const tags = event.tags ? event.tags.split("、").filter(Boolean).slice(0, 4) : [];
 const coverUrl = event.cover_url || "";
 const divisionLabel = getDivisionLabel(event.division_code);
+const startLabel = event.start_date.slice(5).replace("-", "/");
+const endLabel = event.end_date.slice(5).replace("-", "/");
 ---
 
-<a class="event-card" href={`/events/${event.id}`}>
+<a class:list={["event-card", variant === "row" && "event-row"]} href={`/events/${event.id}`}>
     {
-        coverUrl ? (
+        variant === "row" ? (
+            <div class="event-row-date" aria-label={`${event.start_date} 至 ${event.end_date}`}>
+                <strong>{startLabel}</strong>
+                <span>{endLabel}</span>
+            </div>
+        ) : coverUrl ? (
             <img class="event-cover" src={coverUrl} alt={`${event.title} 封面`} loading="lazy" />
         ) : (
             <div class="event-cover" aria-hidden="true" />
@@ -38,7 +46,7 @@ const divisionLabel = getDivisionLabel(event.division_code);
         </div>
         {
             tags.length > 0 ? (
-                <div class="chip-row">
+                <div class="chip-row event-tags">
                     {tags.map((tag) => (
                         <span class="chip">{tag}</span>
                     ))}
@@ -46,4 +54,11 @@ const divisionLabel = getDivisionLabel(event.division_code);
             ) : null
         }
     </div>
+    {
+        variant === "row" ? (
+            <span class="material-symbols-rounded event-row-arrow" aria-hidden="true">
+                arrow_forward
+            </span>
+        ) : null
+    }
 </a>
