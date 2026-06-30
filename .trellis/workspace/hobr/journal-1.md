@@ -166,7 +166,6 @@ Archived the parent ACG event site task after foundation-db, admin-review, and p
 
 - None - task complete
 
-
 ## Session 5: Bits UI frontend redesign
 
 **Date**: 2026-06-30
@@ -183,10 +182,44 @@ Rebuilt the public and admin frontend around a Bits UI-inspired token system, pr
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `ab8c1cd` | (see git log) |
 | `72deb2e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+
+## Session 6: Structural frontend redesign
+
+**Date**: 2026-07-01
+**Task**: Structural frontend redesign
+**Branch**: `main`
+
+### Summary
+
+Reworked the public frontend at the structure level with command-style homepage, filter-rail event browser, event-row feed, detail dossier, and sectioned submit console; updated frontend design spec and verified with lint/build/browser checks.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8cf10fe` | (see git log) |
+| `f4c37af` | (see git log) |
 
 ### Testing
 
