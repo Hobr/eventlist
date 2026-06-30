@@ -29,6 +29,13 @@
 - Avoid nested cards; page sections should be normal layout bands or constrained content, while cards are for repeated items, forms, tables, and modals.
 - Do not scale font sizes with viewport width. Use fixed `rem` sizes and breakpoint adjustments.
 
+## Public Page Structure
+
+- Homepage first viewport should be an application-like command surface, not a generic marketing hero. Use the `home-console` / `command-panel` / `intel-panel` pattern for city selection, key metrics, and a live browse preview.
+- Event browsing should use a persistent filter rail plus compact event rows (`browse-shell`, `filter-rail`, `event-row`) as the primary list shape. Do not return to a heading + toolbar panel + three-column card grid as the default browsing mode.
+- Event details should use the dossier pattern (`event-dossier`, `dossier-hero`, `fact-tile`, `dossier-actions`) so core facts and actions are visible before long-form description.
+- Public submission should use a sectioned console (`submit-console`, `form-section`) while preserving every `name` attribute expected by `/api/submit`.
+
 ## Components
 
 - `SelectField.svelte` is the shared Bits UI `Select` wrapper. Preserve its prop contract when restyling:
