@@ -37,3 +37,37 @@ Implemented Cloudflare-protected admin review pages and APIs, added audit loggin
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: Foundation D1 schema
+
+**Date**: 2026-06-30
+**Task**: Foundation D1 schema
+**Branch**: `main`
+
+### Summary
+
+Added D1 binding, base schema and seed migrations, applied local and remote D1 migrations, generated DB binding types, and documented foundation DB contracts.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f3e4431` | (see git log) |
+| `151f97e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
