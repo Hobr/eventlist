@@ -1,0 +1,106 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { listTags } from "../../lib/db/queries";
+import { getDB } from "../../lib/db";
+import { getRuntimeEnv } from "../../lib/runtime/env";
+
+export const prerender = false;
+
+let tags = [];
+let errorMessage = "";
+
+try {
+    const db = getDB(getRuntimeEnv());
+    tags = await listTags(db);
+} catch (error) {
+    errorMessage = error instanceof Error ? error.message : "无法加载标签";
+}
+---
+
+<AdminLayout title="标签归并">
+    {
+        errorMessage ? (
+            <div class="surface empty-state error-text">{errorMessage}</div>
+        ) : (
+            <div class="surface">
+                <form class="form-grid" id="merge-tags-form">
+                    <div class="field">
+                        <label for="from">源标签</label>
+                        <select id="from" name="from" required>
+                            <option value="">选择要归并的标签</option>
+                            {tags.map((tag) => (
+                                <option value={tag.id}>
+                                    {tag.name} ({tag.event_count})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="to">目标标签</label>
+                        <select id="to" name="to" required>
+                            <option value="">选择规范标签</option>
+                            {tags.map((tag) => (
+                                <option value={tag.id}>
+                                    {tag.name} ({tag.event_count})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button class="button button-danger" type="submit">归并</button>
+                    </div>
+                </form>
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 64px">ID</th>
+                                <th>标签</th>
+                                <th style="width: 180px">活动数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tags.map((tag) => (
+                                <tr>
+                                    <td>{tag.id}</td>
+                                    <td class="cell-title">{tag.name}</td>
+                                    <td>{tag.event_count}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
+    }
+</AdminLayout>
+
+<script>
+    const form = document.querySelector("#merge-tags-form");
+    if (form instanceof HTMLFormElement) {
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const formData = new FormData(form);
+            if (formData.get("from") === formData.get("to")) {
+                window.alert("源标签和目标标签不能相同");
+                return;
+            }
+
+            const confirmed = window.confirm("标签归并不可逆，确认继续？");
+            if (!confirmed) return;
+
+            const response = await fetch("/api/admin/tags/merge", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                window.location.reload();
+                return;
+            }
+
+            const body = (await response.json().catch(() => null)) as { error?: string } | null;
+            window.alert(body?.error ?? "归并失败");
+        });
+    }
+</script>

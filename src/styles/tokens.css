@@ -1,0 +1,53 @@
+:root {
+    color-scheme: light;
+    --md-sys-color-primary: #006c4f;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #89f8c9;
+    --md-sys-color-on-primary-container: #002116;
+    --md-sys-color-secondary: #4d6358;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-tertiary: #3f6374;
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-surface: #fbfdf8;
+    --md-sys-color-surface-container: #eef2ea;
+    --md-sys-color-surface-container-high: #e8ece4;
+    --md-sys-color-surface-variant: #dce5dc;
+    --md-sys-color-on-surface: #191c1a;
+    --md-sys-color-on-surface-variant: #404943;
+    --md-sys-color-outline: #707970;
+    --md-sys-color-background: #fbfdf8;
+    --md-sys-color-on-background: #191c1a;
+    --md-sys-elevation-level1: 0 1px 2px rgba(25, 28, 26, 0.16);
+    --md-sys-elevation-level2: 0 2px 6px rgba(25, 28, 26, 0.18);
+    --md-sys-shape-extra-small: 4px;
+    --md-sys-shape-small: 8px;
+    --md-sys-shape-medium: 12px;
+    --md-sys-shape-large: 16px;
+    --md-sys-motion-duration-medium: 180ms;
+    --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+        --md-sys-color-primary: #6bdbad;
+        --md-sys-color-on-primary: #003828;
+        --md-sys-color-primary-container: #00513b;
+        --md-sys-color-on-primary-container: #89f8c9;
+        --md-sys-color-secondary: #b5ccc0;
+        --md-sys-color-on-secondary: #20352b;
+        --md-sys-color-tertiary: #a7cede;
+        --md-sys-color-error: #ffb4ab;
+        --md-sys-color-on-error: #690005;
+        --md-sys-color-surface: #101411;
+        --md-sys-color-surface-container: #1c211d;
+        --md-sys-color-surface-container-high: #262b27;
+        --md-sys-color-surface-variant: #404943;
+        --md-sys-color-on-surface: #e1e4dd;
+        --md-sys-color-on-surface-variant: #c0c9c0;
+        --md-sys-color-outline: #8a938a;
+        --md-sys-color-background: #101411;
+        --md-sys-color-on-background: #e1e4dd;
+    }
+}

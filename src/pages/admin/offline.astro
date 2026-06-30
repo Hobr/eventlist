@@ -1,0 +1,38 @@
+---
+import EventTable from "../../components/admin/EventTable.astro";
+import Pagination from "../../components/admin/Pagination.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { listEventsByStatus } from "../../lib/db/queries";
+import { getDB, STATUS } from "../../lib/db";
+import { getRuntimeEnv } from "../../lib/runtime/env";
+
+export const prerender = false;
+
+const PAGE_SIZE = 25;
+const page = Math.max(1, Number.parseInt(Astro.url.searchParams.get("page") ?? "1", 10) || 1);
+let events = [];
+let errorMessage = "";
+
+try {
+    const db = getDB(getRuntimeEnv());
+    events = await listEventsByStatus(db, STATUS.OFFLINE, page, PAGE_SIZE + 1);
+} catch (error) {
+    errorMessage = error instanceof Error ? error.message : "无法加载已下线活动";
+}
+
+const hasNext = events.length > PAGE_SIZE;
+events = events.slice(0, PAGE_SIZE);
+---
+
+<AdminLayout title="已下线活动">
+    {
+        errorMessage ? (
+            <div class="surface empty-state error-text">{errorMessage}</div>
+        ) : (
+            <>
+                <EventTable events={events} mode="offline" />
+                <Pagination page={page} hasNext={hasNext} />
+            </>
+        )
+    }
+</AdminLayout>

@@ -1,0 +1,57 @@
+---
+import "../../styles/admin.css";
+import { createAdminCookie, verifyTokenValue } from "../../lib/auth/token";
+import { getAuthMode, getRuntimeEnv } from "../../lib/runtime/env";
+
+export const prerender = false;
+
+const runtimeEnv = getRuntimeEnv();
+const authMode = getAuthMode(runtimeEnv);
+let errorMessage = "";
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const token = formData.get("token");
+
+    if (authMode !== "token") {
+        errorMessage = "当前为 Cloudflare Access 模式，请通过 Access 登录入口访问。";
+    } else if (typeof token !== "string" || !(await verifyTokenValue(token, runtimeEnv))) {
+        errorMessage = "Token 无效。";
+    } else {
+        const next = Astro.url.searchParams.get("next") ?? "/admin";
+        Astro.response.headers.set("Set-Cookie", createAdminCookie(token));
+        return Astro.redirect(next.startsWith("/admin") ? next : "/admin");
+    }
+}
+---
+
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>管理员登录 - Eventlist</title>
+    </head>
+    <body>
+        <main class="login-page">
+            <form class="login-panel" method="post">
+                <h1>管理员登录</h1>
+                {
+                    authMode === "access" ? (
+                        <p class="muted">当前使用 Cloudflare Access 鉴权。请从受保护的 Access 应用入口进入后台。</p>
+                    ) : (
+                        <>
+                            <p class="muted">输入管理员 Token 进入后台。</p>
+                            <div class="field">
+                                <label for="token">Token</label>
+                                <input id="token" name="token" type="password" autocomplete="current-password" required />
+                            </div>
+                            <button class="button button-filled" type="submit">登录</button>
+                        </>
+                    )
+                }
+                {errorMessage ? <p class="error-text">{errorMessage}</p> : null}
+            </form>
+        </main>
+    </body>
+</html>

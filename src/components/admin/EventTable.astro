@@ -1,0 +1,166 @@
+---
+import type { EventRecord } from "../../lib/db/queries";
+
+interface Props {
+    events: EventRecord[];
+    mode: "pending" | "published" | "offline";
+}
+
+const { events, mode } = Astro.props;
+
+function statusLabel(status: string) {
+    const labels: Record<string, string> = {
+        pending: "待审核",
+        published: "已发布",
+        rejected: "已驳回",
+        offline: "已下线",
+    };
+    return labels[status] ?? status;
+}
+---
+
+<div class="surface">
+    {
+        events.length === 0 ? (
+            <div class="empty-state">暂无活动记录。</div>
+        ) : (
+            <div class="table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%">活动</th>
+                            <th style="width: 16%">时间地点</th>
+                            <th style="width: 15%">分类</th>
+                            <th style="width: 18%">来源与联系</th>
+                            <th style="width: 16%">说明</th>
+                            <th style="width: 17%">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            events.map((event) => (
+                                <tr>
+                                    <td>
+                                        <div class="cell-title">{event.title}</div>
+                                        <div class="muted">#{event.id}</div>
+                                        <span class="status-chip">{statusLabel(event.status)}</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {event.start_date} - {event.end_date}
+                                        </div>
+                                        <div>{event.city_name ?? "未设置城市"}</div>
+                                        <div class="muted">{event.venue}</div>
+                                        {event.address ? <div class="muted">{event.address}</div> : null}
+                                    </td>
+                                    <td>
+                                        <div>{event.type_label ?? event.type}</div>
+                                        <div>{event.scale_label ?? event.scale}</div>
+                                        {event.tags ? <div class="muted">{event.tags}</div> : null}
+                                    </td>
+                                    <td>
+                                        <a href={event.source_url} target="_blank" rel="noreferrer">
+                                            来源链接
+                                        </a>
+                                        <div class="muted">{event.submitter_contact}</div>
+                                        {event.ticket_url ? (
+                                            <a href={event.ticket_url} target="_blank" rel="noreferrer">
+                                                购票地址
+                                            </a>
+                                        ) : null}
+                                        {event.cover_url ? (
+                                            <div>
+                                                <a href={event.cover_url} target="_blank" rel="noreferrer">
+                                                    封面图
+                                                </a>
+                                            </div>
+                                        ) : null}
+                                    </td>
+                                    <td>
+                                        <div class="line-clamp">{event.description ?? "无说明"}</div>
+                                        {event.qq_group ? <div class="muted">QQ群: {event.qq_group}</div> : null}
+                                    </td>
+                                    <td>
+                                        <div class="actions">
+                                            {mode === "pending" ? (
+                                                <>
+                                                    <form class="inline-form" method="post" action={`/api/admin/events/${event.id}/approve`}>
+                                                        <button class="button button-filled" type="submit">
+                                                            通过
+                                                        </button>
+                                                    </form>
+                                                    <form class="reject-form" method="post" action={`/api/admin/events/${event.id}/reject`}>
+                                                        <label class="field-label" for={`reject-${event.id}`}>
+                                                            驳回理由
+                                                        </label>
+                                                        <input id={`reject-${event.id}`} name="reject_reason" required />
+                                                        <button class="button button-danger" type="submit">
+                                                            驳回
+                                                        </button>
+                                                    </form>
+                                                </>
+                                            ) : null}
+                                            {mode === "published" ? (
+                                                <>
+                                                    <a class="button button-outline" href={`/admin/events/${event.id}/edit`}>
+                                                        编辑
+                                                    </a>
+                                                    <form class="inline-form" method="post" action={`/api/admin/events/${event.id}/offline`}>
+                                                        <button class="button button-danger" type="submit" data-confirm="确认下线该活动？">
+                                                            下线
+                                                        </button>
+                                                    </form>
+                                                </>
+                                            ) : null}
+                                            {mode === "offline" ? (
+                                                <>
+                                                    <a class="button button-outline" href={`/admin/events/${event.id}/edit`}>
+                                                        编辑
+                                                    </a>
+                                                    <form class="inline-form" method="post" action={`/api/admin/events/${event.id}/republish`}>
+                                                        <button class="button button-tonal" type="submit">
+                                                            重新发布
+                                                        </button>
+                                                    </form>
+                                                </>
+                                            ) : null}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
+</div>
+
+<script>
+    for (const form of document.querySelectorAll("form[action^='/api/admin/']")) {
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const target = event.currentTarget;
+            if (!(target instanceof HTMLFormElement)) return;
+
+            const submitter = event.submitter;
+            if (submitter instanceof HTMLButtonElement && submitter.dataset.confirm) {
+                const confirmed = window.confirm(submitter.dataset.confirm);
+                if (!confirmed) return;
+            }
+
+            const response = await fetch(target.action, {
+                method: target.method.toUpperCase(),
+                body: new FormData(target),
+            });
+
+            if (response.ok) {
+                window.location.reload();
+                return;
+            }
+
+            const body = (await response.json().catch(() => null)) as { error?: string } | null;
+            window.alert(body?.error ?? "操作失败");
+        });
+    }
+</script>

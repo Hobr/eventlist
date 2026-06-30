@@ -1,0 +1,40 @@
+import type { D1Database, RuntimeEnv } from "../../types/cloudflare";
+
+export const STATUS = {
+    PENDING: "pending",
+    PUBLISHED: "published",
+    REJECTED: "rejected",
+    OFFLINE: "offline",
+} as const;
+
+export const TYPES = {
+    COMIC: "comic",
+    DOUJIN: "doujin",
+    CONCERT: "concert",
+    STAGE: "stage",
+    DANCE: "dance",
+    IP_FLASH: "ipflash",
+    ONLINE: "online",
+    OTHER: "other",
+} as const;
+
+export const SCALES = {
+    SMALL: "small",
+    MID: "mid",
+    LARGE: "large",
+    MEGA: "mega",
+} as const;
+
+export type EventStatus = (typeof STATUS)[keyof typeof STATUS];
+
+export function getDB(runtimeEnv: RuntimeEnv): D1Database {
+    if (!runtimeEnv.DB) {
+        throw new Error("D1 binding DB is not configured. Complete foundation-db before using admin pages.");
+    }
+
+    return runtimeEnv.DB;
+}
+
+export async function ensureFK(db: D1Database) {
+    await db.exec("PRAGMA foreign_keys = ON;");
+}
