@@ -215,7 +215,8 @@
 
 .field input,
 .field select,
-.field textarea {
+.field textarea,
+.bits-select-trigger {
     background: var(--md-sys-color-surface-container);
     border: 1px solid var(--md-sys-color-outline);
     border-radius: var(--md-sys-shape-small);
@@ -223,6 +224,91 @@
     min-height: 46px;
     padding: 10px 12px;
     width: 100%;
+}
+
+.bits-select-trigger {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.bits-select-trigger[disabled] {
+    cursor: not-allowed;
+    opacity: 0.56;
+}
+
+.bits-select-trigger[data-state="open"] {
+    border-color: var(--md-sys-color-primary);
+}
+
+.bits-select-icon {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 1.25rem;
+}
+
+.bits-select-content {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-medium);
+    box-shadow: var(--md-sys-elevation-level3);
+    color: var(--md-sys-color-on-surface);
+    max-height: min(360px, var(--bits-select-content-available-height));
+    min-width: var(--bits-select-anchor-width);
+    overflow: hidden;
+    padding: 6px;
+    z-index: 50;
+}
+
+.bits-select-viewport {
+    max-height: 320px;
+}
+
+.bits-select-item {
+    align-items: center;
+    border-radius: var(--md-sys-shape-extra-small);
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    min-height: 40px;
+    outline: none;
+    padding: 8px 10px;
+}
+
+.bits-select-item[data-highlighted] {
+    background: var(--md-sys-color-surface-container-high);
+}
+
+.bits-select-item[data-selected] {
+    color: var(--md-sys-color-primary);
+}
+
+.bits-select-item[data-disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.bits-select-item-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bits-select-check {
+    flex: 0 0 auto;
+    font-size: 1.1rem;
+}
+
+.bits-select-scroll-button {
+    align-items: center;
+    color: var(--md-sys-color-on-surface-variant);
+    display: flex;
+    justify-content: center;
+    min-height: 28px;
 }
 
 .field textarea {

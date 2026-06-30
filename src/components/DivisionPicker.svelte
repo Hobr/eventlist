@@ -5,6 +5,7 @@
         ProvinceDivisionOption
     } from "../lib/divisions";
     import { listDivisionTree } from "../lib/divisions";
+    import SelectField from "./SelectField.svelte";
 
     type Mode = "region" | "county";
 
@@ -76,32 +77,55 @@
         if (mode === "region" && selectedProvinceCode) return selectedProvinceCode;
         return "";
     });
+    let provinceOptions = $derived([
+        ...(allowEmpty ? [{ value: "", label: emptyLabel }] : []),
+        ...provinces.map((province) => ({
+            value: province.code,
+            label: province.name
+        }))
+    ]);
+    let cityOptions = $derived([
+        {
+            value: "",
+            label: mode === "region" && selectedProvince ? "全部城市" : "选择城市",
+            disabled: mode === "county"
+        },
+        ...cities.map((city) => ({
+            value: city.code,
+            label: city.name
+        }))
+    ]);
+    let countyOptions = $derived([
+        {
+            value: "",
+            label: mode === "region" && selectedCity ? "全部区县" : "选择区县",
+            disabled: mode === "county"
+        },
+        ...counties.map((county) => ({
+            value: county.code,
+            label: county.name
+        }))
+    ]);
 
     function syncChange() {
         onchange?.(selectedValue);
     }
 
-    function handleProvinceChange(event: Event) {
-        const select = event.currentTarget;
-        if (!(select instanceof HTMLSelectElement)) return;
-        selectedProvinceCode = select.value;
+    function handleProvinceChange(value: string) {
+        selectedProvinceCode = value;
         selectedCityCode = "";
         selectedCountyCode = "";
         syncChange();
     }
 
-    function handleCityChange(event: Event) {
-        const select = event.currentTarget;
-        if (!(select instanceof HTMLSelectElement)) return;
-        selectedCityCode = select.value;
+    function handleCityChange(value: string) {
+        selectedCityCode = value;
         selectedCountyCode = "";
         syncChange();
     }
 
-    function handleCountyChange(event: Event) {
-        const select = event.currentTarget;
-        if (!(select instanceof HTMLSelectElement)) return;
-        selectedCountyCode = select.value;
+    function handleCountyChange(value: string) {
+        selectedCountyCode = value;
         syncChange();
     }
 </script>
@@ -110,50 +134,31 @@
     <span>{label}</span>
     <input type="hidden" {name} value={selectedValue} {required} />
     <div class="division-picker-controls">
-        <select
-            aria-label={`${label}省份`}
+        <SelectField
+            label={`${label}省份`}
             value={selectedProvinceCode}
+            options={provinceOptions}
+            placeholder="选择省份"
             required={required && mode === "county"}
             onchange={handleProvinceChange}
-        >
-            {#if allowEmpty}
-                <option value="">{emptyLabel}</option>
-            {:else}
-                <option value="" disabled selected={!selectedProvinceCode}> 选择省份 </option>
-            {/if}
-            {#each provinces as province}
-                <option value={province.code}>{province.name}</option>
-            {/each}
-        </select>
-
-        <select
-            aria-label={`${label}城市`}
+        />
+        <SelectField
+            label={`${label}城市`}
             value={selectedCityCode}
+            options={cityOptions}
+            placeholder="选择城市"
             disabled={!selectedProvince}
             required={required && mode === "county"}
             onchange={handleCityChange}
-        >
-            <option value="">
-                {mode === "region" && selectedProvince ? "全部城市" : "选择城市"}
-            </option>
-            {#each cities as city}
-                <option value={city.code}>{city.name}</option>
-            {/each}
-        </select>
-
-        <select
-            aria-label={`${label}区县`}
+        />
+        <SelectField
+            label={`${label}区县`}
             value={selectedCountyCode}
+            options={countyOptions}
+            placeholder="选择区县"
             disabled={!selectedCity}
             required={required && mode === "county"}
             onchange={handleCountyChange}
-        >
-            <option value="">
-                {mode === "region" && selectedCity ? "全部区县" : "选择区县"}
-            </option>
-            {#each counties as county}
-                <option value={county.code}>{county.name}</option>
-            {/each}
-        </select>
+        />
     </div>
 </div>

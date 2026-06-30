@@ -1,6 +1,7 @@
 ---
 import TagInput from "../components/TagInput.svelte";
 import DivisionPicker from "../components/DivisionPicker.svelte";
+import SelectField from "../components/SelectField.svelte";
 import Turnstile from "../components/Turnstile.svelte";
 import Layout from "../layouts/Layout.astro";
 import { getDB } from "../lib/db";
@@ -21,6 +22,15 @@ try {
 } catch (error) {
     errorMessage = error instanceof Error ? error.message : "无法加载投稿表单";
 }
+
+const typeOptions = types.map((type) => ({
+    value: type.name,
+    label: type.label ?? type.name
+}));
+const scaleOptions = scales.map((scale) => ({
+    value: scale.name,
+    label: scale.label ?? scale.name
+}));
 ---
 
 <Layout title="提交活动" description="提交 ACG 活动，进入审核队列后再公开展示。">
@@ -51,23 +61,23 @@ try {
                             <input name="title" required maxlength="120" />
                         </label>
 
-                        <label class="field">
-                            <span>类型</span>
-                            <select name="type" required>
-                                {types.map((type) => (
-                                    <option value={type.name}>{type.label ?? type.name}</option>
-                                ))}
-                            </select>
-                        </label>
+                        <SelectField
+                            name="type"
+                            label="类型"
+                            options={typeOptions}
+                            placeholder="选择类型"
+                            required
+                            client:load
+                        />
 
-                        <label class="field">
-                            <span>规模</span>
-                            <select name="scale" required>
-                                {scales.map((scale) => (
-                                    <option value={scale.name}>{scale.label ?? scale.name}</option>
-                                ))}
-                            </select>
-                        </label>
+                        <SelectField
+                            name="scale"
+                            label="规模"
+                            options={scaleOptions}
+                            placeholder="选择规模"
+                            required
+                            client:load
+                        />
 
                         <DivisionPicker
                             name="division_code"

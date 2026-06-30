@@ -50,6 +50,27 @@ export interface DivisionTree {
     provinces: ProvinceDivisionOption[];
 }
 
+const SUPPLEMENTAL_PROVINCES = [
+    {
+        provinceCode: "71",
+        cityCode: "7100",
+        countyCode: "710000",
+        name: "台湾省"
+    },
+    {
+        provinceCode: "81",
+        cityCode: "8100",
+        countyCode: "810000",
+        name: "香港特别行政区"
+    },
+    {
+        provinceCode: "82",
+        cityCode: "8200",
+        countyCode: "820000",
+        name: "澳门特别行政区"
+    }
+] as const;
+
 function toCode(value: string | number | null | undefined) {
     return String(value ?? "").trim();
 }
@@ -72,10 +93,36 @@ function getCityLabel(code: string | number | null | undefined) {
     return joinLabel(province?.n, city.n);
 }
 
+function getSupplementalProvinceByCode(code: string | number | null | undefined) {
+    const normalized = toCode(code);
+    return (
+        SUPPLEMENTAL_PROVINCES.find(
+            (province) =>
+                province.provinceCode === normalized ||
+                province.cityCode === normalized ||
+                province.countyCode === normalized
+        ) ?? null
+    );
+}
+
 export function getDivisionOptionByCode(
     code: string | number | null | undefined
 ): DivisionOption | null {
     const normalized = toCode(code);
+    const supplemental = getSupplementalProvinceByCode(normalized);
+    if (supplemental?.countyCode === normalized) {
+        return {
+            code: supplemental.countyCode,
+            name: supplemental.name,
+            label: supplemental.name,
+            city: supplemental.name,
+            province: supplemental.name,
+            cityCode: supplemental.cityCode,
+            provinceCode: supplemental.provinceCode,
+            sort: countiesCode.length + SUPPLEMENTAL_PROVINCES.indexOf(supplemental)
+        };
+    }
+
     const county = getCountyByCode(normalized);
     if (!county) return null;
 
@@ -100,6 +147,44 @@ export function getRegionOptionByCode(
 ): RegionOption | null {
     const normalized = toCode(code);
     if (!normalized) return null;
+
+    const supplemental = getSupplementalProvinceByCode(normalized);
+    if (supplemental) {
+        const sort = provincesCode.length + SUPPLEMENTAL_PROVINCES.indexOf(supplemental);
+        if (normalized === supplemental.countyCode) {
+            return {
+                code: supplemental.countyCode,
+                name: supplemental.name,
+                label: supplemental.name,
+                level: "county",
+                province: supplemental.name,
+                city: supplemental.name,
+                sort
+            };
+        }
+
+        if (normalized === supplemental.cityCode) {
+            return {
+                code: supplemental.cityCode,
+                name: supplemental.name,
+                label: supplemental.name,
+                level: "city",
+                province: supplemental.name,
+                city: supplemental.name,
+                sort
+            };
+        }
+
+        return {
+            code: supplemental.provinceCode,
+            name: supplemental.name,
+            label: supplemental.name,
+            level: "province",
+            province: supplemental.name,
+            city: null,
+            sort
+        };
+    }
 
     const county = getDivisionOptionByCode(normalized);
     if (county) {
@@ -159,44 +244,79 @@ export function getDivisionLabel(code: string | number | null | undefined) {
 
 export function listDivisionTree(): DivisionTree {
     return {
-        provinces: provincesCode.map((province, provinceIndex) => {
-            const provinceCode = toProvinceCode(province.c);
-            const cities = getCitiesByProvince(provinceCode).map((city, cityIndex) => {
-                const cityCode = String(city.c);
-                const counties = getCountiesByCity(cityCode).map((county, countyIndex) => ({
-                    code: String(county.c),
-                    name: county.n,
-                    label: formatFullPath(String(county.c)) || county.n,
-                    city: city.n,
-                    province: province.n,
-                    cityCode,
-                    provinceCode,
-                    sort: countyIndex
-                }));
+        provinces: [
+            ...provincesCode.map((province, provinceIndex) => {
+                const provinceCode = toProvinceCode(province.c);
+                const cities = getCitiesByProvince(provinceCode).map((city, cityIndex) => {
+                    const cityCode = String(city.c);
+                    const counties = getCountiesByCity(cityCode).map((county, countyIndex) => ({
+                        code: String(county.c),
+                        name: county.n,
+                        label: formatFullPath(String(county.c)) || county.n,
+                        city: city.n,
+                        province: province.n,
+                        cityCode,
+                        provinceCode,
+                        sort: countyIndex
+                    }));
+
+                    return {
+                        code: cityCode,
+                        name: city.n,
+                        label: joinLabel(province.n, city.n),
+                        level: "city" as const,
+                        province: province.n,
+                        city: city.n,
+                        provinceCode,
+                        counties,
+                        sort: cityIndex
+                    };
+                });
 
                 return {
-                    code: cityCode,
-                    name: city.n,
-                    label: joinLabel(province.n, city.n),
-                    level: "city" as const,
+                    code: provinceCode,
+                    name: province.n,
+                    label: province.n,
+                    level: "province" as const,
                     province: province.n,
-                    city: city.n,
-                    provinceCode,
-                    counties,
-                    sort: cityIndex
+                    city: null,
+                    cities,
+                    sort: provinceIndex
                 };
-            });
-
-            return {
-                code: provinceCode,
-                name: province.n,
-                label: province.n,
+            }),
+            ...SUPPLEMENTAL_PROVINCES.map((province, index) => ({
+                code: province.provinceCode,
+                name: province.name,
+                label: province.name,
                 level: "province" as const,
-                province: province.n,
+                province: province.name,
                 city: null,
-                cities,
-                sort: provinceIndex
-            };
-        })
+                cities: [
+                    {
+                        code: province.cityCode,
+                        name: province.name,
+                        label: province.name,
+                        level: "city" as const,
+                        province: province.name,
+                        city: province.name,
+                        provinceCode: province.provinceCode,
+                        counties: [
+                            {
+                                code: province.countyCode,
+                                name: province.name,
+                                label: province.name,
+                                city: province.name,
+                                province: province.name,
+                                cityCode: province.cityCode,
+                                provinceCode: province.provinceCode,
+                                sort: 0
+                            }
+                        ],
+                        sort: 0
+                    }
+                ],
+                sort: provincesCode.length + index
+            }))
+        ]
     };
 }

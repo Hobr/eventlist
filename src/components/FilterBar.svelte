@@ -6,6 +6,7 @@
         TagSummary
     } from "../lib/db/queries";
     import DivisionPicker from "./DivisionPicker.svelte";
+    import SelectField from "./SelectField.svelte";
 
     interface Props {
         types: OptionRow[];
@@ -18,6 +19,24 @@
     let tagValue = filters.tag ?? "";
     let suggestions = tags;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const typeOptions = $derived([
+        { value: "", label: "全部类型" },
+        ...types.map((type) => ({
+            value: type.name,
+            label: type.label ?? type.name
+        }))
+    ]);
+    const scaleOptions = $derived([
+        { value: "", label: "全部规模" },
+        ...scales.map((scale) => ({
+            value: scale.name,
+            label: scale.label ?? scale.name
+        }))
+    ]);
+    const sortOptions = [
+        { value: "start_asc", label: "开始时间近到远" },
+        { value: "start_desc", label: "开始时间远到近" }
+    ];
 
     async function refreshTagSuggestions(value: string) {
         const query = value.trim();
@@ -57,37 +76,11 @@
         emptyLabel="全部地区"
     />
 
-    <label class="field">
-        <span>类型</span>
-        <select name="type">
-            <option value="">全部类型</option>
-            {#each types as type}
-                <option value={type.name} selected={filters.type === type.name}
-                    >{type.label ?? type.name}</option
-                >
-            {/each}
-        </select>
-    </label>
+    <SelectField name="type" label="类型" value={filters.type ?? ""} options={typeOptions} />
 
-    <label class="field">
-        <span>规模</span>
-        <select name="scale">
-            <option value="">全部规模</option>
-            {#each scales as scale}
-                <option value={scale.name} selected={filters.scale === scale.name}
-                    >{scale.label ?? scale.name}</option
-                >
-            {/each}
-        </select>
-    </label>
+    <SelectField name="scale" label="规模" value={filters.scale ?? ""} options={scaleOptions} />
 
-    <label class="field">
-        <span>排序</span>
-        <select name="sort">
-            <option value="start_asc" selected={sortValue === "start_asc"}>开始时间近到远</option>
-            <option value="start_desc" selected={sortValue === "start_desc"}>开始时间远到近</option>
-        </select>
-    </label>
+    <SelectField name="sort" label="排序" value={sortValue} options={sortOptions} />
 
     <label class="field">
         <span>开始不早于</span>

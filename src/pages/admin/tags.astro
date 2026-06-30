@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SelectField from "../../components/SelectField.svelte";
 import { listTags } from "../../lib/db/queries";
 import { getDB } from "../../lib/db";
 import { getRuntimeEnv } from "../../lib/runtime/env";
@@ -15,6 +16,11 @@ try {
 } catch (error) {
     errorMessage = error instanceof Error ? error.message : "无法加载标签";
 }
+
+const tagOptions = tags.map((tag) => ({
+    value: String(tag.id),
+    label: `${tag.name} (${tag.event_count})`
+}));
 ---
 
 <AdminLayout title="标签归并">
@@ -24,28 +30,22 @@ try {
         ) : (
             <div class="surface">
                 <form class="form-grid" id="merge-tags-form">
-                    <div class="field">
-                        <label for="from">源标签</label>
-                        <select id="from" name="from" required>
-                            <option value="">选择要归并的标签</option>
-                            {tags.map((tag) => (
-                                <option value={tag.id}>
-                                    {tag.name} ({tag.event_count})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="to">目标标签</label>
-                        <select id="to" name="to" required>
-                            <option value="">选择规范标签</option>
-                            {tags.map((tag) => (
-                                <option value={tag.id}>
-                                    {tag.name} ({tag.event_count})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <SelectField
+                        name="from"
+                        label="源标签"
+                        options={tagOptions}
+                        placeholder="选择要归并的标签"
+                        required
+                        client:load
+                    />
+                    <SelectField
+                        name="to"
+                        label="目标标签"
+                        options={tagOptions}
+                        placeholder="选择规范标签"
+                        required
+                        client:load
+                    />
                     <div class="form-actions">
                         <button class="button button-danger" type="submit">
                             归并
