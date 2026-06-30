@@ -38,13 +38,22 @@ async function constantTimeEqual(left: string, right: string) {
     return difference === 0;
 }
 
-export async function verifyTokenValue(token: string | null, runtimeEnv: RuntimeEnv) {
+export async function verifyTokenValue(
+    token: string | null,
+    runtimeEnv: RuntimeEnv,
+) {
     if (!runtimeEnv.ADMIN_TOKEN || !token) return false;
     return constantTimeEqual(token, runtimeEnv.ADMIN_TOKEN);
 }
 
-export async function verifyTokenCookie(cookieHeader: string | null, runtimeEnv: RuntimeEnv) {
-    return verifyTokenValue(readCookie(cookieHeader, "admin_token"), runtimeEnv);
+export async function verifyTokenCookie(
+    cookieHeader: string | null,
+    runtimeEnv: RuntimeEnv,
+) {
+    return verifyTokenValue(
+        readCookie(cookieHeader, "admin_token"),
+        runtimeEnv,
+    );
 }
 
 export function createAdminCookie(token: string) {

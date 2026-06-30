@@ -61,7 +61,8 @@ export interface OptionRow {
     sort: number;
 }
 
-export type AuditAction = "approve" | "reject" | "edit" | "offline" | "republish" | "merge";
+export type AuditAction =
+    "approve" | "reject" | "edit" | "offline" | "republish" | "merge";
 export type StatusUpdateOutcome = "changed" | "already-target" | "conflict";
 export type TagMergeOutcome = "changed" | "already-target" | "conflict";
 
@@ -89,7 +90,12 @@ function requireSuccess<T>(result: D1Result<T>, message: string) {
     return result;
 }
 
-export async function listEventsByStatus(db: D1Database, status: EventStatus, page = 1, pageSize = 25) {
+export async function listEventsByStatus(
+    db: D1Database,
+    status: EventStatus,
+    page = 1,
+    pageSize = 25,
+) {
     const offset = Math.max(0, page - 1) * pageSize;
     const result = await db
         .prepare(
@@ -107,13 +113,18 @@ export async function listEventsByStatus(db: D1Database, status: EventStatus, pa
 
 export async function getEvent(db: D1Database, id: number) {
     return db
-        .prepare(`${EVENT_SELECT} WHERE events.id = ? GROUP BY events.id LIMIT 1`)
+        .prepare(
+            `${EVENT_SELECT} WHERE events.id = ? GROUP BY events.id LIMIT 1`,
+        )
         .bind(id)
         .first<EventRecord>();
 }
 
 export async function getEventStatus(db: D1Database, id: number) {
-    const row = await db.prepare("SELECT status FROM events WHERE id = ? LIMIT 1").bind(id).first<{ status: EventStatus }>();
+    const row = await db
+        .prepare("SELECT status FROM events WHERE id = ? LIMIT 1")
+        .bind(id)
+        .first<{ status: EventStatus }>();
     return row?.status ?? null;
 }
 
@@ -125,8 +136,11 @@ export async function updateEventStatus(
     extra: { rejectReason?: string } = {},
 ) {
     const setPublishedAt =
-        fromStatus === STATUS.PENDING && toStatus === STATUS.PUBLISHED ? ", published_at = datetime('now')" : "";
-    const rejectReason = toStatus === STATUS.REJECTED ? extra.rejectReason ?? null : null;
+        fromStatus === STATUS.PENDING && toStatus === STATUS.PUBLISHED
+            ? ", published_at = datetime('now')"
+            : "";
+    const rejectReason =
+        toStatus === STATUS.REJECTED ? (extra.rejectReason ?? null) : null;
     const rejectSet = toStatus === STATUS.REJECTED ? ", reject_reason = ?" : "";
     const values =
         toStatus === STATUS.REJECTED
@@ -142,31 +156,39 @@ export async function updateEventStatus(
         .run();
 
     requireSuccess(result, "Failed to update event status");
-    if ((result.meta.changes ?? 0) > 0) return "changed" satisfies StatusUpdateOutcome;
+    if ((result.meta.changes ?? 0) > 0)
+        return "changed" satisfies StatusUpdateOutcome;
 
     const currentStatus = await getEventStatus(db, id);
-    if (currentStatus === toStatus) return "already-target" satisfies StatusUpdateOutcome;
+    if (currentStatus === toStatus)
+        return "already-target" satisfies StatusUpdateOutcome;
 
     return "conflict" satisfies StatusUpdateOutcome;
 }
 
 export async function listCities(db: D1Database) {
     const result = await db
-        .prepare("SELECT id, name, province, sort FROM cities ORDER BY sort ASC, name ASC")
+        .prepare(
+            "SELECT id, name, province, sort FROM cities ORDER BY sort ASC, name ASC",
+        )
         .all<OptionRow>();
     return requireSuccess(result, "Failed to list cities").results ?? [];
 }
 
 export async function listTypes(db: D1Database) {
     const result = await db
-        .prepare("SELECT name, label, sort FROM event_types ORDER BY sort ASC, label ASC")
+        .prepare(
+            "SELECT name, label, sort FROM event_types ORDER BY sort ASC, label ASC",
+        )
         .all<OptionRow>();
     return requireSuccess(result, "Failed to list event types").results ?? [];
 }
 
 export async function listScales(db: D1Database) {
     const result = await db
-        .prepare("SELECT name, label, sort FROM event_scales ORDER BY sort ASC, label ASC")
+        .prepare(
+            "SELECT name, label, sort FROM event_scales ORDER BY sort ASC, label ASC",
+        )
         .all<OptionRow>();
     return requireSuccess(result, "Failed to list event scales").results ?? [];
 }
@@ -186,7 +208,11 @@ export async function listTags(db: D1Database) {
     return requireSuccess(result, "Failed to list tags").results ?? [];
 }
 
-export async function editEvent(db: D1Database, id: number, input: AdminEventInput) {
+export async function editEvent(
+    db: D1Database,
+    id: number,
+    input: AdminEventInput,
+) {
     const currentStatus = await getEventStatus(db, id);
     if (!currentStatus) return 0;
 
@@ -220,7 +246,11 @@ export async function editEvent(db: D1Database, id: number, input: AdminEventInp
             ),
         db.prepare("DELETE FROM event_tags WHERE event_id = ?").bind(id),
         ...tagIds.map((tagId) =>
-            db.prepare("INSERT OR IGNORE INTO event_tags(event_id, tag_id) VALUES (?, ?)").bind(id, tagId),
+            db
+                .prepare(
+                    "INSERT OR IGNORE INTO event_tags(event_id, tag_id) VALUES (?, ?)",
+                )
+                .bind(id, tagId),
         ),
     ];
     const results = await db.batch(statements);
@@ -233,17 +263,25 @@ export async function editEvent(db: D1Database, id: number, input: AdminEventInp
 }
 
 async function findOrCreateTag(db: D1Database, name: string) {
-    const existing = await db.prepare("SELECT id FROM tags WHERE name = ? LIMIT 1").bind(name).first<{ id: number }>();
+    const existing = await db
+        .prepare("SELECT id FROM tags WHERE name = ? LIMIT 1")
+        .bind(name)
+        .first<{ id: number }>();
     if (existing) return existing.id;
 
-    const inserted = await db.prepare("INSERT INTO tags(name) VALUES (?)").bind(name).run();
+    const inserted = await db
+        .prepare("INSERT INTO tags(name) VALUES (?)")
+        .bind(name)
+        .run();
     requireSuccess(inserted, "Failed to create tag");
     if (!inserted.meta.last_row_id) throw new Error("Failed to create tag");
     return inserted.meta.last_row_id;
 }
 
 async function findOrCreateTagIds(db: D1Database, tags: string[]) {
-    const normalized = [...new Set(tags.map((tag) => tag.trim()).filter(Boolean))];
+    const normalized = [
+        ...new Set(tags.map((tag) => tag.trim()).filter(Boolean)),
+    ];
     const tagIds: number[] = [];
 
     for (const tag of normalized) {
@@ -254,18 +292,23 @@ async function findOrCreateTagIds(db: D1Database, tags: string[]) {
 }
 
 export async function mergeTags(db: D1Database, from: number, to: number) {
-    if (from === to) throw new Error("Source and target tags must be different");
+    if (from === to)
+        throw new Error("Source and target tags must be different");
 
     const source = await db
         .prepare("SELECT id, alias_of_id FROM tags WHERE id = ? LIMIT 1")
         .bind(from)
         .first<{ id: number; alias_of_id: number | null }>();
     if (!source) return "conflict" satisfies TagMergeOutcome;
-    if (source.alias_of_id === to) return "already-target" satisfies TagMergeOutcome;
-    if (source.alias_of_id !== null) return "conflict" satisfies TagMergeOutcome;
+    if (source.alias_of_id === to)
+        return "already-target" satisfies TagMergeOutcome;
+    if (source.alias_of_id !== null)
+        return "conflict" satisfies TagMergeOutcome;
 
     const target = await db
-        .prepare("SELECT id FROM tags WHERE id = ? AND alias_of_id IS NULL LIMIT 1")
+        .prepare(
+            "SELECT id FROM tags WHERE id = ? AND alias_of_id IS NULL LIMIT 1",
+        )
         .bind(to)
         .first<{ id: number }>();
     if (!target) return "conflict" satisfies TagMergeOutcome;
@@ -278,8 +321,12 @@ export async function mergeTags(db: D1Database, from: number, to: number) {
                    AND event_id IN (SELECT event_id FROM event_tags WHERE tag_id = ?)`,
             )
             .bind(from, to),
-        db.prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?").bind(to, from),
-        db.prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?").bind(to, from),
+        db
+            .prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?")
+            .bind(to, from),
+        db
+            .prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?")
+            .bind(to, from),
     ];
     const results = await db.batch(statements);
 
@@ -290,9 +337,16 @@ export async function mergeTags(db: D1Database, from: number, to: number) {
     return "changed" satisfies TagMergeOutcome;
 }
 
-export async function insertAudit(db: D1Database, action: AuditAction, targetId: number | null, meta: Record<string, unknown>) {
+export async function insertAudit(
+    db: D1Database,
+    action: AuditAction,
+    targetId: number | null,
+    meta: Record<string, unknown>,
+) {
     const result = await db
-        .prepare("INSERT INTO audit_logs(action, target_id, meta, at) VALUES (?, ?, ?, datetime('now'))")
+        .prepare(
+            "INSERT INTO audit_logs(action, target_id, meta, at) VALUES (?, ?, ?, datetime('now'))",
+        )
         .bind(action, targetId, JSON.stringify(meta))
         .run();
 

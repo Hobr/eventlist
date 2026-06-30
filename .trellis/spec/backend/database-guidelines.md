@@ -25,19 +25,19 @@
 
 - Status values: `pending`, `published`, `rejected`, `offline`.
 - Admin status transitions:
-  - `pending -> published` for approve, sets `published_at`.
-  - `pending -> rejected` for reject, requires `reject_reason`.
-  - `published -> offline` for offline.
-  - `offline -> published` for republish.
+    - `pending -> published` for approve, sets `published_at`.
+    - `pending -> rejected` for reject, requires `reject_reason`.
+    - `published -> offline` for offline.
+    - `offline -> published` for republish.
 - Audit actions: `approve`, `reject`, `edit`, `offline`, `republish`, `merge`.
 - Tag merge:
-  - `from` and `to` must be different positive IDs.
-  - `from` must be canonical or already aliased to `to`.
-  - `to` must be canonical: `tags.alias_of_id IS NULL`.
-  - Delete duplicate `(event_id, tag_id)` rows before updating `from -> to`.
+    - `from` and `to` must be different positive IDs.
+    - `from` must be canonical or already aliased to `to`.
+    - `to` must be canonical: `tags.alias_of_id IS NULL`.
+    - Delete duplicate `(event_id, tag_id)` rows before updating `from -> to`.
 - Event edits:
-  - Validate `type`, `scale`, `city_id`, dates, and required strings at the route/form layer.
-  - Create missing canonical tags before the replacement batch, then batch event update + delete old joins + insert new joins.
+    - Validate `type`, `scale`, `city_id`, dates, and required strings at the route/form layer.
+    - Create missing canonical tags before the replacement batch, then batch event update + delete old joins + insert new joins.
 
 ### 4. Validation & Error Matrix
 
@@ -60,12 +60,12 @@
 
 - Type/build checks: `corepack pnpm generate-types`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm lint`, `corepack pnpm build`.
 - Integration/manual checks once `foundation-db` exists:
-  - pending -> approve -> published, one audit row.
-  - approve retry -> success, no duplicate audit row.
-  - published -> offline -> republish.
-  - merge tag B into A, duplicate event tag rows removed.
-  - merge retry after B is already aliased to A returns success without a second audit row.
-  - edit event replaces removed tags and added tags together.
+    - pending -> approve -> published, one audit row.
+    - approve retry -> success, no duplicate audit row.
+    - published -> offline -> republish.
+    - merge tag B into A, duplicate event tag rows removed.
+    - merge retry after B is already aliased to A returns success without a second audit row.
+    - edit event replaces removed tags and added tags together.
 
 ### 7. Wrong vs Correct
 
@@ -79,8 +79,14 @@ await db.exec("BEGIN; UPDATE event_tags ...; UPDATE tags ...; COMMIT;");
 
 ```ts
 await db.batch([
-    db.prepare("DELETE FROM event_tags WHERE tag_id = ? AND event_id IN (...)").bind(from, to),
-    db.prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?").bind(to, from),
+    db
+        .prepare(
+            "DELETE FROM event_tags WHERE tag_id = ? AND event_id IN (...)",
+        )
+        .bind(from, to),
+    db
+        .prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?")
+        .bind(to, from),
     db.prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?").bind(to, from),
 ]);
 ```

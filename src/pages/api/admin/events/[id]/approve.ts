@@ -17,13 +17,22 @@ export const POST: APIRoute = async ({ params }) => {
 
     try {
         const db = getDB(getRuntimeEnv());
-        const outcome = await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
-        if (outcome === "conflict") return jsonError("Event is not pending", 409);
+        const outcome = await updateEventStatus(
+            db,
+            id,
+            STATUS.PENDING,
+            STATUS.PUBLISHED,
+        );
+        if (outcome === "conflict")
+            return jsonError("Event is not pending", 409);
         if (outcome === "already-target") return jsonOk();
 
         await insertAudit(db, "approve", id, {});
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to approve event", 500);
+        return jsonError(
+            error instanceof Error ? error.message : "Failed to approve event",
+            500,
+        );
     }
 };

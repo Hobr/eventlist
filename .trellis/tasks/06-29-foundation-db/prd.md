@@ -15,10 +15,12 @@
 ## Requirements
 
 ### R1 数据库与绑定
+
 - R1.1 创建 D1 数据库(如 `eventlist-db`),在 `wrangler.jsonc` 添加 `d1_databases` 绑定(如 `DB`),`generate-types` 可产出类型。
 - R1.2 采用 `wrangler d1 migrations` 机制,迁移文件置于 `migrations/` 目录,可重复执行(`wrangler d1 migrations apply`)。
 
 ### R2 表结构
+
 - R2.1 `cities(id PK, name, province, sort, created_at)` — 城市维表。
 - R2.2 `event_types(name PK, label, sort, created_at)` — 活动类型维表(可扩展)。
 - R2.3 `event_scales(name PK, label, sort, created_at)` — 规模维表(可扩展)。
@@ -28,12 +30,14 @@
 - R2.7 关键索引:`events(status, start_date)`、`events(city_id, end_date)`、`events(status, city_id, start_date)`、`tags(name)`、`event_tags(tag_id)`。
 
 ### R3 种子数据
+
 - R3.1 `event_types` 种子:漫展 / 同人展 / 演唱会 / 舞台剧·2.5次元 / 舞见·宅舞 / IP主题快闪 / 线上活动 / 其它(带 `label` 与 `sort`)。
 - R3.2 `event_scales` 种子:小型(地区级) / 中型(省级) / 大型(全国级) / 超大型(国际级)。
 - R3.3 `cities` 种子:覆盖 ACG 活跃的主要省辖市/地级市(初版 ≥ 50 条,含直辖市与省会及重点城市,带 `province` 与 `sort`)。
 - R3.4 `tags` 种子:空(由投稿自动写入,不预置)。
 
 ### R4 可被引用
+
 - R4.1 提供一个共享的查询辅助模块(如 `src/lib/db.ts` 或 `src/lib/db/`),封装 D1 绑定访问与基础查询,供其它子任务复用。
 - R4.2 文档化 schema(本任务 `design.md` 即为权威契约),并在 `.trellis/spec/backend/` 落一份 DB 规约。
 

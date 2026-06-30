@@ -2,26 +2,27 @@
 
 ## 路由与渲染
 
-| 路由 | 方法 | 说明 |
-|---|---|---|
-| `/admin` | GET | 待审核列表(默认) |
-| `/admin/published` | GET | 已发布列表 |
-| `/admin/offline` | GET | 下线列表 |
-| `/admin/events/[id]/edit` | GET | 编辑页 |
-| `/admin/tags` | GET | 标签管理/归并 |
-| `/admin/login` | GET/POST | 仅 token 降级方案用 |
-| `/api/admin/events/[id]/approve` | POST | pending→published |
-| `/api/admin/events/[id]/reject` | POST | pending→rejected(带 reason) |
-| `/api/admin/events/[id]` | PATCH | 编辑字段 |
-| `/api/admin/events/[id]/offline` | POST | published→offline |
-| `/api/admin/events/[id]/republish` | POST | offline→published |
-| `/api/admin/tags/merge` | POST | {from, to} 归并 |
+| 路由                               | 方法     | 说明                        |
+| ---------------------------------- | -------- | --------------------------- |
+| `/admin`                           | GET      | 待审核列表(默认)            |
+| `/admin/published`                 | GET      | 已发布列表                  |
+| `/admin/offline`                   | GET      | 下线列表                    |
+| `/admin/events/[id]/edit`          | GET      | 编辑页                      |
+| `/admin/tags`                      | GET      | 标签管理/归并               |
+| `/admin/login`                     | GET/POST | 仅 token 降级方案用         |
+| `/api/admin/events/[id]/approve`   | POST     | pending→published           |
+| `/api/admin/events/[id]/reject`    | POST     | pending→rejected(带 reason) |
+| `/api/admin/events/[id]`           | PATCH    | 编辑字段                    |
+| `/api/admin/events/[id]/offline`   | POST     | published→offline           |
+| `/api/admin/events/[id]/republish` | POST     | offline→published           |
+| `/api/admin/tags/merge`            | POST     | {from, to} 归并             |
 
 > 所有 `/admin` 页面路由与 `/api/admin` API 路由均经鉴权中间件。
 
 ## 鉴权中间件
 
 `src/middleware.ts`(Astro middleware):
+
 ```
 AUTH_MODE = env.AUTH_MODE ?? 'access'
 adminPath = path === '/admin' || path.startsWith('/admin/')
@@ -36,6 +37,7 @@ if adminPath or adminApiPath:
     fail → 401 (API) or 302 → /admin/login (page)
   pass → next
 ```
+
 Access JWT 校验:从 `https://<team>.cloudflareaccess.com/cdn-cgi/access/certs` 取 JWK 公钥,验证 RS256;`iss` 为 `https://<team>.cloudflareaccess.com`, `aud` 从 env `ACCESS_AUD` 取。实现可用 `jose` 的 `createRemoteJWKSet`/`jwtVerify` 或等价 Web Crypto,并缓存 JWKS。降级 token 方案:`/admin/login` 表单提交 token,Set-Cookie `admin_token; HttpOnly; Secure; SameSite=Strict`。
 
 ## 状态迁移 API
@@ -47,6 +49,7 @@ offline:  UPDATE events SET status='offline', updated_at=datetime('now') WHERE i
 republish:UPDATE events SET status='published', updated_at=datetime('now') WHERE id=? AND status='offline'
 edit(PATCH): UPDATE events SET ... WHERE id=? (校验 type/scale/city 合法, 更新 updated_at, 同步 event_tags 事务)
 ```
+
 所有 API 返回 JSON `{ok:true}` 或 `{ok:false,error}`。状态迁移只有在更新命中 1 行时才写审计;如果活动已处于目标状态,重复提交返回 `{ok:true}` 且不重复写审计;其它状态不匹配返回 409。
 
 编辑保存同样按“先确认 event 存在 → 规范化/创建标签 → D1 batch 更新 events、删除旧 event_tags、插入新 event_tags”的顺序执行;只有实际更新成功才写 edit 审计。
@@ -62,6 +65,7 @@ DELETE FROM event_tags WHERE tag_id=:from
 UPDATE event_tags SET tag_id=:to WHERE tag_id=:from;
 UPDATE tags SET alias_of_id=:to WHERE id=:from;
 ```
+
 接口需校验 `from != to`,且目标标签 `alias_of_id IS NULL`;前台取规范标签:`WHERE alias_of_id IS NULL`。
 若源标签已经 `alias_of_id=to`,重复归并返回 `{ok:true}` 且不重复写审计;源/目标缺失或非规范标签返回 409。
 
@@ -99,6 +103,7 @@ src/
       token.ts               (降级 token 校验)
     db/queries.ts 扩展       (listByStatus, updateStatus, editEvent, mergeTags, insertAudit)
 ```
+
 ## 环境变量
 
 - `AUTH_MODE`(access|token,默认 access)

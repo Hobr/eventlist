@@ -8,24 +8,24 @@
 ## 执行清单(顺序)
 
 1. **创建 D1 数据库**
-   - `wrangler d1 create eventlist-db` → 记录 `database_id`。
+    - `wrangler d1 create eventlist-db` → 记录 `database_id`。
 2. **绑定到 wrangler.jsonc**
-   - 在 `wrangler.jsonc` 顶层追加 `d1_databases` 数组(见 design.md 配置),`database_id` 填入上一步值;`migrations_dir: "migrations"`。
+    - 在 `wrangler.jsonc` 顶层追加 `d1_databases` 数组(见 design.md 配置),`database_id` 填入上一步值;`migrations_dir: "migrations"`。
 3. **建迁移目录与初始迁移**
-   - `mkdir -p migrations`。
-   - 新建 `migrations/0001_init.sql`:按 design.md 建全部表 + 索引 + `CHECK(status IN ...)`;末尾 `PRAGMA foreign_keys = ON;`。
+    - `mkdir -p migrations`。
+    - 新建 `migrations/0001_init.sql`:按 design.md 建全部表 + 索引 + `CHECK(status IN ...)`;末尾 `PRAGMA foreign_keys = ON;`。
 4. **种子迁移**
-   - 新建 `migrations/0002_seed.sql`:用 `INSERT OR IGNORE` 写入 event_types(8)、event_scales(4)、cities(≥50)。cities 列表见 design.md 规格,可从一份 JSON/TS 常量生成 SQL,或直接手写 INSERT。
+    - 新建 `migrations/0002_seed.sql`:用 `INSERT OR IGNORE` 写入 event_types(8)、event_scales(4)、cities(≥50)。cities 列表见 design.md 规格,可从一份 JSON/TS 常量生成 SQL,或直接手写 INSERT。
 5. **应用迁移**
-   - `wrangler d1 migrations apply eventlist-db --local`(本地)。
-   - `wrangler d1 migrations apply eventlist-db --remote`(远程,首次部署时)。
+    - `wrangler d1 migrations apply eventlist-db --local`(本地)。
+    - `wrangler d1 migrations apply eventlist-db --remote`(远程,首次部署时)。
 6. **生成类型**
-   - `pnpm generate-types`(即 `wrangler types`),确认 `worker-configuration.d.ts` 含 `DB: D1Database`。
+    - `pnpm generate-types`(即 `wrangler types`),确认 `worker-configuration.d.ts` 含 `DB: D1Database`。
 7. **实现访问层骨架**
-   - `src/lib/db/index.ts`:导出 `STATUS`/`TYPES`/`SCALES` 常量、`getDB(runtime)`、`ensureFK(db)`。
-   - `src/lib/db/queries.ts`(占位):导出 `listCities(db)`、`listTypes(db)`、`listScales(db)`(维表读取,供前台下拉与后台用)。
+    - `src/lib/db/index.ts`:导出 `STATUS`/`TYPES`/`SCALES` 常量、`getDB(runtime)`、`ensureFK(db)`。
+    - `src/lib/db/queries.ts`(占位):导出 `listCities(db)`、`listTypes(db)`、`listScales(db)`(维表读取,供前台下拉与后台用)。
 8. **落 DB 规约文档**
-   - 新建/更新 `.trellis/spec/backend/database-guidelines.md`:记录 D1 绑定名、迁移流程、外键 PRAGMA、枚举键约定、状态机、归并规则。
+    - 新建/更新 `.trellis/spec/backend/database-guidelines.md`:记录 D1 绑定名、迁移流程、外键 PRAGMA、枚举键约定、状态机、归并规则。
 
 ## 验证命令
 

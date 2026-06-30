@@ -22,12 +22,16 @@ export const POST: APIRoute = async ({ request }) => {
     try {
         const db = getDB(getRuntimeEnv());
         const outcome = await mergeTags(db, from, to);
-        if (outcome === "conflict") return jsonError("Source and target tags must be canonical", 409);
+        if (outcome === "conflict")
+            return jsonError("Source and target tags must be canonical", 409);
         if (outcome === "changed") {
             await insertAudit(db, "merge", to, { from, to });
         }
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to merge tags", 400);
+        return jsonError(
+            error instanceof Error ? error.message : "Failed to merge tags",
+            400,
+        );
     }
 };

@@ -16,14 +16,25 @@ export function isAdminApiPath(pathname: string) {
     return pathname === "/api/admin" || pathname.startsWith("/api/admin/");
 }
 
-export async function authenticateAdmin(request: Request, runtimeEnv: RuntimeEnv) {
+export async function authenticateAdmin(
+    request: Request,
+    runtimeEnv: RuntimeEnv,
+) {
     const mode = getAuthMode(runtimeEnv);
 
     if (mode === "token") {
-        const valid = await verifyTokenCookie(request.headers.get("cookie"), runtimeEnv);
+        const valid = await verifyTokenCookie(
+            request.headers.get("cookie"),
+            runtimeEnv,
+        );
         return valid ? ({ mode } satisfies AdminAuthResult) : null;
     }
 
-    const payload = await verifyAccessJWT(request.headers.get("cf-access-jwt-assertion"), runtimeEnv);
-    return payload ? ({ mode, email: payload.email } satisfies AdminAuthResult) : null;
+    const payload = await verifyAccessJWT(
+        request.headers.get("cf-access-jwt-assertion"),
+        runtimeEnv,
+    );
+    return payload
+        ? ({ mode, email: payload.email } satisfies AdminAuthResult)
+        : null;
 }

@@ -26,6 +26,9 @@ export const PATCH: APIRoute = async ({ request, params }) => {
         await insertAudit(db, "edit", id, { fields: Object.keys(input) });
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to update event", 400);
+        return jsonError(
+            error instanceof Error ? error.message : "Failed to update event",
+            400,
+        );
     }
 };

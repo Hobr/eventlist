@@ -29,7 +29,9 @@ export type EventStatus = (typeof STATUS)[keyof typeof STATUS];
 
 export function getDB(runtimeEnv: RuntimeEnv): D1Database {
     if (!runtimeEnv.DB) {
-        throw new Error("D1 binding DB is not configured. Complete foundation-db before using admin pages.");
+        throw new Error(
+            "D1 binding DB is not configured. Complete foundation-db before using admin pages.",
+        );
     }
 
     return runtimeEnv.DB;

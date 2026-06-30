@@ -5,7 +5,6 @@
 
 ---
 
-
 ## Session 1: Admin review backend
 
 **Date**: 2026-06-30
@@ -22,8 +21,8 @@ Implemented Cloudflare-protected admin review pages and APIs, added audit loggin
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `762d0f1` | (see git log) |
 | `22fc030` | (see git log) |
 

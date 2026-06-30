@@ -45,11 +45,11 @@
 
 - Lint/type/build: `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm build`.
 - Route checks once D1 exists:
-  - unauthenticated `/api/admin/...` returns 401 JSON.
-  - invalid id returns 400 JSON.
-  - wrong transition returns 409 JSON.
-  - duplicate target transition returns 200 JSON without duplicate audit.
-  - duplicate tag merge returns 200 JSON without duplicate audit.
+    - unauthenticated `/api/admin/...` returns 401 JSON.
+    - invalid id returns 400 JSON.
+    - wrong transition returns 409 JSON.
+    - duplicate target transition returns 200 JSON without duplicate audit.
+    - duplicate tag merge returns 200 JSON without duplicate audit.
 
 ### 7. Wrong vs Correct
 

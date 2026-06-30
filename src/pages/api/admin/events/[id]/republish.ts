@@ -17,13 +17,24 @@ export const POST: APIRoute = async ({ params }) => {
 
     try {
         const db = getDB(getRuntimeEnv());
-        const outcome = await updateEventStatus(db, id, STATUS.OFFLINE, STATUS.PUBLISHED);
-        if (outcome === "conflict") return jsonError("Event is not offline", 409);
+        const outcome = await updateEventStatus(
+            db,
+            id,
+            STATUS.OFFLINE,
+            STATUS.PUBLISHED,
+        );
+        if (outcome === "conflict")
+            return jsonError("Event is not offline", 409);
         if (outcome === "already-target") return jsonOk();
 
         await insertAudit(db, "republish", id, {});
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to republish event", 500);
+        return jsonError(
+            error instanceof Error
+                ? error.message
+                : "Failed to republish event",
+            500,
+        );
     }
 };

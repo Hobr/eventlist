@@ -15,26 +15,31 @@
 ## Requirements
 
 ### R1 鉴权
+
 - R1.1 所有 `/admin` 页面路由与 `/api/admin` API 路由必须经过鉴权中间件,未授权 API 返回 401,未授权页面重定向到登录/Access 入口。
 - R1.2 主方案:校验 `Cf-Access-Jwt-Assertion` JWT(签名 + iss + aud + exp),通过即放行。
 - R1.3 降级方案:env `ADMIN_TOKEN` 校验 Cookie `admin_token`(值 = 常量时间比较),登录页 `/admin/login` 设置 Cookie。
 - R1.4 方案开关由 env `AUTH_MODE` 决定(`access` | `token`),默认 `access`。
 
 ### R2 待审核队列
+
 - R2.1 `/admin` 首页:待审核列表(`status='pending' ORDER BY created_at`),分页。
 - R2.2 每条显示投稿全字段 + 来源链接(可跳转核验) + 联系方式(仅后台可见)。
 - R2.3 操作:通过(→ `published`,设 `published_at`)、驳回(→ `rejected`,必填 `reject_reason`)。
 
 ### R3 已发布管理
+
 - R3.1 `/admin/published`:已发布列表,可编辑、下线(→ `offline`)。
 - R3.2 编辑页:可改全部字段(同投稿字段),保存更新 `updated_at`;可重新下线/重新发布。
 - R3.3 `/admin/offline`:下线列表,可重新发布(→ `published`)。
 
 ### R4 标签归并
+
 - R4.1 `/admin/tags`:标签列表(`alias_of_id IS NULL`),显示每个规范标签下的活动数。
 - R4.2 归并操作:选源标签 B → 目标标签 A,事务:更新 `event_tags.tag_id` B→A,设 B 的 `tags.alias_of_id=A`,删除 B 的孤立 `event_tags` 重复行。
 
 ### R5 审计与防误
+
 - R5.1 关键操作(通过/驳回/编辑/下线/重新发布/归并)实际变更成功后必须写一条 `audit_logs`;审计查看页可后置,不阻塞 MVP。
 - R5.2 危险操作(下线/归并)需二次确认(UI 二次点击;API 幂等)。
 

@@ -23,15 +23,27 @@ export const POST: APIRoute = async ({ request, params }) => {
 
     try {
         const db = getDB(getRuntimeEnv());
-        const outcome = await updateEventStatus(db, id, STATUS.PENDING, STATUS.REJECTED, {
-            rejectReason: rejectReason.trim(),
-        });
-        if (outcome === "conflict") return jsonError("Event is not pending", 409);
+        const outcome = await updateEventStatus(
+            db,
+            id,
+            STATUS.PENDING,
+            STATUS.REJECTED,
+            {
+                rejectReason: rejectReason.trim(),
+            },
+        );
+        if (outcome === "conflict")
+            return jsonError("Event is not pending", 409);
         if (outcome === "already-target") return jsonOk();
 
-        await insertAudit(db, "reject", id, { reject_reason: rejectReason.trim() });
+        await insertAudit(db, "reject", id, {
+            reject_reason: rejectReason.trim(),
+        });
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to reject event", 500);
+        return jsonError(
+            error instanceof Error ? error.message : "Failed to reject event",
+            500,
+        );
     }
 };

@@ -29,74 +29,80 @@ migrations/
 ## 表结构(权威)
 
 ### cities
-| 列 | 类型 | 约束 |
-|---|---|---|
-| id | INTEGER | PK AUTOINCREMENT |
-| name | TEXT | NOT NULL UNIQUE |
-| province | TEXT | NOT NULL |
-| sort | INTEGER | NOT NULL DEFAULT 0 |
-| created_at | TEXT | NOT NULL DEFAULT (datetime('now')) |
+
+| 列         | 类型    | 约束                               |
+| ---------- | ------- | ---------------------------------- |
+| id         | INTEGER | PK AUTOINCREMENT                   |
+| name       | TEXT    | NOT NULL UNIQUE                    |
+| province   | TEXT    | NOT NULL                           |
+| sort       | INTEGER | NOT NULL DEFAULT 0                 |
+| created_at | TEXT    | NOT NULL DEFAULT (datetime('now')) |
 
 ### event_types
-| 列 | 类型 | 约束 |
-|---|---|---|
-| name | TEXT | PK(枚举键,英文/拼音短键) |
-| label | TEXT | NOT NULL(中文展示名) |
-| sort | INTEGER | NOT NULL DEFAULT 0 |
-| created_at | TEXT | NOT NULL DEFAULT (datetime('now')) |
+
+| 列         | 类型    | 约束                               |
+| ---------- | ------- | ---------------------------------- |
+| name       | TEXT    | PK(枚举键,英文/拼音短键)           |
+| label      | TEXT    | NOT NULL(中文展示名)               |
+| sort       | INTEGER | NOT NULL DEFAULT 0                 |
+| created_at | TEXT    | NOT NULL DEFAULT (datetime('now')) |
 
 > `name` 为机器键(如 `comic`、`doujin`),`events.type` 存此键;`label` 为中文展示。
 
 ### event_scales
-| 列 | 类型 | 约束 |
-|---|---|---|
-| name | TEXT | PK |
-| label | TEXT | NOT NULL |
-| sort | INTEGER | NOT NULL DEFAULT 0 |
-| created_at | TEXT | NOT NULL DEFAULT (datetime('now')) |
+
+| 列         | 类型    | 约束                               |
+| ---------- | ------- | ---------------------------------- |
+| name       | TEXT    | PK                                 |
+| label      | TEXT    | NOT NULL                           |
+| sort       | INTEGER | NOT NULL DEFAULT 0                 |
+| created_at | TEXT    | NOT NULL DEFAULT (datetime('now')) |
 
 ### tags
-| 列 | 类型 | 约束 |
-|---|---|---|
-| id | INTEGER | PK AUTOINCREMENT |
-| name | TEXT | NOT NULL UNIQUE |
+
+| 列          | 类型    | 约束                                |
+| ----------- | ------- | ----------------------------------- |
+| id          | INTEGER | PK AUTOINCREMENT                    |
+| name        | TEXT    | NOT NULL UNIQUE                     |
 | alias_of_id | INTEGER | NULL, FK→tags.id ON DELETE SET NULL |
-| created_at | TEXT | NOT NULL DEFAULT (datetime('now')) |
+| created_at  | TEXT    | NOT NULL DEFAULT (datetime('now'))  |
 
 > 归并:将 B 设为 `alias_of_id = A.id`,并把 `event_tags.tag_id` 由 B 更新为 A;查询标签时过滤 `alias_of_id IS NULL` 取规范标签。
 
 ### events
-| 列 | 类型 | 约束 |
-|---|---|---|
-| id | INTEGER | PK AUTOINCREMENT |
-| title | TEXT | NOT NULL |
-| type | TEXT | NOT NULL(须存在于 event_types.name) |
-| scale | TEXT | NOT NULL(须存在于 event_scales.name) |
-| city_id | INTEGER | NOT NULL, FK→cities.id |
-| venue | TEXT | NOT NULL |
-| address | TEXT | NULL |
-| start_date | TEXT | NOT NULL(ISO 日期 YYYY-MM-DD) |
-| end_date | TEXT | NOT NULL |
-| cover_url | TEXT | NULL |
-| description | TEXT | NULL |
-| qq_group | TEXT | NULL(官方交流群链接/群号) |
-| ticket_url | TEXT | NULL(购票地址) |
-| source_url | TEXT | NOT NULL(投稿来源链接) |
-| submitter_contact | TEXT | NOT NULL(不公开展示) |
-| status | TEXT | NOT NULL DEFAULT 'pending', CHECK status IN ('pending','published','rejected','offline') |
-| reject_reason | TEXT | NULL |
-| created_at | TEXT | NOT NULL DEFAULT (datetime('now')) |
-| updated_at | TEXT | NOT NULL DEFAULT (datetime('now')) |
-| published_at | TEXT | NULL |
+
+| 列                | 类型    | 约束                                                                                     |
+| ----------------- | ------- | ---------------------------------------------------------------------------------------- |
+| id                | INTEGER | PK AUTOINCREMENT                                                                         |
+| title             | TEXT    | NOT NULL                                                                                 |
+| type              | TEXT    | NOT NULL(须存在于 event_types.name)                                                      |
+| scale             | TEXT    | NOT NULL(须存在于 event_scales.name)                                                     |
+| city_id           | INTEGER | NOT NULL, FK→cities.id                                                                   |
+| venue             | TEXT    | NOT NULL                                                                                 |
+| address           | TEXT    | NULL                                                                                     |
+| start_date        | TEXT    | NOT NULL(ISO 日期 YYYY-MM-DD)                                                            |
+| end_date          | TEXT    | NOT NULL                                                                                 |
+| cover_url         | TEXT    | NULL                                                                                     |
+| description       | TEXT    | NULL                                                                                     |
+| qq_group          | TEXT    | NULL(官方交流群链接/群号)                                                                |
+| ticket_url        | TEXT    | NULL(购票地址)                                                                           |
+| source_url        | TEXT    | NOT NULL(投稿来源链接)                                                                   |
+| submitter_contact | TEXT    | NOT NULL(不公开展示)                                                                     |
+| status            | TEXT    | NOT NULL DEFAULT 'pending', CHECK status IN ('pending','published','rejected','offline') |
+| reject_reason     | TEXT    | NULL                                                                                     |
+| created_at        | TEXT    | NOT NULL DEFAULT (datetime('now'))                                                       |
+| updated_at        | TEXT    | NOT NULL DEFAULT (datetime('now'))                                                       |
+| published_at      | TEXT    | NULL                                                                                     |
 
 > 外键一致性:SQLite 默认外键关闭,迁移末尾 `PRAGMA foreign_keys = ON;` 并在访问层每次连接执行。
 
 ### event_tags
-| 列 | 类型 | 约束 |
-|---|---|---|
+
+| 列       | 类型    | 约束                           |
+| -------- | ------- | ------------------------------ |
 | event_id | INTEGER | FK→events.id ON DELETE CASCADE |
-| tag_id | INTEGER | FK→tags.id ON DELETE CASCADE |
-| | | PRIMARY KEY(event_id, tag_id) |
+| tag_id   | INTEGER | FK→tags.id ON DELETE CASCADE   |
+|          |         | PRIMARY KEY(event_id, tag_id)  |
 
 ## 索引
 
@@ -134,6 +140,7 @@ export const SCALES = { SMALL:'small', MID:'mid', LARGE:'large', MEGA:'mega' } a
 export function getDB(runtime: Astro.ServerRuntime): D1Database;
 export async function ensureFK(db: D1Database): Promise<void>; // PRAGMA foreign_keys=ON
 ```
+
 > 类型名以 `wrangler types` 生成结果为准;`Astro.ServerRuntime` 取自 `@astrojs/cloudflare`。
 
 ## 兼容性与回滚
