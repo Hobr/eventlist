@@ -26,10 +26,7 @@ export function normalizeDivision(value: string | null | undefined) {
         .replace(/\s+/g, "")
         .replace(/city$/i, "")
         .replace(/[省市县区]/g, "")
-        .replace(
-            /(特别行政|壮族自治区|回族自治区|维吾尔自治区|自治区)$/g,
-            "",
-        );
+        .replace(/(特别行政|壮族自治区|回族自治区|维吾尔自治区|自治区)$/g, "");
 }
 
 function parseDivisionCode(value: string | null | undefined) {
@@ -43,7 +40,9 @@ function matchDivisionByName(city: string | null | undefined) {
 
     const county = countiesCode.find((candidate) => {
         const name = normalizeDivision(candidate.n);
-        return name === target || name.includes(target) || target.includes(name);
+        return (
+            name === target || name.includes(target) || target.includes(name)
+        );
     });
 
     return county ? getDivisionOptionByCode(county.c) : null;

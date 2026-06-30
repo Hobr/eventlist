@@ -1,10 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../../lib/db";
-import {
-    insertSubmission,
-    listScales,
-    listTypes,
-} from "../../lib/db/queries";
+import { insertSubmission, listScales, listTypes } from "../../lib/db/queries";
 import { isDivisionCode } from "../../lib/divisions";
 import { jsonError, jsonOk } from "../../lib/http/json";
 import { parseSubmissionForm } from "../../lib/public/form";
