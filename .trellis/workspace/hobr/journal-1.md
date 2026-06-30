@@ -132,7 +132,6 @@ Implemented public SSR event browsing, detail, submission, APIs, sitemap, dev se
 
 - None - task complete
 
-
 ## Session 4: Archive ACG event site parent
 
 **Date**: 2026-06-30
@@ -149,8 +148,8 @@ Archived the parent ACG event site task after foundation-db, admin-review, and p
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `f3e4431` | (see git log) |
 | `22fc030` | (see git log) |
 | `f894577` | (see git log) |
