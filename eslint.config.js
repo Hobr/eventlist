@@ -1,6 +1,7 @@
 import prettier from "eslint-config-prettier";
 import svelte from "eslint-plugin-svelte";
 import eslintPluginAstro from "eslint-plugin-astro";
+import tsParser from "@typescript-eslint/parser";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default [
@@ -17,5 +18,14 @@ export default [
         }
     },
     prettier,
-    svelte.configs.prettier
+    ...svelte.configs.prettier,
+
+    {
+        files: ["**/*.svelte"],
+        languageOptions: {
+            parserOptions: {
+                parser: tsParser
+            }
+        }
+    }
 ];

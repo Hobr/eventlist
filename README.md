@@ -10,6 +10,10 @@ cp .dev.vars.example .dev.vars
 corepack pnpm exec wrangler d1 migrations apply DB --local
 corepack pnpm exec wrangler d1 execute DB --local --file=docs/dev/seed-public-site.sql
 corepack pnpm exec astro dev
+
+corepack pnpm build
+corepack pnpm lint
+corepack pnpm format
 ```
 
 ## 部署
