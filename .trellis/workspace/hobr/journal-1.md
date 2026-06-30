@@ -131,3 +131,38 @@ Implemented public SSR event browsing, detail, submission, APIs, sitemap, dev se
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Archive ACG event site parent
+
+**Date**: 2026-06-30
+**Task**: Archive ACG event site parent
+**Branch**: `main`
+
+### Summary
+
+Archived the parent ACG event site task after foundation-db, admin-review, and public-site child deliverables were completed and committed.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f3e4431` | (see git log) |
+| `22fc030` | (see git log) |
+| `f894577` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
