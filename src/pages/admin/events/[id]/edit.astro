@@ -1,19 +1,18 @@
 ---
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import DivisionPicker from "../../../../components/DivisionPicker.svelte";
 import {
     getEvent,
     listScales,
     listTypes,
 } from "../../../../lib/db/queries";
 import { getDB } from "../../../../lib/db";
-import { listDivisionOptions } from "../../../../lib/divisions";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;
 
 const id = Number.parseInt(Astro.params.id ?? "", 10);
 let eventRecord = null;
-const divisionOptions = listDivisionOptions();
 let types = [];
 let scales = [];
 let errorMessage = "";
@@ -90,19 +89,14 @@ try {
                     </select>
                 </div>
 
-                <div class="field">
-                    <label for="division_code">地区</label>
-                    <select id="division_code" name="division_code" required>
-                        {divisionOptions.map((division) => (
-                            <option
-                                value={division.code}
-                                selected={division.code === eventRecord.division_code}
-                            >
-                                {division.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <DivisionPicker
+                    name="division_code"
+                    value={eventRecord.division_code}
+                    label="地区"
+                    mode="county"
+                    required
+                    client:load
+                />
 
                 <div class="field">
                     <label for="venue">场馆</label>

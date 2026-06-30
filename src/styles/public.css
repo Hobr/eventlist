@@ -234,6 +234,12 @@
     resize: vertical;
 }
 
+.division-picker-controls {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .button-row {
     align-items: center;
     display: flex;
@@ -505,6 +511,10 @@
 
     .toolbar .wide {
         grid-column: auto;
+    }
+
+    .division-picker-controls {
+        grid-template-columns: 1fr;
     }
 
     .site-header {

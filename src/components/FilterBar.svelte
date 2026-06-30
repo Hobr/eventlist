@@ -5,17 +5,16 @@
         PublishedEventFilters,
         TagSummary,
     } from "../lib/db/queries";
-    import type { DivisionOption } from "../lib/divisions";
+    import DivisionPicker from "./DivisionPicker.svelte";
 
     interface Props {
-        divisions: DivisionOption[];
         types: OptionRow[];
         scales: OptionRow[];
         tags: TagSummary[];
         filters: PublishedEventFilters;
     }
 
-    let { divisions, types, scales, tags, filters }: Props = $props();
+    let { types, scales, tags, filters }: Props = $props();
     let tagValue = filters.tag ?? "";
     let suggestions = tags;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -49,17 +48,14 @@
 </script>
 
 <form class="panel toolbar" action="/events" method="GET">
-    <label class="field">
-        <span>城市</span>
-        <select name="city">
-            <option value="">全部城市</option>
-            {#each divisions as division}
-                <option value={division.code} selected={filters.divisionCode === division.code}>
-                    {division.label}
-                </option>
-            {/each}
-        </select>
-    </label>
+    <DivisionPicker
+        name="city"
+        label="地区"
+        mode="region"
+        value={filters.divisionCode}
+        allowEmpty
+        emptyLabel="全部地区"
+    />
 
     <label class="field">
         <span>类型</span>

@@ -1,9 +1,10 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import type { DivisionOption } from "../lib/divisions";
+    import DivisionPicker from "./DivisionPicker.svelte";
+    import { isRegionCode, type DivisionTree } from "../lib/divisions";
 
     interface Props {
-        divisions: DivisionOption[];
+        tree?: DivisionTree;
         selectedDivisionCode?: string | null;
         action?: string;
         name?: string;
@@ -12,20 +13,15 @@
 
     const STORAGE_KEY = "eventlist.divisionCode";
     let {
-        divisions,
+        tree = undefined,
         selectedDivisionCode = null,
         action = "/",
         name = "city",
-        label = "所在城市",
+        label = "所在地区",
     }: Props = $props();
-    let current = selectedDivisionCode ?? "";
-
-    function hasDivision(value: string) {
-        return divisions.some((division) => division.code === value);
-    }
 
     function go(value: string, replace = false) {
-        if (!value || !hasDivision(value)) return;
+        if (!value || !isRegionCode(value)) return;
 
         localStorage.setItem(STORAGE_KEY, value);
         const url = new URL(action, window.location.origin);
@@ -38,27 +34,25 @@
         window.location.assign(next);
     }
 
-    function handleChange(event: Event) {
-        const select = event.currentTarget;
-        if (!(select instanceof HTMLSelectElement)) return;
-        current = select.value;
-        go(current);
+    function handleChange(value: string) {
+        go(value);
     }
 
     onMount(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
         const searchParams = new URLSearchParams(window.location.search);
-        if (saved && saved !== current && !searchParams.has(name)) {
+        if (saved && saved !== selectedDivisionCode && !searchParams.has(name)) {
             go(saved, true);
         }
     });
 </script>
 
-<label class="field">
-    <span>{label}</span>
-    <select name={name} bind:value={current} onchange={handleChange}>
-        {#each divisions as division}
-            <option value={division.code}>{division.label}</option>
-        {/each}
-    </select>
-</label>
+<DivisionPicker
+    {tree}
+    {name}
+    {label}
+    mode="region"
+    value={selectedDivisionCode}
+    allowEmpty={false}
+    onchange={handleChange}
+/>

@@ -293,8 +293,16 @@ export async function listPublishedEvents(
     const values: Array<number | string> = [STATUS.PUBLISHED];
 
     if (filters.divisionCode) {
-        clauses.push("events.division_code = ?");
-        values.push(filters.divisionCode);
+        if (
+            filters.divisionCode.length === 6 ||
+            filters.divisionCode.length === 12
+        ) {
+            clauses.push("events.division_code = ?");
+            values.push(filters.divisionCode);
+        } else {
+            clauses.push("events.division_code LIKE ?");
+            values.push(`${filters.divisionCode}%`);
+        }
     }
 
     if (filters.type) {

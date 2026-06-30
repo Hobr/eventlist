@@ -1,8 +1,8 @@
 import { countiesCode } from "cn-division";
 import {
     FALLBACK_DIVISION_CODE,
-    getDivisionOptionByCode,
-    type DivisionOption,
+    getRegionOptionByCode,
+    type RegionOption,
 } from "./divisions";
 
 const DIVISION_STORAGE_PARAM = "city";
@@ -15,7 +15,7 @@ interface CloudflareRequest extends Request {
 }
 
 export interface ResolvedDivision {
-    division: DivisionOption;
+    division: RegionOption;
     source: "query" | "cf" | "default";
 }
 
@@ -31,7 +31,7 @@ export function normalizeDivision(value: string | null | undefined) {
 
 function parseDivisionCode(value: string | null | undefined) {
     const code = (value ?? "").trim();
-    return /^\d{6}(\d{6})?$/.test(code) ? code : null;
+    return /^(\d{2}|\d{4}|\d{6}|\d{12})$/.test(code) ? code : null;
 }
 
 function matchDivisionByName(city: string | null | undefined) {
@@ -45,7 +45,7 @@ function matchDivisionByName(city: string | null | undefined) {
         );
     });
 
-    return county ? getDivisionOptionByCode(county.c) : null;
+    return county ? getRegionOptionByCode(county.c) : null;
 }
 
 export async function resolveSelectedDivision(
@@ -57,7 +57,7 @@ export async function resolveSelectedDivision(
         searchParams.get(DIVISION_STORAGE_PARAM),
     );
     if (queryDivisionCode) {
-        const queryDivision = getDivisionOptionByCode(queryDivisionCode);
+        const queryDivision = getRegionOptionByCode(queryDivisionCode);
         if (queryDivision) return { division: queryDivision, source: "query" };
     }
 
@@ -66,7 +66,7 @@ export async function resolveSelectedDivision(
         matchDivisionByName(cf?.city) ?? matchDivisionByName(cf?.region);
     if (cfDivision) return { division: cfDivision, source: "cf" };
 
-    const fallback = getDivisionOptionByCode(defaultDivisionCode);
+    const fallback = getRegionOptionByCode(defaultDivisionCode);
     if (!fallback) {
         throw new Error("Default division code is invalid");
     }

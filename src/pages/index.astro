@@ -2,10 +2,7 @@
 import CitySelector from "../components/CitySelector.svelte";
 import EventCard from "../components/EventCard.astro";
 import Layout from "../layouts/Layout.astro";
-import {
-    FALLBACK_DIVISION_CODE,
-    listDivisionOptions,
-} from "../lib/divisions";
+import { FALLBACK_DIVISION_CODE } from "../lib/divisions";
 import { resolveSelectedDivision } from "../lib/geo";
 import { getDB } from "../lib/db";
 import {
@@ -20,7 +17,6 @@ export const prerender = false;
 const runtimeEnv = getRuntimeEnv();
 const defaultDivisionCode =
     runtimeEnv.DEFAULT_DIVISION_CODE || FALLBACK_DIVISION_CODE;
-const divisionOptions = listDivisionOptions();
 let events = [];
 let tags = [];
 let types = [];
@@ -98,7 +94,6 @@ const selectedDivisionCode = selectedDivision?.code ?? defaultDivisionCode;
             <div class="hero-controls">
                 <p class="section-kicker">CITY</p>
                 <CitySelector
-                    divisions={divisionOptions}
                     selectedDivisionCode={selectedDivisionCode}
                     client:load
                 />

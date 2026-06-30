@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../../lib/db";
 import { insertSubmission, listScales, listTypes } from "../../lib/db/queries";
-import { isDivisionCode } from "../../lib/divisions";
+import { isCountyDivisionCode } from "../../lib/divisions";
 import { jsonError, jsonOk } from "../../lib/http/json";
 import { parseSubmissionForm } from "../../lib/public/form";
 import { getRuntimeEnv } from "../../lib/runtime/env";
@@ -32,7 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
             listTypes(db),
             listScales(db),
         ]);
-        if (!isDivisionCode(input.division_code))
+        if (!isCountyDivisionCode(input.division_code))
             return jsonError("行政区无效", 400);
         if (!hasName(types, input.type)) return jsonError("类型无效", 400);
         if (!hasName(scales, input.scale)) return jsonError("规模无效", 400);

@@ -11,7 +11,7 @@ import {
     type EventSort,
     type PublishedEventFilters,
 } from "../../lib/db/queries";
-import { isDivisionCode, listDivisionOptions } from "../../lib/divisions";
+import { isRegionCode } from "../../lib/divisions";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 
 export const prerender = false;
@@ -24,7 +24,7 @@ function parsePositiveInt(value: string | null) {
 }
 
 function parseDivisionCode(value: string | null) {
-    return value && isDivisionCode(value) ? value : undefined;
+    return value && isRegionCode(value) ? value : undefined;
 }
 
 function parseDate(value: string | null) {
@@ -54,7 +54,6 @@ const filters: PublishedEventFilters = {
     sort: parseSort(Astro.url.searchParams.get("sort")),
 };
 
-const divisionOptions = listDivisionOptions();
 let types = [];
 let scales = [];
 let tags = [];
@@ -94,7 +93,6 @@ try {
             </div>
 
             <FilterBar
-                divisions={divisionOptions}
                 types={types}
                 scales={scales}
                 tags={tags}

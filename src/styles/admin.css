@@ -248,6 +248,12 @@ textarea {
     resize: vertical;
 }
 
+.division-picker-controls {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .form-grid {
     display: grid;
     gap: 16px;
@@ -339,6 +345,10 @@ textarea {
     }
 
     .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .division-picker-controls {
         grid-template-columns: 1fr;
     }
 }
