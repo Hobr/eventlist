@@ -165,3 +165,37 @@ Archived the parent ACG event site task after foundation-db, admin-review, and p
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Bits UI frontend redesign
+
+**Date**: 2026-06-30
+**Task**: Bits UI frontend redesign
+**Branch**: `main`
+
+### Summary
+
+Rebuilt the public and admin frontend around a Bits UI-inspired token system, preserved existing route and form contracts, updated frontend design-system spec, and verified with pnpm lint/build.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ab8c1cd` | (see git log) |
+| `72deb2e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
