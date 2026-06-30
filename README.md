@@ -9,12 +9,7 @@ corepack pnpm install
 cp .dev.vars.example .dev.vars
 corepack pnpm exec wrangler d1 migrations apply DB --local
 corepack pnpm exec wrangler d1 execute DB --local --file=docs/dev/seed-public-site.sql
-corepack pnpm exec astro dev --background
-
-# 后台服务器
-corepack pnpm exec astro dev status
-corepack pnpm exec astro dev logs
-corepack pnpm exec astro dev stop
+corepack pnpm exec astro dev
 ```
 
 ## 部署
