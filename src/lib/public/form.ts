@@ -41,9 +41,7 @@ function readDate(formData: FormData, name: string, label: string) {
     }
 
     const [, year, month, day] = match;
-    const date = new Date(
-        Date.UTC(Number(year), Number(month) - 1, Number(day)),
-    );
+    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
     if (date.toISOString().slice(0, 10) !== value) {
         throw new Error(`${label}格式无效`);
     }
@@ -51,27 +49,10 @@ function readDate(formData: FormData, name: string, label: string) {
     return value;
 }
 
-function readUrl(
-    formData: FormData,
-    name: string,
-    label: string,
-    required: true,
-): string;
-function readUrl(
-    formData: FormData,
-    name: string,
-    label: string,
-    required?: false,
-): string | null;
-function readUrl(
-    formData: FormData,
-    name: string,
-    label: string,
-    required = false,
-) {
-    const value = required
-        ? readRequired(formData, name, label)
-        : readOptional(formData, name);
+function readUrl(formData: FormData, name: string, label: string, required: true): string;
+function readUrl(formData: FormData, name: string, label: string, required?: false): string | null;
+function readUrl(formData: FormData, name: string, label: string, required = false) {
+    const value = required ? readRequired(formData, name, label) : readOptional(formData, name);
     if (!value) return null;
 
     try {
@@ -92,8 +73,8 @@ function parseTags(value: string | null) {
                 .split(/[,\n，、]/)
                 .map((tag) => tag.trim())
                 .filter(Boolean)
-                .map((tag) => tag.slice(0, MAX_TAG_LENGTH)),
-        ),
+                .map((tag) => tag.slice(0, MAX_TAG_LENGTH))
+        )
     ].slice(0, MAX_TAGS);
 }
 
@@ -119,13 +100,9 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
             qq_group: readOptional(formData, "qq_group"),
             ticket_url: readUrl(formData, "ticket_url", "购票地址"),
             source_url: readUrl(formData, "source_url", "来源链接", true),
-            submitter_contact: readRequired(
-                formData,
-                "submitter_contact",
-                "联系方式",
-            ),
-            tags: parseTags(readOptional(formData, "tags")),
+            submitter_contact: readRequired(formData, "submitter_contact", "联系方式"),
+            tags: parseTags(readOptional(formData, "tags"))
         },
-        turnstileToken: readOptional(formData, "cf-turnstile-response"),
+        turnstileToken: readOptional(formData, "cf-turnstile-response")
     };
 }

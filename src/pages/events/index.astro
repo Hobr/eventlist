@@ -9,7 +9,7 @@ import {
     listTypes,
     topTags,
     type EventSort,
-    type PublishedEventFilters,
+    type PublishedEventFilters
 } from "../../lib/db/queries";
 import { isRegionCode } from "../../lib/divisions";
 import { getRuntimeEnv } from "../../lib/runtime/env";
@@ -18,9 +18,7 @@ export const prerender = false;
 
 function parsePositiveInt(value: string | null) {
     const numberValue = Number.parseInt(value ?? "", 10);
-    return Number.isInteger(numberValue) && numberValue > 0
-        ? numberValue
-        : undefined;
+    return Number.isInteger(numberValue) && numberValue > 0 ? numberValue : undefined;
 }
 
 function parseDivisionCode(value: string | null) {
@@ -51,7 +49,7 @@ const filters: PublishedEventFilters = {
     to: parseDate(Astro.url.searchParams.get("to")),
     page: parsePositiveInt(Astro.url.searchParams.get("page")) ?? 1,
     pageSize: 20,
-    sort: parseSort(Astro.url.searchParams.get("sort")),
+    sort: parseSort(Astro.url.searchParams.get("sort"))
 };
 
 let types = [];
@@ -63,13 +61,12 @@ let errorMessage = "";
 
 try {
     const db = await getDB(getRuntimeEnv());
-    const [loadedTypes, loadedScales, loadedTags, page] =
-        await Promise.all([
-            listTypes(db),
-            listScales(db),
-            topTags(db, 20),
-            listPublishedEvents(db, filters),
-        ]);
+    const [loadedTypes, loadedScales, loadedTags, page] = await Promise.all([
+        listTypes(db),
+        listScales(db),
+        topTags(db, 20),
+        listPublishedEvents(db, filters)
+    ]);
 
     types = loadedTypes;
     scales = loadedScales;
@@ -92,13 +89,7 @@ try {
                 </p>
             </div>
 
-            <FilterBar
-                types={types}
-                scales={scales}
-                tags={tags}
-                filters={filters}
-                client:load
-            />
+            <FilterBar types={types} scales={scales} tags={tags} filters={filters} client:load />
 
             {
                 errorMessage ? (
@@ -114,14 +105,8 @@ try {
                         </div>
                         <nav class="pagination" aria-label="活动分页">
                             {filters.page && filters.page > 1 ? (
-                                <a
-                                    class="button button-outline"
-                                    href={nextHref(filters.page - 1)}
-                                >
-                                    <span
-                                        class="material-symbols-rounded"
-                                        aria-hidden="true"
-                                    >
+                                <a class="button button-outline" href={nextHref(filters.page - 1)}>
+                                    <span class="material-symbols-rounded" aria-hidden="true">
                                         chevron_left
                                     </span>
                                     上一页
@@ -134,10 +119,7 @@ try {
                                     href={nextHref((filters.page ?? 1) + 1)}
                                 >
                                     下一页
-                                    <span
-                                        class="material-symbols-rounded"
-                                        aria-hidden="true"
-                                    >
+                                    <span class="material-symbols-rounded" aria-hidden="true">
                                         chevron_right
                                     </span>
                                 </a>

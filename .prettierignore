@@ -9,3 +9,4 @@ bun.lockb
 /static/
 
 wrangler.jsonc
+.wrangler/

@@ -1,5 +1,4 @@
-const TURNSTILE_VERIFY_URL =
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 export interface TurnstileVerification {
     success: boolean;
@@ -14,7 +13,7 @@ interface TurnstileResponseBody {
 export async function verifyTurnstile(
     token: string | null | undefined,
     secret: string | null | undefined,
-    remoteIp?: string | null,
+    remoteIp?: string | null
 ): Promise<TurnstileVerification> {
     if (!secret) {
         throw new Error("Turnstile secret is not configured");
@@ -26,7 +25,7 @@ export async function verifyTurnstile(
 
     const body = new URLSearchParams({
         secret,
-        response: token,
+        response: token
     });
     if (remoteIp) body.set("remoteip", remoteIp);
 
@@ -34,7 +33,7 @@ export async function verifyTurnstile(
     try {
         response = await fetch(TURNSTILE_VERIFY_URL, {
             method: "POST",
-            body,
+            body
         });
     } catch {
         throw new Error("Turnstile verification request failed");
@@ -46,6 +45,6 @@ export async function verifyTurnstile(
     const result = (await response.json()) as TurnstileResponseBody;
     return {
         success: result.success === true,
-        errors: result["error-codes"] ?? [],
+        errors: result["error-codes"] ?? []
     };
 }

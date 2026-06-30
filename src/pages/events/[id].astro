@@ -43,16 +43,12 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
         <div class="section-inner">
             {
                 !event ? (
-                    <div class="panel empty-state error-text">
-                        {errorMessage}
-                    </div>
+                    <div class="panel empty-state error-text">{errorMessage}</div>
                 ) : (
                     <div class="detail-grid">
                         <article class="detail-body">
                             {event.status === STATUS.OFFLINE ? (
-                                <div class="notice">
-                                    该活动已下线，页面仅作为历史信息保留。
-                                </div>
+                                <div class="notice">该活动已下线，页面仅作为历史信息保留。</div>
                             ) : null}
                             {event.cover_url ? (
                                 <img
@@ -68,25 +64,16 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                                 <h1>{event.title}</h1>
                             </div>
                             <div class="chip-row">
-                                <span class="chip">
-                                    {event.type_label ?? event.type}
-                                </span>
-                                <span class="chip">
-                                    {event.scale_label ?? event.scale}
-                                </span>
+                                <span class="chip">{event.type_label ?? event.type}</span>
+                                <span class="chip">{event.scale_label ?? event.scale}</span>
                                 {tags.map((tag) => (
-                                    <a
-                                        class="chip"
-                                        href={`/events?tag=${encodeURIComponent(tag)}`}
-                                    >
+                                    <a class="chip" href={`/events?tag=${encodeURIComponent(tag)}`}>
                                         {tag}
                                     </a>
                                 ))}
                             </div>
                             {event.description ? (
-                                <p class="description-text">
-                                    {event.description}
-                                </p>
+                                <p class="description-text">{event.description}</p>
                             ) : (
                                 <p class="muted">暂无活动介绍。</p>
                             )}

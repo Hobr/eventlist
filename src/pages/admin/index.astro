@@ -9,10 +9,7 @@ import { getRuntimeEnv } from "../../lib/runtime/env";
 export const prerender = false;
 
 const PAGE_SIZE = 25;
-const page = Math.max(
-    1,
-    Number.parseInt(Astro.url.searchParams.get("page") ?? "1", 10) || 1,
-);
+const page = Math.max(1, Number.parseInt(Astro.url.searchParams.get("page") ?? "1", 10) || 1);
 let events = [];
 let errorMessage = "";
 
@@ -20,8 +17,7 @@ try {
     const db = await getDB(getRuntimeEnv());
     events = await listEventsByStatus(db, STATUS.PENDING, page, PAGE_SIZE + 1);
 } catch (error) {
-    errorMessage =
-        error instanceof Error ? error.message : "无法加载待审核活动";
+    errorMessage = error instanceof Error ? error.message : "无法加载待审核活动";
 }
 
 const hasNext = events.length > PAGE_SIZE;

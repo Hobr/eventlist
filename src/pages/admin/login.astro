@@ -38,15 +38,25 @@ if (Astro.request.method === "POST") {
                 <h1>管理员登录</h1>
                 {
                     authMode === "access" ? (
-                        <p class="muted">当前使用 Cloudflare Access 鉴权。请从受保护的 Access 应用入口进入后台。</p>
+                        <p class="muted">
+                            当前使用 Cloudflare Access 鉴权。请从受保护的 Access 应用入口进入后台。
+                        </p>
                     ) : (
                         <>
                             <p class="muted">输入管理员 Token 进入后台。</p>
                             <div class="field">
                                 <label for="token">Token</label>
-                                <input id="token" name="token" type="password" autocomplete="current-password" required />
+                                <input
+                                    id="token"
+                                    name="token"
+                                    type="password"
+                                    autocomplete="current-password"
+                                    required
+                                />
                             </div>
-                            <button class="button button-filled" type="submit">登录</button>
+                            <button class="button button-filled" type="submit">
+                                登录
+                            </button>
                         </>
                     )
                 }

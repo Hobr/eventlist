@@ -42,6 +42,6 @@ export function parseEventForm(formData: FormData): AdminEventInput {
         tags: tagsValue
             .split(/[,\n，、]/)
             .map((tag) => tag.trim())
-            .filter(Boolean),
+            .filter(Boolean)
     };
 }

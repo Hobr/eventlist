@@ -155,15 +155,9 @@ await db.exec("BEGIN; UPDATE event_tags ...; UPDATE tags ...; COMMIT;");
 
 ```ts
 await db.batch([
-    db
-        .prepare(
-            "DELETE FROM event_tags WHERE tag_id = ? AND event_id IN (...)",
-        )
-        .bind(from, to),
-    db
-        .prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?")
-        .bind(to, from),
-    db.prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?").bind(to, from),
+    db.prepare("DELETE FROM event_tags WHERE tag_id = ? AND event_id IN (...)").bind(from, to),
+    db.prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?").bind(to, from),
+    db.prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?").bind(to, from)
 ]);
 ```
 

@@ -18,11 +18,7 @@
     "commit": null,
     "pr_url": null,
     "subtasks": [],
-    "children": [
-        "06-29-foundation-db",
-        "06-29-public-site",
-        "06-29-admin-review"
-    ],
+    "children": ["06-29-foundation-db", "06-29-public-site", "06-29-admin-review"],
     "parent": null,
     "relatedFiles": [],
     "notes": "",

@@ -7,7 +7,7 @@ import {
     getCountiesByCity,
     getCountyByCode,
     getProvinceByCode,
-    provincesCode,
+    provincesCode
 } from "cn-division";
 
 export const FALLBACK_DIVISION_CODE = "110101";
@@ -73,7 +73,7 @@ function getCityLabel(code: string | number | null | undefined) {
 }
 
 export function getDivisionOptionByCode(
-    code: string | number | null | undefined,
+    code: string | number | null | undefined
 ): DivisionOption | null {
     const normalized = toCode(code);
     const county = getCountyByCode(normalized);
@@ -91,14 +91,12 @@ export function getDivisionOptionByCode(
         province: province?.n ?? null,
         cityCode: String(county.cc),
         provinceCode,
-        sort: countiesCode.findIndex(
-            (item) => String(item.c) === String(county.c),
-        ),
+        sort: countiesCode.findIndex((item) => String(item.c) === String(county.c))
     };
 }
 
 export function getRegionOptionByCode(
-    code: string | number | null | undefined,
+    code: string | number | null | undefined
 ): RegionOption | null {
     const normalized = toCode(code);
     if (!normalized) return null;
@@ -112,7 +110,7 @@ export function getRegionOptionByCode(
             level: "county",
             province: county.province,
             city: county.city,
-            sort: county.sort,
+            sort: county.sort
         };
     }
 
@@ -125,9 +123,7 @@ export function getRegionOptionByCode(
             level: "city",
             province: getProvinceByCode(city.p)?.n ?? null,
             city: city.n,
-            sort: citiesCode.findIndex(
-                (item) => String(item.c) === String(city.c),
-            ),
+            sort: citiesCode.findIndex((item) => String(item.c) === String(city.c))
         };
     }
 
@@ -141,8 +137,8 @@ export function getRegionOptionByCode(
             province: province.n,
             city: null,
             sort: provincesCode.findIndex(
-                (item) => toProvinceCode(item.c) === toProvinceCode(province.c),
-            ),
+                (item) => toProvinceCode(item.c) === toProvinceCode(province.c)
+            )
         };
     }
 
@@ -165,35 +161,31 @@ export function listDivisionTree(): DivisionTree {
     return {
         provinces: provincesCode.map((province, provinceIndex) => {
             const provinceCode = toProvinceCode(province.c);
-            const cities = getCitiesByProvince(provinceCode).map(
-                (city, cityIndex) => {
-                    const cityCode = String(city.c);
-                    const counties = getCountiesByCity(cityCode).map(
-                        (county, countyIndex) => ({
-                            code: String(county.c),
-                            name: county.n,
-                            label: formatFullPath(String(county.c)) || county.n,
-                            city: city.n,
-                            province: province.n,
-                            cityCode,
-                            provinceCode,
-                            sort: countyIndex,
-                        }),
-                    );
+            const cities = getCitiesByProvince(provinceCode).map((city, cityIndex) => {
+                const cityCode = String(city.c);
+                const counties = getCountiesByCity(cityCode).map((county, countyIndex) => ({
+                    code: String(county.c),
+                    name: county.n,
+                    label: formatFullPath(String(county.c)) || county.n,
+                    city: city.n,
+                    province: province.n,
+                    cityCode,
+                    provinceCode,
+                    sort: countyIndex
+                }));
 
-                    return {
-                        code: cityCode,
-                        name: city.n,
-                        label: joinLabel(province.n, city.n),
-                        level: "city" as const,
-                        province: province.n,
-                        city: city.n,
-                        provinceCode,
-                        counties,
-                        sort: cityIndex,
-                    };
-                },
-            );
+                return {
+                    code: cityCode,
+                    name: city.n,
+                    label: joinLabel(province.n, city.n),
+                    level: "city" as const,
+                    province: province.n,
+                    city: city.n,
+                    provinceCode,
+                    counties,
+                    sort: cityIndex
+                };
+            });
 
             return {
                 code: provinceCode,
@@ -203,8 +195,8 @@ export function listDivisionTree(): DivisionTree {
                 province: province.n,
                 city: null,
                 cities,
-                sort: provinceIndex,
+                sort: provinceIndex
             };
-        }),
+        })
     };
 }

@@ -61,10 +61,8 @@ textarea {
     padding: 0 16px;
     text-decoration: none;
     transition:
-        background var(--md-sys-motion-duration-medium)
-            var(--md-sys-motion-easing-standard),
-        color var(--md-sys-motion-duration-medium)
-            var(--md-sys-motion-easing-standard);
+        background var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard),
+        color var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
 }
 
 .admin-nav-link[aria-current="page"] {

@@ -6,10 +6,7 @@
     }
 
     interface TurnstileApi {
-        render: (
-            container: HTMLElement,
-            options: Record<string, unknown>,
-        ) => string;
+        render: (container: HTMLElement, options: Record<string, unknown>) => string;
     }
 
     declare global {
@@ -28,7 +25,7 @@
 
         return new Promise<void>((resolve, reject) => {
             const existing = document.querySelector<HTMLScriptElement>(
-                "script[data-turnstile-script]",
+                "script[data-turnstile-script]"
             );
             if (existing) {
                 existing.addEventListener("load", () => resolve(), { once: true });
@@ -37,8 +34,7 @@
             }
 
             const script = document.createElement("script");
-            script.src =
-                "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+            script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
             script.async = true;
             script.defer = true;
             script.dataset.turnstileScript = "true";
@@ -64,7 +60,7 @@
                     },
                     "error-callback": () => {
                         token = "";
-                    },
+                    }
                 });
             })
             .catch(() => {

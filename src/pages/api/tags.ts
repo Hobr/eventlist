@@ -12,9 +12,6 @@ export const GET: APIRoute = async ({ url }) => {
         const tags = await searchTags(db, url.searchParams.get("q") ?? "", 12);
         return jsonOk({ tags });
     } catch (error) {
-        return jsonError(
-            error instanceof Error ? error.message : "Failed to search tags",
-            500,
-        );
+        return jsonError(error instanceof Error ? error.message : "Failed to search tags", 500);
     }
 };

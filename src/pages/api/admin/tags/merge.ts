@@ -29,9 +29,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
         return jsonOk();
     } catch (error) {
-        return jsonError(
-            error instanceof Error ? error.message : "Failed to merge tags",
-            400,
-        );
+        return jsonError(error instanceof Error ? error.message : "Failed to merge tags", 400);
     }
 };

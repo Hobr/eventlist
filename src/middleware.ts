@@ -1,9 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
-import {
-    authenticateAdmin,
-    isAdminApiPath,
-    isAdminPagePath,
-} from "./lib/auth/admin";
+import { authenticateAdmin, isAdminApiPath, isAdminPagePath } from "./lib/auth/admin";
 import { jsonError } from "./lib/http/json";
 import { getRuntimeEnv } from "./lib/runtime/env";
 

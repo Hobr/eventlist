@@ -7,9 +7,7 @@ interface Props {
 }
 
 const { event } = Astro.props;
-const tags = event.tags
-    ? event.tags.split("、").filter(Boolean).slice(0, 4)
-    : [];
+const tags = event.tags ? event.tags.split("、").filter(Boolean).slice(0, 4) : [];
 const coverUrl = event.cover_url || "";
 const divisionLabel = getDivisionLabel(event.division_code);
 ---
@@ -17,12 +15,7 @@ const divisionLabel = getDivisionLabel(event.division_code);
 <a class="event-card" href={`/events/${event.id}`}>
     {
         coverUrl ? (
-            <img
-                class="event-cover"
-                src={coverUrl}
-                alt={`${event.title} 封面`}
-                loading="lazy"
-            />
+            <img class="event-cover" src={coverUrl} alt={`${event.title} 封面`} loading="lazy" />
         ) : (
             <div class="event-cover" aria-hidden="true" />
         )

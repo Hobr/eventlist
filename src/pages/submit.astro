@@ -23,10 +23,7 @@ try {
 }
 ---
 
-<Layout
-    title="提交活动"
-    description="提交 ACG 活动，进入审核队列后再公开展示。"
->
+<Layout title="提交活动" description="提交 ACG 活动，进入审核队列后再公开展示。">
     <section class="page-section">
         <div class="section-inner">
             <div class="page-heading">
@@ -39,9 +36,7 @@ try {
 
             {
                 sent ? (
-                    <div class="notice">
-                        投稿已进入审核队列，审核通过后会出现在公共列表中。
-                    </div>
+                    <div class="notice">投稿已进入审核队列，审核通过后会出现在公共列表中。</div>
                 ) : errorMessage ? (
                     <div class="notice error">{errorMessage}</div>
                 ) : (
@@ -60,9 +55,7 @@ try {
                             <span>类型</span>
                             <select name="type" required>
                                 {types.map((type) => (
-                                    <option value={type.name}>
-                                        {type.label ?? type.name}
-                                    </option>
+                                    <option value={type.name}>{type.label ?? type.name}</option>
                                 ))}
                             </select>
                         </label>
@@ -71,9 +64,7 @@ try {
                             <span>规模</span>
                             <select name="scale" required>
                                 {scales.map((scale) => (
-                                    <option value={scale.name}>
-                                        {scale.label ?? scale.name}
-                                    </option>
+                                    <option value={scale.name}>{scale.label ?? scale.name}</option>
                                 ))}
                             </select>
                         </label>
@@ -108,11 +99,7 @@ try {
 
                         <label class="field wide">
                             <span>封面 URL</span>
-                            <input
-                                type="url"
-                                name="cover_url"
-                                placeholder="https://..."
-                            />
+                            <input type="url" name="cover_url" placeholder="https://..." />
                         </label>
 
                         <label class="field wide">
@@ -129,11 +116,7 @@ try {
 
                         <label class="field">
                             <span>购票地址</span>
-                            <input
-                                type="url"
-                                name="ticket_url"
-                                placeholder="https://..."
-                            />
+                            <input type="url" name="ticket_url" placeholder="https://..." />
                         </label>
 
                         <label class="field wide">
@@ -148,17 +131,10 @@ try {
 
                         <label class="field wide">
                             <span>联系方式</span>
-                            <input
-                                name="submitter_contact"
-                                required
-                                maxlength="120"
-                            />
+                            <input name="submitter_contact" required maxlength="120" />
                         </label>
 
-                        <Turnstile
-                            siteKey={runtimeEnv.TURNSTILE_SITE_KEY}
-                            client:load
-                        />
+                        <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
 
                         <p
                             id="submit-result"
@@ -168,10 +144,7 @@ try {
 
                         <div class="button-row wide">
                             <button class="button button-filled" type="submit">
-                                <span
-                                    class="material-symbols-rounded"
-                                    aria-hidden="true"
-                                >
+                                <span class="material-symbols-rounded" aria-hidden="true">
                                     send
                                 </span>
                                 提交审核
@@ -198,7 +171,7 @@ try {
 
             const response = await fetch(form.action, {
                 method: "POST",
-                body: new FormData(form),
+                body: new FormData(form)
             });
 
             if (response.ok) {

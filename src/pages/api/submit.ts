@@ -21,31 +21,25 @@ export const POST: APIRoute = async ({ request }) => {
         const verification = await verifyTurnstile(
             turnstileToken,
             runtimeEnv.TURNSTILE_SECRET_KEY,
-            request.headers.get("CF-Connecting-IP"),
+            request.headers.get("CF-Connecting-IP")
         );
         if (!verification.success) {
             return jsonError("人机校验失败，请刷新后重试", 400);
         }
 
         const db = await getDB(runtimeEnv);
-        const [types, scales] = await Promise.all([
-            listTypes(db),
-            listScales(db),
-        ]);
-        if (!isCountyDivisionCode(input.division_code))
-            return jsonError("行政区无效", 400);
+        const [types, scales] = await Promise.all([listTypes(db), listScales(db)]);
+        if (!isCountyDivisionCode(input.division_code)) return jsonError("行政区无效", 400);
         if (!hasName(types, input.type)) return jsonError("类型无效", 400);
         if (!hasName(scales, input.scale)) return jsonError("规模无效", 400);
 
         const id = await insertSubmission(db, input);
         return jsonOk({ id }, { status: 201 });
     } catch (error) {
-        const message =
-            error instanceof Error ? error.message : "Failed to submit event";
+        const message = error instanceof Error ? error.message : "Failed to submit event";
         const status = message.includes("not configured")
             ? 500
-            : message.includes("request failed") ||
-                message.includes("internal error; reference")
+            : message.includes("request failed") || message.includes("internal error; reference")
               ? 502
               : 400;
         return jsonError(message, status);

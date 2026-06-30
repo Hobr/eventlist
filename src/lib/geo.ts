@@ -1,9 +1,5 @@
 import { countiesCode } from "cn-division";
-import {
-    FALLBACK_DIVISION_CODE,
-    getRegionOptionByCode,
-    type RegionOption,
-} from "./divisions";
+import { FALLBACK_DIVISION_CODE, getRegionOptionByCode, type RegionOption } from "./divisions";
 
 const DIVISION_STORAGE_PARAM = "city";
 
@@ -40,9 +36,7 @@ function matchDivisionByName(city: string | null | undefined) {
 
     const county = countiesCode.find((candidate) => {
         const name = normalizeDivision(candidate.n);
-        return (
-            name === target || name.includes(target) || target.includes(name)
-        );
+        return name === target || name.includes(target) || target.includes(name);
     });
 
     return county ? getRegionOptionByCode(county.c) : null;
@@ -51,19 +45,16 @@ function matchDivisionByName(city: string | null | undefined) {
 export async function resolveSelectedDivision(
     request: Request,
     searchParams: URLSearchParams,
-    defaultDivisionCode = FALLBACK_DIVISION_CODE,
+    defaultDivisionCode = FALLBACK_DIVISION_CODE
 ): Promise<ResolvedDivision> {
-    const queryDivisionCode = parseDivisionCode(
-        searchParams.get(DIVISION_STORAGE_PARAM),
-    );
+    const queryDivisionCode = parseDivisionCode(searchParams.get(DIVISION_STORAGE_PARAM));
     if (queryDivisionCode) {
         const queryDivision = getRegionOptionByCode(queryDivisionCode);
         if (queryDivision) return { division: queryDivision, source: "query" };
     }
 
     const cf = (request as CloudflareRequest).cf;
-    const cfDivision =
-        matchDivisionByName(cf?.city) ?? matchDivisionByName(cf?.region);
+    const cfDivision = matchDivisionByName(cf?.city) ?? matchDivisionByName(cf?.region);
     if (cfDivision) return { division: cfDivision, source: "cf" };
 
     const fallback = getRegionOptionByCode(defaultDivisionCode);

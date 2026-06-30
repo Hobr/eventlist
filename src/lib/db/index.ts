@@ -4,7 +4,7 @@ export const STATUS = {
     PENDING: "pending",
     PUBLISHED: "published",
     REJECTED: "rejected",
-    OFFLINE: "offline",
+    OFFLINE: "offline"
 } as const;
 
 export const TYPES = {
@@ -15,14 +15,14 @@ export const TYPES = {
     DANCE: "dance",
     IP_FLASH: "ipflash",
     ONLINE: "online",
-    OTHER: "other",
+    OTHER: "other"
 } as const;
 
 export const SCALES = {
     SMALL: "small",
     MID: "mid",
     LARGE: "large",
-    MEGA: "mega",
+    MEGA: "mega"
 } as const;
 
 export type EventStatus = (typeof STATUS)[keyof typeof STATUS];
@@ -30,7 +30,7 @@ export type EventStatus = (typeof STATUS)[keyof typeof STATUS];
 export async function getDB(runtimeEnv: RuntimeEnv): Promise<D1Database> {
     if (!runtimeEnv.DB) {
         throw new Error(
-            "D1 binding DB is not configured. Check wrangler.jsonc d1_databases for binding DB.",
+            "D1 binding DB is not configured. Check wrangler.jsonc d1_databases for binding DB."
         );
     }
 

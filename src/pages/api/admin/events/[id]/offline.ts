@@ -17,22 +17,13 @@ export const POST: APIRoute = async ({ params }) => {
 
     try {
         const db = await getDB(getRuntimeEnv());
-        const outcome = await updateEventStatus(
-            db,
-            id,
-            STATUS.PUBLISHED,
-            STATUS.OFFLINE,
-        );
-        if (outcome === "conflict")
-            return jsonError("Event is not published", 409);
+        const outcome = await updateEventStatus(db, id, STATUS.PUBLISHED, STATUS.OFFLINE);
+        if (outcome === "conflict") return jsonError("Event is not published", 409);
         if (outcome === "already-target") return jsonOk();
 
         await insertAudit(db, "offline", id, {});
         return jsonOk();
     } catch (error) {
-        return jsonError(
-            error instanceof Error ? error.message : "Failed to offline event",
-            500,
-        );
+        return jsonError(error instanceof Error ? error.message : "Failed to offline event", 500);
     }
 };

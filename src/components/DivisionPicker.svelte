@@ -2,7 +2,7 @@
     import type {
         CityDivisionOption,
         DivisionTree,
-        ProvinceDivisionOption,
+        ProvinceDivisionOption
     } from "../lib/divisions";
     import { listDivisionTree } from "../lib/divisions";
 
@@ -31,7 +31,7 @@
         emptyLabel = "全部地区",
         required = false,
         wide = false,
-        onchange,
+        onchange
     }: Props = $props();
 
     const provinces = tree.provinces;
@@ -40,55 +40,40 @@
         if (!code) return null;
         return (
             provinces.find(
-                (province) =>
-                    province.code === code || code.startsWith(province.code),
+                (province) => province.code === code || code.startsWith(province.code)
             ) ?? null
         );
     }
 
-    function findCity(
-        province: ProvinceDivisionOption | null,
-        code: string | null | undefined,
-    ) {
+    function findCity(province: ProvinceDivisionOption | null, code: string | null | undefined) {
         if (!province || !code) return null;
         return (
-            province.cities.find(
-                (city) => city.code === code || code.startsWith(city.code),
-            ) ?? null
+            province.cities.find((city) => city.code === code || code.startsWith(city.code)) ?? null
         );
     }
 
-    function findCounty(
-        city: CityDivisionOption | null,
-        code: string | null | undefined,
-    ) {
+    function findCounty(city: CityDivisionOption | null, code: string | null | undefined) {
         if (!city || !code) return null;
         return city.counties.find((county) => county.code === code) ?? null;
     }
 
     let selectedProvinceCode = $state(findProvince(value)?.code ?? "");
-    let selectedCityCode = $state(
-        findCity(findProvince(value), value)?.code ?? "",
-    );
+    let selectedCityCode = $state(findCity(findProvince(value), value)?.code ?? "");
     let selectedCountyCode = $state(
-        findCounty(findCity(findProvince(value), value), value)?.code ?? "",
+        findCounty(findCity(findProvince(value), value), value)?.code ?? ""
     );
 
     let selectedProvince = $derived(
-        provinces.find((province) => province.code === selectedProvinceCode) ??
-            null,
+        provinces.find((province) => province.code === selectedProvinceCode) ?? null
     );
     let cities = $derived(selectedProvince?.cities ?? []);
-    let selectedCity = $derived(
-        cities.find((city) => city.code === selectedCityCode) ?? null,
-    );
+    let selectedCity = $derived(cities.find((city) => city.code === selectedCityCode) ?? null);
     let counties = $derived(selectedCity?.counties ?? []);
 
     let selectedValue = $derived.by(() => {
         if (selectedCountyCode) return selectedCountyCode;
         if (mode === "region" && selectedCityCode) return selectedCityCode;
-        if (mode === "region" && selectedProvinceCode)
-            return selectedProvinceCode;
+        if (mode === "region" && selectedProvinceCode) return selectedProvinceCode;
         return "";
     });
 
@@ -134,9 +119,7 @@
             {#if allowEmpty}
                 <option value="">{emptyLabel}</option>
             {:else}
-                <option value="" disabled selected={!selectedProvinceCode}>
-                    选择省份
-                </option>
+                <option value="" disabled selected={!selectedProvinceCode}> 选择省份 </option>
             {/if}
             {#each provinces as province}
                 <option value={province.code}>{province.name}</option>

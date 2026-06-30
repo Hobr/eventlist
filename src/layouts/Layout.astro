@@ -10,14 +10,14 @@ interface Props {
 const {
     title = "Eventlist",
     description = "面向普通爱好者的 ACG 活动查询与投稿目录。",
-    jsonLd,
+    jsonLd
 } = Astro.props;
 const currentPath = Astro.url.pathname;
 const siteTitle = title === "Eventlist" ? title : `${title} - Eventlist`;
 const navItems = [
     { href: "/", label: "首页" },
     { href: "/events", label: "活动" },
-    { href: "/submit", label: "投稿" },
+    { href: "/submit", label: "投稿" }
 ];
 
 function isCurrent(href: string) {
@@ -42,14 +42,7 @@ function isCurrent(href: string) {
             rel="stylesheet"
         />
         <title>{siteTitle}</title>
-        {
-            jsonLd ? (
-                <script
-                    type="application/ld+json"
-                    set:html={JSON.stringify(jsonLd)}
-                />
-            ) : null
-        }
+        {jsonLd ? <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} /> : null}
     </head>
     <body>
         <div class="site-shell">
@@ -60,9 +53,7 @@ function isCurrent(href: string) {
                         navItems.map((item) => (
                             <a
                                 href={item.href}
-                                aria-current={
-                                    isCurrent(item.href) ? "page" : undefined
-                                }
+                                aria-current={isCurrent(item.href) ? "page" : undefined}
                             >
                                 {item.label}
                             </a>

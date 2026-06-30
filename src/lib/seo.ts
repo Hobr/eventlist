@@ -18,13 +18,13 @@ export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
         location: {
             "@type": "Place",
             name: event.venue,
-            address: event.address ?? divisionLabel ?? undefined,
+            address: event.address ?? divisionLabel ?? undefined
         },
         organizer: {
             "@type": "Organization",
             name: event.source_url,
-            url: event.source_url,
-        },
+            url: event.source_url
+        }
     };
 
     if (event.cover_url) jsonLd.image = [event.cover_url];
@@ -33,7 +33,7 @@ export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
         jsonLd.offers = {
             "@type": "Offer",
             url: event.ticket_url,
-            availability: "https://schema.org/InStock",
+            availability: "https://schema.org/InStock"
         };
     }
 

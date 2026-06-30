@@ -3,7 +3,7 @@
         EventSort,
         OptionRow,
         PublishedEventFilters,
-        TagSummary,
+        TagSummary
     } from "../lib/db/queries";
     import DivisionPicker from "./DivisionPicker.svelte";
 
@@ -62,7 +62,9 @@
         <select name="type">
             <option value="">全部类型</option>
             {#each types as type}
-                <option value={type.name} selected={filters.type === type.name}>{type.label ?? type.name}</option>
+                <option value={type.name} selected={filters.type === type.name}
+                    >{type.label ?? type.name}</option
+                >
             {/each}
         </select>
     </label>
@@ -72,7 +74,9 @@
         <select name="scale">
             <option value="">全部规模</option>
             {#each scales as scale}
-                <option value={scale.name} selected={filters.scale === scale.name}>{scale.label ?? scale.name}</option>
+                <option value={scale.name} selected={filters.scale === scale.name}
+                    >{scale.label ?? scale.name}</option
+                >
             {/each}
         </select>
     </label>

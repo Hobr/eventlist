@@ -6,11 +6,7 @@
 
 .site-header {
     align-items: center;
-    background: color-mix(
-        in srgb,
-        var(--md-sys-color-surface) 92%,
-        transparent
-    );
+    background: color-mix(in srgb, var(--md-sys-color-surface) 92%, transparent);
     border-bottom: 1px solid var(--md-sys-color-surface-variant);
     display: flex;
     gap: 20px;
@@ -307,11 +303,7 @@
 .event-cover {
     aspect-ratio: 16 / 9;
     background:
-        radial-gradient(
-            circle at 28% 26%,
-            var(--md-sys-color-primary-container),
-            transparent 34%
-        ),
+        radial-gradient(circle at 28% 26%, var(--md-sys-color-primary-container), transparent 34%),
         var(--md-sys-color-surface-container);
     object-fit: cover;
     width: 100%;
@@ -432,11 +424,7 @@
 }
 
 .notice.error {
-    background: color-mix(
-        in srgb,
-        var(--md-sys-color-error) 14%,
-        var(--md-sys-color-surface)
-    );
+    background: color-mix(in srgb, var(--md-sys-color-error) 14%, var(--md-sys-color-surface));
     color: var(--md-sys-color-error);
 }
 

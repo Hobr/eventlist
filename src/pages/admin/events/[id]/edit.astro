@@ -1,11 +1,7 @@
 ---
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import DivisionPicker from "../../../../components/DivisionPicker.svelte";
-import {
-    getEvent,
-    listScales,
-    listTypes,
-} from "../../../../lib/db/queries";
+import { getEvent, listScales, listTypes } from "../../../../lib/db/queries";
 import { getDB } from "../../../../lib/db";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
@@ -26,7 +22,7 @@ try {
     const [loadedEvent, loadedTypes, loadedScales] = await Promise.all([
         getEvent(db, id),
         listTypes(db),
-        listScales(db),
+        listScales(db)
     ]);
 
     if (!loadedEvent) {
@@ -46,29 +42,17 @@ try {
         errorMessage || !eventRecord ? (
             <div class="surface empty-state error-text">{errorMessage}</div>
         ) : (
-            <form
-                class="surface form-grid"
-                id="edit-event-form"
-                data-event-id={eventRecord.id}
-            >
+            <form class="surface form-grid" id="edit-event-form" data-event-id={eventRecord.id}>
                 <div class="field wide">
                     <label for="title">活动名称</label>
-                    <input
-                        id="title"
-                        name="title"
-                        required
-                        value={eventRecord.title}
-                    />
+                    <input id="title" name="title" required value={eventRecord.title} />
                 </div>
 
                 <div class="field">
                     <label for="type">类型</label>
                     <select id="type" name="type" required>
                         {types.map((type) => (
-                            <option
-                                value={type.name}
-                                selected={type.name === eventRecord.type}
-                            >
+                            <option value={type.name} selected={type.name === eventRecord.type}>
                                 {type.label ?? type.name}
                             </option>
                         ))}
@@ -79,10 +63,7 @@ try {
                     <label for="scale">规模</label>
                     <select id="scale" name="scale" required>
                         {scales.map((scale) => (
-                            <option
-                                value={scale.name}
-                                selected={scale.name === eventRecord.scale}
-                            >
+                            <option value={scale.name} selected={scale.name === eventRecord.scale}>
                                 {scale.label ?? scale.name}
                             </option>
                         ))}
@@ -100,21 +81,12 @@ try {
 
                 <div class="field">
                     <label for="venue">场馆</label>
-                    <input
-                        id="venue"
-                        name="venue"
-                        required
-                        value={eventRecord.venue}
-                    />
+                    <input id="venue" name="venue" required value={eventRecord.venue} />
                 </div>
 
                 <div class="field wide">
                     <label for="address">地址</label>
-                    <input
-                        id="address"
-                        name="address"
-                        value={eventRecord.address ?? ""}
-                    />
+                    <input id="address" name="address" value={eventRecord.address ?? ""} />
                 </div>
 
                 <div class="field">
@@ -172,11 +144,7 @@ try {
 
                 <div class="field">
                     <label for="qq_group">官方交流群</label>
-                    <input
-                        id="qq_group"
-                        name="qq_group"
-                        value={eventRecord.qq_group ?? ""}
-                    />
+                    <input id="qq_group" name="qq_group" value={eventRecord.qq_group ?? ""} />
                 </div>
 
                 <div class="field wide">
@@ -191,11 +159,7 @@ try {
 
                 <div class="field wide">
                     <label for="tags">相关作品标签</label>
-                    <input
-                        id="tags"
-                        name="tags"
-                        value={eventRecord.tags ?? ""}
-                    />
+                    <input id="tags" name="tags" value={eventRecord.tags ?? ""} />
                 </div>
 
                 <div class="field wide">
@@ -226,7 +190,7 @@ try {
             const eventId = form.dataset.eventId;
             const response = await fetch(`/api/admin/events/${eventId}`, {
                 method: "PATCH",
-                body: new FormData(form),
+                body: new FormData(form)
             });
 
             if (response.ok) {

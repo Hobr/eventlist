@@ -17,7 +17,7 @@
         selectedDivisionCode = null,
         action = "/",
         name = "city",
-        label = "所在地区",
+        label = "所在地区"
     }: Props = $props();
 
     function go(value: string, replace = false) {

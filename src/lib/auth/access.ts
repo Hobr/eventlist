@@ -24,10 +24,7 @@ export interface AccessJwtPayload {
 }
 
 const decoder = new TextDecoder();
-const jwksCache = new Map<
-    string,
-    { expiresAt: number; keys: AccessJsonWebKey[] }
->();
+const jwksCache = new Map<string, { expiresAt: number; keys: AccessJsonWebKey[] }>();
 const JWKS_CACHE_MS = 5 * 60 * 1000;
 
 function base64UrlToBytes(value: string) {
@@ -64,24 +61,18 @@ async function getJwks(teamDomain: string) {
     const jwks = (await response.json()) as JsonWebKeySet;
     jwksCache.set(teamDomain, {
         expiresAt: Date.now() + JWKS_CACHE_MS,
-        keys: jwks.keys,
+        keys: jwks.keys
     });
 
     return jwks.keys;
 }
 
-function audienceMatches(
-    actual: string | string[] | undefined,
-    expected: string,
-) {
+function audienceMatches(actual: string | string[] | undefined, expected: string) {
     if (Array.isArray(actual)) return actual.includes(expected);
     return actual === expected;
 }
 
-export async function verifyAccessJWT(
-    jwt: string | null,
-    runtimeEnv: RuntimeEnv,
-) {
+export async function verifyAccessJWT(jwt: string | null, runtimeEnv: RuntimeEnv) {
     if (!jwt || !runtimeEnv.ACCESS_TEAM || !runtimeEnv.ACCESS_AUD) {
         return null;
     }
@@ -110,18 +101,11 @@ export async function verifyAccessJWT(
         jwk,
         { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
         false,
-        ["verify"],
+        ["verify"]
     );
-    const signedData = new TextEncoder().encode(
-        `${encodedHeader}.${encodedPayload}`,
-    );
+    const signedData = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`);
     const signature = base64UrlToBytes(encodedSignature);
-    const valid = await crypto.subtle.verify(
-        "RSASSA-PKCS1-v1_5",
-        key,
-        signature,
-        signedData,
-    );
+    const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, signedData);
 
     return valid ? payload : null;
 }
