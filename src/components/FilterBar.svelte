@@ -34,8 +34,8 @@
         }))
     ]);
     const sortOptions = [
-        { value: "start_asc", label: "开始时间近到远" },
-        { value: "start_desc", label: "开始时间远到近" }
+        { value: "start_asc", label: "最近" },
+        { value: "start_desc", label: "最远" }
     ];
 
     async function refreshTagSuggestions(value: string) {

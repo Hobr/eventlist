@@ -138,7 +138,7 @@
             label={`${label}省份`}
             value={selectedProvinceCode}
             options={provinceOptions}
-            placeholder="选择省份"
+            placeholder="省"
             required={required && mode === "county"}
             onchange={handleProvinceChange}
         />
@@ -146,7 +146,7 @@
             label={`${label}城市`}
             value={selectedCityCode}
             options={cityOptions}
-            placeholder="选择城市"
+            placeholder="市"
             disabled={!selectedProvince}
             required={required && mode === "county"}
             onchange={handleCityChange}
@@ -155,7 +155,7 @@
             label={`${label}区县`}
             value={selectedCountyCode}
             options={countyOptions}
-            placeholder="选择区县"
+            placeholder="区县"
             disabled={!selectedCity}
             required={required && mode === "county"}
             onchange={handleCountyChange}
