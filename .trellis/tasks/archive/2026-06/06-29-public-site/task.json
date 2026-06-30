@@ -1,0 +1,28 @@
+{
+  "id": "public-site",
+  "name": "public-site",
+  "title": "前台站点",
+  "description": "",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "hobr",
+  "assignee": "hobr",
+  "createdAt": "2026-06-29",
+  "completedAt": "2026-06-30",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "06-29-acg-event-site",
+  "relatedFiles": [],
+  "notes": "Implemented public SSR site routes (/ , /events, /events/[id], /submit), public APIs (/api/submit, /api/cities, /api/tags), sitemap.xml, M3 public styles, Svelte islands, Turnstile verification wrapper, geo city resolution, public D1 queries, and docs/dev seed data. Validation: generate-types, tsc --noEmit, lint, astro build --outDir .tmp-build-public-site-final, local D1 seed/query checks, HTTP route checks for home/list/detail/offline/pending/sitemap/apis. Local successful submission could not be completed because workerd rejected Turnstile TLS certificate chain in this environment; API now returns clear 502 for verification request failure.",
+  "meta": {
+    "lastVerification": "2026-06-30"
+  }
+}
