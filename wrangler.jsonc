@@ -1,7 +1,7 @@
 {
     "$schema": "./node_modules/wrangler/config-schema.json",
     "compatibility_date": "2026-06-29",
-    "compatibility_flags": ["global_fetch_strictly_public"],
+    "compatibility_flags": ["nodejs_compat"],
     "name": "eventlist",
     "main": "@astrojs/cloudflare/entrypoints/server",
     "assets": {
@@ -11,6 +11,12 @@
     "observability": {
         "enabled": true,
     },
-    "compatibility_flags": ["nodejs_compat"],
-    "compatibility_date": "2026-06-29",
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "eventlist-db",
+            "database_id": "b11ea70c-4597-4049-a650-718cfbc5b04f",
+            "migrations_dir": "migrations",
+        },
+    ],
 }

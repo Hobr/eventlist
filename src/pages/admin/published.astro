@@ -9,15 +9,24 @@ import { getRuntimeEnv } from "../../lib/runtime/env";
 export const prerender = false;
 
 const PAGE_SIZE = 25;
-const page = Math.max(1, Number.parseInt(Astro.url.searchParams.get("page") ?? "1", 10) || 1);
+const page = Math.max(
+    1,
+    Number.parseInt(Astro.url.searchParams.get("page") ?? "1", 10) || 1,
+);
 let events = [];
 let errorMessage = "";
 
 try {
-    const db = getDB(getRuntimeEnv());
-    events = await listEventsByStatus(db, STATUS.PUBLISHED, page, PAGE_SIZE + 1);
+    const db = await getDB(getRuntimeEnv());
+    events = await listEventsByStatus(
+        db,
+        STATUS.PUBLISHED,
+        page,
+        PAGE_SIZE + 1,
+    );
 } catch (error) {
-    errorMessage = error instanceof Error ? error.message : "无法加载已发布活动";
+    errorMessage =
+        error instanceof Error ? error.message : "无法加载已发布活动";
 }
 
 const hasNext = events.length > PAGE_SIZE;

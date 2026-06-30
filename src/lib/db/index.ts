@@ -27,13 +27,14 @@ export const SCALES = {
 
 export type EventStatus = (typeof STATUS)[keyof typeof STATUS];
 
-export function getDB(runtimeEnv: RuntimeEnv): D1Database {
+export async function getDB(runtimeEnv: RuntimeEnv): Promise<D1Database> {
     if (!runtimeEnv.DB) {
         throw new Error(
-            "D1 binding DB is not configured. Complete foundation-db before using admin pages.",
+            "D1 binding DB is not configured. Check wrangler.jsonc d1_databases for binding DB.",
         );
     }
 
+    await ensureFK(runtimeEnv.DB);
     return runtimeEnv.DB;
 }
 

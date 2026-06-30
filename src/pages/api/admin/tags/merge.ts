@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!from || !to) return jsonError("from and to are required", 400);
 
     try {
-        const db = getDB(getRuntimeEnv());
+        const db = await getDB(getRuntimeEnv());
         const outcome = await mergeTags(db, from, to);
         if (outcome === "conflict")
             return jsonError("Source and target tags must be canonical", 409);

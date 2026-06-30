@@ -10,7 +10,7 @@ let tags = [];
 let errorMessage = "";
 
 try {
-    const db = getDB(getRuntimeEnv());
+    const db = await getDB(getRuntimeEnv());
     tags = await listTags(db);
 } catch (error) {
     errorMessage = error instanceof Error ? error.message : "无法加载标签";
@@ -47,7 +47,9 @@ try {
                         </select>
                     </div>
                     <div class="form-actions">
-                        <button class="button button-danger" type="submit">归并</button>
+                        <button class="button button-danger" type="submit">
+                            归并
+                        </button>
                     </div>
                 </form>
                 <div class="table-wrap">
@@ -99,7 +101,9 @@ try {
                 return;
             }
 
-            const body = (await response.json().catch(() => null)) as { error?: string } | null;
+            const body = (await response.json().catch(() => null)) as {
+                error?: string;
+            } | null;
             window.alert(body?.error ?? "归并失败");
         });
     }

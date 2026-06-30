@@ -1,6 +1,11 @@
 ---
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
-import { getEvent, listCities, listScales, listTypes } from "../../../../lib/db/queries";
+import {
+    getEvent,
+    listCities,
+    listScales,
+    listTypes,
+} from "../../../../lib/db/queries";
 import { getDB } from "../../../../lib/db";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
@@ -18,13 +23,14 @@ try {
         throw new Error("活动 ID 无效");
     }
 
-    const db = getDB(getRuntimeEnv());
-    const [loadedEvent, loadedCities, loadedTypes, loadedScales] = await Promise.all([
-        getEvent(db, id),
-        listCities(db),
-        listTypes(db),
-        listScales(db),
-    ]);
+    const db = await getDB(getRuntimeEnv());
+    const [loadedEvent, loadedCities, loadedTypes, loadedScales] =
+        await Promise.all([
+            getEvent(db, id),
+            listCities(db),
+            listTypes(db),
+            listScales(db),
+        ]);
 
     if (!loadedEvent) {
         throw new Error("活动不存在");
@@ -44,17 +50,29 @@ try {
         errorMessage || !eventRecord ? (
             <div class="surface empty-state error-text">{errorMessage}</div>
         ) : (
-            <form class="surface form-grid" id="edit-event-form" data-event-id={eventRecord.id}>
+            <form
+                class="surface form-grid"
+                id="edit-event-form"
+                data-event-id={eventRecord.id}
+            >
                 <div class="field wide">
                     <label for="title">活动名称</label>
-                    <input id="title" name="title" required value={eventRecord.title} />
+                    <input
+                        id="title"
+                        name="title"
+                        required
+                        value={eventRecord.title}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="type">类型</label>
                     <select id="type" name="type" required>
                         {types.map((type) => (
-                            <option value={type.name} selected={type.name === eventRecord.type}>
+                            <option
+                                value={type.name}
+                                selected={type.name === eventRecord.type}
+                            >
                                 {type.label ?? type.name}
                             </option>
                         ))}
@@ -65,7 +83,10 @@ try {
                     <label for="scale">规模</label>
                     <select id="scale" name="scale" required>
                         {scales.map((scale) => (
-                            <option value={scale.name} selected={scale.name === eventRecord.scale}>
+                            <option
+                                value={scale.name}
+                                selected={scale.name === eventRecord.scale}
+                            >
                                 {scale.label ?? scale.name}
                             </option>
                         ))}
@@ -76,8 +97,13 @@ try {
                     <label for="city_id">城市</label>
                     <select id="city_id" name="city_id" required>
                         {cities.map((city) => (
-                            <option value={city.id} selected={city.id === eventRecord.city_id}>
-                                {city.province ? `${city.province} · ${city.name}` : city.name}
+                            <option
+                                value={city.id}
+                                selected={city.id === eventRecord.city_id}
+                            >
+                                {city.province
+                                    ? `${city.province} · ${city.name}`
+                                    : city.name}
                             </option>
                         ))}
                     </select>
@@ -85,62 +111,118 @@ try {
 
                 <div class="field">
                     <label for="venue">场馆</label>
-                    <input id="venue" name="venue" required value={eventRecord.venue} />
+                    <input
+                        id="venue"
+                        name="venue"
+                        required
+                        value={eventRecord.venue}
+                    />
                 </div>
 
                 <div class="field wide">
                     <label for="address">地址</label>
-                    <input id="address" name="address" value={eventRecord.address ?? ""} />
+                    <input
+                        id="address"
+                        name="address"
+                        value={eventRecord.address ?? ""}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="start_date">开始日期</label>
-                    <input id="start_date" name="start_date" type="date" required value={eventRecord.start_date} />
+                    <input
+                        id="start_date"
+                        name="start_date"
+                        type="date"
+                        required
+                        value={eventRecord.start_date}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="end_date">结束日期</label>
-                    <input id="end_date" name="end_date" type="date" required value={eventRecord.end_date} />
+                    <input
+                        id="end_date"
+                        name="end_date"
+                        type="date"
+                        required
+                        value={eventRecord.end_date}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="source_url">来源链接</label>
-                    <input id="source_url" name="source_url" type="url" required value={eventRecord.source_url} />
+                    <input
+                        id="source_url"
+                        name="source_url"
+                        type="url"
+                        required
+                        value={eventRecord.source_url}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="submitter_contact">投稿联系方式</label>
-                    <input id="submitter_contact" name="submitter_contact" required value={eventRecord.submitter_contact} />
+                    <input
+                        id="submitter_contact"
+                        name="submitter_contact"
+                        required
+                        value={eventRecord.submitter_contact}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="ticket_url">购票地址</label>
-                    <input id="ticket_url" name="ticket_url" type="url" value={eventRecord.ticket_url ?? ""} />
+                    <input
+                        id="ticket_url"
+                        name="ticket_url"
+                        type="url"
+                        value={eventRecord.ticket_url ?? ""}
+                    />
                 </div>
 
                 <div class="field">
                     <label for="qq_group">官方交流群</label>
-                    <input id="qq_group" name="qq_group" value={eventRecord.qq_group ?? ""} />
+                    <input
+                        id="qq_group"
+                        name="qq_group"
+                        value={eventRecord.qq_group ?? ""}
+                    />
                 </div>
 
                 <div class="field wide">
                     <label for="cover_url">封面 URL</label>
-                    <input id="cover_url" name="cover_url" type="url" value={eventRecord.cover_url ?? ""} />
+                    <input
+                        id="cover_url"
+                        name="cover_url"
+                        type="url"
+                        value={eventRecord.cover_url ?? ""}
+                    />
                 </div>
 
                 <div class="field wide">
                     <label for="tags">相关作品标签</label>
-                    <input id="tags" name="tags" value={eventRecord.tags ?? ""} />
+                    <input
+                        id="tags"
+                        name="tags"
+                        value={eventRecord.tags ?? ""}
+                    />
                 </div>
 
                 <div class="field wide">
                     <label for="description">活动说明</label>
-                    <textarea id="description" name="description">{eventRecord.description ?? ""}</textarea>
+                    <textarea id="description" name="description">
+                        {eventRecord.description ?? ""}
+                    </textarea>
                 </div>
 
                 <div class="form-actions">
-                    <button class="button button-filled" type="submit">保存</button>
-                    <a class="button button-outline" href="/admin/published">返回</a>
+                    <button class="button button-filled" type="submit">
+                        保存
+                    </button>
+                    <a class="button button-outline" href="/admin/published">
+                        返回
+                    </a>
                 </div>
             </form>
         )
@@ -163,7 +245,9 @@ try {
                 return;
             }
 
-            const body = (await response.json().catch(() => null)) as { error?: string } | null;
+            const body = (await response.json().catch(() => null)) as {
+                error?: string;
+            } | null;
             window.alert(body?.error ?? "保存失败");
         });
     }

@@ -22,7 +22,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     }
 
     try {
-        const db = getDB(getRuntimeEnv());
+        const db = await getDB(getRuntimeEnv());
         const outcome = await updateEventStatus(
             db,
             id,

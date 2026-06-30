@@ -19,7 +19,7 @@ export const PATCH: APIRoute = async ({ request, params }) => {
     try {
         const formData = await request.formData();
         const input = parseEventForm(formData);
-        const db = getDB(getRuntimeEnv());
+        const db = await getDB(getRuntimeEnv());
         const changes = await editEvent(db, id, input);
         if (changes === 0) return jsonError("Event not found", 404);
 

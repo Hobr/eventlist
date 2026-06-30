@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ params }) => {
     if (!id) return jsonError("Invalid event id", 400);
 
     try {
-        const db = getDB(getRuntimeEnv());
+        const db = await getDB(getRuntimeEnv());
         const outcome = await updateEventStatus(
             db,
             id,
