@@ -99,3 +99,36 @@ Added D1 binding, base schema and seed migrations, applied local and remote D1 m
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Public site
+
+**Date**: 2026-06-30
+**Task**: Public site
+**Branch**: `main`
+
+### Summary
+
+Implemented public SSR event browsing, detail, submission, APIs, sitemap, dev seed data, and public-site specs.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f894577` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
