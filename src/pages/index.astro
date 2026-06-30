@@ -1,11 +1,186 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import CitySelector from "../components/CitySelector.svelte";
+import EventCard from "../components/EventCard.astro";
+import Layout from "../layouts/Layout.astro";
+import { FALLBACK_CITY_ID, resolveSelectedCity } from "../lib/geo";
+import { getDB } from "../lib/db";
+import {
+    listCities,
+    listPublishedEvents,
+    listTypes,
+    topTags,
+} from "../lib/db/queries";
+import { getRuntimeEnv } from "../lib/runtime/env";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+export const prerender = false;
+
+const runtimeEnv = getRuntimeEnv();
+const defaultCityId =
+    Number.parseInt(runtimeEnv.DEFAULT_CITY_ID ?? "", 10) || FALLBACK_CITY_ID;
+let cities = [];
+let events = [];
+let tags = [];
+let types = [];
+let selectedCity = null;
+let sourceLabel = "默认城市";
+let errorMessage = "";
+
+try {
+    const db = await getDB(runtimeEnv);
+    const resolved = await resolveSelectedCity(
+        db,
+        Astro.request,
+        Astro.url.searchParams,
+        defaultCityId,
+    );
+    const [loadedCities, eventPage, loadedTags, loadedTypes] =
+        await Promise.all([
+            listCities(db),
+            listPublishedEvents(db, {
+                cityId: resolved.city.id,
+                pageSize: 8,
+                sort: "start_asc",
+            }),
+            topTags(db, 8),
+            listTypes(db),
+        ]);
+
+    cities = loadedCities;
+    events = eventPage.events;
+    tags = loadedTags;
+    types = loadedTypes;
+    selectedCity = resolved.city;
+    sourceLabel =
+        resolved.source === "query"
+            ? "手动选择"
+            : resolved.source === "cf"
+              ? "IP 定位"
+              : "默认城市";
+} catch (error) {
+    errorMessage = error instanceof Error ? error.message : "无法加载公共活动";
+}
+
+const selectedCityId = selectedCity?.id ?? defaultCityId;
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+    title="ACG 活动目录"
+    description="按城市、时间、类型、规模和标签浏览近期 ACG 活动，也可以提交待审核活动。"
+>
+    <section class="hero page-section">
+        <div class="section-inner hero-grid">
+            <div>
+                <p class="section-kicker">ACG EVENTS</p>
+                <h1>找到附近值得去的 ACG 活动</h1>
+                <p class="hero-copy">
+                    按城市查看近期漫展、同人展、演唱会、舞台剧和主题快闪；公共页面只展示已审核且未结束的活动。
+                </p>
+                <div class="button-row" style="margin-top: 22px;">
+                    <a
+                        class="button button-filled"
+                        href={`/events?city=${selectedCityId}`}
+                    >
+                        <span
+                            class="material-symbols-rounded"
+                            aria-hidden="true">event</span
+                        >
+                        浏览活动
+                    </a>
+                    <a class="button button-outline" href="/submit">
+                        <span
+                            class="material-symbols-rounded"
+                            aria-hidden="true">add_location_alt</span
+                        >
+                        提交活动
+                    </a>
+                </div>
+            </div>
+            <div class="hero-controls">
+                <p class="section-kicker">CITY</p>
+                <CitySelector
+                    cities={cities}
+                    selectedCityId={selectedCityId}
+                    client:load
+                />
+                <p class="supporting-copy" style="margin-top: 14px;">
+                    当前城市：{selectedCity?.name ?? "北京"} · {sourceLabel}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="section-inner">
+            {
+                errorMessage ? (
+                    <div class="notice error">{errorMessage}</div>
+                ) : (
+                    <>
+                        <div class="section-header">
+                            <div>
+                                <p class="section-kicker">UPCOMING</p>
+                                <h2>{selectedCity?.name ?? "本地"}近期活动</h2>
+                            </div>
+                            <a
+                                class="button button-tonal"
+                                href={`/events?city=${selectedCityId}`}
+                            >
+                                <span
+                                    class="material-symbols-rounded"
+                                    aria-hidden="true"
+                                >
+                                    travel_explore
+                                </span>
+                                查看更多
+                            </a>
+                        </div>
+                        {events.length > 0 ? (
+                            <div class="event-grid">
+                                {events.map((event) => (
+                                    <EventCard event={event} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div class="panel empty-state">
+                                这个城市暂时没有已发布的近期活动。
+                            </div>
+                        )}
+                    </>
+                )
+            }
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="section-inner detail-grid">
+            <div>
+                <p class="section-kicker">FILTERS</p>
+                <h2>按你关心的线索继续筛选</h2>
+                <p class="supporting-copy">
+                    列表页支持城市、时间、类型、规模和标签组合筛选，查询参数可直接分享。
+                </p>
+            </div>
+            <div class="panel">
+                <div class="chip-row">
+                    {
+                        types.slice(0, 6).map((type) => (
+                            <a class="chip" href={`/events?type=${type.name}`}>
+                                {type.label}
+                            </a>
+                        ))
+                    }
+                    {
+                        tags.map((tag) => (
+                            <a
+                                class="chip"
+                                href={`/events?tag=${encodeURIComponent(tag.name)}`}
+                            >
+                                {tag.name}
+                            </a>
+                        ))
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
 </Layout>

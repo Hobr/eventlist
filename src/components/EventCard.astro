@@ -1,0 +1,48 @@
+---
+import type { EventRecord } from "../lib/db/queries";
+
+interface Props {
+    event: EventRecord;
+}
+
+const { event } = Astro.props;
+const tags = event.tags
+    ? event.tags.split("、").filter(Boolean).slice(0, 4)
+    : [];
+const coverUrl = event.cover_url || "";
+---
+
+<a class="event-card" href={`/events/${event.id}`}>
+    {
+        coverUrl ? (
+            <img
+                class="event-cover"
+                src={coverUrl}
+                alt={`${event.title} 封面`}
+                loading="lazy"
+            />
+        ) : (
+            <div class="event-cover" aria-hidden="true" />
+        )
+    }
+    <div class="event-card-body">
+        <div class="chip-row">
+            <span class="chip">{event.type_label ?? event.type}</span>
+            <span class="chip">{event.scale_label ?? event.scale}</span>
+        </div>
+        <h3>{event.title}</h3>
+        <div class="muted">
+            {event.start_date} - {event.end_date}
+        </div>
+        <div class="muted">{event.city_name ?? "未知城市"} · {event.venue}</div>
+        {
+            tags.length > 0 ? (
+                <div class="chip-row">
+                    {tags.map((tag) => (
+                        <span class="chip">{tag}</span>
+                    ))}
+                </div>
+            ) : null
+        }
+    </div>
+</a>

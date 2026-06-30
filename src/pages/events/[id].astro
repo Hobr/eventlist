@@ -1,0 +1,155 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getDB, STATUS } from "../../lib/db";
+import { getPublicEvent } from "../../lib/db/queries";
+import { getRuntimeEnv } from "../../lib/runtime/env";
+import { buildEventJsonLd } from "../../lib/seo";
+
+export const prerender = false;
+
+const id = Number.parseInt(Astro.params.id ?? "", 10);
+let event = null;
+let errorMessage = "";
+
+try {
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("活动不存在");
+    }
+
+    const db = await getDB(getRuntimeEnv());
+    event = await getPublicEvent(db, id);
+    if (!event) {
+        Astro.response.status = 404;
+        errorMessage = "活动不存在或尚未公开";
+    }
+} catch (error) {
+    Astro.response.status = 404;
+    errorMessage = error instanceof Error ? error.message : "活动不存在";
+}
+
+const tags = event?.tags ? event.tags.split("、").filter(Boolean) : [];
+const canonicalUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
+const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
+---
+
+<Layout
+    title={event?.title ?? "活动不存在"}
+    description={event?.description ?? "活动不存在或尚未公开。"}
+    jsonLd={jsonLd}
+>
+    <section class="page-section">
+        <div class="section-inner">
+            {
+                !event ? (
+                    <div class="panel empty-state error-text">
+                        {errorMessage}
+                    </div>
+                ) : (
+                    <div class="detail-grid">
+                        <article class="detail-body">
+                            {event.status === STATUS.OFFLINE ? (
+                                <div class="notice">
+                                    该活动已下线，页面仅作为历史信息保留。
+                                </div>
+                            ) : null}
+                            {event.cover_url ? (
+                                <img
+                                    class="detail-cover"
+                                    src={event.cover_url}
+                                    alt={`${event.title} 封面`}
+                                />
+                            ) : (
+                                <div class="detail-cover" aria-hidden="true" />
+                            )}
+                            <div>
+                                <p class="section-kicker">EVENT DETAIL</p>
+                                <h1>{event.title}</h1>
+                            </div>
+                            <div class="chip-row">
+                                <span class="chip">
+                                    {event.type_label ?? event.type}
+                                </span>
+                                <span class="chip">
+                                    {event.scale_label ?? event.scale}
+                                </span>
+                                {tags.map((tag) => (
+                                    <a
+                                        class="chip"
+                                        href={`/events?tag=${encodeURIComponent(tag)}`}
+                                    >
+                                        {tag}
+                                    </a>
+                                ))}
+                            </div>
+                            {event.description ? (
+                                <p class="description-text">
+                                    {event.description}
+                                </p>
+                            ) : (
+                                <p class="muted">暂无活动介绍。</p>
+                            )}
+                        </article>
+
+                        <aside class="panel detail-meta">
+                            <dl class="meta-list">
+                                <div>
+                                    <dt>时间</dt>
+                                    <dd>
+                                        {event.start_date} - {event.end_date}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>城市</dt>
+                                    <dd>
+                                        {event.city_name}
+                                        {event.province
+                                            ? ` / ${event.province}`
+                                            : ""}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>地点</dt>
+                                    <dd>{event.venue}</dd>
+                                </div>
+                                <div>
+                                    <dt>地址</dt>
+                                    <dd>{event.address ?? "未填写"}</dd>
+                                </div>
+                                <div>
+                                    <dt>官方交流群</dt>
+                                    <dd>{event.qq_group ?? "未填写"}</dd>
+                                </div>
+                                <div>
+                                    <dt>购票地址</dt>
+                                    <dd>
+                                        {event.ticket_url ? (
+                                            <a
+                                                href={event.ticket_url}
+                                                rel="nofollow noopener noreferrer"
+                                            >
+                                                查看购票页
+                                            </a>
+                                        ) : (
+                                            "未填写"
+                                        )}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>来源链接</dt>
+                                    <dd>
+                                        <a
+                                            href={event.source_url}
+                                            rel="nofollow noopener noreferrer"
+                                        >
+                                            {event.source_url}
+                                        </a>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </aside>
+                    </div>
+                )
+            }
+        </div>
+    </section>
+</Layout>

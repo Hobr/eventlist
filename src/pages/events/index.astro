@@ -1,0 +1,155 @@
+---
+import FilterBar from "../../components/FilterBar.svelte";
+import EventCard from "../../components/EventCard.astro";
+import Layout from "../../layouts/Layout.astro";
+import { getDB } from "../../lib/db";
+import {
+    listCities,
+    listPublishedEvents,
+    listScales,
+    listTypes,
+    topTags,
+    type EventSort,
+    type PublishedEventFilters,
+} from "../../lib/db/queries";
+import { getRuntimeEnv } from "../../lib/runtime/env";
+
+export const prerender = false;
+
+function parsePositiveInt(value: string | null) {
+    const numberValue = Number.parseInt(value ?? "", 10);
+    return Number.isInteger(numberValue) && numberValue > 0
+        ? numberValue
+        : undefined;
+}
+
+function parseDate(value: string | null) {
+    return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+}
+
+function parseSort(value: string | null): EventSort {
+    return value === "start_desc" ? "start_desc" : "start_asc";
+}
+
+function nextHref(page: number) {
+    const searchParams = new URLSearchParams(Astro.url.searchParams);
+    searchParams.set("page", String(page));
+    const query = searchParams.toString();
+    return query ? `/events?${query}` : "/events";
+}
+
+const filters: PublishedEventFilters = {
+    cityId: parsePositiveInt(Astro.url.searchParams.get("city")),
+    type: Astro.url.searchParams.get("type") || undefined,
+    scale: Astro.url.searchParams.get("scale") || undefined,
+    tag: Astro.url.searchParams.get("tag") || undefined,
+    from: parseDate(Astro.url.searchParams.get("from")),
+    to: parseDate(Astro.url.searchParams.get("to")),
+    page: parsePositiveInt(Astro.url.searchParams.get("page")) ?? 1,
+    pageSize: 20,
+    sort: parseSort(Astro.url.searchParams.get("sort")),
+};
+
+let cities = [];
+let types = [];
+let scales = [];
+let tags = [];
+let events = [];
+let hasNext = false;
+let errorMessage = "";
+
+try {
+    const db = await getDB(getRuntimeEnv());
+    const [loadedCities, loadedTypes, loadedScales, loadedTags, page] =
+        await Promise.all([
+            listCities(db),
+            listTypes(db),
+            listScales(db),
+            topTags(db, 20),
+            listPublishedEvents(db, filters),
+        ]);
+
+    cities = loadedCities;
+    types = loadedTypes;
+    scales = loadedScales;
+    tags = loadedTags;
+    events = page.events;
+    hasNext = page.hasNext;
+} catch (error) {
+    errorMessage = error instanceof Error ? error.message : "无法加载活动列表";
+}
+---
+
+<Layout title="活动列表" description="筛选近期已发布且未结束的 ACG 活动。">
+    <section class="page-section">
+        <div class="section-inner">
+            <div class="page-heading">
+                <p class="section-kicker">EVENTS</p>
+                <h1>活动列表</h1>
+                <p class="supporting-copy">
+                    默认只展示已发布且未结束的活动。筛选条件会写入地址栏，方便收藏和分享。
+                </p>
+            </div>
+
+            <FilterBar
+                cities={cities}
+                types={types}
+                scales={scales}
+                tags={tags}
+                filters={filters}
+                client:load
+            />
+
+            {
+                errorMessage ? (
+                    <div class="notice error" style="margin-top: 18px;">
+                        {errorMessage}
+                    </div>
+                ) : events.length > 0 ? (
+                    <>
+                        <div class="event-grid" style="margin-top: 22px;">
+                            {events.map((event) => (
+                                <EventCard event={event} />
+                            ))}
+                        </div>
+                        <nav class="pagination" aria-label="活动分页">
+                            {filters.page && filters.page > 1 ? (
+                                <a
+                                    class="button button-outline"
+                                    href={nextHref(filters.page - 1)}
+                                >
+                                    <span
+                                        class="material-symbols-rounded"
+                                        aria-hidden="true"
+                                    >
+                                        chevron_left
+                                    </span>
+                                    上一页
+                                </a>
+                            ) : null}
+                            <span class="muted">第 {filters.page} 页</span>
+                            {hasNext ? (
+                                <a
+                                    class="button button-outline"
+                                    href={nextHref((filters.page ?? 1) + 1)}
+                                >
+                                    下一页
+                                    <span
+                                        class="material-symbols-rounded"
+                                        aria-hidden="true"
+                                    >
+                                        chevron_right
+                                    </span>
+                                </a>
+                            ) : null}
+                        </nav>
+                    </>
+                ) : (
+                    <div class="panel empty-state" style="margin-top: 22px;">
+                        没有匹配的近期活动。
+                    </div>
+                )
+            }
+        </div>
+    </section>
+</Layout>

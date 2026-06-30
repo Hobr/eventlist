@@ -1,0 +1,43 @@
+@import "./tokens.css";
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    font-family: Roboto, "Noto Sans SC", system-ui, sans-serif;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+a {
+    color: var(--md-sys-color-primary);
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+    }
+}

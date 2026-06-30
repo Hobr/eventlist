@@ -47,6 +47,33 @@ export interface AdminEventInput {
     tags: string[];
 }
 
+export type SubmissionInput = AdminEventInput;
+export type EventSort = "start_asc" | "start_desc";
+
+export interface PublishedEventFilters {
+    cityId?: number;
+    type?: string;
+    scale?: string;
+    tag?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+    pageSize?: number;
+    sort?: EventSort;
+}
+
+export interface PublishedEventPage {
+    events: EventRecord[];
+    page: number;
+    pageSize: number;
+    hasNext: boolean;
+}
+
+export interface SitemapEventRow {
+    id: number;
+    updated_at: string;
+}
+
 export interface TagSummary {
     id: number;
     name: string;
@@ -81,6 +108,10 @@ const EVENT_SELECT = `
     LEFT JOIN event_tags ON event_tags.event_id = events.id
     LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
 `;
+
+function escapeLike(value: string) {
+    return value.replace(/[\\%_]/g, "\\$&");
+}
 
 function requireSuccess<T>(result: D1Result<T>, message: string) {
     if (!result.success) {
@@ -118,6 +149,16 @@ export async function getEvent(db: D1Database, id: number) {
         )
         .bind(id)
         .first<EventRecord>();
+}
+
+export async function getPublicEvent(db: D1Database, id: number) {
+    const event = await getEvent(db, id);
+    if (!event) return null;
+    if (event.status !== STATUS.PUBLISHED && event.status !== STATUS.OFFLINE) {
+        return null;
+    }
+
+    return event;
 }
 
 export async function getEventStatus(db: D1Database, id: number) {
@@ -175,6 +216,15 @@ export async function listCities(db: D1Database) {
     return requireSuccess(result, "Failed to list cities").results ?? [];
 }
 
+export async function getCityById(db: D1Database, id: number) {
+    return db
+        .prepare(
+            "SELECT id, name, province, sort FROM cities WHERE id = ? LIMIT 1",
+        )
+        .bind(id)
+        .first<OptionRow>();
+}
+
 export async function listTypes(db: D1Database) {
     const result = await db
         .prepare(
@@ -206,6 +256,199 @@ export async function listTags(db: D1Database) {
         .all<TagSummary>();
 
     return requireSuccess(result, "Failed to list tags").results ?? [];
+}
+
+export async function topTags(db: D1Database, limit = 20) {
+    const result = await db
+        .prepare(
+            `SELECT tags.id, tags.name, COUNT(event_tags.event_id) AS event_count
+             FROM tags
+             JOIN event_tags ON event_tags.tag_id = tags.id
+             JOIN events ON events.id = event_tags.event_id
+             WHERE tags.alias_of_id IS NULL
+               AND events.status = ?
+               AND date(events.end_date) >= date('now')
+             GROUP BY tags.id
+             ORDER BY event_count DESC, tags.name ASC
+             LIMIT ?`,
+        )
+        .bind(STATUS.PUBLISHED, limit)
+        .all<TagSummary>();
+
+    return requireSuccess(result, "Failed to list top tags").results ?? [];
+}
+
+export async function searchTags(db: D1Database, query: string, limit = 12) {
+    const normalized = query.trim();
+    if (!normalized) return topTags(db, limit);
+
+    const result = await db
+        .prepare(
+            `SELECT tags.id, tags.name, COUNT(events.id) AS event_count
+             FROM tags
+             LEFT JOIN event_tags ON event_tags.tag_id = tags.id
+             LEFT JOIN events
+               ON events.id = event_tags.event_id
+              AND events.status = ?
+              AND date(events.end_date) >= date('now')
+             WHERE tags.alias_of_id IS NULL
+               AND tags.name LIKE ? ESCAPE '\\'
+             GROUP BY tags.id
+             ORDER BY COUNT(events.id) DESC, tags.name ASC
+             LIMIT ?`,
+        )
+        .bind(STATUS.PUBLISHED, `%${escapeLike(normalized)}%`, limit)
+        .all<TagSummary>();
+
+    return requireSuccess(result, "Failed to search tags").results ?? [];
+}
+
+export async function listPublishedEvents(
+    db: D1Database,
+    filters: PublishedEventFilters = {},
+): Promise<PublishedEventPage> {
+    const page = Math.max(1, filters.page ?? 1);
+    const pageSize = Math.min(50, Math.max(1, filters.pageSize ?? 20));
+    const offset = (page - 1) * pageSize;
+    const clauses = [
+        "events.status = ?",
+        "date(events.end_date) >= date('now')",
+    ];
+    const values: Array<number | string> = [STATUS.PUBLISHED];
+
+    if (filters.cityId) {
+        clauses.push("events.city_id = ?");
+        values.push(filters.cityId);
+    }
+
+    if (filters.type) {
+        clauses.push("events.type = ?");
+        values.push(filters.type);
+    }
+
+    if (filters.scale) {
+        clauses.push("events.scale = ?");
+        values.push(filters.scale);
+    }
+
+    if (filters.from) {
+        clauses.push("date(events.start_date) >= date(?)");
+        values.push(filters.from);
+    }
+
+    if (filters.to) {
+        clauses.push("date(events.end_date) <= date(?)");
+        values.push(filters.to);
+    }
+
+    if (filters.tag) {
+        clauses.push(
+            `EXISTS (
+                SELECT 1
+                FROM event_tags filter_event_tags
+                JOIN tags filter_tags ON filter_tags.id = filter_event_tags.tag_id
+                WHERE filter_event_tags.event_id = events.id
+                  AND filter_tags.alias_of_id IS NULL
+                  AND filter_tags.name LIKE ? ESCAPE '\\'
+            )`,
+        );
+        values.push(`%${escapeLike(filters.tag)}%`);
+    }
+
+    const direction = filters.sort === "start_desc" ? "DESC" : "ASC";
+    const result = await db
+        .prepare(
+            `${EVENT_SELECT}
+            WHERE ${clauses.join(" AND ")}
+            GROUP BY events.id
+            ORDER BY date(events.start_date) ${direction}, events.id ${direction}
+            LIMIT ? OFFSET ?`,
+        )
+        .bind(...values, pageSize + 1, offset)
+        .all<EventRecord>();
+    const rows =
+        requireSuccess(result, "Failed to list published events").results ?? [];
+
+    return {
+        events: rows.slice(0, pageSize),
+        page,
+        pageSize,
+        hasNext: rows.length > pageSize,
+    };
+}
+
+export async function listPublishedEventSitemapRows(
+    db: D1Database,
+    limit = 1000,
+) {
+    const result = await db
+        .prepare(
+            `SELECT id, updated_at
+             FROM events
+             WHERE status = ?
+             ORDER BY datetime(updated_at) DESC
+             LIMIT ?`,
+        )
+        .bind(STATUS.PUBLISHED, limit)
+        .all<SitemapEventRow>();
+
+    return (
+        requireSuccess(result, "Failed to list sitemap events").results ?? []
+    );
+}
+
+export async function insertSubmission(db: D1Database, input: SubmissionInput) {
+    const tagIds = await findOrCreateTagIds(db, input.tags);
+    const inserted = await db
+        .prepare(
+            `INSERT INTO events(
+                 title, type, scale, city_id, venue, address,
+                 start_date, end_date, cover_url, description,
+                 qq_group, ticket_url, source_url, submitter_contact, status
+             )
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+            input.title,
+            input.type,
+            input.scale,
+            input.city_id,
+            input.venue,
+            input.address,
+            input.start_date,
+            input.end_date,
+            input.cover_url,
+            input.description,
+            input.qq_group,
+            input.ticket_url,
+            input.source_url,
+            input.submitter_contact,
+            STATUS.PENDING,
+        )
+        .run();
+    requireSuccess(inserted, "Failed to insert submission");
+    if (!inserted.meta.last_row_id) {
+        throw new Error("Failed to insert submission");
+    }
+
+    const eventId = inserted.meta.last_row_id;
+    if (tagIds.length === 0) return eventId;
+
+    const results = await db.batch(
+        tagIds.map((tagId) =>
+            db
+                .prepare(
+                    "INSERT OR IGNORE INTO event_tags(event_id, tag_id) VALUES (?, ?)",
+                )
+                .bind(eventId, tagId),
+        ),
+    );
+
+    for (const result of results) {
+        requireSuccess(result, "Failed to attach submission tags");
+    }
+
+    return eventId;
 }
 
 export async function editEvent(
@@ -264,10 +507,10 @@ export async function editEvent(
 
 async function findOrCreateTag(db: D1Database, name: string) {
     const existing = await db
-        .prepare("SELECT id FROM tags WHERE name = ? LIMIT 1")
+        .prepare("SELECT id, alias_of_id FROM tags WHERE name = ? LIMIT 1")
         .bind(name)
-        .first<{ id: number }>();
-    if (existing) return existing.id;
+        .first<{ id: number; alias_of_id: number | null }>();
+    if (existing) return existing.alias_of_id ?? existing.id;
 
     const inserted = await db
         .prepare("INSERT INTO tags(name) VALUES (?)")

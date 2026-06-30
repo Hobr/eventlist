@@ -6,7 +6,12 @@ export default [
     // add more generic rule sets here, such as:
     // js.configs.recommended,
     ...eslintPluginAstro.configs.recommended,
-    globalIgnores([".wrangler/*"]),
+    globalIgnores([
+        ".astro/**",
+        ".tmp-build-public-site/**",
+        ".wrangler/**",
+        "dist/**",
+    ]),
     {
         rules: {
             // override/add rules settings here, such as:

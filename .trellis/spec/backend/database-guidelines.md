@@ -166,3 +166,73 @@ await db.batch([
     db.prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?").bind(to, from),
 ]);
 ```
+
+## Scenario: Public Site D1 Contracts
+
+### 1. Scope / Trigger
+
+- Trigger: `public-site` adds public SSR routes, visitor submission, tag search, sitemap rows, and Turnstile-protected pending writes.
+- Public event truth still lives only in D1. Do not introduce KV/cache mirrors for event visibility before this contract is updated.
+
+### 2. Signatures
+
+- Public list helper: `listPublishedEvents(db, filters)` returns `{ events, page, pageSize, hasNext }`.
+- Public detail helper: `getPublicEvent(db, id)` returns only `published` or `offline` events; `pending`/`rejected` return `null`.
+- Submission helper: `insertSubmission(db, input)` writes `events.status = 'pending'` and attaches canonical tag ids.
+- Tag helpers: `topTags(db, limit)` and `searchTags(db, query, limit)` count only canonical tags attached to `published` events whose `end_date >= date('now')`.
+- Sitemap helper: `listPublishedEventSitemapRows(db, limit)` returns only `published` event ids and `updated_at`.
+
+### 3. Contracts
+
+- Public lists must include `events.status = 'published'` and `date(events.end_date) >= date('now')`.
+- Default list page size is 20; route code may request smaller home page limits.
+- Supported public filters: `cityId`, `type`, `scale`, `tag`, `from`, `to`, `page`, `pageSize`, `sort`.
+- `sort` values are `start_asc` and `start_desc`; unknown route query values must normalize to `start_asc`.
+- Visitor submissions must validate `type`, `scale`, and `city_id` against dimension tables before insert.
+- Submission tags are normalized through `findOrCreateTagIds`; if a submitted tag is already aliased, attach the canonical target id.
+
+### 4. Validation & Error Matrix
+
+- Invalid route id -> 404 page for public detail.
+- `pending` or `rejected` detail -> 404 page, not a partial event.
+- `offline` detail -> 200 with an offline banner; it must not appear in public lists or sitemap.
+- Invalid type/scale/city submission -> JSON 400.
+- Missing D1 binding -> setup error from `getDB`.
+- Local concurrent D1 CLI checks may return `SQLITE_BUSY_RECOVERY`; rerun serially before blaming query code.
+
+### 5. Good/Base/Bad Cases
+
+- Good: `GET /events?city=1&tag=初音` returns published, unended events only.
+- Good: `GET /events/<offline id>` returns 200 with historical detail and offline notice.
+- Base: `/sitemap.xml` includes `/`, `/events`, `/submit`, and `published` detail URLs only.
+- Bad: using `getEvent()` directly in public detail without status gating.
+- Bad: counting tags via `event_tags` alone; that counts pending/offline events and aliases.
+
+### 6. Tests Required
+
+- `corepack pnpm generate-types`
+- `corepack pnpm exec tsc --noEmit`
+- `corepack pnpm lint`
+- `corepack pnpm exec astro build --outDir <temp-dir>` when default `dist` cleanup is blocked by local filesystem state.
+- Local D1 checks after `docs/dev/seed-public-site.sql`:
+    - published list query returns only `published` future rows.
+    - offline sample is visible by detail route but absent from list/sitemap.
+    - pending sample returns public 404.
+    - tag API returns canonical tag counts from published unended events.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```ts
+const event = await getEvent(db, id);
+```
+
+from a public detail route.
+
+#### Correct
+
+```ts
+const event = await getPublicEvent(db, id);
+if (!event) Astro.response.status = 404;
+```

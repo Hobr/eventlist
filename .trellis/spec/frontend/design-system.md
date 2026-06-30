@@ -37,6 +37,13 @@
 - **Dialogs**: Material 3 basic dialog for confirmations (offline / merge / reject reason).
 - **Snackbar**: Material 3 snackbar for action feedback (approve / save success).
 
+## Public Hero & Media
+
+- Public landing heroes must use a real or bitmap activity/event image as the visual anchor. Do not use a pure CSS gradient or abstract SVG as the primary hero background.
+- Hero text may overlay the image directly with a contrast layer; do not put the hero copy or primary city selector inside a decorative card.
+- Public event cards may use a tokenized placeholder when a cover URL is missing, but real `cover_url` values should render as inspectable images.
+- Do not scale font size with viewport width. Use fixed `rem` sizes plus media-query breakpoints for hero and page headings.
+
 ## Motion
 
 - Use Material 3 motion tokens (duration, easing) — e.g. `--md-sys-motion-duration-medium`, `--md-sys-motion-easing-standard`. No ad-hoc transitions.
@@ -55,6 +62,8 @@
 - Hand-picked hex colors outside the token scheme.
 - Heavy CSS frameworks (Tailwind, etc.) unless explicitly approved and added to this file — current decision: **no Tailwind**, hand-written tokenized CSS.
 - Hard-coded shadow/easing values bypassing motion/elevation tokens.
+- Public heroes that are only gradients, decorative blobs, or abstract SVGs.
+- `font-size` values based on `vw`; use rem sizes and breakpoints instead.
 
 ## Adoption note
 

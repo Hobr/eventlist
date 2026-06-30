@@ -10,4 +10,7 @@ export interface RuntimeEnv {
     ACCESS_TEAM?: string;
     ACCESS_AUD?: string;
     ADMIN_TOKEN?: string;
+    DEFAULT_CITY_ID?: string;
+    TURNSTILE_SITE_KEY?: string;
+    TURNSTILE_SECRET_KEY?: string;
 }

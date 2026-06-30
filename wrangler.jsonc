@@ -11,6 +11,10 @@
     "observability": {
         "enabled": true,
     },
+    "vars": {
+        "DEFAULT_CITY_ID": "1",
+        "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+    },
     "d1_databases": [
         {
             "binding": "DB",

@@ -66,3 +66,64 @@ from an API route.
 ```ts
 return jsonError("Unauthorized", 401);
 ```
+
+## Scenario: Public API Responses
+
+### 1. Scope / Trigger
+
+- Trigger: `public-site` adds unauthenticated visitor APIs under `src/pages/api/*`, including `POST /api/submit`.
+- These APIs are called by public Svelte/Astro forms and must use the same JSON envelope as admin APIs.
+
+### 2. Signatures
+
+- `GET /api/cities` -> `{ ok: true, data: { cities } }`.
+- `GET /api/tags?q=<query>` -> `{ ok: true, data: { tags } }`.
+- `POST /api/submit` accepts `FormData` and returns `201 { ok: true, data: { id } }` after a pending insert.
+- Turnstile wrapper: `verifyTurnstile(token, secret, remoteIp?)` returns `{ success, errors }` or throws a setup/upstream error.
+
+### 3. Contracts
+
+- Public APIs never redirect. They return JSON via `jsonOk` / `jsonError`.
+- `TURNSTILE_SECRET_KEY` is required for `POST /api/submit` but must not be committed to `wrangler.jsonc`; use `wrangler secret put` for deployed envs and `.dev.vars` for local dev.
+- `TURNSTILE_SITE_KEY` may be public and is declared in `wrangler.jsonc` vars.
+- Cloudflare Turnstile test secret belongs in `.dev.vars.example` only.
+
+### 4. Validation & Error Matrix
+
+- Missing required form field -> 400 JSON with a user-facing validation message.
+- Invalid URL/date/type/scale/city -> 400 JSON.
+- Missing `TURNSTILE_SECRET_KEY` -> 500 JSON.
+- Turnstile siteverify network/TLS failure -> 502 JSON with `Turnstile verification request failed`.
+- Turnstile verification returns `success: false` -> 400 JSON.
+- Successful submission -> 201 JSON and a new `pending` event.
+
+### 5. Good/Base/Bad Cases
+
+- Good: browser `fetch()` posts same-origin `FormData` from `/submit` and handles `response.ok`.
+- Good: local tests copy `.dev.vars.example` to `.dev.vars` rather than committing a real secret.
+- Base: Astro dev may block curl form posts without an `Origin` header; include same-origin `Origin` when testing with curl.
+- Bad: letting workerd internal Turnstile/TLS references escape to users as 400 validation errors.
+- Bad: adding a development bypass that accepts fake Turnstile tokens in application code.
+
+### 6. Tests Required
+
+- Missing source link/contact/Turnstile token returns JSON failure.
+- With a valid local Turnstile secret and network trust chain, a test submission writes `pending`.
+- If local workerd rejects the Turnstile TLS certificate chain, verify the route returns a clear 502 and document the environment limit.
+- `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, and production build must pass.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```ts
+return jsonError(error instanceof Error ? error.message : "Failed", 400);
+```
+
+for Turnstile upstream failures.
+
+#### Correct
+
+```ts
+return jsonError("Turnstile verification request failed", 502);
+```
