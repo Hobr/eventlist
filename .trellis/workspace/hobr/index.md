@@ -7,9 +7,11 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
+
 - **Active File**: `journal-1.md`
 - **Total Sessions**: 6
 - **Last Active**: 2026-07-01
+
 <!-- @@@/auto:current-status -->
 
 ---
@@ -17,9 +19,11 @@
 ## Active Documents
 
 <!-- @@@auto:active-documents -->
-| File | Lines | Status |
-|------|-------|--------|
-| `journal-1.md` | ~234 | Active |
+
+| File           | Lines | Status |
+| -------------- | ----- | ------ |
+| `journal-1.md` | ~234  | Active |
+
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -28,9 +32,9 @@
 
 <!-- @@@auto:session-history -->
 
-| # | Date | Title | Commits | Branch |
-|---|------|-------|---------|--------|
-| 6 | 2026-07-01 | Structural frontend redesign | `8cf10fe`, `f4c37af` | `main` |
+| #   | Date       | Title                         | Commits                         | Branch |
+| --- | ---------- | ----------------------------- | ------------------------------- | ------ |
+| 6   | 2026-07-01 | Structural frontend redesign  | `8cf10fe`, `f4c37af`            | `main` |
 | 5   | 2026-06-30 | Bits UI frontend redesign     | `ab8c1cd`, `72deb2e`            | `main` |
 | 4   | 2026-06-30 | Archive ACG event site parent | `f3e4431`, `22fc030`, `f894577` | `main` |
 | 3   | 2026-06-30 | Public site                   | `f894577`                       | `main` |

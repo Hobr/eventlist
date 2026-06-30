@@ -199,7 +199,6 @@ Rebuilt the public and admin frontend around a Bits UI-inspired token system, pr
 
 - None - task complete
 
-
 ## Session 6: Structural frontend redesign
 
 **Date**: 2026-07-01
@@ -216,8 +215,8 @@ Reworked the public frontend at the structure level with command-style homepage,
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `8cf10fe` | (see git log) |
 | `f4c37af` | (see git log) |
 
