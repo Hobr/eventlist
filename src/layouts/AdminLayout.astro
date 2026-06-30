@@ -33,7 +33,12 @@ const navItems = [
     <body>
         <div class="admin-shell">
             <nav class="admin-nav" aria-label="管理后台导航">
-                <span class="admin-brand">Eventlist 管理后台</span>
+                <span class="admin-brand">
+                    <span class="admin-brand-mark" aria-hidden="true">
+                        <span class="material-symbols-rounded">admin_panel_settings</span>
+                    </span>
+                    <span>Eventlist 管理后台</span>
+                </span>
                 <ul class="admin-nav-list">
                     {
                         navItems.map((item) => (

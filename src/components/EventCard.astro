@@ -22,15 +22,19 @@ const divisionLabel = getDivisionLabel(event.division_code);
     }
     <div class="event-card-body">
         <div class="chip-row">
-            <span class="chip">{event.type_label ?? event.type}</span>
+            <span class="chip" data-tone="accent">{event.type_label ?? event.type}</span>
             <span class="chip">{event.scale_label ?? event.scale}</span>
         </div>
         <h3>{event.title}</h3>
-        <div class="muted">
-            {event.start_date} - {event.end_date}
-        </div>
-        <div class="muted">
-            {divisionLabel ?? "未知地区"} · {event.venue}
+        <div class="event-meta">
+            <div class="event-meta-line">
+                <span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>
+                <span>{event.start_date} - {event.end_date}</span>
+            </div>
+            <div class="event-meta-line">
+                <span class="material-symbols-rounded" aria-hidden="true">location_on</span>
+                <span>{divisionLabel ?? "未知地区"} · {event.venue}</span>
+            </div>
         </div>
         {
             tags.length > 0 ? (

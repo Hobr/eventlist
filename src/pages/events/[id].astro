@@ -64,7 +64,9 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                                 <h1>{event.title}</h1>
                             </div>
                             <div class="chip-row">
-                                <span class="chip">{event.type_label ?? event.type}</span>
+                                <span class="chip" data-tone="accent">
+                                    {event.type_label ?? event.type}
+                                </span>
                                 <span class="chip">{event.scale_label ?? event.scale}</span>
                                 {tags.map((tag) => (
                                     <a class="chip" href={`/events?tag=${encodeURIComponent(tag)}`}>

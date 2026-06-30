@@ -36,134 +36,145 @@ const scaleOptions = scales.map((scale) => ({
 <Layout title="提交活动" description="提交 ACG 活动，进入审核队列后再公开展示。">
     <section class="page-section">
         <div class="section-inner">
-            <div class="page-heading">
-                <p class="section-kicker">SUBMIT</p>
-                <h1>提交活动</h1>
-                <p class="supporting-copy">
-                    投稿会先进入待审核队列；联系方式仅用于核对信息，不会在前台公开。
-                </p>
-            </div>
-
             {
                 sent ? (
                     <div class="notice">投稿已进入审核队列，审核通过后会出现在公共列表中。</div>
                 ) : errorMessage ? (
                     <div class="notice error">{errorMessage}</div>
                 ) : (
-                    <form
-                        id="submit-form"
-                        class="panel form-grid"
-                        method="POST"
-                        action="/api/submit"
-                    >
-                        <label class="field wide">
-                            <span>标题</span>
-                            <input name="title" required maxlength="120" />
-                        </label>
+                    <div class="submit-layout">
+                        <aside class="submit-aside">
+                            <div class="page-heading" style="margin-bottom: 0;">
+                                <p class="section-kicker">SUBMIT</p>
+                                <h1>提交活动</h1>
+                                <p class="supporting-copy">
+                                    投稿会先进入待审核队列；联系方式仅用于核对信息，不会在前台公开。
+                                </p>
+                            </div>
+                            <div class="panel">
+                                <ol class="submit-aside-list">
+                                    <li>填写地点、日期、来源链接和联系方式。</li>
+                                    <li>审核通过后活动进入公共列表。</li>
+                                    <li>购票地址和官方交流群会展示在详情页。</li>
+                                </ol>
+                            </div>
+                        </aside>
 
-                        <SelectField
-                            name="type"
-                            label="类型"
-                            options={typeOptions}
-                            placeholder="选择类型"
-                            required
-                            client:load
-                        />
+                        <form
+                            id="submit-form"
+                            class="panel form-grid"
+                            method="POST"
+                            action="/api/submit"
+                        >
+                            <label class="field wide">
+                                <span>标题</span>
+                                <input name="title" required maxlength="120" />
+                            </label>
 
-                        <SelectField
-                            name="scale"
-                            label="规模"
-                            options={scaleOptions}
-                            placeholder="选择规模"
-                            required
-                            client:load
-                        />
-
-                        <DivisionPicker
-                            name="division_code"
-                            label="地区"
-                            mode="county"
-                            required
-                            client:load
-                        />
-
-                        <label class="field">
-                            <span>地点</span>
-                            <input name="venue" required maxlength="120" />
-                        </label>
-
-                        <label class="field wide">
-                            <span>地址</span>
-                            <input name="address" maxlength="240" />
-                        </label>
-
-                        <label class="field">
-                            <span>开始日期</span>
-                            <input type="date" name="start_date" required />
-                        </label>
-
-                        <label class="field">
-                            <span>结束日期</span>
-                            <input type="date" name="end_date" required />
-                        </label>
-
-                        <label class="field wide">
-                            <span>封面 URL</span>
-                            <input type="url" name="cover_url" placeholder="https://..." />
-                        </label>
-
-                        <label class="field wide">
-                            <span>描述</span>
-                            <textarea name="description" maxlength="4000" />
-                        </label>
-
-                        <TagInput client:load />
-
-                        <label class="field">
-                            <span>官方交流群 QQ</span>
-                            <input name="qq_group" maxlength="80" />
-                        </label>
-
-                        <label class="field">
-                            <span>购票地址</span>
-                            <input type="url" name="ticket_url" placeholder="https://..." />
-                        </label>
-
-                        <label class="field wide">
-                            <span>来源链接</span>
-                            <input
-                                type="url"
-                                name="source_url"
-                                placeholder="https://..."
+                            <SelectField
+                                name="type"
+                                label="类型"
+                                options={typeOptions}
+                                placeholder="选择类型"
                                 required
+                                client:load
                             />
-                        </label>
 
-                        <label class="field wide">
-                            <span>联系方式</span>
-                            <input name="submitter_contact" required maxlength="120" />
-                        </label>
+                            <SelectField
+                                name="scale"
+                                label="规模"
+                                options={scaleOptions}
+                                placeholder="选择规模"
+                                required
+                                client:load
+                            />
 
-                        <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
+                            <DivisionPicker
+                                name="division_code"
+                                label="地区"
+                                mode="county"
+                                required
+                                client:load
+                            />
 
-                        <p
-                            id="submit-result"
-                            class="submit-result error-text hidden"
-                            role="status"
-                        />
+                            <label class="field">
+                                <span>地点</span>
+                                <input name="venue" required maxlength="120" />
+                            </label>
 
-                        <div class="button-row wide">
-                            <button class="button button-filled" type="submit">
-                                <span class="material-symbols-rounded" aria-hidden="true">
-                                    send
-                                </span>
-                                提交审核
-                            </button>
-                            <a class="button button-outline" href="/events">
-                                返回列表
-                            </a>
-                        </div>
-                    </form>
+                            <label class="field wide">
+                                <span>地址</span>
+                                <input name="address" maxlength="240" />
+                            </label>
+
+                            <label class="field">
+                                <span>开始日期</span>
+                                <input type="date" name="start_date" required />
+                            </label>
+
+                            <label class="field">
+                                <span>结束日期</span>
+                                <input type="date" name="end_date" required />
+                            </label>
+
+                            <label class="field wide">
+                                <span>封面 URL</span>
+                                <input type="url" name="cover_url" placeholder="https://..." />
+                            </label>
+
+                            <label class="field wide">
+                                <span>描述</span>
+                                <textarea name="description" maxlength="4000" />
+                            </label>
+
+                            <TagInput client:load />
+
+                            <label class="field">
+                                <span>官方交流群 QQ</span>
+                                <input name="qq_group" maxlength="80" />
+                            </label>
+
+                            <label class="field">
+                                <span>购票地址</span>
+                                <input type="url" name="ticket_url" placeholder="https://..." />
+                            </label>
+
+                            <label class="field wide">
+                                <span>来源链接</span>
+                                <input
+                                    type="url"
+                                    name="source_url"
+                                    placeholder="https://..."
+                                    required
+                                />
+                            </label>
+
+                            <label class="field wide">
+                                <span>联系方式</span>
+                                <input name="submitter_contact" required maxlength="120" />
+                            </label>
+
+                            <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
+
+                            <p
+                                id="submit-result"
+                                class="submit-result error-text hidden"
+                                role="status"
+                            />
+
+                            <div class="button-row wide">
+                                <button class="button button-filled" type="submit">
+                                    <span class="material-symbols-rounded" aria-hidden="true">
+                                        send
+                                    </span>
+                                    提交审核
+                                </button>
+                                <a class="button button-outline" href="/events">
+                                    返回列表
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 )
             }
         </div>
