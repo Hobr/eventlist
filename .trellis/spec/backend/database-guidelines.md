@@ -4,6 +4,82 @@
 
 ---
 
+## Scenario: Foundation D1 Schema
+
+### 1. Scope / Trigger
+
+- Trigger: `foundation-db` establishes the project D1 database, base migrations, seed data, and shared access layer.
+- D1 database: `eventlist-db`, binding `DB`, database id `b11ea70c-4597-4049-a650-718cfbc5b04f`.
+- Base migrations must run before downstream admin/public features:
+    - `migrations/0001_init.sql`: tables, foreign keys, status/date checks, indexes.
+    - `migrations/0002_seed.sql`: `event_types`, `event_scales`, `cities`.
+    - `migrations/0003_audit.sql`: admin audit log extension.
+
+### 2. Signatures
+
+- Wrangler config:
+    - `wrangler.jsonc.d1_databases[0].binding = "DB"`
+    - `database_name = "eventlist-db"`
+    - `database_id = "b11ea70c-4597-4049-a650-718cfbc5b04f"`
+    - `migrations_dir = "migrations"`
+- Access helper: `await getDB(runtimeEnv): Promise<D1Database>`.
+- FK helper: `await ensureFK(db)` executes `PRAGMA foreign_keys = ON;`.
+- Generated binding type: `worker-configuration.d.ts` must include `DB: D1Database`.
+
+### 3. Contracts
+
+- Base tables: `cities`, `event_types`, `event_scales`, `tags`, `events`, `event_tags`.
+- Seed counts:
+    - `event_types` = 8
+    - `event_scales` = 4
+    - `cities` >= 50, current seed = 72
+    - `tags` = 0
+- Event status values are enforced by SQL CHECK: `pending`, `published`, `rejected`, `offline`.
+- `events.type`, `events.scale`, and `events.city_id` are foreign keys into their dimension tables.
+- `events.start_date` and `events.end_date` must parse as dates, and `end_date >= start_date`.
+- D1 generated globals are the source of truth for local aliases in `src/types/cloudflare.ts`; do not hand-write full D1 interfaces.
+
+### 4. Validation & Error Matrix
+
+- Missing `d1_databases` binding or stale generated types -> `worker-configuration.d.ts` lacks `DB`; rerun `corepack pnpm generate-types` after config changes.
+- Missing `env.DB` at runtime -> `getDB` throws a setup error naming `wrangler.jsonc d1_databases`.
+- Foreign key writes fail unexpectedly -> confirm callers use `await getDB(...)` or call `ensureFK(db)` before direct D1 writes.
+- Invalid status/date/type/scale/city writes -> rejected by SQL CHECK/FK constraints.
+
+### 5. Good/Base/Bad Cases
+
+- Good: apply local and remote migrations, then verify counts: `event_types=8`, `event_scales=4`, `cities=72`, `tags=0`.
+- Base: downstream routes call `const db = await getDB(getRuntimeEnv())` before queries.
+- Bad: adding a second DB binding name for the same database. Keep `DB` as the single app binding.
+- Bad: adding seed tags. Tags are user/admin-created and start empty.
+
+### 6. Tests Required
+
+- Config/types/build:
+    - `corepack pnpm generate-types`
+    - `corepack pnpm exec tsc --noEmit`
+    - `corepack pnpm lint`
+    - `corepack pnpm build`
+- D1 migration checks:
+    - `corepack pnpm exec wrangler d1 migrations apply eventlist-db --local`
+    - `corepack pnpm exec wrangler d1 migrations apply eventlist-db --remote` for first remote setup.
+    - `corepack pnpm exec wrangler d1 execute eventlist-db --local --command "SELECT COUNT(*) AS count FROM cities"` -> `>= 50`.
+    - Same count checks for remote after first setup.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```ts
+const db = getDB(getRuntimeEnv());
+```
+
+#### Correct
+
+```ts
+const db = await getDB(getRuntimeEnv());
+```
+
 ## Scenario: Admin Review D1 Contracts
 
 ### 1. Scope / Trigger

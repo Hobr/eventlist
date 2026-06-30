@@ -11,20 +11,21 @@ Astro(SSR, Cloudflare Worker)
 migrations/
   0001_init.sql        (表 + 索引 + CHECK)
   0002_seed.sql        (维表种子数据)
+  0003_audit.sql       (admin-review 审计日志)
 ```
 
 - 本任务只产出 **schema + 迁移 + 种子 + 访问层骨架**,不含业务读写实现(业务查询由各子任务在 `src/lib/db/` 之上扩展)。
-- 访问层 `src/lib/db/index.ts` 导出:`getDB(runtime)` 取绑定、`TYPES`/`SCALES`/`STATUS` 枚举常量对象、基础 `findAll`/`findOne` 占位。子任务按需追加查询函数。
+- 访问层 `src/lib/db/index.ts` 导出:`await getDB(runtimeEnv)` 取绑定并开启外键、`ensureFK(db)`、`TYPES`/`SCALES`/`STATUS` 枚举常量对象。现有 `src/lib/db/queries.ts` 已含后台查询,后续子任务按需扩展。
 
 ## D1 绑定(wrangler.jsonc 追加)
 
 ```jsonc
 "d1_databases": [
-  { "binding": "DB", "database_name": "eventlist-db", "database_id": "<创建后填入>", "migrations_dir": "migrations" }
+  { "binding": "DB", "database_name": "eventlist-db", "database_id": "b11ea70c-4597-4049-a650-718cfbc5b04f", "migrations_dir": "migrations" }
 ]
 ```
 
-创建命令:`wrangler d1 create eventlist-db`(记录 `database_id`)。
+远端库已存在:`eventlist-db` = `b11ea70c-4597-4049-a650-718cfbc5b04f`;如重建环境,先 `wrangler d1 list` 查是否已存在,不存在再 `wrangler d1 create eventlist-db`。
 
 ## 表结构(权威)
 
@@ -127,7 +128,7 @@ rejected(终态,可重新投稿)
   comic 漫展 10 | doujin 同人展 20 | concert 演唱会 30 | stage 舞台剧·2.5次元 40 | dance 舞见·宅舞 50 | ipflash IP主题快闪 60 | online 线上活动 70 | other 其它 90
 - `event_scales` 4 行:
   small 小型(地区级) 10 | mid 中型(省级) 20 | large 大型(全国级) 30 | mega 超大型(国际级) 40
-- `cities` ≥ 50 行:4 直辖市 + 全部省会 + 苏州/无锡/宁波/厦门/青岛/大连/东莞/佛山/珠海/温州/洛阳/汕头 等重点城市;`sort` 按人口/活跃度排序,直辖市 10、省会 20、其它 30 起递增。
+- `cities` 72 行:4 直辖市 + 全部省会 + 苏州/无锡/宁波/厦门/青岛/大连/东莞/佛山/珠海/温州/洛阳/汕头 等重点城市;`sort` 按人口/活跃度排序,直辖市 10、省会 20、其它 60 起递增。
 - `tags`:不预置。
 
 ## 访问层契约(`src/lib/db/`)
@@ -137,11 +138,11 @@ rejected(终态,可重新投稿)
 export const STATUS = { PENDING:'pending', PUBLISHED:'published', REJECTED:'rejected', OFFLINE:'offline' } as const;
 export const TYPES = { COMIC:'comic', DOUJIN:'doujin', ... } as const;
 export const SCALES = { SMALL:'small', MID:'mid', LARGE:'large', MEGA:'mega' } as const;
-export function getDB(runtime: Astro.ServerRuntime): D1Database;
+export async function getDB(runtimeEnv: RuntimeEnv): Promise<D1Database>;
 export async function ensureFK(db: D1Database): Promise<void>; // PRAGMA foreign_keys=ON
 ```
 
-> 类型名以 `wrangler types` 生成结果为准;`Astro.ServerRuntime` 取自 `@astrojs/cloudflare`。
+> 类型名以 `wrangler types` 生成结果为准;本仓库用 `worker-configuration.d.ts` 的全局 `D1Database`/`D1Result` 作为 `src/types/cloudflare.ts` 的别名来源。
 
 ## 兼容性与回滚
 

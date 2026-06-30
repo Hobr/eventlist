@@ -8,7 +8,8 @@
 
 ## Background
 
-- 仓库已有 `wrangler.jsonc`,但未绑定任何 D1。
+- 仓库已有 `wrangler.jsonc`;远端 D1 `eventlist-db` 已存在,本任务复用其 `database_id` 并补齐绑定与基础迁移。
+- `admin-review` 已先行新增 `src/lib/db/*` 与 `migrations/0003_audit.sql`;本任务需在现有文件上合并,补 `0001_init.sql` 与 `0002_seed.sql`,不重写后台业务查询。
 - 父 PRD 决策:D-Storage(D1)、D-Cities(城市维表)、D-Taxonomy(type/scale 固定枚举 + 维表可扩展)、D-Tags(tags 关系表 + 维表 + 归并)、D-Storage-Shape(枚举字符串 + tags 关系行)。
 - 状态机:`pending`(待审核)→ `published`(已发布) / `rejected`(已驳回);`published` 可转 `offline`(下线)。
 
@@ -16,7 +17,7 @@
 
 ### R1 数据库与绑定
 
-- R1.1 创建 D1 数据库(如 `eventlist-db`),在 `wrangler.jsonc` 添加 `d1_databases` 绑定(如 `DB`),`generate-types` 可产出类型。
+- R1.1 复用/创建 D1 数据库 `eventlist-db`,在 `wrangler.jsonc` 添加 `d1_databases` 绑定 `DB`,`generate-types` 可产出类型。
 - R1.2 采用 `wrangler d1 migrations` 机制,迁移文件置于 `migrations/` 目录,可重复执行(`wrangler d1 migrations apply`)。
 
 ### R2 表结构
