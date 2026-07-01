@@ -231,3 +231,37 @@ Reworked the public frontend at the structure level with command-style homepage,
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: bits-ui + Tailwind v4 前端整体重写
+
+**Date**: 2026-07-01
+**Task**: bits-ui + Tailwind v4 前端整体重写
+**Branch**: `main`
+
+### Summary
+
+彻底推翻手写 CSS 前端，引入 Tailwind CSS v4 (@tailwindcss/vite) + @lucide/svelte + clsx/tailwind-merge 的 cn() 工具，按 shadcn-svelte 风格自建 src/components/ui/ 原语层（button/badge/card/input/label/textarea/separator/table），重写 2 个布局 + 全部 10 页 + 9 个业务组件，删除 base/public/admin.css。澄清了 cn-division 是行政区划数据包而非 class 合并工具。保留全部路由/查询参数/表单字段名/API 端点/内联脚本行为/JSON-LD/鉴权流/localStorage key 不变；文案去叙事化为中性可扫读。验证：tsc/eslint/prettier 全绿，残留旧图标与旧全局类零命中。pnpm build 在本沙盒的 Cloudflare adapter worker 打包阶段死锁，pristine HEAD 同样复现 → 环境性阻塞，非代码回归，留待本机/CI 验证。同步更新 .trellis/spec/frontend/design-system.md 记录新栈并撤销 Tailwind 禁令。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e6e2cfd` | (see git log) |
+| `b89e190` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
