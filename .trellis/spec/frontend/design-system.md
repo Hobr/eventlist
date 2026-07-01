@@ -100,7 +100,7 @@
   PREVIEW") — use neutral, scannable Chinese labels.
 - Event browsing should use a persistent filter rail plus compact event
   rows as the primary list shape. Do not return to a heading + toolbar panel
-  + three-column card grid as the default browsing mode.
+    - three-column card grid as the default browsing mode.
 - Event details should use a card grid: header (badges + title + cover) →
   fact tiles (time/region/venue) → description → actions aside, so core
   facts and actions are visible before long-form description.
