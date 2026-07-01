@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { TagSummary } from "../lib/db/queries";
+    import X from "@lucide/svelte/icons/x";
 
     interface Props {
         name?: string;
@@ -8,12 +9,14 @@
     }
 
     let { name = "tags", initial = "", label = "标签" }: Props = $props();
-    let tags = initial
-        .split(/[,\n，、]/)
-        .map((tag) => tag.trim())
-        .filter(Boolean);
-    let draft = "";
-    let suggestions: TagSummary[] = [];
+    let tags = $state(
+        initial
+            .split(/[,\n，、]/)
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+    );
+    let draft = $state("");
+    let suggestions = $state<TagSummary[]>([]);
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     function addTag(value = draft) {
@@ -31,7 +34,6 @@
         if (event.key !== "Enter" && event.key !== "," && event.key !== "，") {
             return;
         }
-
         event.preventDefault();
         addTag();
     }
@@ -42,7 +44,6 @@
             suggestions = [];
             return;
         }
-
         const response = await fetch(`/api/tags?q=${encodeURIComponent(query)}`);
         const body = (await response.json().catch(() => null)) as {
             ok?: boolean;
@@ -60,14 +61,20 @@
     }
 </script>
 
-<div class="field">
-    <label for="tag-input">{label}</label>
+<div class="flex flex-col gap-1.5">
+    <label for="tag-input" class="text-sm font-semibold text-muted-foreground">{label}</label>
     <input type="hidden" {name} value={tags.join("、")} />
-    <div class="tag-input">
-        {#each tags as tag}
-            <button class="chip chip-button" type="button" onclick={() => removeTag(tag)}>
+    <div
+        class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-strong bg-surface p-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40"
+    >
+        {#each tags as tag (tag)}
+            <button
+                type="button"
+                onclick={() => removeTag(tag)}
+                class="inline-flex items-center gap-1 rounded-sm bg-surface-subtle px-2 py-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-surface-raised"
+            >
                 {tag}
-                <span class="material-symbols-rounded" aria-hidden="true">close</span>
+                <X class="size-3" aria-hidden="true" />
             </button>
         {/each}
         <input
@@ -78,10 +85,11 @@
             onkeydown={handleKeydown}
             oninput={handleInput}
             autocomplete="off"
+            class="flex-1 bg-transparent px-1.5 py-1 text-sm text-foreground outline-none placeholder:text-muted"
         />
     </div>
     <datalist id="submit-tag-suggestions">
-        {#each suggestions as suggestion}
+        {#each suggestions as suggestion (suggestion.name)}
             <option value={suggestion.name}>{suggestion.event_count} 个活动</option>
         {/each}
     </datalist>

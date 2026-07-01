@@ -45,17 +45,35 @@ const scaleOptions = scales.map((scale) => ({
     value: scale.name,
     label: scale.label ?? scale.name
 }));
+
+const fieldCls =
+    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
 <AdminLayout title="编辑活动">
     {
         errorMessage || !eventRecord ? (
-            <div class="surface empty-state error-text">{errorMessage}</div>
+            <div class="border-border bg-surface text-danger rounded-md border p-6 text-center text-sm font-semibold">
+                {errorMessage}
+            </div>
         ) : (
-            <form class="surface form-grid" id="edit-event-form" data-event-id={eventRecord.id}>
-                <div class="field wide">
-                    <label for="title">活动名称</label>
-                    <input id="title" name="title" required value={eventRecord.title} />
+            <form
+                id="edit-event-form"
+                data-event-id={eventRecord.id}
+                class="border-border bg-surface grid gap-4 rounded-md border p-5 sm:grid-cols-2"
+            >
+                <div class="sm:col-span-2">
+                    <label class="text-muted-foreground text-sm font-semibold" for="title">
+                        活动名称
+                    </label>
+                    <input
+                        id="title"
+                        name="title"
+                        required
+                        value={eventRecord.title}
+                        class={`mt-1.5 ${fieldCls}`}
+                    />
                 </div>
 
                 <SelectField
@@ -66,7 +84,6 @@ const scaleOptions = scales.map((scale) => ({
                     required
                     client:load
                 />
-
                 <SelectField
                     name="scale"
                     label="规模"
@@ -76,110 +93,162 @@ const scaleOptions = scales.map((scale) => ({
                     client:load
                 />
 
-                <DivisionPicker
-                    name="division_code"
-                    value={eventRecord.division_code}
-                    label="地区"
-                    mode="county"
-                    required
-                    client:load
-                />
-
-                <div class="field">
-                    <label for="venue">场馆</label>
-                    <input id="venue" name="venue" required value={eventRecord.venue} />
+                <div class="sm:col-span-2">
+                    <DivisionPicker
+                        name="division_code"
+                        value={eventRecord.division_code}
+                        label="地区"
+                        mode="county"
+                        required
+                        wide
+                        client:load
+                    />
                 </div>
 
-                <div class="field wide">
-                    <label for="address">地址</label>
-                    <input id="address" name="address" value={eventRecord.address ?? ""} />
+                <div>
+                    <label class={labelCls} for="venue">
+                        场馆
+                    </label>
+                    <input
+                        id="venue"
+                        name="venue"
+                        required
+                        value={eventRecord.venue}
+                        class={`mt-1.5 ${fieldCls}`}
+                    />
                 </div>
-
-                <div class="field">
-                    <label for="start_date">开始日期</label>
+                <div class="sm:col-span-2">
+                    <label class={labelCls} for="address">
+                        地址
+                    </label>
+                    <input
+                        id="address"
+                        name="address"
+                        value={eventRecord.address ?? ""}
+                        class={`mt-1.5 ${fieldCls}`}
+                    />
+                </div>
+                <div>
+                    <label class={labelCls} for="start_date">
+                        开始日期
+                    </label>
                     <input
                         id="start_date"
                         name="start_date"
                         type="date"
                         required
                         value={eventRecord.start_date}
+                        class={`mt-1.5 ${fieldCls}`}
                     />
                 </div>
-
-                <div class="field">
-                    <label for="end_date">结束日期</label>
+                <div>
+                    <label class={labelCls} for="end_date">
+                        结束日期
+                    </label>
                     <input
                         id="end_date"
                         name="end_date"
                         type="date"
                         required
                         value={eventRecord.end_date}
+                        class={`mt-1.5 ${fieldCls}`}
                     />
                 </div>
-
-                <div class="field">
-                    <label for="source_url">来源链接</label>
+                <div class="sm:col-span-2">
+                    <label class={labelCls} for="source_url">
+                        来源链接
+                    </label>
                     <input
                         id="source_url"
                         name="source_url"
                         type="url"
                         required
                         value={eventRecord.source_url}
+                        class={`mt-1.5 ${fieldCls}`}
                     />
                 </div>
-
-                <div class="field">
-                    <label for="submitter_contact">投稿联系方式</label>
+                <div>
+                    <label class={labelCls} for="submitter_contact">
+                        投稿联系方式
+                    </label>
                     <input
                         id="submitter_contact"
                         name="submitter_contact"
                         required
                         value={eventRecord.submitter_contact}
+                        class={`mt-1.5 ${fieldCls}`}
                     />
                 </div>
-
-                <div class="field">
-                    <label for="ticket_url">购票地址</label>
+                <div>
+                    <label class={labelCls} for="ticket_url">
+                        购票地址
+                    </label>
                     <input
                         id="ticket_url"
                         name="ticket_url"
                         type="url"
                         value={eventRecord.ticket_url ?? ""}
+                        class={`mt-1.5 ${fieldCls}`}
                     />
                 </div>
-
-                <div class="field">
-                    <label for="qq_group">官方交流群</label>
-                    <input id="qq_group" name="qq_group" value={eventRecord.qq_group ?? ""} />
+                <div>
+                    <label class={labelCls} for="qq_group">
+                        官方交流群
+                    </label>
+                    <input
+                        id="qq_group"
+                        name="qq_group"
+                        value={eventRecord.qq_group ?? ""}
+                        class={`mt-1.5 ${fieldCls}`}
+                    />
                 </div>
-
-                <div class="field wide">
-                    <label for="cover_url">封面 URL</label>
+                <div class="sm:col-span-2">
+                    <label class={labelCls} for="cover_url">
+                        封面 URL
+                    </label>
                     <input
                         id="cover_url"
                         name="cover_url"
                         type="url"
                         value={eventRecord.cover_url ?? ""}
+                        class={`mt-1.5 ${fieldCls}`}
                     />
                 </div>
-
-                <div class="field wide">
-                    <label for="tags">相关作品标签</label>
-                    <input id="tags" name="tags" value={eventRecord.tags ?? ""} />
+                <div class="sm:col-span-2">
+                    <label class={labelCls} for="tags">
+                        相关作品标签
+                    </label>
+                    <input
+                        id="tags"
+                        name="tags"
+                        value={eventRecord.tags ?? ""}
+                        class={`mt-1.5 ${fieldCls}`}
+                    />
                 </div>
-
-                <div class="field wide">
-                    <label for="description">活动说明</label>
-                    <textarea id="description" name="description">
+                <div class="sm:col-span-2">
+                    <label class={labelCls} for="description">
+                        活动说明
+                    </label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 mt-1.5 flex h-32 w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    >
                         {eventRecord.description ?? ""}
                     </textarea>
                 </div>
 
-                <div class="form-actions">
-                    <button class="button button-filled" type="submit">
+                <div class="flex flex-wrap gap-2 sm:col-span-2">
+                    <button
+                        class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
+                        type="submit"
+                    >
                         保存
                     </button>
-                    <a class="button button-outline" href="/admin/published">
+                    <a
+                        class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold transition-colors"
+                        href="/admin/published"
+                    >
                         返回
                     </a>
                 </div>

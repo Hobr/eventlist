@@ -31,198 +31,183 @@ const scaleOptions = scales.map((scale) => ({
     value: scale.name,
     label: scale.label ?? scale.name
 }));
+
+const fieldCls =
+    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
 <Layout title="提交活动" description="提交 ACG 活动，进入审核队列后再公开展示。">
-    <section class="page-section">
-        <div class="section-inner">
-            {
-                sent ? (
-                    <div class="notice">投稿已进入审核队列，审核通过后会出现在公共列表中。</div>
-                ) : errorMessage ? (
-                    <div class="notice error">{errorMessage}</div>
-                ) : (
-                    <div class="submit-console">
-                        <header class="submit-console-header">
-                            <div>
-                                <p class="section-kicker">SUBMIT</p>
-                                <h1>提交活动</h1>
-                                <p class="supporting-copy">
-                                    投稿会先进入待审核队列；联系方式仅用于核对信息，不会在前台公开。
-                                </p>
+    {
+        sent ? (
+            <div class="bg-primary-subtle text-primary-subtle-foreground rounded-md border border-transparent p-4 text-sm font-semibold">
+                投稿已进入审核队列，审核通过后会出现在公共列表中。
+            </div>
+        ) : errorMessage ? (
+            <div class="bg-danger-subtle text-danger rounded-md border border-transparent p-4 text-sm font-semibold">
+                {errorMessage}
+            </div>
+        ) : (
+            <div class="mx-auto flex max-w-3xl flex-col gap-6">
+                <header class="flex flex-col gap-2">
+                    <h1 class="text-foreground text-xl font-semibold">提交活动</h1>
+                    <p class="text-muted-foreground text-sm">
+                        投稿会先进入待审核队列；联系方式仅用于核对信息，不会在前台公开。
+                    </p>
+                </header>
+
+                <form
+                    id="submit-form"
+                    class="flex flex-col gap-6"
+                    method="POST"
+                    action="/api/submit"
+                >
+                    <section class="border-border bg-surface rounded-md border p-5">
+                        <h2 class="text-foreground mb-4 text-sm font-semibold">01 活动识别</h2>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>标题</span>
+                                <input name="title" required maxlength="120" class={fieldCls} />
+                            </label>
+                            <SelectField
+                                name="type"
+                                label="类型"
+                                options={typeOptions}
+                                placeholder="选择类型"
+                                required
+                                client:load
+                            />
+                            <SelectField
+                                name="scale"
+                                label="规模"
+                                options={scaleOptions}
+                                placeholder="选择规模"
+                                required
+                                client:load
+                            />
+                            <div class="sm:col-span-2">
+                                <TagInput client:load />
                             </div>
-                            <div class="submit-steps" aria-label="投稿流程">
-                                <span>1 基本信息</span>
-                                <span>2 时间地点</span>
-                                <span>3 链接校验</span>
+                        </div>
+                    </section>
+
+                    <section class="border-border bg-surface rounded-md border p-5">
+                        <h2 class="text-foreground mb-4 text-sm font-semibold">02 时间与地点</h2>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="sm:col-span-2">
+                                <DivisionPicker
+                                    name="division_code"
+                                    label="地区"
+                                    mode="county"
+                                    required
+                                    client:load
+                                />
                             </div>
-                        </header>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>地点</span>
+                                <input name="venue" required maxlength="120" class={fieldCls} />
+                            </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>地址</span>
+                                <input name="address" maxlength="240" class={fieldCls} />
+                            </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>开始日期</span>
+                                <input type="date" name="start_date" required class={fieldCls} />
+                            </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>结束日期</span>
+                                <input type="date" name="end_date" required class={fieldCls} />
+                            </label>
+                        </div>
+                    </section>
 
-                        <form
-                            id="submit-form"
-                            class="submit-form"
-                            method="POST"
-                            action="/api/submit"
-                        >
-                            <section class="form-section">
-                                <div class="form-section-label">
-                                    <span>01</span>
-                                    <h2>活动识别</h2>
-                                </div>
-                                <div class="form-section-fields form-grid">
-                                    <label class="field wide">
-                                        <span>标题</span>
-                                        <input name="title" required maxlength="120" />
-                                    </label>
+                    <section class="border-border bg-surface rounded-md border p-5">
+                        <h2 class="text-foreground mb-4 text-sm font-semibold">03 公开信息</h2>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>封面 URL</span>
+                                <input
+                                    type="url"
+                                    name="cover_url"
+                                    placeholder="https://..."
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>描述</span>
+                                <textarea
+                                    name="description"
+                                    maxlength="4000"
+                                    class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 flex h-32 w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                                />
+                            </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>官方交流群 QQ</span>
+                                <input name="qq_group" maxlength="80" class={fieldCls} />
+                            </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>购票地址</span>
+                                <input
+                                    type="url"
+                                    name="ticket_url"
+                                    placeholder="https://..."
+                                    class={fieldCls}
+                                />
+                            </label>
+                        </div>
+                    </section>
 
-                                    <SelectField
-                                        name="type"
-                                        label="类型"
-                                        options={typeOptions}
-                                        placeholder="选择类型"
-                                        required
-                                        client:load
-                                    />
-
-                                    <SelectField
-                                        name="scale"
-                                        label="规模"
-                                        options={scaleOptions}
-                                        placeholder="选择规模"
-                                        required
-                                        client:load
-                                    />
-
-                                    <TagInput client:load />
-                                </div>
-                            </section>
-
-                            <section class="form-section">
-                                <div class="form-section-label">
-                                    <span>02</span>
-                                    <h2>时间与地点</h2>
-                                </div>
-                                <div class="form-section-fields form-grid">
-                                    <DivisionPicker
-                                        name="division_code"
-                                        label="地区"
-                                        mode="county"
-                                        required
-                                        client:load
-                                    />
-
-                                    <label class="field">
-                                        <span>地点</span>
-                                        <input name="venue" required maxlength="120" />
-                                    </label>
-
-                                    <label class="field wide">
-                                        <span>地址</span>
-                                        <input name="address" maxlength="240" />
-                                    </label>
-
-                                    <label class="field">
-                                        <span>开始日期</span>
-                                        <input type="date" name="start_date" required />
-                                    </label>
-
-                                    <label class="field">
-                                        <span>结束日期</span>
-                                        <input type="date" name="end_date" required />
-                                    </label>
-                                </div>
-                            </section>
-
-                            <section class="form-section">
-                                <div class="form-section-label">
-                                    <span>03</span>
-                                    <h2>公开信息</h2>
-                                </div>
-                                <div class="form-section-fields form-grid">
-                                    <label class="field wide">
-                                        <span>封面 URL</span>
-                                        <input
-                                            type="url"
-                                            name="cover_url"
-                                            placeholder="https://..."
-                                        />
-                                    </label>
-
-                                    <label class="field wide">
-                                        <span>描述</span>
-                                        <textarea name="description" maxlength="4000" />
-                                    </label>
-
-                                    <label class="field">
-                                        <span>官方交流群 QQ</span>
-                                        <input name="qq_group" maxlength="80" />
-                                    </label>
-
-                                    <label class="field">
-                                        <span>购票地址</span>
-                                        <input
-                                            type="url"
-                                            name="ticket_url"
-                                            placeholder="https://..."
-                                        />
-                                    </label>
-                                </div>
-                            </section>
-
-                            <section class="form-section">
-                                <div class="form-section-label">
-                                    <span>04</span>
-                                    <h2>审核线索</h2>
-                                </div>
-                                <div class="form-section-fields form-grid">
-                                    <label class="field wide">
-                                        <span>来源链接</span>
-                                        <input
-                                            type="url"
-                                            name="source_url"
-                                            placeholder="https://..."
-                                            required
-                                        />
-                                    </label>
-
-                                    <label class="field wide">
-                                        <span>联系方式</span>
-                                        <input name="submitter_contact" required maxlength="120" />
-                                    </label>
-
-                                    <Turnstile
-                                        siteKey={runtimeEnv.TURNSTILE_SITE_KEY}
-                                        client:load
-                                    />
-
-                                    <p
-                                        id="submit-result"
-                                        class="submit-result error-text hidden"
-                                        role="status"
-                                    />
-
-                                    <div class="button-row wide">
-                                        <button class="button button-filled" type="submit">
-                                            <span
-                                                class="material-symbols-rounded"
-                                                aria-hidden="true"
-                                            >
-                                                send
-                                            </span>
-                                            提交审核
-                                        </button>
-                                        <a class="button button-outline" href="/events">
-                                            返回列表
-                                        </a>
-                                    </div>
-                                </div>
-                            </section>
-                        </form>
-                    </div>
-                )
-            }
-        </div>
-    </section>
+                    <section class="border-border bg-surface rounded-md border p-5">
+                        <h2 class="text-foreground mb-4 text-sm font-semibold">04 审核线索</h2>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>来源链接</span>
+                                <input
+                                    type="url"
+                                    name="source_url"
+                                    placeholder="https://..."
+                                    required
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>联系方式</span>
+                                <input
+                                    name="submitter_contact"
+                                    required
+                                    maxlength="120"
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <div class="sm:col-span-2">
+                                <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
+                            </div>
+                            <p
+                                id="submit-result"
+                                class="text-danger hidden text-sm font-semibold sm:col-span-2"
+                                role="status"
+                            />
+                            <div class="flex flex-wrap gap-2 sm:col-span-2">
+                                <button
+                                    class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
+                                    type="submit"
+                                >
+                                    提交审核
+                                </button>
+                                <a
+                                    class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold transition-colors"
+                                    href="/events"
+                                >
+                                    返回列表
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                </form>
+            </div>
+        )
+    }
 </Layout>
 
 <script>

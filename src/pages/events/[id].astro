@@ -1,10 +1,16 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import Badge from "../../components/ui/badge.svelte";
 import { getDB, STATUS } from "../../lib/db";
 import { getPublicEvent } from "../../lib/db/queries";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 import { buildEventJsonLd } from "../../lib/seo";
 import { getDivisionLabel } from "../../lib/divisions";
+import CalendarDays from "@lucide/svelte/icons/calendar-days";
+import MapPin from "@lucide/svelte/icons/map-pin";
+import Store from "@lucide/svelte/icons/store";
+import Ticket from "@lucide/svelte/icons/ticket";
+import ExternalLink from "@lucide/svelte/icons/external-link";
 
 export const prerender = false;
 
@@ -39,123 +45,120 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
     description={event?.description ?? "活动不存在或尚未公开。"}
     jsonLd={jsonLd}
 >
-    <section class="page-section">
-        <div class="section-inner">
-            {
-                !event ? (
-                    <div class="panel empty-state error-text">{errorMessage}</div>
-                ) : (
-                    <article class="event-dossier">
-                        <header class="dossier-hero">
-                            <div class="dossier-copy">
-                                <p class="section-kicker">EVENT DOSSIER</p>
-                                <h1>{event.title}</h1>
-                                <div class="chip-row">
-                                    <span class="chip" data-tone="accent">
-                                        {event.type_label ?? event.type}
-                                    </span>
-                                    <span class="chip">{event.scale_label ?? event.scale}</span>
-                                    {tags.map((tag) => (
-                                        <a
-                                            class="chip"
-                                            href={`/events?tag=${encodeURIComponent(tag)}`}
-                                        >
-                                            {tag}
-                                        </a>
-                                    ))}
+    {
+        !event ? (
+            <div class="border-border bg-surface text-danger rounded-md border p-8 text-center text-sm font-semibold">
+                {errorMessage}
+            </div>
+        ) : (
+            <article class="flex flex-col gap-6">
+                <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div class="flex min-w-0 flex-col gap-3">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <Badge tone="accent">{event.type_label ?? event.type}</Badge>
+                            <Badge>{event.scale_label ?? event.scale}</Badge>
+                            {tags.map((tag) => (
+                                <a href={`/events?tag=${encodeURIComponent(tag)}`}>
+                                    <Badge>{tag}</Badge>
+                                </a>
+                            ))}
+                        </div>
+                        <h1 class="text-foreground text-2xl font-semibold">{event.title}</h1>
+                        {event.status === STATUS.OFFLINE ? (
+                            <div class="border-border bg-surface-subtle text-muted-foreground rounded-md border p-3 text-sm">
+                                该活动已下线，页面仅作为历史信息保留。
+                            </div>
+                        ) : null}
+                    </div>
+                    {event.cover_url ? (
+                        <img
+                            src={event.cover_url}
+                            alt={`${event.title} 封面`}
+                            class="border-border aspect-[16/9] w-full max-w-md rounded-md border object-cover"
+                        />
+                    ) : null}
+                </header>
+
+                <div class="grid gap-4 lg:grid-cols-3">
+                    <section class="flex flex-col gap-4 lg:col-span-2">
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <div class="border-border bg-surface flex items-start gap-3 rounded-md border p-4">
+                                <CalendarDays
+                                    class="text-muted size-5 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                <div class="min-w-0">
+                                    <small class="text-muted-foreground block text-xs">时间</small>
+                                    <strong class="text-foreground block text-sm">
+                                        {event.start_date} - {event.end_date}
+                                    </strong>
                                 </div>
                             </div>
-                            {event.status === STATUS.OFFLINE ? (
-                                <div class="notice">该活动已下线，页面仅作为历史信息保留。</div>
-                            ) : null}
-                            {event.cover_url ? (
-                                <img
-                                    class="dossier-cover"
-                                    src={event.cover_url}
-                                    alt={`${event.title} 封面`}
-                                />
-                            ) : (
-                                <div class="dossier-cover" aria-hidden="true" />
-                            )}
-                        </header>
-
-                        <div class="dossier-grid">
-                            <section class="dossier-main">
-                                <div class="fact-grid">
-                                    <div class="fact-tile">
-                                        <span class="material-symbols-rounded" aria-hidden="true">
-                                            calendar_month
-                                        </span>
-                                        <small>时间</small>
-                                        <strong>
-                                            {event.start_date} - {event.end_date}
-                                        </strong>
-                                    </div>
-                                    <div class="fact-tile">
-                                        <span class="material-symbols-rounded" aria-hidden="true">
-                                            location_on
-                                        </span>
-                                        <small>地区</small>
-                                        <strong>{divisionLabel ?? "未知地区"}</strong>
-                                    </div>
-                                    <div class="fact-tile">
-                                        <span class="material-symbols-rounded" aria-hidden="true">
-                                            store
-                                        </span>
-                                        <small>地点</small>
-                                        <strong>{event.venue}</strong>
-                                    </div>
+                            <div class="border-border bg-surface flex items-start gap-3 rounded-md border p-4">
+                                <MapPin class="text-muted size-5 shrink-0" aria-hidden="true" />
+                                <div class="min-w-0">
+                                    <small class="text-muted-foreground block text-xs">地区</small>
+                                    <strong class="text-foreground block text-sm">
+                                        {divisionLabel ?? "未知地区"}
+                                    </strong>
                                 </div>
-
-                                <div class="panel description-panel">
-                                    <p class="section-kicker">DESCRIPTION</p>
-                                    {event.description ? (
-                                        <p class="description-text">{event.description}</p>
-                                    ) : (
-                                        <p class="muted">暂无活动介绍。</p>
-                                    )}
+                            </div>
+                            <div class="border-border bg-surface flex items-start gap-3 rounded-md border p-4">
+                                <Store class="text-muted size-5 shrink-0" aria-hidden="true" />
+                                <div class="min-w-0">
+                                    <small class="text-muted-foreground block text-xs">地点</small>
+                                    <strong class="text-foreground block text-sm">
+                                        {event.venue}
+                                    </strong>
                                 </div>
-                            </section>
-
-                            <aside class="panel dossier-actions">
-                                <p class="section-kicker">ACTIONS</p>
-                                {event.ticket_url ? (
-                                    <a
-                                        class="button button-filled"
-                                        href={event.ticket_url}
-                                        rel="nofollow noopener noreferrer"
-                                    >
-                                        <span class="material-symbols-rounded" aria-hidden="true">
-                                            confirmation_number
-                                        </span>
-                                        查看购票页
-                                    </a>
-                                ) : null}
-                                <a
-                                    class="button button-outline"
-                                    href={event.source_url}
-                                    rel="nofollow noopener noreferrer"
-                                >
-                                    <span class="material-symbols-rounded" aria-hidden="true">
-                                        open_in_new
-                                    </span>
-                                    来源链接
-                                </a>
-                                <dl class="meta-list">
-                                    <div>
-                                        <dt>地址</dt>
-                                        <dd>{event.address ?? "未填写"}</dd>
-                                    </div>
-                                    <div>
-                                        <dt>官方交流群</dt>
-                                        <dd>{event.qq_group ?? "未填写"}</dd>
-                                    </div>
-                                </dl>
-                            </aside>
+                            </div>
                         </div>
-                    </article>
-                )
-            }
-        </div>
-    </section>
+
+                        <div class="border-border bg-surface rounded-md border p-5">
+                            <p class="text-muted-foreground text-xs font-semibold">活动介绍</p>
+                            {event.description ? (
+                                <p class="text-foreground mt-2 text-sm leading-relaxed">
+                                    {event.description}
+                                </p>
+                            ) : (
+                                <p class="text-muted mt-2 text-sm">暂无活动介绍。</p>
+                            )}
+                        </div>
+                    </section>
+
+                    <aside class="border-border bg-surface flex h-fit flex-col gap-3 rounded-md border p-5">
+                        <p class="text-muted-foreground text-xs font-semibold">操作</p>
+                        {event.ticket_url ? (
+                            <a
+                                href={event.ticket_url}
+                                rel="nofollow noopener noreferrer"
+                                class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors"
+                            >
+                                <Ticket class="size-4" aria-hidden="true" />
+                                查看购票页
+                            </a>
+                        ) : null}
+                        <a
+                            href={event.source_url}
+                            rel="nofollow noopener noreferrer"
+                            class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition-colors"
+                        >
+                            <ExternalLink class="size-4" aria-hidden="true" />
+                            来源链接
+                        </a>
+                        <dl class="border-border mt-2 flex flex-col gap-2 border-t pt-3 text-sm">
+                            <div class="flex flex-col gap-0.5">
+                                <dt class="text-muted-foreground text-xs">地址</dt>
+                                <dd class="text-foreground">{event.address ?? "未填写"}</dd>
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                                <dt class="text-muted-foreground text-xs">官方交流群</dt>
+                                <dd class="text-foreground">{event.qq_group ?? "未填写"}</dd>
+                            </div>
+                        </dl>
+                    </aside>
+                </div>
+            </article>
+        )
+    }
 </Layout>

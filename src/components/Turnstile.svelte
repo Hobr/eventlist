@@ -16,9 +16,9 @@
     }
 
     let { siteKey = null }: Props = $props();
-    let token = "";
+    let token = $state("");
     let container: HTMLDivElement | undefined;
-    let errorMessage = "";
+    let errorMessage = $state("");
 
     function loadScript() {
         if (window.turnstile) return Promise.resolve();
@@ -69,14 +69,14 @@
     });
 </script>
 
-<div class="turnstile-field">
+<div class="flex flex-col gap-1.5">
     <input type="hidden" name="cf-turnstile-response" value={token} />
     {#if siteKey}
         <div bind:this={container}></div>
     {:else}
-        <p class="error-text">投稿保护未配置</p>
+        <p class="text-sm font-semibold text-danger">投稿保护未配置</p>
     {/if}
     {#if errorMessage}
-        <p class="error-text">{errorMessage}</p>
+        <p class="text-sm font-semibold text-danger">{errorMessage}</p>
     {/if}
 </div>

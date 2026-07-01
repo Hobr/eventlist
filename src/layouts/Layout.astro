@@ -1,5 +1,5 @@
 ---
-import "../styles/public.css";
+import "../styles/app.css";
 
 interface Props {
     title?: string;
@@ -9,7 +9,7 @@ interface Props {
 
 const {
     title = "Eventlist",
-    description = "面向普通爱好者的 ACG 活动查询与投稿目录。",
+    description = "浏览与投稿近期 ACG 活动的工具目录。",
     jsonLd
 } = Astro.props;
 const currentPath = Astro.url.pathname;
@@ -35,30 +35,31 @@ function isCurrent(href: string) {
         <meta name="generator" content={Astro.generator} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
-            rel="stylesheet"
-        />
         <title>{siteTitle}</title>
         {jsonLd ? <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} /> : null}
     </head>
-    <body>
-        <div class="site-shell">
-            <header class="site-header">
-                <a class="site-brand" href="/">
-                    <span class="site-brand-mark" aria-hidden="true">
-                        <span class="material-symbols-rounded">explore</span>
-                    </span>
-                    <span>Eventlist</span>
+    <body class="bg-background text-foreground min-h-screen">
+        <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6">
+            <header class="border-border flex h-14 items-center gap-6 border-b">
+                <a href="/" class="text-foreground flex items-center gap-2 text-base font-semibold">
+                    <span
+                        class="bg-primary text-primary-foreground inline-flex size-7 items-center justify-center rounded-md text-sm font-bold"
+                        >E</span
+                    >
+                    Eventlist
                 </a>
-                <nav class="site-nav" aria-label="主导航">
+                <nav class="flex items-center gap-1" aria-label="主导航">
                     {
                         navItems.map((item) => (
                             <a
                                 href={item.href}
                                 aria-current={isCurrent(item.href) ? "page" : undefined}
+                                class:list={[
+                                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                                    isCurrent(item.href)
+                                        ? "bg-surface-subtle text-foreground"
+                                        : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
+                                ]}
                             >
                                 {item.label}
                             </a>
@@ -66,9 +67,14 @@ function isCurrent(href: string) {
                     }
                 </nav>
             </header>
-            <main class="site-main">
+
+            <main class="flex-1 py-6 sm:py-8">
                 <slot />
             </main>
+
+            <footer class="border-border text-muted flex h-14 items-center border-t text-xs">
+                <span>Eventlist · 已审核活动目录</span>
+            </footer>
         </div>
     </body>
 </html>

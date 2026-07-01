@@ -7,6 +7,10 @@
     } from "../lib/db/queries";
     import DivisionPicker from "./DivisionPicker.svelte";
     import SelectField from "./SelectField.svelte";
+    import Button from "./ui/button.svelte";
+    import Filter from "@lucide/svelte/icons/filter";
+    import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+    import SlidersHorizontal from "@lucide/svelte/icons/sliders-horizontal";
 
     interface Props {
         types: OptionRow[];
@@ -16,8 +20,8 @@
     }
 
     let { types, scales, tags, filters }: Props = $props();
-    let tagValue = filters.tag ?? "";
-    let suggestions = tags;
+    let tagValue = $state(filters.tag ?? "");
+    let suggestions = $state(tags);
     let timer: ReturnType<typeof setTimeout> | undefined;
     const typeOptions = $derived([
         { value: "", label: "全部类型" },
@@ -63,13 +67,17 @@
         timer = setTimeout(() => void refreshTagSuggestions(tagValue), 160);
     }
 
-    const sortValue: EventSort = filters.sort ?? "start_asc";
+    const sortValue: EventSort = $derived(filters.sort ?? "start_asc");
 </script>
 
-<form class="panel filter-rail" action="/events" method="GET">
-    <div class="filter-rail-heading">
-        <p class="section-kicker">FILTER</p>
-        <h2>筛选视图</h2>
+<form
+    class="flex flex-col gap-4 rounded-md border border-border bg-surface p-4"
+    action="/events"
+    method="GET"
+>
+    <div class="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <SlidersHorizontal class="size-4 text-muted" aria-hidden="true" />
+        筛选
     </div>
 
     <DivisionPicker
@@ -87,18 +95,28 @@
 
     <SelectField name="sort" label="排序" value={sortValue} options={sortOptions} />
 
-    <label class="field">
-        <span>开始不早于</span>
-        <input type="date" name="from" value={filters.from ?? ""} />
+    <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-muted-foreground">开始不早于</span>
+        <input
+            type="date"
+            name="from"
+            value={filters.from ?? ""}
+            class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        />
     </label>
 
-    <label class="field">
-        <span>结束不晚于</span>
-        <input type="date" name="to" value={filters.to ?? ""} />
+    <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-muted-foreground">结束不晚于</span>
+        <input
+            type="date"
+            name="to"
+            value={filters.to ?? ""}
+            class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        />
     </label>
 
-    <label class="field wide">
-        <span>标签</span>
+    <label class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-muted-foreground">标签</span>
         <input
             type="search"
             name="tag"
@@ -106,22 +124,23 @@
             value={tagValue}
             oninput={handleTagInput}
             autocomplete="off"
+            class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
         />
         <datalist id="event-tag-suggestions">
-            {#each suggestions as tag}
+            {#each suggestions as tag (tag.name)}
                 <option value={tag.name}>{tag.event_count} 个活动</option>
             {/each}
         </datalist>
     </label>
 
-    <div class="button-row filter-actions">
-        <button class="button button-filled" type="submit">
-            <span class="material-symbols-rounded" aria-hidden="true">filter_alt</span>
+    <div class="flex items-center gap-2">
+        <Button type="submit" class="flex-1">
+            <Filter class="size-4" aria-hidden="true" />
             筛选
-        </button>
-        <a class="button button-outline" href="/events">
-            <span class="material-symbols-rounded" aria-hidden="true">restart_alt</span>
+        </Button>
+        <Button variant="outline" href="/events" class="flex-1">
+            <RotateCcw class="size-4" aria-hidden="true" />
             重置
-        </a>
+        </Button>
     </div>
 </form>

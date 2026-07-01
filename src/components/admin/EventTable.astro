@@ -18,174 +18,209 @@ function statusLabel(status: string) {
     };
     return labels[status] ?? status;
 }
+
+const btnBase =
+    "inline-flex h-9 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50";
+const btnFilled = "bg-primary text-primary-foreground hover:bg-primary/90";
+const btnOutline = "border border-border-strong bg-surface text-foreground hover:bg-surface-subtle";
+const btnTonal = "bg-primary-subtle text-primary-subtle-foreground hover:bg-primary-subtle/80";
+const btnDanger = "bg-danger text-danger-foreground hover:bg-danger/90";
 ---
 
-<div class="surface">
-    {
-        events.length === 0 ? (
-            <div class="empty-state">暂无活动记录。</div>
-        ) : (
-            <div class="table-wrap">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 18%">活动</th>
-                            <th style="width: 16%">时间地点</th>
-                            <th style="width: 15%">分类</th>
-                            <th style="width: 18%">来源与联系</th>
-                            <th style="width: 16%">说明</th>
-                            <th style="width: 17%">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {events.map((event) => (
-                            <tr>
-                                <td>
-                                    <div class="cell-title">{event.title}</div>
-                                    <div class="muted">#{event.id}</div>
-                                    <span class="status-chip">{statusLabel(event.status)}</span>
-                                </td>
-                                <td>
-                                    <div>
-                                        {event.start_date} - {event.end_date}
-                                    </div>
-                                    <div>
-                                        {getDivisionLabel(event.division_code) ?? "未设置地区"}
-                                    </div>
-                                    <div class="muted">{event.venue}</div>
-                                    {event.address ? (
-                                        <div class="muted">{event.address}</div>
-                                    ) : null}
-                                </td>
-                                <td>
-                                    <div>{event.type_label ?? event.type}</div>
-                                    <div>{event.scale_label ?? event.scale}</div>
-                                    {event.tags ? <div class="muted">{event.tags}</div> : null}
-                                </td>
-                                <td>
-                                    <a href={event.source_url} target="_blank" rel="noreferrer">
-                                        来源链接
+{
+    events.length === 0 ? (
+        <div class="border-border bg-surface text-muted rounded-md border p-8 text-center text-sm">
+            暂无活动记录。
+        </div>
+    ) : (
+        <div class="border-border bg-surface overflow-x-auto rounded-md border">
+            <table class="text-foreground w-full text-sm">
+                <thead class="border-border border-b [&>tr]:border-b">
+                    <tr class="border-border border-b hover:bg-transparent">
+                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                            活动
+                        </th>
+                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                            时间地点
+                        </th>
+                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                            分类
+                        </th>
+                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                            来源与联系
+                        </th>
+                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                            说明
+                        </th>
+                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                            操作
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="[&>tr:last-child]:border-0">
+                    {events.map((event) => (
+                        <tr class="border-border hover:bg-surface-subtle/60 border-b transition-colors">
+                            <td class="p-3 align-top">
+                                <div class="text-foreground font-semibold">{event.title}</div>
+                                <div class="text-muted text-xs">#{event.id}</div>
+                                <span class="bg-surface-subtle text-muted-foreground mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
+                                    {statusLabel(event.status)}
+                                </span>
+                            </td>
+                            <td class="p-3 align-top">
+                                <div class="text-foreground">
+                                    {event.start_date} - {event.end_date}
+                                </div>
+                                <div class="text-muted-foreground">
+                                    {getDivisionLabel(event.division_code) ?? "未设置地区"}
+                                </div>
+                                <div class="text-muted text-xs">{event.venue}</div>
+                                {event.address ? (
+                                    <div class="text-muted text-xs">{event.address}</div>
+                                ) : null}
+                            </td>
+                            <td class="p-3 align-top">
+                                <div class="text-foreground">{event.type_label ?? event.type}</div>
+                                <div class="text-muted-foreground">
+                                    {event.scale_label ?? event.scale}
+                                </div>
+                                {event.tags ? (
+                                    <div class="text-muted text-xs">{event.tags}</div>
+                                ) : null}
+                            </td>
+                            <td class="p-3 align-top">
+                                <a
+                                    href={event.source_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    class="text-link underline-offset-2 hover:underline"
+                                >
+                                    来源链接
+                                </a>
+                                <div class="text-muted text-xs">{event.submitter_contact}</div>
+                                {event.ticket_url ? (
+                                    <a
+                                        href={event.ticket_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        class="text-link underline-offset-2 hover:underline"
+                                    >
+                                        购票地址
                                     </a>
-                                    <div class="muted">{event.submitter_contact}</div>
-                                    {event.ticket_url ? (
-                                        <a href={event.ticket_url} target="_blank" rel="noreferrer">
-                                            购票地址
+                                ) : null}
+                                {event.cover_url ? (
+                                    <div>
+                                        <a
+                                            href={event.cover_url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            class="text-link underline-offset-2 hover:underline"
+                                        >
+                                            封面图
                                         </a>
-                                    ) : null}
-                                    {event.cover_url ? (
-                                        <div>
-                                            <a
-                                                href={event.cover_url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                封面图
-                                            </a>
-                                        </div>
-                                    ) : null}
-                                </td>
-                                <td>
-                                    <div class="line-clamp">{event.description ?? "无说明"}</div>
-                                    {event.qq_group ? (
-                                        <div class="muted">QQ群: {event.qq_group}</div>
-                                    ) : null}
-                                </td>
-                                <td>
-                                    <div class="actions">
-                                        {mode === "pending" ? (
-                                            <>
-                                                <form
-                                                    class="inline-form"
-                                                    method="post"
-                                                    action={`/api/admin/events/${event.id}/approve`}
-                                                >
-                                                    <button
-                                                        class="button button-filled"
-                                                        type="submit"
-                                                    >
-                                                        通过
-                                                    </button>
-                                                </form>
-                                                <form
-                                                    class="reject-form"
-                                                    method="post"
-                                                    action={`/api/admin/events/${event.id}/reject`}
-                                                >
-                                                    <label
-                                                        class="field-label"
-                                                        for={`reject-${event.id}`}
-                                                    >
-                                                        驳回理由
-                                                    </label>
-                                                    <input
-                                                        id={`reject-${event.id}`}
-                                                        name="reject_reason"
-                                                        required
-                                                    />
-                                                    <button
-                                                        class="button button-danger"
-                                                        type="submit"
-                                                    >
-                                                        驳回
-                                                    </button>
-                                                </form>
-                                            </>
-                                        ) : null}
-                                        {mode === "published" ? (
-                                            <>
-                                                <a
-                                                    class="button button-outline"
-                                                    href={`/admin/events/${event.id}/edit`}
-                                                >
-                                                    编辑
-                                                </a>
-                                                <form
-                                                    class="inline-form"
-                                                    method="post"
-                                                    action={`/api/admin/events/${event.id}/offline`}
-                                                >
-                                                    <button
-                                                        class="button button-danger"
-                                                        type="submit"
-                                                        data-confirm="确认下线该活动？"
-                                                    >
-                                                        下线
-                                                    </button>
-                                                </form>
-                                            </>
-                                        ) : null}
-                                        {mode === "offline" ? (
-                                            <>
-                                                <a
-                                                    class="button button-outline"
-                                                    href={`/admin/events/${event.id}/edit`}
-                                                >
-                                                    编辑
-                                                </a>
-                                                <form
-                                                    class="inline-form"
-                                                    method="post"
-                                                    action={`/api/admin/events/${event.id}/republish`}
-                                                >
-                                                    <button
-                                                        class="button button-tonal"
-                                                        type="submit"
-                                                    >
-                                                        重新发布
-                                                    </button>
-                                                </form>
-                                            </>
-                                        ) : null}
                                     </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        )
-    }
-</div>
+                                ) : null}
+                            </td>
+                            <td class="max-w-xs p-3 align-top">
+                                <div class="text-muted-foreground line-clamp-3">
+                                    {event.description ?? "无说明"}
+                                </div>
+                                {event.qq_group ? (
+                                    <div class="text-muted text-xs">QQ群: {event.qq_group}</div>
+                                ) : null}
+                            </td>
+                            <td class="p-3 align-top">
+                                <div class="flex flex-col gap-2">
+                                    {mode === "pending" ? (
+                                        <>
+                                            <form
+                                                method="post"
+                                                action={`/api/admin/events/${event.id}/approve`}
+                                            >
+                                                <button
+                                                    class={`${btnBase} ${btnFilled}`}
+                                                    type="submit"
+                                                >
+                                                    通过
+                                                </button>
+                                            </form>
+                                            <form
+                                                method="post"
+                                                action={`/api/admin/events/${event.id}/reject`}
+                                            >
+                                                <label
+                                                    class="text-muted-foreground text-xs font-semibold"
+                                                    for={`reject-${event.id}`}
+                                                >
+                                                    驳回理由
+                                                </label>
+                                                <input
+                                                    id={`reject-${event.id}`}
+                                                    name="reject_reason"
+                                                    required
+                                                    class="border-border-strong bg-surface text-foreground focus-visible:border-ring focus-visible:ring-ring/40 mt-0.5 mb-1 flex h-9 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                                                />
+                                                <button
+                                                    class={`${btnBase} ${btnDanger}`}
+                                                    type="submit"
+                                                >
+                                                    驳回
+                                                </button>
+                                            </form>
+                                        </>
+                                    ) : null}
+                                    {mode === "published" ? (
+                                        <>
+                                            <a
+                                                class={`${btnBase} ${btnOutline}`}
+                                                href={`/admin/events/${event.id}/edit`}
+                                            >
+                                                编辑
+                                            </a>
+                                            <form
+                                                method="post"
+                                                action={`/api/admin/events/${event.id}/offline`}
+                                            >
+                                                <button
+                                                    class={`${btnBase} ${btnDanger}`}
+                                                    type="submit"
+                                                    data-confirm="确认下线该活动？"
+                                                >
+                                                    下线
+                                                </button>
+                                            </form>
+                                        </>
+                                    ) : null}
+                                    {mode === "offline" ? (
+                                        <>
+                                            <a
+                                                class={`${btnBase} ${btnOutline}`}
+                                                href={`/admin/events/${event.id}/edit`}
+                                            >
+                                                编辑
+                                            </a>
+                                            <form
+                                                method="post"
+                                                action={`/api/admin/events/${event.id}/republish`}
+                                            >
+                                                <button
+                                                    class={`${btnBase} ${btnTonal}`}
+                                                    type="submit"
+                                                >
+                                                    重新发布
+                                                </button>
+                                            </form>
+                                        </>
+                                    ) : null}
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
+}
 
 <script>
     for (const form of document.querySelectorAll("form[action^='/api/admin/']")) {

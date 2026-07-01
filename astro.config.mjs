@@ -9,6 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
     adapter: cloudflare(),
     integrations: [svelte()],
+
     vite: {
         plugins: [tailwindcss()]
     }

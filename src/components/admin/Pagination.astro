@@ -1,4 +1,6 @@
 ---
+import Button from "../../components/ui/button.svelte";
+
 interface Props {
     page: number;
     hasNext: boolean;
@@ -13,24 +15,20 @@ function hrefFor(nextPage: number) {
 }
 ---
 
-<nav class="pagination" aria-label="分页">
+<nav class="text-muted flex items-center justify-center gap-3 py-4 text-sm" aria-label="分页">
     {
         page > 1 ? (
-            <a class="button button-outline" href={hrefFor(page - 1)}>
+            <Button variant="outline" size="sm" href={hrefFor(page - 1)}>
                 上一页
-            </a>
-        ) : (
-            <span />
-        )
+            </Button>
+        ) : null
     }
-    <span class="pagination-current">第 {page} 页</span>
+    <span class="text-muted-foreground font-medium">第 {page} 页</span>
     {
         hasNext ? (
-            <a class="button button-outline" href={hrefFor(page + 1)}>
+            <Button variant="outline" size="sm" href={hrefFor(page + 1)}>
                 下一页
-            </a>
-        ) : (
-            <span />
-        )
+            </Button>
+        ) : null
     }
 </nav>

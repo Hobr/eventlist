@@ -13,6 +13,8 @@ import {
 } from "../../lib/db/queries";
 import { isRegionCode } from "../../lib/divisions";
 import { getRuntimeEnv } from "../../lib/runtime/env";
+import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+import ChevronRight from "@lucide/svelte/icons/chevron-right";
 
 export const prerender = false;
 
@@ -79,89 +81,71 @@ try {
 ---
 
 <Layout title="活动列表" description="筛选近期已发布且未结束的 ACG 活动。">
-    <section class="page-section browse-section">
-        <div class="section-inner browse-shell">
-            <aside class="browse-sidebar">
-                <FilterBar
-                    types={types}
-                    scales={scales}
-                    tags={tags}
-                    filters={filters}
-                    client:load
-                />
-            </aside>
+    <div class="flex gap-6">
+        <aside class="hidden w-64 shrink-0 lg:block">
+            <FilterBar types={types} scales={scales} tags={tags} filters={filters} client:load />
+        </aside>
 
-            <div class="browse-main">
-                <div class="browse-header">
-                    <div>
-                        <p class="section-kicker">EVENTS</p>
-                        <h1>活动雷达</h1>
-                        <p class="supporting-copy">
-                            当前视图保留在地址栏，可直接收藏或分享。列表以时间线方式展示，方便连续浏览。
-                        </p>
-                    </div>
-                    <div class="browse-count">
-                        <span>{events.length}</span>
-                        <small>本页活动</small>
-                    </div>
+        <div class="flex min-w-0 flex-1 flex-col gap-4">
+            <div class="flex items-end justify-between">
+                <div>
+                    <h1 class="text-foreground text-xl font-semibold">活动列表</h1>
+                    <p class="text-muted-foreground mt-1 text-sm">
+                        筛选条件保留在地址栏，可收藏或分享。点击行进入详情。
+                    </p>
                 </div>
-                <div class="browse-modebar" aria-label="浏览模式">
-                    <span class="mode-pill" data-active="true">
-                        <span class="material-symbols-rounded" aria-hidden="true"
-                            >view_timeline</span
-                        >
-                        时间线
-                    </span>
-                    <span class="mode-pill">
-                        <span class="material-symbols-rounded" aria-hidden="true">link</span>
-                        URL 可分享
-                    </span>
-                    <span class="mode-pill">
-                        <span class="material-symbols-rounded" aria-hidden="true">verified</span>
-                        已审核
-                    </span>
-                </div>
-                {
-                    errorMessage ? (
-                        <div class="notice error">{errorMessage}</div>
-                    ) : events.length > 0 ? (
-                        <>
-                            <div class="event-feed">
-                                {events.map((event) => (
-                                    <EventCard event={event} variant="row" />
-                                ))}
-                            </div>
-                            <nav class="pagination" aria-label="活动分页">
-                                {filters.page && filters.page > 1 ? (
-                                    <a
-                                        class="button button-outline"
-                                        href={nextHref(filters.page - 1)}
-                                    >
-                                        <span class="material-symbols-rounded" aria-hidden="true">
-                                            chevron_left
-                                        </span>
-                                        上一页
-                                    </a>
-                                ) : null}
-                                <span class="muted">第 {filters.page} 页</span>
-                                {hasNext ? (
-                                    <a
-                                        class="button button-outline"
-                                        href={nextHref((filters.page ?? 1) + 1)}
-                                    >
-                                        下一页
-                                        <span class="material-symbols-rounded" aria-hidden="true">
-                                            chevron_right
-                                        </span>
-                                    </a>
-                                ) : null}
-                            </nav>
-                        </>
-                    ) : (
-                        <div class="panel empty-state">没有匹配的近期活动。</div>
-                    )
-                }
+                <span
+                    class="bg-surface-subtle text-muted-foreground rounded-full px-3 py-1 text-xs font-medium"
+                >
+                    本页 {events.length} 条
+                </span>
             </div>
+
+            {
+                errorMessage ? (
+                    <div class="bg-danger-subtle text-danger rounded-md border border-transparent p-4 text-sm font-semibold">
+                        {errorMessage}
+                    </div>
+                ) : events.length > 0 ? (
+                    <>
+                        <div class="flex flex-col gap-2">
+                            {events.map((event) => (
+                                <EventCard event={event} variant="row" />
+                            ))}
+                        </div>
+                        <nav
+                            class="text-muted flex items-center justify-center gap-3 py-4 text-sm"
+                            aria-label="活动分页"
+                        >
+                            {filters.page && filters.page > 1 ? (
+                                <a
+                                    class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-xs font-semibold"
+                                    href={nextHref(filters.page - 1)}
+                                >
+                                    <ChevronLeft class="size-4" aria-hidden="true" />
+                                    上一页
+                                </a>
+                            ) : null}
+                            <span class="text-muted-foreground font-medium">
+                                第 {filters.page} 页
+                            </span>
+                            {hasNext ? (
+                                <a
+                                    class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-xs font-semibold"
+                                    href={nextHref((filters.page ?? 1) + 1)}
+                                >
+                                    下一页
+                                    <ChevronRight class="size-4" aria-hidden="true" />
+                                </a>
+                            ) : null}
+                        </nav>
+                    </>
+                ) : (
+                    <div class="border-border bg-surface text-muted rounded-md border p-6 text-center text-sm">
+                        没有匹配的近期活动。
+                    </div>
+                )
+            }
         </div>
-    </section>
+    </div>
 </Layout>

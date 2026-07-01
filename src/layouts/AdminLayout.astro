@@ -1,5 +1,5 @@
 ---
-import "../styles/admin.css";
+import "../styles/app.css";
 
 interface Props {
     title: string;
@@ -8,10 +8,10 @@ interface Props {
 const { title } = Astro.props;
 const currentPath = Astro.url.pathname;
 const navItems = [
-    { href: "/admin", label: "待审核", icon: "pending_actions" },
-    { href: "/admin/published", label: "已发布", icon: "event_available" },
-    { href: "/admin/offline", label: "已下线", icon: "event_busy" },
-    { href: "/admin/tags", label: "标签归并", icon: "sell" }
+    { href: "/admin", label: "待审核" },
+    { href: "/admin/published", label: "已发布" },
+    { href: "/admin/offline", label: "已下线" },
+    { href: "/admin/tags", label: "标签归并" }
 ];
 ---
 
@@ -22,57 +22,63 @@ const navItems = [
         <meta name="viewport" content="width=device-width" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
-            rel="stylesheet"
-        />
         <title>{title} - Eventlist Admin</title>
     </head>
-    <body>
-        <div class="admin-shell">
-            <nav class="admin-nav" aria-label="管理后台导航">
-                <span class="admin-brand">
-                    <span class="admin-brand-mark" aria-hidden="true">
-                        <span class="material-symbols-rounded">admin_panel_settings</span>
-                    </span>
-                    <span>Eventlist 管理后台</span>
-                </span>
-                <ul class="admin-nav-list">
-                    {
-                        navItems.map((item) => (
-                            <li>
-                                <a
-                                    class="admin-nav-link"
-                                    href={item.href}
-                                    aria-current={currentPath === item.href ? "page" : undefined}
-                                >
-                                    <span class="material-symbols-rounded" aria-hidden="true">
-                                        {item.icon}
-                                    </span>
-                                    <span>{item.label}</span>
-                                </a>
-                            </li>
-                        ))
-                    }
-                </ul>
+    <body class="bg-background text-foreground min-h-screen">
+        <div class="flex min-h-screen flex-col md:flex-row">
+            <nav
+                class="border-border bg-surface flex shrink-0 flex-col gap-1 border-b p-3 md:w-56 md:border-r md:border-b-0"
+                aria-label="管理后台导航"
+            >
+                <a
+                    href="/admin"
+                    class="text-foreground mb-2 flex items-center gap-2 px-2 py-1.5 text-sm font-semibold"
+                >
+                    <span
+                        class="bg-primary text-primary-foreground inline-flex size-7 items-center justify-center rounded-md text-xs font-bold"
+                        >A</span
+                    >
+                    管理后台
+                </a>
+                {
+                    navItems.map((item) => (
+                        <a
+                            href={item.href}
+                            aria-current={currentPath === item.href ? "page" : undefined}
+                            class:list={[
+                                "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                                currentPath === item.href
+                                    ? "bg-surface-subtle text-foreground"
+                                    : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
+                            ]}
+                        >
+                            {item.label}
+                        </a>
+                    ))
+                }
             </nav>
-            <main class="admin-main">
-                <header class="admin-topbar">
-                    <h1 class="admin-title">{title}</h1>
+
+            <div class="flex flex-1 flex-col">
+                <header
+                    class="border-border flex h-14 items-center justify-between border-b px-4 sm:px-6"
+                >
+                    <h1 class="text-foreground text-base font-semibold">{title}</h1>
                     {
                         Astro.locals.admin?.email ? (
-                            <span class="status-chip">{Astro.locals.admin.email}</span>
+                            <span class="bg-surface-subtle text-muted-foreground rounded-full px-3 py-1 text-xs font-medium">
+                                {Astro.locals.admin.email}
+                            </span>
                         ) : (
-                            <span class="status-chip">admin</span>
+                            <span class="bg-surface-subtle text-muted-foreground rounded-full px-3 py-1 text-xs font-medium">
+                                admin
+                            </span>
                         )
                     }
                 </header>
-                <section class="admin-content">
+                <main class="flex-1 p-4 sm:p-6">
                     <slot />
-                </section>
-            </main>
+                </main>
+            </div>
         </div>
     </body>
 </html>

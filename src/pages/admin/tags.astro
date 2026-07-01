@@ -26,47 +26,69 @@ const tagOptions = tags.map((tag) => ({
 <AdminLayout title="标签归并">
     {
         errorMessage ? (
-            <div class="surface empty-state error-text">{errorMessage}</div>
+            <div class="border-border bg-surface text-danger rounded-md border p-6 text-center text-sm font-semibold">
+                {errorMessage}
+            </div>
         ) : (
-            <div class="surface">
-                <form class="form-grid" id="merge-tags-form">
-                    <SelectField
-                        name="from"
-                        label="源标签"
-                        options={tagOptions}
-                        placeholder="选择要归并的标签"
-                        required
-                        client:load
-                    />
-                    <SelectField
-                        name="to"
-                        label="目标标签"
-                        options={tagOptions}
-                        placeholder="选择规范标签"
-                        required
-                        client:load
-                    />
-                    <div class="form-actions">
-                        <button class="button button-danger" type="submit">
-                            归并
-                        </button>
-                    </div>
-                </form>
-                <div class="table-wrap">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 64px">ID</th>
-                                <th>标签</th>
-                                <th style="width: 180px">活动数</th>
+            <div class="flex flex-col gap-6">
+                <div class="border-border bg-surface rounded-md border p-5">
+                    <form id="merge-tags-form" class="grid gap-4 sm:grid-cols-3">
+                        <SelectField
+                            name="from"
+                            label="源标签"
+                            options={tagOptions}
+                            placeholder="选择要归并的标签"
+                            required
+                            client:load
+                        />
+                        <SelectField
+                            name="to"
+                            label="目标标签"
+                            options={tagOptions}
+                            placeholder="选择规范标签"
+                            required
+                            client:load
+                        />
+                        <div class="flex items-end">
+                            <button
+                                class="bg-danger text-danger-foreground hover:bg-danger/90 inline-flex h-10 w-full items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
+                                type="submit"
+                            >
+                                归并
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="border-border bg-surface overflow-x-auto rounded-md border">
+                    <table class="text-foreground w-full text-sm">
+                        <thead class="border-border border-b">
+                            <tr class="border-border border-b hover:bg-transparent">
+                                <th
+                                    class="text-muted-foreground px-3 py-2.5 text-left text-xs font-semibold"
+                                    style="width: 64px"
+                                >
+                                    ID
+                                </th>
+                                <th class="text-muted-foreground px-3 py-2.5 text-left text-xs font-semibold">
+                                    标签
+                                </th>
+                                <th
+                                    class="text-muted-foreground px-3 py-2.5 text-left text-xs font-semibold"
+                                    style="width: 180px"
+                                >
+                                    活动数
+                                </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="[&>tr:last-child]:border-0">
                             {tags.map((tag) => (
-                                <tr>
-                                    <td>{tag.id}</td>
-                                    <td class="cell-title">{tag.name}</td>
-                                    <td>{tag.event_count}</td>
+                                <tr class="border-border hover:bg-surface-subtle/60 border-b transition-colors">
+                                    <td class="p-3 align-top">{tag.id}</td>
+                                    <td class="text-foreground p-3 align-top font-semibold">
+                                        {tag.name}
+                                    </td>
+                                    <td class="p-3 align-top">{tag.event_count}</td>
                                 </tr>
                             ))}
                         </tbody>

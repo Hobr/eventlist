@@ -47,7 +47,7 @@ try {
               ? "IP 定位"
               : "默认城市";
 } catch (error) {
-    errorMessage = error instanceof Error ? error.message : "无法加载公共活动";
+    errorMessage = error instanceof Error ? error.message : "无法加载活动";
 }
 
 const selectedDivisionCode = selectedDivision?.code ?? defaultDivisionCode;
@@ -57,147 +57,107 @@ const selectedDivisionCode = selectedDivision?.code ?? defaultDivisionCode;
     title="ACG 活动目录"
     description="按城市、时间、类型、规模和标签浏览近期 ACG 活动，也可以提交待审核活动。"
 >
-    <section class="home-console page-section">
-        <div class="section-inner home-console-grid">
-            <div class="command-panel">
-                <div class="command-bar" aria-hidden="true">
-                    <span class="material-symbols-rounded">search</span>
-                    <span>city / date / tag / type</span>
-                </div>
-                <p class="section-kicker">EVENTLIST COMMAND</p>
-                <h1>把近期 ACG 活动当成一张可筛选的情报表。</h1>
-                <p class="command-copy">
-                    先锁定城市，再按类型、时间和标签缩小范围。Eventlist
-                    只把已审核且未结束的活动推到前台。
-                </p>
-                <div class="home-city-control">
-                    <CitySelector selectedDivisionCode={selectedDivisionCode} client:load />
-                    <span class="muted">
-                        当前地区：{selectedDivision?.label ?? "北京 / 东城区"} · {sourceLabel}
-                    </span>
-                </div>
-                <div class="button-row">
-                    <a class="button button-filled" href={`/events?city=${selectedDivisionCode}`}>
-                        <span class="material-symbols-rounded" aria-hidden="true">radar</span>
-                        打开活动雷达
-                    </a>
-                    <a class="button button-outline" href="/submit">
-                        <span class="material-symbols-rounded" aria-hidden="true">
-                            add_location_alt
-                        </span>
-                        提交线索
-                    </a>
-                </div>
+    <section class="flex flex-col gap-6">
+        <div class="border-border bg-surface rounded-md border p-6">
+            <h1 class="text-foreground text-2xl font-semibold">近期 ACG 活动目录</h1>
+            <p class="text-muted-foreground mt-2 text-sm">
+                先选择城市，再按类型、时间和标签缩小范围。Eventlist 只展示已审核且未结束的活动。
+            </p>
+            <div class="mt-4 flex flex-col gap-3">
+                <CitySelector selectedDivisionCode={selectedDivisionCode} client:load />
+                <span class="text-muted text-xs">
+                    当前地区：{selectedDivision?.label ?? "北京 / 东城区"} · {sourceLabel}
+                </span>
             </div>
+            <div class="mt-5 flex flex-wrap gap-2">
+                <a
+                    href={`/events?city=${selectedDivisionCode}`}
+                    class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors"
+                >
+                    浏览活动列表
+                </a>
+                <a
+                    href="/submit"
+                    class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition-colors"
+                >
+                    提交活动
+                </a>
+            </div>
+        </div>
 
-            <div class="intel-panel">
-                <div class="intel-metrics">
-                    <div>
-                        <strong>{events.length}</strong>
-                        <span>本地近期</span>
+        <div class="grid grid-cols-3 gap-3">
+            <div class="border-border bg-surface rounded-md border p-4">
+                <strong class="text-foreground text-xl font-semibold">{events.length}</strong>
+                <span class="text-muted-foreground mt-0.5 block text-xs">本地近期</span>
+            </div>
+            <div class="border-border bg-surface rounded-md border p-4">
+                <strong class="text-foreground text-xl font-semibold">{types.length}</strong>
+                <span class="text-muted-foreground mt-0.5 block text-xs">活动类型</span>
+            </div>
+            <div class="border-border bg-surface rounded-md border p-4">
+                <strong class="text-foreground text-xl font-semibold">{tags.length}</strong>
+                <span class="text-muted-foreground mt-0.5 block text-xs">热门标签</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <h2 class="text-foreground text-base font-semibold">近期预览</h2>
+                <a
+                    href={`/events?city=${selectedDivisionCode}`}
+                    class="text-link text-sm underline-offset-2 hover:underline">查看全部</a
+                >
+            </div>
+            {
+                errorMessage ? (
+                    <div class="bg-danger-subtle text-danger rounded-md border border-transparent p-4 text-sm font-semibold">
+                        {errorMessage}
                     </div>
-                    <div>
-                        <strong>{types.length}</strong>
-                        <span>活动类型</span>
+                ) : events.length > 0 ? (
+                    <div class="flex flex-col gap-2">
+                        {events.slice(0, 5).map((event) => (
+                            <EventCard event={event} variant="row" />
+                        ))}
                     </div>
-                    <div>
-                        <strong>{tags.length}</strong>
-                        <span>热门标签</span>
+                ) : (
+                    <div class="border-border bg-surface text-muted rounded-md border p-6 text-center text-sm">
+                        这个城市暂时没有已发布的近期活动。
                     </div>
-                </div>
-                <div class="intel-feed">
-                    <div class="mini-section-heading">
-                        <p class="section-kicker">LIVE PREVIEW</p>
-                        <a href={`/events?city=${selectedDivisionCode}`}>查看全部</a>
-                    </div>
+                )
+            }
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+            <div class="border-border bg-surface rounded-md border p-4">
+                <h3 class="text-foreground text-sm font-semibold">按类型浏览</h3>
+                <div class="mt-3 flex flex-wrap gap-1.5">
                     {
-                        errorMessage ? (
-                            <div class="notice error">{errorMessage}</div>
-                        ) : events.length > 0 ? (
-                            events
-                                .slice(0, 5)
-                                .map((event) => <EventCard event={event} variant="row" />)
-                        ) : (
-                            <div class="panel empty-state">这个城市暂时没有已发布的近期活动。</div>
-                        )
+                        types.slice(0, 5).map((type) => (
+                            <a
+                                href={`/events?type=${type.name}`}
+                                class="bg-accent-subtle text-accent inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-semibold"
+                            >
+                                {type.label}
+                            </a>
+                        ))
                     }
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="page-section route-section">
-        <div class="section-inner route-board">
-            {
-                errorMessage ? (
-                    <div class="notice error">{errorMessage}</div>
-                ) : (
-                    <>
-                        <div class="route-card route-card-primary">
-                            <p class="section-kicker">WORKFLOW</p>
-                            <h2>从城市视图开始，再进入完整筛选台</h2>
-                            <p class="supporting-copy">
-                                首屏给你快速预览；列表页则保留地区、类型、规模、日期和标签筛选，适合认真规划行程。
-                            </p>
-                            <div class="button-row">
-                                <a
-                                    class="button button-tonal"
-                                    href={`/events?city=${selectedDivisionCode}`}
-                                >
-                                    <span class="material-symbols-rounded" aria-hidden="true">
-                                        travel_explore
-                                    </span>
-                                    查看完整列表
-                                </a>
-                            </div>
-                        </div>
-                        <div class="route-card">
-                            <span class="material-symbols-rounded route-icon" aria-hidden="true">
-                                category
-                            </span>
-                            <h3>按类型扫</h3>
-                            <div class="chip-row">
-                                {types.slice(0, 5).map((type) => (
-                                    <a
-                                        class="chip"
-                                        data-tone="accent"
-                                        href={`/events?type=${type.name}`}
-                                    >
-                                        {type.label}
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-                        <div class="route-card">
-                            <span class="material-symbols-rounded route-icon" aria-hidden="true">
-                                sell
-                            </span>
-                            <h3>按标签追</h3>
-                            <div class="chip-row">
-                                {tags.slice(0, 8).map((tag) => (
-                                    <a
-                                        class="chip"
-                                        href={`/events?tag=${encodeURIComponent(tag.name)}`}
-                                    >
-                                        {tag.name}
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-                        <div class="timeline-preview route-feed">
-                            <div>
-                                <p class="section-kicker">UPCOMING</p>
-                                <h3>
-                                    {selectedDivision?.city ?? selectedDivision?.name ?? "本地"}
-                                </h3>
-                            </div>
-                            {events.slice(0, 4).map((event) => (
-                                <EventCard event={event} variant="row" />
-                            ))}
-                        </div>
-                    </>
-                )
-            }
+            <div class="border-border bg-surface rounded-md border p-4">
+                <h3 class="text-foreground text-sm font-semibold">按标签浏览</h3>
+                <div class="mt-3 flex flex-wrap gap-1.5">
+                    {
+                        tags.slice(0, 8).map((tag) => (
+                            <a
+                                href={`/events?tag=${encodeURIComponent(tag.name)}`}
+                                class="border-border bg-surface-subtle text-muted-foreground inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-semibold"
+                            >
+                                {tag.name}
+                            </a>
+                        ))
+                    }
+                </div>
+            </div>
         </div>
     </section>
 </Layout>

@@ -130,10 +130,10 @@
     }
 </script>
 
-<div class:wide class="field division-picker">
-    <span>{label}</span>
+<div class="flex min-w-0 flex-col gap-1.5">
+    <span class="text-sm font-semibold text-muted-foreground">{label}</span>
     <input type="hidden" {name} value={selectedValue} {required} />
-    <div class="division-picker-controls">
+    <div class:list={["grid gap-2", wide ? "grid-cols-1" : "sm:grid-cols-3 grid-cols-1"]}>
         <SelectField
             label={`${label}省份`}
             value={selectedProvinceCode}
