@@ -232,7 +232,6 @@ Reworked the public frontend at the structure level with command-style homepage,
 
 - None - task complete
 
-
 ## Session 7: bits-ui + Tailwind v4 前端整体重写
 
 **Date**: 2026-07-01
@@ -249,8 +248,8 @@ Reworked the public frontend at the structure level with command-style homepage,
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `e6e2cfd` | (see git log) |
 | `b89e190` | (see git log) |
 
