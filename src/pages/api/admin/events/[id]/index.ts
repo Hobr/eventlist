@@ -4,13 +4,9 @@ import { editEvent, insertAudit } from "../../../../../lib/db/queries";
 import { getDB } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
+import { parseId } from "../../../../../lib/admin/validation";
 
 export const prerender = false;
-
-function parseId(value: string | undefined) {
-    const id = Number.parseInt(value ?? "", 10);
-    return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 export const PATCH: APIRoute = async ({ request, params }) => {
     const id = parseId(params.id);

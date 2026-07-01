@@ -3,13 +3,9 @@ import { insertAudit, updateEventStatus } from "../../../../../lib/db/queries";
 import { getDB, STATUS } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
+import { parseId } from "../../../../../lib/admin/validation";
 
 export const prerender = false;
-
-function parseId(value: string | undefined) {
-    const id = Number.parseInt(value ?? "", 10);
-    return Number.isInteger(id) && id > 0 ? id : null;
-}
 
 export const POST: APIRoute = async ({ params }) => {
     const id = parseId(params.id);
