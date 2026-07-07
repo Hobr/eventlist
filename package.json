@@ -37,7 +37,7 @@
         "@tailwindcss/forms": "^0.5.11",
         "@tailwindcss/vite": "^4.3.2",
         "@types/node": "^26.1.0",
-        "@typescript-eslint/parser": "^8.62.1",
+        "@typescript-eslint/parser": "^8.63.0",
         "eslint": "^10.6.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-astro": "^2.1.1",
@@ -48,6 +48,6 @@
         "prettier-plugin-svelte": "^4.1.1",
         "prettier-plugin-tailwindcss": "^0.8.0",
         "tailwindcss": "^4.3.2",
-        "typescript-eslint": "^8.62.1"
+        "typescript-eslint": "^8.63.0"
     }
 }
