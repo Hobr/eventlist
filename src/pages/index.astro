@@ -63,39 +63,45 @@ const upcomingEvents = featuredEvent
     title="ACG 活动目录"
     description="按城市、时间、类型、规模和标签浏览近期 ACG 活动，也可以提交待审核活动。"
 >
-    <div class="flex flex-col gap-10 sm:gap-12">
-        <section aria-labelledby="home-heading" class="flex flex-col gap-5">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
-                <div class="max-w-2xl">
+    <div class="flex flex-col gap-14 sm:gap-16">
+        <section aria-labelledby="home-heading" class="flex flex-col gap-6 sm:gap-8">
+            <div
+                class="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(34rem,1.28fr)] lg:items-end lg:gap-12"
+            >
+                <header class="max-w-xl">
                     <p class="text-primary text-sm font-bold">
                         {selectedDivision?.label ?? "北京"}
                     </p>
                     <h1
                         id="home-heading"
-                        class="text-foreground mt-2 text-3xl leading-tight font-black sm:text-4xl"
+                        class="text-foreground mt-3 max-w-[11ch] text-4xl leading-[1.05] font-black tracking-[-0.04em] sm:text-5xl lg:text-6xl"
                     >
-                        近期 ACG 活动
+                        发现附近的 ACG 活动
                     </h1>
-                    <p class="text-muted-foreground mt-3 max-w-xl text-sm sm:text-base">
-                        已审核、未结束的本地活动，按日期直接浏览。
+                    <p
+                        class="text-muted-foreground mt-4 max-w-md text-sm leading-relaxed sm:text-base"
+                    >
+                        只看已审核、未结束的本地活动。
                     </p>
-                </div>
-                <a
-                    href={`/events?city=${selectedDivisionCode}`}
-                    class="text-foreground focus-visible:ring-ring/60 inline-flex items-center gap-2 text-sm font-bold focus-visible:ring-2 focus-visible:outline-none"
-                >
-                    查看完整活动表
-                    <ArrowRight class="size-4" aria-hidden="true" />
-                </a>
-            </div>
+                    <a
+                        href={`/events?city=${selectedDivisionCode}`}
+                        class="bg-foreground text-background focus-visible:ring-ring/60 mt-6 inline-flex h-11 items-center gap-2 rounded-md px-5 text-sm font-bold whitespace-nowrap transition-transform focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98]"
+                    >
+                        浏览全部活动
+                        <ArrowRight class="size-4" aria-hidden="true" />
+                    </a>
+                </header>
 
-            <div
-                class="border-border grid gap-4 border-y py-5 lg:grid-cols-[1fr_auto] lg:items-end"
-            >
-                <CitySelector selectedDivisionCode={selectedDivisionCode} client:load />
-                <div class="text-muted flex items-center gap-2 text-xs lg:pb-3">
-                    <MapPinned class="size-4" aria-hidden="true" />
-                    {sourceLabel}
+                <div class="border-border bg-surface-subtle rounded-md border p-4 sm:p-5">
+                    <CitySelector
+                        selectedDivisionCode={selectedDivisionCode}
+                        label="浏览地区"
+                        client:load
+                    />
+                    <div class="text-muted mt-3 flex items-center gap-2 text-xs">
+                        <MapPinned class="size-4" aria-hidden="true" />
+                        当前地区来自{sourceLabel}
+                    </div>
                 </div>
             </div>
 
@@ -108,54 +114,58 @@ const upcomingEvents = featuredEvent
                         {errorMessage}
                     </div>
                 ) : featuredEvent ? (
-                    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(18rem,1fr)] lg:items-start">
+                    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(19rem,0.8fr)] lg:items-start">
                         <EventCard event={featuredEvent} variant="featured" priority />
-                        <aside aria-labelledby="upcoming-heading">
-                            <div class="border-border flex items-center justify-between border-b pb-3">
+                        <aside
+                            aria-labelledby="upcoming-heading"
+                            class="border-border bg-surface flex flex-col rounded-md border p-5 sm:p-6"
+                        >
+                            <div class="border-border flex items-end justify-between gap-4 border-b pb-4">
                                 <h2
                                     id="upcoming-heading"
-                                    class="text-foreground text-base font-bold"
+                                    class="text-foreground text-xl font-black tracking-tight"
                                 >
                                     接下来
                                 </h2>
-                                <span class="text-muted text-xs">{events.length} 场近期活动</span>
+                                <span class="text-muted text-right text-xs">
+                                    本地区 {events.length} 场
+                                </span>
                             </div>
-                            <div>
+                            <div class="flex-1">
                                 {upcomingEvents.length > 0 ? (
                                     upcomingEvents.map((event) => (
                                         <EventCard event={event} variant="compact" />
                                     ))
                                 ) : (
-                                    <div class="text-muted-foreground py-6 text-sm">
-                                        当前地区暂时只有这一场近期活动。
+                                    <div class="flex min-h-32 items-center py-6">
+                                        <p class="text-muted-foreground max-w-xs text-sm leading-relaxed">
+                                            当前地区暂时只有这一场近期活动。新的活动通过审核后会显示在这里。
+                                        </p>
                                     </div>
                                 )}
                             </div>
-                            <a
-                                href={`/events?city=${selectedDivisionCode}`}
-                                class="bg-foreground text-background mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-bold"
-                            >
-                                浏览全部活动
-                                <ArrowRight class="size-4" aria-hidden="true" />
-                            </a>
                         </aside>
                     </div>
                 ) : (
-                    <div class="border-border border-y py-12 text-center">
-                        <h2 class="text-foreground text-xl font-bold">这个地区还没有近期活动</h2>
-                        <p class="text-muted-foreground mt-2 text-sm">
-                            可以查看其他地区，或提交一条新的活动信息。
-                        </p>
-                        <div class="mt-5 flex flex-wrap justify-center gap-3">
+                    <div class="border-border bg-surface rounded-md border px-5 py-12 sm:px-8 sm:py-16">
+                        <div class="max-w-lg">
+                            <h2 class="text-foreground text-2xl font-black">
+                                这个地区还没有近期活动
+                            </h2>
+                            <p class="text-muted-foreground mt-3 text-sm leading-relaxed sm:text-base">
+                                可以切换地区，或提交一条新的活动信息。
+                            </p>
+                        </div>
+                        <div class="mt-6 flex flex-wrap gap-3">
                             <a
                                 href="/events"
-                                class="bg-foreground text-background inline-flex h-10 items-center rounded-md px-4 text-sm font-bold"
+                                class="bg-foreground text-background inline-flex h-10 items-center rounded-md px-4 text-sm font-bold whitespace-nowrap active:scale-[0.98]"
                             >
                                 查看全部地区
                             </a>
                             <a
                                 href="/submit"
-                                class="border-border-strong inline-flex h-10 items-center rounded-md border px-4 text-sm font-bold"
+                                class="border-border-strong bg-surface inline-flex h-10 items-center rounded-md border px-4 text-sm font-bold whitespace-nowrap active:scale-[0.98]"
                             >
                                 提交活动
                             </a>
@@ -165,37 +175,60 @@ const upcomingEvents = featuredEvent
             }
         </section>
 
-        <section class="border-border grid gap-8 border-t pt-8 lg:grid-cols-2">
-            <div>
-                <h2 class="text-foreground text-lg font-bold">按类型发现</h2>
-                <div class="mt-4 flex flex-wrap gap-2">
-                    {
-                        types.slice(0, 8).map((type) => (
-                            <a
-                                href={`/events?type=${type.name}`}
-                                class="bg-primary-subtle text-primary-subtle-foreground hover:bg-primary hover:text-primary-foreground inline-flex items-center rounded-sm px-3 py-1.5 text-sm font-semibold transition-colors"
-                            >
-                                {type.label}
-                            </a>
-                        ))
-                    }
-                </div>
-            </div>
-            <div>
-                <h2 class="text-foreground text-lg font-bold">热门标签</h2>
-                <div class="mt-4 flex flex-wrap gap-2">
-                    {
-                        tags.slice(0, 8).map((tag) => (
-                            <a
-                                href={`/events?tag=${encodeURIComponent(tag.name)}`}
-                                class="border-border-strong text-muted-foreground hover:border-accent hover:text-accent inline-flex items-center rounded-sm border px-3 py-1.5 text-sm font-semibold transition-colors"
-                            >
-                                {tag.name}
-                            </a>
-                        ))
-                    }
-                </div>
-            </div>
-        </section>
+        {
+            types.length > 0 || tags.length > 0 ? (
+                <section aria-labelledby="discover-heading" class="flex flex-col gap-6">
+                    <div class="max-w-xl">
+                        <h2
+                            id="discover-heading"
+                            class="text-foreground text-3xl leading-tight font-black tracking-[-0.03em] sm:text-4xl"
+                        >
+                            按兴趣继续发现
+                        </h2>
+                        <p class="text-muted-foreground mt-3 text-sm leading-relaxed sm:text-base">
+                            从活动类型或热门标签进入完整目录。
+                        </p>
+                    </div>
+
+                    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)]">
+                        {types.length > 0 ? (
+                            <div class="bg-primary text-primary-foreground rounded-md p-5 sm:p-7">
+                                <h3 class="text-xl font-black">活动类型</h3>
+                                <div class="mt-5 grid grid-cols-2 gap-x-5 sm:grid-cols-4 lg:grid-cols-2">
+                                    {types.slice(0, 8).map((type) => (
+                                        <a
+                                            href={`/events?type=${type.name}`}
+                                            class="border-primary-foreground/20 focus-visible:ring-primary-foreground/60 group flex min-w-0 items-center justify-between gap-3 border-b py-3 text-sm font-semibold text-current transition-opacity hover:opacity-75 focus-visible:ring-2 focus-visible:outline-none"
+                                        >
+                                            <span class="truncate">{type.label}</span>
+                                            <ArrowRight
+                                                class="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+                                                aria-hidden="true"
+                                            />
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
+
+                        {tags.length > 0 ? (
+                            <div class="bg-surface-subtle border-border rounded-md border p-5 sm:p-7">
+                                <h3 class="text-foreground text-xl font-black">热门标签</h3>
+                                <div class="mt-5 flex flex-wrap gap-2">
+                                    {tags.slice(0, 8).map((tag) => (
+                                        <a
+                                            href={`/events?tag=${encodeURIComponent(tag.name)}`}
+                                            class="border-border-strong bg-surface text-foreground hover:border-primary hover:text-primary focus-visible:ring-ring/60 inline-flex min-h-10 items-center rounded-sm border px-3 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                                        >
+                                            {tag.name}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                </section>
+            ) : null
+        }
     </div>
 </Layout>

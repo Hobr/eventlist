@@ -29,29 +29,27 @@ const href = `/events/${event.id}`;
     variant === "featured" ? (
         <a
             href={href}
-            class="group focus-visible:ring-ring/70 bg-foreground relative block min-h-[22rem] overflow-hidden rounded-md text-white focus-visible:ring-2 focus-visible:outline-none sm:min-h-[30rem]"
+            class="group focus-visible:ring-ring/70 bg-foreground relative block min-h-[23rem] overflow-hidden rounded-md text-zinc-50 transition-transform focus-visible:ring-2 focus-visible:outline-none active:scale-[0.995] sm:min-h-[28rem]"
         >
             <EventArtwork
                 src={event.cover_url}
                 alt={`${event.title} 封面`}
                 loading={priority ? "eager" : "lazy"}
                 fill
-                class="rounded-none transition-transform duration-300 group-hover:scale-[1.015]"
+                class="rounded-none transition-transform duration-300 group-hover:scale-[1.02]"
             />
-            <div class="absolute inset-0 bg-black/35" aria-hidden="true" />
-            <div class="absolute inset-x-0 bottom-0 bg-black/75 p-5 sm:p-7">
-                <div class="mb-3 flex flex-wrap gap-1.5">
-                    <Badge tone="primary" class="bg-primary border-white/15 text-white">
-                        {event.type_label ?? event.type}
-                    </Badge>
-                    <Badge class="border-white/20 bg-black/35 text-white">
-                        {event.scale_label ?? event.scale}
-                    </Badge>
-                </div>
-                <h2 class="max-w-3xl text-2xl leading-tight font-bold sm:text-3xl">
+            <div
+                class="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,8,12,0.08)_20%,rgba(10,8,12,0.88)_100%)]"
+                aria-hidden="true"
+            />
+            <div class="absolute inset-x-0 bottom-0 p-5 sm:p-7 lg:p-8">
+                <p class="mb-3 text-xs font-bold text-zinc-50/80 sm:text-sm">
+                    {event.type_label ?? event.type} / {event.scale_label ?? event.scale}
+                </p>
+                <h2 class="max-w-3xl text-2xl leading-tight font-black tracking-[-0.025em] sm:text-4xl">
                     {event.title}
                 </h2>
-                <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/85">
+                <div class="mt-4 flex flex-col gap-2 text-sm text-zinc-50/85 sm:flex-row sm:flex-wrap sm:gap-x-5">
                     <span class="inline-flex items-center gap-2">
                         <CalendarDays class="size-4" aria-hidden="true" />
                         {dateLabel}
@@ -73,14 +71,14 @@ const href = `/events/${event.id}`;
     ) : variant === "compact" ? (
         <a
             href={href}
-            class="group border-border focus-visible:ring-ring/60 grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b py-4 focus-visible:ring-2 focus-visible:outline-none"
+            class="group border-border focus-visible:ring-ring/60 hover:text-primary grid grid-cols-[4.25rem_minmax(0,1fr)_auto] items-center gap-3 border-b py-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
         >
             <div class="flex flex-col">
-                <strong class="text-primary text-base font-bold">{startLabel}</strong>
-                <span class="text-muted text-xs">至 {endLabel}</span>
+                <strong class="text-primary text-lg leading-none font-black">{startLabel}</strong>
+                <span class="text-muted mt-1 text-xs">至 {endLabel}</span>
             </div>
             <div class="min-w-0">
-                <h3 class="text-foreground truncate text-sm font-semibold sm:text-base">
+                <h3 class="text-foreground group-hover:text-primary truncate text-sm font-bold transition-colors sm:text-base">
                     {event.title}
                 </h3>
                 <p class="text-muted-foreground mt-1 truncate text-xs sm:text-sm">
