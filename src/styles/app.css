@@ -48,11 +48,13 @@
         background: var(--color-background);
         color: var(--color-foreground);
         font-family: var(--font-sans);
+        letter-spacing: 0;
         scroll-behavior: smooth;
     }
     body {
         margin: 0;
         min-width: 320px;
+        line-height: 1.5;
         text-rendering: optimizeLegibility;
     }
     button,
@@ -71,6 +73,12 @@
     img {
         display: block;
         max-width: 100%;
+    }
+    details > summary {
+        list-style: none;
+    }
+    details > summary::-webkit-details-marker {
+        display: none;
     }
     ::selection {
         background: var(--color-primary-subtle);

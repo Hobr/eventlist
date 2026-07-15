@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from "svelte";
     import { Select } from "bits-ui";
     import ChevronDown from "@lucide/svelte/icons/chevron-down";
     import ChevronUp from "@lucide/svelte/icons/chevron-up";
@@ -34,7 +35,7 @@
         onchange
     }: Props = $props();
 
-    let selectedValue = $state(value ?? "");
+    let selectedValue = $state(untrack(() => value ?? ""));
     const items = $derived(
         options.map((option) => ({
             value: option.value,

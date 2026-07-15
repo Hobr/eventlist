@@ -1,0 +1,52 @@
+---
+interface Props {
+    src?: string | null;
+    alt: string;
+    loading?: "eager" | "lazy";
+    fill?: boolean;
+    class?: string;
+}
+
+const {
+    src,
+    alt,
+    loading = "lazy",
+    fill = false,
+    class: className = "aspect-[16/9]"
+} = Astro.props;
+const coverUrl = src?.trim() || null;
+const fallbackUrl = "/images/event-fallback.webp";
+---
+
+<div
+    class:list={[
+        "bg-surface-subtle isolate overflow-hidden rounded-md",
+        fill ? "absolute inset-0 size-full" : "relative",
+        className
+    ]}
+    role="img"
+    aria-label={alt}
+>
+    <img
+        src={fallbackUrl}
+        alt=""
+        aria-hidden="true"
+        loading={loading}
+        decoding="async"
+        class="absolute inset-0 size-full object-cover"
+    />
+    {
+        coverUrl ? (
+            <img
+                src={coverUrl}
+                alt=""
+                aria-hidden="true"
+                loading={loading}
+                decoding="async"
+                fetchpriority={loading === "eager" ? "high" : "auto"}
+                class="absolute inset-0 size-full object-cover"
+                onerror="this.remove()"
+            />
+        ) : null
+    }
+</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { cn } from "../../lib/utils";
 
-    type Tone = "default" | "accent" | "outline" | "danger";
+    type Tone = "default" | "primary" | "accent" | "warning" | "outline" | "danger";
 
     interface Props {
         tone?: Tone;
@@ -19,7 +19,9 @@
 
     const tones: Record<Tone, string> = {
         default: "bg-surface-subtle text-muted-foreground border border-border",
+        primary: "bg-primary-subtle text-primary-subtle-foreground border border-transparent",
         accent: "bg-accent-subtle text-accent border border-transparent",
+        warning: "bg-warning-subtle text-warning border border-transparent",
         outline: "bg-surface text-foreground border border-border-strong",
         danger: "bg-danger-subtle text-danger border border-transparent"
     };

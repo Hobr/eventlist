@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from "svelte";
     import type { TagSummary } from "../lib/db/queries";
     import X from "@lucide/svelte/icons/x";
 
@@ -10,7 +11,7 @@
 
     let { name = "tags", initial = "", label = "标签" }: Props = $props();
     let tags = $state(
-        initial
+        untrack(() => initial)
             .split(/[,\n，、]/)
             .map((tag) => tag.trim())
             .filter(Boolean)

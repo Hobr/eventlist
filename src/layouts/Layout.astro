@@ -1,4 +1,7 @@
 ---
+import Compass from "@lucide/svelte/icons/compass";
+import CalendarDays from "@lucide/svelte/icons/calendar-days";
+import Send from "@lucide/svelte/icons/send";
 import "../styles/app.css";
 
 interface Props {
@@ -14,15 +17,19 @@ const {
 } = Astro.props;
 const currentPath = Astro.url.pathname;
 const siteTitle = title === "Eventlist" ? title : `${title} - Eventlist`;
-const navItems = [
-    { href: "/", label: "首页" },
-    { href: "/events", label: "活动" },
-    { href: "/submit", label: "投稿" }
-];
 
 function isCurrent(href: string) {
     if (href === "/") return currentPath === "/";
     return currentPath === href || currentPath.startsWith(`${href}/`);
+}
+
+function navClasses(href: string) {
+    return [
+        "focus-visible:ring-ring/60 relative inline-flex h-12 items-center justify-center gap-2 px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none sm:h-16 sm:px-4",
+        isCurrent(href)
+            ? "text-primary after:bg-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5"
+            : "text-muted-foreground hover:text-foreground"
+    ];
 }
 ---
 
@@ -38,42 +45,79 @@ function isCurrent(href: string) {
         <title>{siteTitle}</title>
         {jsonLd ? <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} /> : null}
     </head>
-    <body class="bg-background text-foreground min-h-screen">
-        <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6">
-            <header class="border-border flex h-14 items-center gap-6 border-b">
-                <a href="/" class="text-foreground flex items-center gap-2 text-base font-semibold">
-                    <span
-                        class="bg-primary text-primary-foreground inline-flex size-7 items-center justify-center rounded-md text-sm font-bold"
-                        >E</span
-                    >
-                    Eventlist
-                </a>
-                <nav class="flex items-center gap-1" aria-label="主导航">
-                    {
-                        navItems.map((item) => (
-                            <a
-                                href={item.href}
-                                aria-current={isCurrent(item.href) ? "page" : undefined}
-                                class:list={[
-                                    "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                                    isCurrent(item.href)
-                                        ? "bg-surface-subtle text-foreground"
-                                        : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
-                                ]}
+    <body class="bg-background text-foreground border-primary min-h-screen border-t-4">
+        <div class="flex min-h-screen flex-col">
+            <header
+                class="border-border bg-background/95 sticky top-0 z-40 border-b backdrop-blur-md"
+            >
+                <div
+                    class="mx-auto flex w-full max-w-7xl flex-col px-4 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
+                >
+                    <div class="flex h-14 items-center justify-between sm:h-auto">
+                        <a
+                            href="/"
+                            class="text-foreground focus-visible:ring-ring/60 inline-flex items-center gap-2.5 font-bold focus-visible:ring-2 focus-visible:outline-none"
+                        >
+                            <span
+                                class="bg-primary text-primary-foreground relative inline-flex size-8 items-center justify-center overflow-hidden rounded-sm text-sm font-black"
                             >
-                                {item.label}
-                            </a>
-                        ))
-                    }
-                </nav>
+                                E
+                                <span
+                                    class="bg-accent absolute right-0 bottom-0 h-1.5 w-3"
+                                    aria-hidden="true"></span>
+                            </span>
+                            <span class="flex flex-col leading-none">
+                                <span class="text-base">Eventlist</span>
+                                <span class="text-muted mt-1 text-[0.65rem] font-medium"
+                                    >ACG 活动日历</span
+                                >
+                            </span>
+                        </a>
+                    </div>
+
+                    <nav
+                        class="border-border grid grid-cols-3 border-t sm:flex sm:border-t-0"
+                        aria-label="主导航"
+                    >
+                        <a
+                            href="/"
+                            aria-current={isCurrent("/") ? "page" : undefined}
+                            class:list={navClasses("/")}
+                        >
+                            <Compass class="size-4" aria-hidden="true" />
+                            首页
+                        </a>
+                        <a
+                            href="/events"
+                            aria-current={isCurrent("/events") ? "page" : undefined}
+                            class:list={navClasses("/events")}
+                        >
+                            <CalendarDays class="size-4" aria-hidden="true" />
+                            活动
+                        </a>
+                        <a
+                            href="/submit"
+                            aria-current={isCurrent("/submit") ? "page" : undefined}
+                            class:list={navClasses("/submit")}
+                        >
+                            <Send class="size-4" aria-hidden="true" />
+                            投稿
+                        </a>
+                    </nav>
+                </div>
             </header>
 
-            <main class="flex-1 py-6 sm:py-8">
+            <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
                 <slot />
             </main>
 
-            <footer class="border-border text-muted flex h-14 items-center border-t text-xs">
-                <span>Eventlist · 已审核活动目录</span>
+            <footer class="border-border border-t">
+                <div
+                    class="text-muted mx-auto flex min-h-16 w-full max-w-7xl flex-col justify-center gap-1 px-4 py-4 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
+                >
+                    <span>Eventlist · 已审核 ACG 活动目录</span>
+                    <span>按城市发现，按兴趣出发</span>
+                </div>
             </footer>
         </div>
     </body>

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from "svelte";
     import type {
         CityDivisionOption,
         DivisionTree,
@@ -35,7 +36,7 @@
         onchange
     }: Props = $props();
 
-    const provinces = tree.provinces;
+    const provinces = $derived(tree.provinces);
 
     function findProvince(code: string | null | undefined) {
         if (!code) return null;
@@ -58,10 +59,10 @@
         return city.counties.find((county) => county.code === code) ?? null;
     }
 
-    let selectedProvinceCode = $state(findProvince(value)?.code ?? "");
-    let selectedCityCode = $state(findCity(findProvince(value), value)?.code ?? "");
+    let selectedProvinceCode = $state(untrack(() => findProvince(value)?.code ?? ""));
+    let selectedCityCode = $state(untrack(() => findCity(findProvince(value), value)?.code ?? ""));
     let selectedCountyCode = $state(
-        findCounty(findCity(findProvince(value), value), value)?.code ?? ""
+        untrack(() => findCounty(findCity(findProvince(value), value), value)?.code ?? "")
     );
 
     let selectedProvince = $derived(

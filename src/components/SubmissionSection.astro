@@ -1,0 +1,44 @@
+---
+import ChevronDown from "@lucide/svelte/icons/chevron-down";
+
+interface Props {
+    title: string;
+    description?: string;
+    optional?: boolean;
+}
+
+const { title, description, optional = false } = Astro.props;
+---
+
+{
+    optional ? (
+        <details class="group border-border border-y py-5" data-form-disclosure>
+            <summary class="focus-visible:ring-ring/60 flex cursor-pointer items-center justify-between gap-4 rounded-sm focus-visible:ring-2 focus-visible:outline-none">
+                <span>
+                    <strong class="text-foreground block text-base font-bold">{title}</strong>
+                    {description ? (
+                        <span class="text-muted-foreground mt-1 block text-sm">{description}</span>
+                    ) : null}
+                </span>
+                <span class="text-muted inline-flex shrink-0 items-center gap-2 text-xs font-semibold">
+                    选填
+                    <ChevronDown
+                        class="size-4 transition-transform group-open:rotate-180"
+                        aria-hidden="true"
+                    />
+                </span>
+            </summary>
+            <div class="pt-6">
+                <slot />
+            </div>
+        </details>
+    ) : (
+        <fieldset class="border-border border-t pt-6">
+            <legend class="text-foreground pr-4 text-base font-bold">{title}</legend>
+            {description ? <p class="text-muted-foreground mt-1 text-sm">{description}</p> : null}
+            <div class="mt-5">
+                <slot />
+            </div>
+        </fieldset>
+    )
+}

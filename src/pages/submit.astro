@@ -1,7 +1,11 @@
 ---
-import TagInput from "../components/TagInput.svelte";
+import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
+import Send from "@lucide/svelte/icons/send";
 import DivisionPicker from "../components/DivisionPicker.svelte";
 import SelectField from "../components/SelectField.svelte";
+import SubmissionSection from "../components/SubmissionSection.astro";
+import TagInput from "../components/TagInput.svelte";
 import Turnstile from "../components/Turnstile.svelte";
 import Layout from "../layouts/Layout.astro";
 import { getDB } from "../lib/db";
@@ -34,36 +38,57 @@ const scaleOptions = scales.map((scale) => ({
 
 const fieldCls =
     "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+const textareaCls =
+    "flex min-h-32 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
 <Layout title="提交活动" description="提交 ACG 活动，进入审核队列后再公开展示。">
     {
         sent ? (
-            <div class="bg-primary-subtle text-primary-subtle-foreground rounded-md border border-transparent p-4 text-sm font-semibold">
-                投稿已进入审核队列，审核通过后会出现在公共列表中。
-            </div>
+            <section class="border-border mx-auto max-w-2xl border-y py-14 text-center">
+                <CheckCircle2 class="text-accent mx-auto size-10" aria-hidden="true" />
+                <h1 class="text-foreground mt-5 text-3xl font-black">活动已进入审核队列</h1>
+                <p class="text-muted-foreground mt-3 text-sm">审核通过后会出现在公开活动列表中。</p>
+                <div class="mt-6 flex flex-wrap justify-center gap-3">
+                    <a
+                        href="/events"
+                        class="bg-foreground text-background inline-flex h-10 items-center rounded-md px-4 text-sm font-bold"
+                    >
+                        浏览活动
+                    </a>
+                    <a
+                        href="/submit"
+                        class="border-border-strong inline-flex h-10 items-center rounded-md border px-4 text-sm font-bold"
+                    >
+                        继续提交
+                    </a>
+                </div>
+            </section>
         ) : errorMessage ? (
-            <div class="bg-danger-subtle text-danger rounded-md border border-transparent p-4 text-sm font-semibold">
+            <div
+                class="bg-danger-subtle text-danger rounded-md p-5 text-sm font-semibold"
+                role="alert"
+            >
                 {errorMessage}
             </div>
         ) : (
-            <div class="mx-auto flex max-w-3xl flex-col gap-6">
-                <header class="flex flex-col gap-2">
-                    <h1 class="text-foreground text-xl font-semibold">提交活动</h1>
-                    <p class="text-muted-foreground text-sm">
-                        投稿会先进入待审核队列；联系方式仅用于核对信息，不会在前台公开。
+            <div class="mx-auto max-w-4xl">
+                <header class="border-border border-b pb-7">
+                    <p class="text-primary text-sm font-bold">提交至审核队列</p>
+                    <h1 class="text-foreground mt-2 text-3xl font-black sm:text-4xl">提交活动</h1>
+                    <p class="text-muted-foreground mt-3 max-w-2xl text-sm sm:text-base">
+                        必填信息保持可见；封面、描述、交流群和购票信息可按需补充。
                     </p>
                 </header>
 
                 <form
                     id="submit-form"
-                    class="flex flex-col gap-6"
-                    method="POST"
+                    class="mt-8 flex flex-col gap-8"
                     action="/api/submit"
+                    method="post"
                 >
-                    <section class="border-border bg-surface rounded-md border p-5">
-                        <h2 class="text-foreground mb-4 text-sm font-semibold">01 活动识别</h2>
+                    <SubmissionSection title="活动基本信息">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>标题</span>
@@ -85,14 +110,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 required
                                 client:load
                             />
-                            <div class="sm:col-span-2">
-                                <TagInput client:load />
-                            </div>
                         </div>
-                    </section>
+                    </SubmissionSection>
 
-                    <section class="border-border bg-surface rounded-md border p-5">
-                        <h2 class="text-foreground mb-4 text-sm font-semibold">02 时间与地点</h2>
+                    <SubmissionSection title="时间与地点">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="sm:col-span-2">
                                 <DivisionPicker
@@ -103,13 +124,9 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     client:load
                                 />
                             </div>
-                            <label class="flex flex-col gap-1.5">
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>地点</span>
                                 <input name="venue" required maxlength="120" class={fieldCls} />
-                            </label>
-                            <label class="flex flex-col gap-1.5">
-                                <span class={labelCls}>地址</span>
-                                <input name="address" maxlength="240" class={fieldCls} />
                             </label>
                             <label class="flex flex-col gap-1.5">
                                 <span class={labelCls}>开始日期</span>
@@ -120,11 +137,21 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 <input type="date" name="end_date" required class={fieldCls} />
                             </label>
                         </div>
-                    </section>
+                    </SubmissionSection>
 
-                    <section class="border-border bg-surface rounded-md border p-5">
-                        <h2 class="text-foreground mb-4 text-sm font-semibold">03 公开信息</h2>
+                    <SubmissionSection
+                        title="补充公开信息"
+                        description="这些内容会帮助访客判断是否参加活动。"
+                        optional
+                    >
                         <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="sm:col-span-2">
+                                <TagInput client:load />
+                            </div>
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>详细地址</span>
+                                <input name="address" maxlength="240" class={fieldCls} />
+                            </label>
                             <label class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>封面 URL</span>
                                 <input
@@ -135,12 +162,8 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                             <label class="flex flex-col gap-1.5 sm:col-span-2">
-                                <span class={labelCls}>描述</span>
-                                <textarea
-                                    name="description"
-                                    maxlength="4000"
-                                    class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 flex h-32 w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                                />
+                                <span class={labelCls}>活动描述</span>
+                                <textarea name="description" maxlength="4000" class={textareaCls} />
                             </label>
                             <label class="flex flex-col gap-1.5">
                                 <span class={labelCls}>官方交流群 QQ</span>
@@ -156,13 +179,15 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                         </div>
-                    </section>
+                    </SubmissionSection>
 
-                    <section class="border-border bg-surface rounded-md border p-5">
-                        <h2 class="text-foreground mb-4 text-sm font-semibold">04 审核线索</h2>
+                    <SubmissionSection
+                        title="审核与提交"
+                        description="联系方式仅用于核对信息，不会在前台公开。"
+                    >
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label class="flex flex-col gap-1.5 sm:col-span-2">
-                                <span class={labelCls}>来源链接</span>
+                                <span class={labelCls}>活动来源链接</span>
                                 <input
                                     type="url"
                                     name="source_url"
@@ -172,7 +197,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                             <label class="flex flex-col gap-1.5 sm:col-span-2">
-                                <span class={labelCls}>联系方式</span>
+                                <span class={labelCls}>投稿联系方式</span>
                                 <input
                                     name="submitter_contact"
                                     required
@@ -187,23 +212,27 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 id="submit-result"
                                 class="text-danger hidden text-sm font-semibold sm:col-span-2"
                                 role="status"
+                                tabindex="-1"
                             />
-                            <div class="flex flex-wrap gap-2 sm:col-span-2">
+                            <div class="border-border flex flex-wrap gap-3 border-t pt-5 sm:col-span-2">
                                 <button
-                                    class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
+                                    id="submit-button"
+                                    class="bg-primary text-primary-foreground inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-sm font-bold disabled:pointer-events-none disabled:opacity-60"
                                     type="submit"
                                 >
+                                    <Send class="size-4" aria-hidden="true" />
                                     提交审核
                                 </button>
                                 <a
-                                    class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold transition-colors"
+                                    class="border-border-strong text-foreground inline-flex h-11 items-center justify-center gap-2 rounded-md border px-5 text-sm font-bold"
                                     href="/events"
                                 >
-                                    返回列表
+                                    <ArrowLeft class="size-4" aria-hidden="true" />
+                                    返回活动列表
                                 </a>
                             </div>
                         </div>
-                    </section>
+                    </SubmissionSection>
                 </form>
             </div>
         )
@@ -213,27 +242,50 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
 <script>
     const form = document.querySelector("#submit-form");
     const result = document.querySelector("#submit-result");
+    const submitButton = document.querySelector("#submit-button");
 
     if (form instanceof HTMLFormElement && result instanceof HTMLElement) {
+        form.addEventListener(
+            "invalid",
+            (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLElement)) return;
+                const disclosure = target.closest("details");
+                if (disclosure instanceof HTMLDetailsElement) disclosure.open = true;
+            },
+            true
+        );
+
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             result.classList.add("hidden");
 
-            const response = await fetch(form.action, {
-                method: "POST",
-                body: new FormData(form)
-            });
+            if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
 
-            if (response.ok) {
-                window.location.assign("/submit?sent=1");
-                return;
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form)
+                });
+
+                if (response.ok) {
+                    window.location.assign("/submit?sent=1");
+                    return;
+                }
+
+                const body = (await response.json().catch(() => null)) as {
+                    error?: string;
+                } | null;
+                result.textContent = body?.error ?? "提交失败";
+                result.classList.remove("hidden");
+                result.focus();
+            } catch {
+                result.textContent = "网络连接失败，请稍后重试";
+                result.classList.remove("hidden");
+                result.focus();
+            } finally {
+                if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
             }
-
-            const body = (await response.json().catch(() => null)) as {
-                error?: string;
-            } | null;
-            result.textContent = body?.error ?? "提交失败";
-            result.classList.remove("hidden");
         });
     }
 </script>

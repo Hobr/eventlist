@@ -17,7 +17,7 @@
 
     let { siteKey = null }: Props = $props();
     let token = $state("");
-    let container: HTMLDivElement | undefined;
+    let container = $state<HTMLDivElement>();
     let errorMessage = $state("");
 
     function loadScript() {
