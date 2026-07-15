@@ -264,3 +264,39 @@ Reworked the public frontend at the structure level with command-style homepage,
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: Frontend refactor
+
+**Date**: 2026-07-15
+**Task**: Frontend refactor
+**Branch**: `main`
+
+### Summary
+
+Rebuilt the public discovery experience and responsive admin workspace, restored lint compatibility, verified responsive and contract behavior, and updated frontend specs.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `871e4ac` | (see git log) |
+| `393cccc` | (see git log) |
+| `f1cbf0d` | (see git log) |
+| `4ffb239` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

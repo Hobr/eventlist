@@ -7,11 +7,9 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
-
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 7
-- **Last Active**: 2026-07-01
-
+- **Total Sessions**: 8
+- **Last Active**: 2026-07-15
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,11 +17,9 @@
 ## Active Documents
 
 <!-- @@@auto:active-documents -->
-
-| File           | Lines | Status |
-| -------------- | ----- | ------ |
-| `journal-1.md` | ~267  | Active |
-
+| File | Lines | Status |
+|------|-------|--------|
+| `journal-1.md` | ~302 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -32,8 +28,9 @@
 
 <!-- @@@auto:session-history -->
 
-| #   | Date       | Title                              | Commits                         | Branch |
-| --- | ---------- | ---------------------------------- | ------------------------------- | ------ |
+| # | Date | Title | Commits | Branch |
+|---|------|-------|---------|--------|
+| 8 | 2026-07-15 | Frontend refactor | `871e4ac`, `393cccc`, `f1cbf0d`, `4ffb239` | `main` |
 | 7   | 2026-07-01 | bits-ui + Tailwind v4 前端整体重写 | `e6e2cfd`, `b89e190`            | `main` |
 | 6   | 2026-07-01 | Structural frontend redesign       | `8cf10fe`, `f4c37af`            | `main` |
 | 5   | 2026-06-30 | Bits UI frontend redesign          | `ab8c1cd`, `72deb2e`            | `main` |
