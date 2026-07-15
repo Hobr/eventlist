@@ -265,7 +265,6 @@ Reworked the public frontend at the structure level with command-style homepage,
 
 - None - task complete
 
-
 ## Session 8: Frontend refactor
 
 **Date**: 2026-07-15
@@ -282,8 +281,8 @@ Rebuilt the public discovery experience and responsive admin workspace, restored
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `871e4ac` | (see git log) |
 | `393cccc` | (see git log) |
 | `f1cbf0d` | (see git log) |
