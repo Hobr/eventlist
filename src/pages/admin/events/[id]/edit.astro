@@ -1,9 +1,12 @@
 ---
-import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+import Save from "@lucide/svelte/icons/save";
 import DivisionPicker from "../../../../components/DivisionPicker.svelte";
 import SelectField from "../../../../components/SelectField.svelte";
-import { getEvent, listScales, listTypes } from "../../../../lib/db/queries";
+import Badge from "../../../../components/ui/badge.svelte";
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import { getDB } from "../../../../lib/db";
+import { getEvent, listScales, listTypes } from "../../../../lib/db/queries";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;
@@ -15,9 +18,7 @@ let scales = [];
 let errorMessage = "";
 
 try {
-    if (!Number.isInteger(id) || id <= 0) {
-        throw new Error("活动 ID 无效");
-    }
+    if (!Number.isInteger(id) || id <= 0) throw new Error("活动 ID 无效");
 
     const db = await getDB(getRuntimeEnv());
     const [loadedEvent, loadedTypes, loadedScales] = await Promise.all([
@@ -26,10 +27,7 @@ try {
         listScales(db)
     ]);
 
-    if (!loadedEvent) {
-        throw new Error("活动不存在");
-    }
-
+    if (!loadedEvent) throw new Error("活动不存在");
     eventRecord = loadedEvent;
     types = loadedTypes;
     scales = loadedScales;
@@ -49,234 +47,363 @@ const scaleOptions = scales.map((scale) => ({
 const fieldCls =
     "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 const labelCls = "text-sm font-semibold text-muted-foreground";
+
+const statusLabels: Record<string, string> = {
+    pending: "待审核",
+    published: "已发布",
+    rejected: "已驳回",
+    offline: "已下线"
+};
+const statusTones: Record<string, "default" | "accent" | "warning" | "danger"> = {
+    pending: "warning",
+    published: "accent",
+    rejected: "danger",
+    offline: "default"
+};
+const returnHref =
+    eventRecord?.status === "offline"
+        ? "/admin/offline"
+        : eventRecord?.status === "pending"
+          ? "/admin"
+          : "/admin/published";
 ---
 
-<AdminLayout title="编辑活动">
+<AdminLayout
+    title="编辑活动"
+    description={eventRecord ? `活动 #${eventRecord.id} · 修改公开信息并保存` : "修改活动信息"}
+>
     {
         errorMessage || !eventRecord ? (
-            <div class="border-border bg-surface text-danger rounded-md border p-6 text-center text-sm font-semibold">
+            <div
+                class="border-danger/25 bg-danger-subtle text-danger rounded-md border p-6 text-center text-sm font-semibold"
+                role="alert"
+            >
                 {errorMessage}
             </div>
         ) : (
-            <form
-                id="edit-event-form"
-                data-event-id={eventRecord.id}
-                class="border-border bg-surface grid gap-4 rounded-md border p-5 sm:grid-cols-2"
-            >
-                <div class="sm:col-span-2">
-                    <label class="text-muted-foreground text-sm font-semibold" for="title">
-                        活动名称
-                    </label>
-                    <input
-                        id="title"
-                        name="title"
-                        required
-                        value={eventRecord.title}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-
-                <SelectField
-                    name="type"
-                    label="类型"
-                    value={eventRecord.type}
-                    options={typeOptions}
-                    required
-                    client:load
-                />
-                <SelectField
-                    name="scale"
-                    label="规模"
-                    value={eventRecord.scale}
-                    options={scaleOptions}
-                    required
-                    client:load
-                />
-
-                <div class="sm:col-span-2">
-                    <DivisionPicker
-                        name="division_code"
-                        value={eventRecord.division_code}
-                        label="地区"
-                        mode="county"
-                        required
-                        wide
-                        client:load
-                    />
-                </div>
-
-                <div>
-                    <label class={labelCls} for="venue">
-                        场馆
-                    </label>
-                    <input
-                        id="venue"
-                        name="venue"
-                        required
-                        value={eventRecord.venue}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div class="sm:col-span-2">
-                    <label class={labelCls} for="address">
-                        地址
-                    </label>
-                    <input
-                        id="address"
-                        name="address"
-                        value={eventRecord.address ?? ""}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div>
-                    <label class={labelCls} for="start_date">
-                        开始日期
-                    </label>
-                    <input
-                        id="start_date"
-                        name="start_date"
-                        type="date"
-                        required
-                        value={eventRecord.start_date}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div>
-                    <label class={labelCls} for="end_date">
-                        结束日期
-                    </label>
-                    <input
-                        id="end_date"
-                        name="end_date"
-                        type="date"
-                        required
-                        value={eventRecord.end_date}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div class="sm:col-span-2">
-                    <label class={labelCls} for="source_url">
-                        来源链接
-                    </label>
-                    <input
-                        id="source_url"
-                        name="source_url"
-                        type="url"
-                        required
-                        value={eventRecord.source_url}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div>
-                    <label class={labelCls} for="submitter_contact">
-                        投稿联系方式
-                    </label>
-                    <input
-                        id="submitter_contact"
-                        name="submitter_contact"
-                        required
-                        value={eventRecord.submitter_contact}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div>
-                    <label class={labelCls} for="ticket_url">
-                        购票地址
-                    </label>
-                    <input
-                        id="ticket_url"
-                        name="ticket_url"
-                        type="url"
-                        value={eventRecord.ticket_url ?? ""}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div>
-                    <label class={labelCls} for="qq_group">
-                        官方交流群
-                    </label>
-                    <input
-                        id="qq_group"
-                        name="qq_group"
-                        value={eventRecord.qq_group ?? ""}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div class="sm:col-span-2">
-                    <label class={labelCls} for="cover_url">
-                        封面 URL
-                    </label>
-                    <input
-                        id="cover_url"
-                        name="cover_url"
-                        type="url"
-                        value={eventRecord.cover_url ?? ""}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div class="sm:col-span-2">
-                    <label class={labelCls} for="tags">
-                        相关作品标签
-                    </label>
-                    <input
-                        id="tags"
-                        name="tags"
-                        value={eventRecord.tags ?? ""}
-                        class={`mt-1.5 ${fieldCls}`}
-                    />
-                </div>
-                <div class="sm:col-span-2">
-                    <label class={labelCls} for="description">
-                        活动说明
-                    </label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 mt-1.5 flex h-32 w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                    >
-                        {eventRecord.description ?? ""}
-                    </textarea>
-                </div>
-
-                <div class="flex flex-wrap gap-2 sm:col-span-2">
-                    <button
-                        class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
-                        type="submit"
-                    >
-                        保存
-                    </button>
+            <div>
+                <div class="border-border mb-8 flex flex-wrap items-center justify-between gap-3 border-b pb-5">
                     <a
-                        class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold transition-colors"
-                        href="/admin/published"
+                        href={returnHref}
+                        class="text-muted-foreground hover:text-foreground focus-visible:ring-ring/60 inline-flex items-center gap-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                     >
-                        返回
+                        <ArrowLeft class="size-4" aria-hidden="true" />
+                        返回活动队列
                     </a>
+                    <Badge tone={statusTones[eventRecord.status] ?? "default"}>
+                        {statusLabels[eventRecord.status] ?? eventRecord.status}
+                    </Badge>
                 </div>
-            </form>
+
+                <form
+                    id="edit-event-form"
+                    data-event-id={eventRecord.id}
+                    data-return-href={returnHref}
+                    class="flex flex-col gap-8"
+                >
+                    <section
+                        class="border-border grid gap-4 border-b pb-8 sm:grid-cols-2"
+                        aria-labelledby="edit-identity-heading"
+                    >
+                        <div class="sm:col-span-2">
+                            <h2
+                                id="edit-identity-heading"
+                                class="text-foreground text-base font-black"
+                            >
+                                活动识别
+                            </h2>
+                            <p class="text-muted-foreground mt-1 text-sm">
+                                用清晰、可检索的名称与分类描述活动。
+                            </p>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class={labelCls} for="title">
+                                活动名称
+                            </label>
+                            <input
+                                id="title"
+                                name="title"
+                                required
+                                value={eventRecord.title}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <SelectField
+                            name="type"
+                            label="类型"
+                            value={eventRecord.type}
+                            options={typeOptions}
+                            required
+                            client:load
+                        />
+                        <SelectField
+                            name="scale"
+                            label="规模"
+                            value={eventRecord.scale}
+                            options={scaleOptions}
+                            required
+                            client:load
+                        />
+                    </section>
+
+                    <section
+                        class="border-border grid gap-4 border-b pb-8 sm:grid-cols-2"
+                        aria-labelledby="edit-schedule-heading"
+                    >
+                        <div class="sm:col-span-2">
+                            <h2
+                                id="edit-schedule-heading"
+                                class="text-foreground text-base font-black"
+                            >
+                                时间与地点
+                            </h2>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <DivisionPicker
+                                name="division_code"
+                                value={eventRecord.division_code}
+                                label="地区"
+                                mode="county"
+                                required
+                                wide
+                                client:load
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="venue">
+                                场馆
+                            </label>
+                            <input
+                                id="venue"
+                                name="venue"
+                                required
+                                value={eventRecord.venue}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="address">
+                                详细地址
+                            </label>
+                            <input
+                                id="address"
+                                name="address"
+                                value={eventRecord.address ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="start_date">
+                                开始日期
+                            </label>
+                            <input
+                                id="start_date"
+                                name="start_date"
+                                type="date"
+                                required
+                                value={eventRecord.start_date}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="end_date">
+                                结束日期
+                            </label>
+                            <input
+                                id="end_date"
+                                name="end_date"
+                                type="date"
+                                required
+                                value={eventRecord.end_date}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                    </section>
+
+                    <section
+                        class="border-border grid gap-4 border-b pb-8 sm:grid-cols-2"
+                        aria-labelledby="edit-links-heading"
+                    >
+                        <div class="sm:col-span-2">
+                            <h2
+                                id="edit-links-heading"
+                                class="text-foreground text-base font-black"
+                            >
+                                来源与参与信息
+                            </h2>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class={labelCls} for="source_url">
+                                来源链接
+                            </label>
+                            <input
+                                id="source_url"
+                                name="source_url"
+                                type="url"
+                                required
+                                value={eventRecord.source_url}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="submitter_contact">
+                                投稿联系方式
+                            </label>
+                            <input
+                                id="submitter_contact"
+                                name="submitter_contact"
+                                required
+                                value={eventRecord.submitter_contact}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="ticket_url">
+                                购票地址
+                            </label>
+                            <input
+                                id="ticket_url"
+                                name="ticket_url"
+                                type="url"
+                                value={eventRecord.ticket_url ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="qq_group">
+                                官方交流群
+                            </label>
+                            <input
+                                id="qq_group"
+                                name="qq_group"
+                                value={eventRecord.qq_group ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="cover_url">
+                                封面 URL
+                            </label>
+                            <input
+                                id="cover_url"
+                                name="cover_url"
+                                type="url"
+                                value={eventRecord.cover_url ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                    </section>
+
+                    <section class="grid gap-4" aria-labelledby="edit-content-heading">
+                        <div>
+                            <h2
+                                id="edit-content-heading"
+                                class="text-foreground text-base font-black"
+                            >
+                                公开内容
+                            </h2>
+                        </div>
+                        <div>
+                            <label class={labelCls} for="tags">
+                                相关作品标签
+                            </label>
+                            <input
+                                id="tags"
+                                name="tags"
+                                value={eventRecord.tags ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="description">
+                                活动说明
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 mt-1.5 flex min-h-36 w-full resize-y rounded-md border px-3 py-2 text-sm leading-6 focus-visible:ring-2 focus-visible:outline-none"
+                            >
+                                {eventRecord.description ?? ""}
+                            </textarea>
+                        </div>
+                    </section>
+
+                    <div class="border-border bg-surface-raised shadow-popover sticky bottom-4 z-10 flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p
+                            id="edit-save-status"
+                            class="text-muted-foreground min-h-5 text-sm"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            修改仅在保存后生效。
+                        </p>
+                        <div class="flex gap-2">
+                            <a
+                                class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle focus-visible:ring-ring/60 inline-flex h-10 flex-1 items-center justify-center rounded-md border px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none sm:flex-none"
+                                href={returnHref}
+                            >
+                                取消
+                            </a>
+                            <button
+                                id="edit-save-button"
+                                class="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/60 inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 sm:flex-none"
+                                type="submit"
+                            >
+                                <Save class="size-4" aria-hidden="true" />
+                                <span data-save-label>保存修改</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         )
     }
 </AdminLayout>
 
 <script>
     const form = document.querySelector("#edit-event-form");
-    if (form instanceof HTMLFormElement) {
+    const saveButton = document.querySelector("#edit-save-button");
+    const saveLabel = saveButton?.querySelector("[data-save-label]");
+    const saveStatus = document.querySelector("#edit-save-status");
+
+    if (
+        form instanceof HTMLFormElement &&
+        saveButton instanceof HTMLButtonElement &&
+        saveLabel instanceof HTMLElement &&
+        saveStatus instanceof HTMLElement
+    ) {
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             const eventId = form.dataset.eventId;
-            const response = await fetch(`/api/admin/events/${eventId}`, {
-                method: "PATCH",
-                body: new FormData(form)
-            });
+            const returnHref = form.dataset.returnHref ?? "/admin/published";
+            saveButton.disabled = true;
+            saveButton.setAttribute("aria-busy", "true");
+            saveLabel.textContent = "保存中";
+            saveStatus.textContent = "正在保存修改…";
+            saveStatus.classList.remove("text-danger");
 
-            if (response.ok) {
-                window.location.assign("/admin/published");
-                return;
+            try {
+                const response = await fetch(`/api/admin/events/${eventId}`, {
+                    method: "PATCH",
+                    body: new FormData(form)
+                });
+                if (!response.ok) {
+                    const body = (await response.json().catch(() => null)) as {
+                        error?: string;
+                    } | null;
+                    throw new Error(body?.error ?? "保存失败，请重试");
+                }
+
+                saveStatus.textContent = "保存成功，正在返回队列…";
+                window.location.assign(returnHref);
+            } catch (error) {
+                saveStatus.textContent =
+                    error instanceof Error ? error.message : "保存失败，请重试";
+                saveStatus.classList.add("text-danger");
+                saveButton.disabled = false;
+                saveButton.removeAttribute("aria-busy");
+                saveLabel.textContent = "保存修改";
             }
-
-            const body = (await response.json().catch(() => null)) as {
-                error?: string;
-            } | null;
-            window.alert(body?.error ?? "保存失败");
         });
     }
 </script>

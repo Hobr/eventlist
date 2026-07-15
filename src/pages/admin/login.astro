@@ -1,4 +1,7 @@
 ---
+import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+import LockKeyhole from "@lucide/svelte/icons/lock-keyhole";
+import ShieldCheck from "@lucide/svelte/icons/shield-check";
 import "../../styles/app.css";
 import { createAdminCookie, verifyTokenValue } from "../../lib/auth/token";
 import { getAuthMode, getRuntimeEnv } from "../../lib/runtime/env";
@@ -30,45 +33,103 @@ if (Astro.request.method === "POST") {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
+        <meta name="description" content="Eventlist 管理后台登录" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" href="/favicon.ico" />
         <title>管理员登录 - Eventlist</title>
     </head>
-    <body class="bg-background text-foreground flex min-h-screen items-center justify-center px-4">
-        <form
-            class="border-border bg-surface flex w-full max-w-sm flex-col gap-4 rounded-md border p-6"
-            method="post"
-        >
-            <h1 class="text-foreground text-lg font-semibold">管理员登录</h1>
-            {
-                authMode === "access" ? (
-                    <p class="text-muted-foreground text-sm">
-                        当前使用 Cloudflare Access 鉴权。请从受保护的 Access 应用入口进入后台。
-                    </p>
-                ) : (
-                    <>
-                        <p class="text-muted-foreground text-sm">输入管理员 Token 进入后台。</p>
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-muted-foreground text-sm font-semibold" for="token">
-                                Token
-                            </label>
-                            <input
-                                id="token"
-                                name="token"
-                                type="password"
-                                autocomplete="current-password"
-                                required
-                                class="border-border-strong bg-surface text-foreground focus-visible:border-ring focus-visible:ring-ring/40 flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                            />
-                        </div>
-                        <button
-                            class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
-                            type="submit"
-                        >
-                            登录
-                        </button>
-                    </>
-                )
-            }
-            {errorMessage ? <p class="text-danger text-sm font-semibold">{errorMessage}</p> : null}
-        </form>
+    <body class="bg-background text-foreground min-h-screen">
+        <main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-10">
+            <a
+                href="/"
+                class="text-muted-foreground hover:text-foreground focus-visible:ring-ring/60 mb-8 inline-flex w-fit items-center gap-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+            >
+                <ArrowLeft class="size-4" aria-hidden="true" />
+                返回公开站点
+            </a>
+
+            <div class="border-border border-y py-8">
+                <div class="mb-7 flex items-center gap-3">
+                    <span
+                        class="bg-foreground text-background inline-flex size-10 items-center justify-center rounded-md"
+                        aria-hidden="true"
+                    >
+                        {
+                            authMode === "access" ? (
+                                <ShieldCheck class="size-5" />
+                            ) : (
+                                <LockKeyhole class="size-5" />
+                            )
+                        }
+                    </span>
+                    <div>
+                        <p class="text-muted text-xs font-semibold">Eventlist</p>
+                        <h1 class="text-foreground text-xl font-black">管理后台</h1>
+                    </div>
+                </div>
+
+                {
+                    authMode === "access" ? (
+                        <section aria-labelledby="access-heading">
+                            <h2 id="access-heading" class="text-foreground text-base font-bold">
+                                Cloudflare Access 已启用
+                            </h2>
+                            <p class="text-muted-foreground mt-2 text-sm leading-6">
+                                请从受保护的 Access 应用入口进入。身份通过验证后，后台会自动开放。
+                            </p>
+                            <div class="bg-accent-subtle text-accent mt-5 rounded-md px-4 py-3 text-sm font-semibold">
+                                当前页面不需要本地 Token。
+                            </div>
+                            {errorMessage ? (
+                                <p class="text-danger mt-4 text-sm font-semibold" role="alert">
+                                    {errorMessage}
+                                </p>
+                            ) : null}
+                        </section>
+                    ) : (
+                        <form class="flex flex-col gap-4" method="post">
+                            <div>
+                                <label
+                                    class="text-muted-foreground text-sm font-semibold"
+                                    for="token"
+                                >
+                                    管理员 Token
+                                </label>
+                                <input
+                                    id="token"
+                                    name="token"
+                                    type="password"
+                                    autocomplete="current-password"
+                                    required
+                                    autofocus
+                                    class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 mt-1.5 flex h-11 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                                />
+                                <p class="text-muted mt-1.5 text-xs">
+                                    Token 仅用于建立本机管理会话。
+                                </p>
+                            </div>
+                            {errorMessage ? (
+                                <p
+                                    class="bg-danger-subtle text-danger rounded-md px-3 py-2 text-sm font-semibold"
+                                    role="alert"
+                                >
+                                    {errorMessage}
+                                </p>
+                            ) : null}
+                            <button
+                                class="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/60 inline-flex h-11 items-center justify-center rounded-md px-4 text-sm font-bold focus-visible:ring-2 focus-visible:outline-none"
+                                type="submit"
+                            >
+                                登录后台
+                            </button>
+                        </form>
+                    )
+                }
+            </div>
+
+            <p class="text-muted mt-6 text-xs leading-5">
+                管理操作会写入审核记录。请仅在可信设备上使用。
+            </p>
+        </main>
     </body>
 </html>

@@ -1,4 +1,13 @@
 ---
+import ExternalLink from "@lucide/svelte/icons/external-link";
+import EventActions from "./EventActions.svelte";
+import Badge from "../ui/badge.svelte";
+import Table from "../ui/table.svelte";
+import TableBody from "../ui/table-body.svelte";
+import TableCell from "../ui/table-cell.svelte";
+import TableHead from "../ui/table-head.svelte";
+import TableHeader from "../ui/table-header.svelte";
+import TableRow from "../ui/table-row.svelte";
 import type { EventRecord } from "../../lib/db/queries";
 import { getDivisionLabel } from "../../lib/divisions";
 
@@ -9,244 +18,183 @@ interface Props {
 
 const { events, mode } = Astro.props;
 
-function statusLabel(status: string) {
-    const labels: Record<string, string> = {
-        pending: "待审核",
-        published: "已发布",
-        rejected: "已驳回",
-        offline: "已下线"
-    };
-    return labels[status] ?? status;
-}
+const statusLabels: Record<string, string> = {
+    pending: "待审核",
+    published: "已发布",
+    rejected: "已驳回",
+    offline: "已下线"
+};
+const statusTones: Record<string, "default" | "accent" | "warning" | "danger"> = {
+    pending: "warning",
+    published: "accent",
+    rejected: "danger",
+    offline: "default"
+};
 
-const btnBase =
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50";
-const btnFilled = "bg-primary text-primary-foreground hover:bg-primary/90";
-const btnOutline = "border border-border-strong bg-surface text-foreground hover:bg-surface-subtle";
-const btnTonal = "bg-primary-subtle text-primary-subtle-foreground hover:bg-primary-subtle/80";
-const btnDanger = "bg-danger text-danger-foreground hover:bg-danger/90";
+const mobileCell =
+    "min-w-0 before:mb-1 before:block before:text-[0.6875rem] before:font-semibold before:text-muted before:content-[attr(data-label)] lg:before:hidden";
 ---
 
 {
     events.length === 0 ? (
-        <div class="border-border bg-surface text-muted rounded-md border p-8 text-center text-sm">
-            暂无活动记录。
+        <div class="border-border bg-surface text-muted-foreground flex min-h-44 items-center justify-center rounded-md border px-6 text-center text-sm">
+            当前队列暂无活动。
         </div>
     ) : (
-        <div class="border-border bg-surface overflow-x-auto rounded-md border">
-            <table class="text-foreground w-full text-sm">
-                <thead class="border-border border-b [&>tr]:border-b">
-                    <tr class="border-border border-b hover:bg-transparent">
-                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+        <div class="lg:border-border lg:bg-surface lg:overflow-x-auto lg:rounded-md lg:border">
+            <Table class="text-foreground block w-full text-sm lg:table lg:min-w-[70rem]">
+                <caption class="sr-only">
+                    {mode === "pending"
+                        ? "待审核活动"
+                        : mode === "published"
+                          ? "已发布活动"
+                          : "已下线活动"}
+                </caption>
+                <TableHeader class="sr-only lg:not-sr-only lg:table-header-group">
+                    <TableRow class="border-border border-b hover:bg-transparent">
+                        <TableHead class="text-muted-foreground h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold">
                             活动
-                        </th>
-                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                        </TableHead>
+                        <TableHead class="text-muted-foreground h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold">
                             时间地点
-                        </th>
-                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                        </TableHead>
+                        <TableHead class="text-muted-foreground h-auto w-[13%] px-4 py-3 text-left text-xs font-semibold">
                             分类
-                        </th>
-                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                        </TableHead>
+                        <TableHead class="text-muted-foreground h-auto w-[17%] px-4 py-3 text-left text-xs font-semibold">
                             来源与联系
-                        </th>
-                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                        </TableHead>
+                        <TableHead class="text-muted-foreground h-auto px-4 py-3 text-left text-xs font-semibold">
                             说明
-                        </th>
-                        <th class="text-muted-foreground px-3 py-2.5 text-left align-middle text-xs font-semibold">
+                        </TableHead>
+                        <TableHead class="text-muted-foreground h-auto w-36 px-4 py-3 text-left text-xs font-semibold">
                             操作
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="[&>tr:last-child]:border-0">
+                        </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody class="grid gap-3 lg:table-row-group [&_tr:last-child]:border lg:[&_tr:last-child]:border-0">
                     {events.map((event) => (
-                        <tr class="border-border hover:bg-surface-subtle/60 border-b transition-colors">
-                            <td class="p-3 align-top">
-                                <div class="text-foreground font-semibold">{event.title}</div>
-                                <div class="text-muted text-xs">#{event.id}</div>
-                                <span class="bg-surface-subtle text-muted-foreground mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
-                                    {statusLabel(event.status)}
-                                </span>
-                            </td>
-                            <td class="p-3 align-top">
-                                <div class="text-foreground">
+                        <TableRow class="border-border bg-surface hover:bg-surface lg:hover:bg-surface-subtle/60 grid grid-cols-2 gap-x-4 gap-y-4 rounded-md border p-4 lg:table-row lg:rounded-none lg:border-x-0 lg:border-t-0 lg:p-0">
+                            <TableCell class="border-border col-span-2 border-b p-0 pb-3 align-top lg:table-cell lg:border-b-0 lg:p-4">
+                                <div class="flex items-start justify-between gap-3 lg:block">
+                                    <div class="min-w-0">
+                                        <div class="text-foreground leading-5 font-bold break-words">
+                                            {event.title}
+                                        </div>
+                                        <div class="text-muted mt-1 text-xs">活动 #{event.id}</div>
+                                    </div>
+                                    <Badge
+                                        tone={statusTones[event.status] ?? "default"}
+                                        class="shrink-0"
+                                    >
+                                        {statusLabels[event.status] ?? event.status}
+                                    </Badge>
+                                </div>
+                            </TableCell>
+                            <TableCell
+                                class:list={[mobileCell, "align-top lg:table-cell lg:p-4"]}
+                                dataLabel="时间与地点"
+                            >
+                                <div class="text-foreground font-semibold">
                                     {event.start_date} - {event.end_date}
                                 </div>
-                                <div class="text-muted-foreground">
+                                <div class="text-muted-foreground mt-1">
                                     {getDivisionLabel(event.division_code) ?? "未设置地区"}
                                 </div>
-                                <div class="text-muted text-xs">{event.venue}</div>
+                                <div class="text-muted mt-0.5 text-xs">{event.venue}</div>
                                 {event.address ? (
-                                    <div class="text-muted text-xs">{event.address}</div>
+                                    <div class="text-muted mt-0.5 text-xs">{event.address}</div>
                                 ) : null}
-                            </td>
-                            <td class="p-3 align-top">
-                                <div class="text-foreground">{event.type_label ?? event.type}</div>
-                                <div class="text-muted-foreground">
+                            </TableCell>
+                            <TableCell
+                                class:list={[mobileCell, "align-top lg:table-cell lg:p-4"]}
+                                dataLabel="分类"
+                            >
+                                <div class="text-foreground font-semibold">
+                                    {event.type_label ?? event.type}
+                                </div>
+                                <div class="text-muted-foreground mt-1">
                                     {event.scale_label ?? event.scale}
                                 </div>
                                 {event.tags ? (
-                                    <div class="text-muted text-xs">{event.tags}</div>
+                                    <div class="text-muted mt-1 text-xs break-words">
+                                        {event.tags}
+                                    </div>
                                 ) : null}
-                            </td>
-                            <td class="p-3 align-top">
-                                <a
-                                    href={event.source_url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    class="text-link underline-offset-2 hover:underline"
-                                >
-                                    来源链接
-                                </a>
-                                <div class="text-muted text-xs">{event.submitter_contact}</div>
-                                {event.ticket_url ? (
+                            </TableCell>
+                            <TableCell
+                                class:list={[
+                                    mobileCell,
+                                    "col-span-2 align-top sm:col-span-1 lg:table-cell lg:p-4"
+                                ]}
+                                dataLabel="来源与联系"
+                            >
+                                <div class="flex flex-wrap gap-x-3 gap-y-1">
                                     <a
-                                        href={event.ticket_url}
+                                        href={event.source_url}
                                         target="_blank"
-                                        rel="noreferrer"
-                                        class="text-link underline-offset-2 hover:underline"
+                                        rel="nofollow noopener noreferrer"
+                                        class="text-link focus-visible:ring-ring/60 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:outline-none"
                                     >
-                                        购票地址
+                                        来源
+                                        <ExternalLink class="size-3" aria-hidden="true" />
                                     </a>
-                                ) : null}
-                                {event.cover_url ? (
-                                    <div>
+                                    {event.ticket_url ? (
+                                        <a
+                                            href={event.ticket_url}
+                                            target="_blank"
+                                            rel="nofollow noopener noreferrer"
+                                            class="text-link focus-visible:ring-ring/60 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:outline-none"
+                                        >
+                                            购票
+                                            <ExternalLink class="size-3" aria-hidden="true" />
+                                        </a>
+                                    ) : null}
+                                    {event.cover_url ? (
                                         <a
                                             href={event.cover_url}
                                             target="_blank"
-                                            rel="noreferrer"
-                                            class="text-link underline-offset-2 hover:underline"
+                                            rel="nofollow noopener noreferrer"
+                                            class="text-link focus-visible:ring-ring/60 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:outline-none"
                                         >
-                                            封面图
+                                            封面
+                                            <ExternalLink class="size-3" aria-hidden="true" />
                                         </a>
-                                    </div>
-                                ) : null}
-                            </td>
-                            <td class="max-w-xs p-3 align-top">
-                                <div class="text-muted-foreground line-clamp-3">
-                                    {event.description ?? "无说明"}
+                                    ) : null}
+                                </div>
+                                <div class="text-muted mt-2 text-xs break-all">
+                                    {event.submitter_contact}
+                                </div>
+                            </TableCell>
+                            <TableCell
+                                class:list={[
+                                    mobileCell,
+                                    "col-span-2 align-top sm:col-span-1 lg:table-cell lg:max-w-xs lg:p-4"
+                                ]}
+                                dataLabel="补充说明"
+                            >
+                                <div class="text-muted-foreground line-clamp-3 leading-5">
+                                    {event.description ?? "无活动说明"}
                                 </div>
                                 {event.qq_group ? (
-                                    <div class="text-muted text-xs">QQ群: {event.qq_group}</div>
+                                    <div class="text-muted mt-1 text-xs">
+                                        QQ群：{event.qq_group}
+                                    </div>
                                 ) : null}
-                            </td>
-                            <td class="p-3 align-top">
-                                <div class="flex flex-col gap-2">
-                                    {mode === "pending" ? (
-                                        <>
-                                            <form
-                                                method="post"
-                                                action={`/api/admin/events/${event.id}/approve`}
-                                            >
-                                                <button
-                                                    class={`${btnBase} ${btnFilled}`}
-                                                    type="submit"
-                                                >
-                                                    通过
-                                                </button>
-                                            </form>
-                                            <form
-                                                method="post"
-                                                action={`/api/admin/events/${event.id}/reject`}
-                                            >
-                                                <label
-                                                    class="text-muted-foreground text-xs font-semibold"
-                                                    for={`reject-${event.id}`}
-                                                >
-                                                    驳回理由
-                                                </label>
-                                                <input
-                                                    id={`reject-${event.id}`}
-                                                    name="reject_reason"
-                                                    required
-                                                    class="border-border-strong bg-surface text-foreground focus-visible:border-ring focus-visible:ring-ring/40 mt-0.5 mb-1 flex h-9 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                                                />
-                                                <button
-                                                    class={`${btnBase} ${btnDanger}`}
-                                                    type="submit"
-                                                >
-                                                    驳回
-                                                </button>
-                                            </form>
-                                        </>
-                                    ) : null}
-                                    {mode === "published" ? (
-                                        <>
-                                            <a
-                                                class={`${btnBase} ${btnOutline}`}
-                                                href={`/admin/events/${event.id}/edit`}
-                                            >
-                                                编辑
-                                            </a>
-                                            <form
-                                                method="post"
-                                                action={`/api/admin/events/${event.id}/offline`}
-                                            >
-                                                <button
-                                                    class={`${btnBase} ${btnDanger}`}
-                                                    type="submit"
-                                                    data-confirm="确认下线该活动？"
-                                                >
-                                                    下线
-                                                </button>
-                                            </form>
-                                        </>
-                                    ) : null}
-                                    {mode === "offline" ? (
-                                        <>
-                                            <a
-                                                class={`${btnBase} ${btnOutline}`}
-                                                href={`/admin/events/${event.id}/edit`}
-                                            >
-                                                编辑
-                                            </a>
-                                            <form
-                                                method="post"
-                                                action={`/api/admin/events/${event.id}/republish`}
-                                            >
-                                                <button
-                                                    class={`${btnBase} ${btnTonal}`}
-                                                    type="submit"
-                                                >
-                                                    重新发布
-                                                </button>
-                                            </form>
-                                        </>
-                                    ) : null}
-                                </div>
-                            </td>
-                        </tr>
+                            </TableCell>
+                            <TableCell
+                                class:list={[
+                                    mobileCell,
+                                    "border-border col-span-2 border-t pt-3 align-top lg:table-cell lg:border-t-0 lg:p-4"
+                                ]}
+                                dataLabel="操作"
+                            >
+                                <EventActions eventId={event.id} {mode} client:load />
+                            </TableCell>
+                        </TableRow>
                     ))}
-                </tbody>
-            </table>
+                </TableBody>
+            </Table>
         </div>
     )
 }
-
-<script>
-    for (const form of document.querySelectorAll("form[action^='/api/admin/']")) {
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const target = event.currentTarget;
-            if (!(target instanceof HTMLFormElement)) return;
-
-            const submitter = event.submitter;
-            if (submitter instanceof HTMLButtonElement && submitter.dataset.confirm) {
-                const confirmed = window.confirm(submitter.dataset.confirm);
-                if (!confirmed) return;
-            }
-
-            const response = await fetch(target.action, {
-                method: target.method.toUpperCase(),
-                body: new FormData(target)
-            });
-
-            if (response.ok) {
-                window.location.reload();
-                return;
-            }
-
-            const body = (await response.json().catch(() => null)) as { error?: string } | null;
-            window.alert(body?.error ?? "操作失败");
-        });
-    }
-</script>

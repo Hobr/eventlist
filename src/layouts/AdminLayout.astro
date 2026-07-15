@@ -1,18 +1,23 @@
 ---
+import ArrowUpRight from "@lucide/svelte/icons/arrow-up-right";
+import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
+import CircleOff from "@lucide/svelte/icons/circle-off";
+import Inbox from "@lucide/svelte/icons/inbox";
+import Tags from "@lucide/svelte/icons/tags";
+import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
+import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "../components/admin/navigation";
 import "../styles/app.css";
 
 interface Props {
     title: string;
+    description?: string;
 }
 
-const { title } = Astro.props;
+const { title, description = undefined } = Astro.props;
 const currentPath = Astro.url.pathname;
-const navItems = [
-    { href: "/admin", label: "待审核" },
-    { href: "/admin/published", label: "已发布" },
-    { href: "/admin/offline", label: "已下线" },
-    { href: "/admin/tags", label: "标签归并" }
-];
+const adminLabel =
+    Astro.locals.admin?.email ??
+    (Astro.locals.admin?.mode === "access" ? "Access 管理员" : "Token 管理员");
 ---
 
 <!doctype html>
@@ -20,62 +25,114 @@ const navItems = [
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
+        <meta name="description" content={description ?? `${title} · Eventlist 管理后台`} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
         <title>{title} - Eventlist Admin</title>
     </head>
     <body class="bg-background text-foreground min-h-screen">
-        <div class="flex min-h-screen flex-col md:flex-row">
-            <nav
-                class="border-border bg-surface flex shrink-0 flex-col gap-1 border-b p-3 md:w-56 md:border-r md:border-b-0"
-                aria-label="管理后台导航"
+        <div class="min-h-screen lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+            <aside
+                class="border-border bg-surface sticky top-0 hidden h-screen flex-col border-r lg:flex"
             >
                 <a
                     href="/admin"
-                    class="text-foreground mb-2 flex items-center gap-2 px-2 py-1.5 text-sm font-semibold"
+                    class="border-border focus-visible:ring-ring/60 flex h-16 items-center gap-3 border-b px-5 focus-visible:ring-2 focus-visible:outline-none"
                 >
                     <span
-                        class="bg-primary text-primary-foreground inline-flex size-7 items-center justify-center rounded-md text-xs font-bold"
-                        >A</span
+                        class="bg-foreground text-background inline-flex size-8 items-center justify-center rounded-md text-sm font-black"
+                        aria-hidden="true"
                     >
-                    管理后台
+                        E
+                    </span>
+                    <span>
+                        <strong class="text-foreground block text-sm">Eventlist</strong>
+                        <span class="text-muted block text-xs">管理工作台</span>
+                    </span>
                 </a>
-                {
-                    navItems.map((item) => (
-                        <a
-                            href={item.href}
-                            aria-current={currentPath === item.href ? "page" : undefined}
-                            class:list={[
-                                "rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                                currentPath === item.href
-                                    ? "bg-surface-subtle text-foreground"
-                                    : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
-                            ]}
-                        >
-                            {item.label}
-                        </a>
-                    ))
-                }
-            </nav>
 
-            <div class="flex flex-1 flex-col">
-                <header
-                    class="border-border flex h-14 items-center justify-between border-b px-4 sm:px-6"
-                >
-                    <h1 class="text-foreground text-base font-semibold">{title}</h1>
+                <nav class="flex flex-1 flex-col gap-1 p-3" aria-label="管理后台导航">
                     {
-                        Astro.locals.admin?.email ? (
-                            <span class="bg-surface-subtle text-muted-foreground rounded-full px-3 py-1 text-xs font-medium">
-                                {Astro.locals.admin.email}
-                            </span>
-                        ) : (
-                            <span class="bg-surface-subtle text-muted-foreground rounded-full px-3 py-1 text-xs font-medium">
-                                admin
-                            </span>
-                        )
+                        ADMIN_NAV_ITEMS.map((item) => (
+                            <a
+                                href={item.href}
+                                aria-current={
+                                    isAdminNavItemActive(currentPath, item.href)
+                                        ? "page"
+                                        : undefined
+                                }
+                                class:list={[
+                                    "focus-visible:ring-ring/60 flex h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                                    isAdminNavItemActive(currentPath, item.href)
+                                        ? "bg-primary-subtle text-primary-subtle-foreground"
+                                        : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
+                                ]}
+                            >
+                                {item.kind === "pending" ? (
+                                    <Inbox class="size-4" aria-hidden="true" />
+                                ) : item.kind === "published" ? (
+                                    <CheckCircle2 class="size-4" aria-hidden="true" />
+                                ) : item.kind === "offline" ? (
+                                    <CircleOff class="size-4" aria-hidden="true" />
+                                ) : (
+                                    <Tags class="size-4" aria-hidden="true" />
+                                )}
+                                {item.label}
+                            </a>
+                        ))
                     }
+                </nav>
+
+                <div class="border-border border-t p-4">
+                    <p class="text-muted truncate text-xs font-semibold">{adminLabel}</p>
+                    <a
+                        href="/"
+                        class="text-muted-foreground hover:text-foreground focus-visible:ring-ring/60 mt-3 inline-flex items-center gap-1.5 text-xs font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                        查看公开站点
+                        <ArrowUpRight class="size-3.5" aria-hidden="true" />
+                    </a>
+                </div>
+            </aside>
+
+            <div class="flex min-w-0 flex-col">
+                <header
+                    class="border-border bg-background/95 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur lg:hidden"
+                >
+                    <a
+                        href="/admin"
+                        class="focus-visible:ring-ring/60 flex min-w-0 items-center gap-2 focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                        <span
+                            class="bg-foreground text-background inline-flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-black"
+                            aria-hidden="true"
+                        >
+                            E
+                        </span>
+                        <span class="text-foreground truncate text-sm font-bold">{title}</span>
+                    </a>
+                    <AdminMobileNav {currentPath} {title} {adminLabel} client:load />
                 </header>
-                <main class="flex-1 p-4 sm:p-6">
+
+                <header
+                    class="border-border bg-background/95 sticky top-0 z-20 hidden min-h-16 items-center justify-between border-b px-8 backdrop-blur lg:flex"
+                >
+                    <div class="py-3">
+                        <h1 class="text-foreground text-lg font-black">{title}</h1>
+                        {
+                            description ? (
+                                <p class="text-muted-foreground mt-0.5 text-xs">{description}</p>
+                            ) : null
+                        }
+                    </div>
+                    <span
+                        class="bg-surface-subtle text-muted-foreground rounded-full px-3 py-1 text-xs font-semibold"
+                    >
+                        {adminLabel}
+                    </span>
+                </header>
+
+                <main class="mx-auto w-full max-w-[96rem] flex-1 p-4 sm:p-6 lg:p-8">
                     <slot />
                 </main>
             </div>

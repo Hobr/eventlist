@@ -24,7 +24,7 @@ const hasNext = events.length > PAGE_SIZE;
 events = events.slice(0, PAGE_SIZE);
 ---
 
-<AdminLayout title="已下线活动">
+<AdminLayout title="已下线活动" description="查看历史记录，并按需修订或重新发布。">
     {
         errorMessage ? (
             <div class="border-border bg-surface text-danger rounded-md border p-6 text-center text-sm font-semibold">
@@ -32,6 +32,7 @@ events = events.slice(0, PAGE_SIZE);
             </div>
         ) : (
             <div class="flex flex-col gap-4">
+                <p class="text-muted-foreground text-sm">本页 {events.length} 条已下线活动</p>
                 <EventTable events={events} mode="offline" />
                 <Pagination page={page} hasNext={hasNext} />
             </div>

@@ -1,6 +1,6 @@
 ---
+import TagMergeForm from "../../components/admin/TagMergeForm.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SelectField from "../../components/SelectField.svelte";
 import { listTags } from "../../lib/db/queries";
 import { getDB } from "../../lib/db";
 import { getRuntimeEnv } from "../../lib/runtime/env";
@@ -23,110 +23,67 @@ const tagOptions = tags.map((tag) => ({
 }));
 ---
 
-<AdminLayout title="标签归并">
+<AdminLayout title="标签归并" description="将重复标签合并到统一名称，保持活动检索整洁。">
     {
         errorMessage ? (
-            <div class="border-border bg-surface text-danger rounded-md border p-6 text-center text-sm font-semibold">
+            <div
+                class="border-danger/25 bg-danger-subtle text-danger rounded-md border p-6 text-center text-sm font-semibold"
+                role="alert"
+            >
                 {errorMessage}
             </div>
         ) : (
-            <div class="flex flex-col gap-6">
-                <div class="border-border bg-surface rounded-md border p-5">
-                    <form id="merge-tags-form" class="grid gap-4 sm:grid-cols-3">
-                        <SelectField
-                            name="from"
-                            label="源标签"
-                            options={tagOptions}
-                            placeholder="选择要归并的标签"
-                            required
-                            client:load
-                        />
-                        <SelectField
-                            name="to"
-                            label="目标标签"
-                            options={tagOptions}
-                            placeholder="选择规范标签"
-                            required
-                            client:load
-                        />
-                        <div class="flex items-end">
-                            <button
-                                class="bg-danger text-danger-foreground hover:bg-danger/90 inline-flex h-10 w-full items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors"
-                                type="submit"
-                            >
-                                归并
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <div class="flex flex-col gap-8">
+                <section class="border-border border-b pb-8" aria-labelledby="merge-heading">
+                    <div class="mb-5">
+                        <h2 id="merge-heading" class="text-foreground text-base font-black">
+                            归并重复标签
+                        </h2>
+                        <p class="text-muted-foreground mt-1 text-sm">
+                            源标签会被移除，关联活动将改用目标标签。
+                        </p>
+                    </div>
+                    <TagMergeForm options={tagOptions} client:load />
+                </section>
 
-                <div class="border-border bg-surface overflow-x-auto rounded-md border">
-                    <table class="text-foreground w-full text-sm">
-                        <thead class="border-border border-b">
-                            <tr class="border-border border-b hover:bg-transparent">
-                                <th
-                                    class="text-muted-foreground px-3 py-2.5 text-left text-xs font-semibold"
-                                    style="width: 64px"
-                                >
-                                    ID
-                                </th>
-                                <th class="text-muted-foreground px-3 py-2.5 text-left text-xs font-semibold">
-                                    标签
-                                </th>
-                                <th
-                                    class="text-muted-foreground px-3 py-2.5 text-left text-xs font-semibold"
-                                    style="width: 180px"
-                                >
-                                    活动数
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="[&>tr:last-child]:border-0">
+                <section aria-labelledby="tag-inventory-heading">
+                    <div class="mb-4 flex items-end justify-between gap-4">
+                        <div>
+                            <h2
+                                id="tag-inventory-heading"
+                                class="text-foreground text-base font-black"
+                            >
+                                标签目录
+                            </h2>
+                            <p class="text-muted-foreground mt-1 text-sm">
+                                当前共 {tags.length} 个规范标签
+                            </p>
+                        </div>
+                    </div>
+
+                    {tags.length > 0 ? (
+                        <div class="border-border divide-border divide-y border-y">
                             {tags.map((tag) => (
-                                <tr class="border-border hover:bg-surface-subtle/60 border-b transition-colors">
-                                    <td class="p-3 align-top">{tag.id}</td>
-                                    <td class="text-foreground p-3 align-top font-semibold">
-                                        {tag.name}
-                                    </td>
-                                    <td class="p-3 align-top">{tag.event_count}</td>
-                                </tr>
+                                <div class="flex items-center justify-between gap-4 py-3">
+                                    <div class="min-w-0">
+                                        <p class="text-foreground truncate text-sm font-bold">
+                                            {tag.name}
+                                        </p>
+                                        <p class="text-muted mt-0.5 text-xs">标签 #{tag.id}</p>
+                                    </div>
+                                    <span class="bg-surface-subtle text-muted-foreground shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold">
+                                        {tag.event_count} 个活动
+                                    </span>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </div>
+                    ) : (
+                        <div class="border-border text-muted-foreground rounded-md border p-8 text-center text-sm">
+                            暂无标签。
+                        </div>
+                    )}
+                </section>
             </div>
         )
     }
 </AdminLayout>
-
-<script>
-    const form = document.querySelector("#merge-tags-form");
-    if (form instanceof HTMLFormElement) {
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            const formData = new FormData(form);
-            if (formData.get("from") === formData.get("to")) {
-                window.alert("源标签和目标标签不能相同");
-                return;
-            }
-
-            const confirmed = window.confirm("标签归并不可逆，确认继续？");
-            if (!confirmed) return;
-
-            const response = await fetch("/api/admin/tags/merge", {
-                method: "POST",
-                body: formData
-            });
-
-            if (response.ok) {
-                window.location.reload();
-                return;
-            }
-
-            const body = (await response.json().catch(() => null)) as {
-                error?: string;
-            } | null;
-            window.alert(body?.error ?? "归并失败");
-        });
-    }
-</script>
