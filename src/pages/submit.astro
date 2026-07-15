@@ -1,7 +1,7 @@
 ---
-import ArrowLeft from "@lucide/svelte/icons/arrow-left";
-import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
-import Send from "@lucide/svelte/icons/send";
+import ArrowLeft from "@lucide/astro/icons/arrow-left";
+import CircleCheck from "@lucide/astro/icons/circle-check";
+import Send from "@lucide/astro/icons/send";
 import DivisionPicker from "../components/DivisionPicker.svelte";
 import SelectField from "../components/SelectField.svelte";
 import SubmissionSection from "../components/SubmissionSection.astro";
@@ -47,7 +47,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
     {
         sent ? (
             <section class="border-border mx-auto max-w-2xl border-y py-14 text-center">
-                <CheckCircle2 class="text-accent mx-auto size-10" aria-hidden="true" />
+                <CircleCheck class="text-accent mx-auto size-10" aria-hidden="true" />
                 <h1 class="text-foreground mt-5 text-3xl font-black">活动已进入审核队列</h1>
                 <p class="text-muted-foreground mt-3 text-sm">审核通过后会出现在公开活动列表中。</p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">

@@ -1,9 +1,9 @@
 ---
-import ArrowUpRight from "@lucide/svelte/icons/arrow-up-right";
-import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
-import CircleOff from "@lucide/svelte/icons/circle-off";
-import Inbox from "@lucide/svelte/icons/inbox";
-import Tags from "@lucide/svelte/icons/tags";
+import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
+import CircleCheck from "@lucide/astro/icons/circle-check";
+import CircleOff from "@lucide/astro/icons/circle-off";
+import Inbox from "@lucide/astro/icons/inbox";
+import Tags from "@lucide/astro/icons/tags";
 import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
 import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "../components/admin/navigation";
 import "../styles/app.css";
@@ -71,7 +71,7 @@ const adminLabel =
                                 {item.kind === "pending" ? (
                                     <Inbox class="size-4" aria-hidden="true" />
                                 ) : item.kind === "published" ? (
-                                    <CheckCircle2 class="size-4" aria-hidden="true" />
+                                    <CircleCheck class="size-4" aria-hidden="true" />
                                 ) : item.kind === "offline" ? (
                                     <CircleOff class="size-4" aria-hidden="true" />
                                 ) : (
