@@ -14,7 +14,7 @@ This directory contains guidelines for frontend development. Fill in each file w
 
 | Guide                                             | Description                             | Status  |
 | ------------------------------------------------- | --------------------------------------- | ------- |
-| [Design System](./design-system.md)               | Material Design 3 visual language       | Filled  |
+| [Design System](./design-system.md)               | Bits UI + Tailwind v4 frontend contract | Filled  |
 | [Directory Structure](./directory-structure.md)   | Module organization and file layout     | To fill |
 | [Component Guidelines](./component-guidelines.md) | Component patterns, props, composition  | To fill |
 | [Hook Guidelines](./hook-guidelines.md)           | Custom hooks, data fetching patterns    | To fill |

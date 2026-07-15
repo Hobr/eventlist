@@ -70,10 +70,13 @@
 - Existing primitives: `button`, `badge`, `card` + `card-header` /
   `card-title` / `card-description` / `card-content` / `card-footer`,
   `input`, `label`, `textarea`, `separator`, `table` + `table-header` /
-  `table-body` / `table-row` / `table-head` / `table-cell`.
-- Add a new primitive here when a pattern repeats across 3+ pages. Avoid
-  pulling in a second runtime UI library (shadcn-svelte CLI bundles, daisyUI,
-  etc.) — the `ui/` layer is hand-maintained.
+  `table-body` / `table-row` / `table-head` / `table-cell`, `side-panel`, and
+  `confirm-dialog`.
+- Wrap every newly used `bits-ui` primitive under `ui/`, even for its first
+  business use, so focus, overlay, title/description, and close behavior have
+  one owner. Add non-interactive primitives when a visual pattern repeats
+  across 3+ pages. Avoid a second runtime UI library (shadcn-svelte CLI
+  bundles, daisyUI, etc.) — the `ui/` layer is hand-maintained.
 - Keep `ui/` components free of business field semantics (no `event`,
   `division`, etc.).
 
@@ -92,20 +95,57 @@
 - Keep action buttons icon+text where the icon clarifies the command
   (Lucide icons).
 
+## Interaction And Form Contracts
+
+- Catalogue URLs own filter state. Preserve `city`, `type`, `scale`, `tag`,
+  `from`, `to`, `page`, and `sort` whenever either the quick or advanced GET
+  form is applied. Quick controls are location, type, and start date; scale,
+  tag, sort, and end date belong in the `side-panel` surface. Active conditions
+  link to the same URL with exactly one parameter removed.
+- Public submission remains one native `<form>`. Required controls are always
+  visible: `title`, `type`, `scale`, `division_code`, `venue`, `start_date`,
+  `end_date`, `source_url`, and `submitter_contact`. Optional controls remain in
+  the same DOM/FormData inside native `<details>`: `tags`, `address`,
+  `cover_url`, `description`, `qq_group`, and `ticket_url`. Keep
+  `cf-turnstile-response`, POST `/api/submit`, and success redirect
+  `/submit?sent=1` unchanged.
+- Admin moderation islands submit POST to
+  `/api/admin/events/:id/{approve|reject|offline|republish}`. Rejection sends
+  `reject_reason`; tag merge POSTs `from` and `to` to
+  `/api/admin/tags/merge`; edit submits the existing event fields with PATCH to
+  `/api/admin/events/:id`. Actions expose pending, disabled, inline error, and
+  destructive-confirmation states without duplicating hidden forms.
+
 ## Public Page Structure
 
-- Homepage first viewport should be an application-like tool surface, not a
-  generic marketing hero: city selection + key metrics + a compact live
-  browse preview. No narrative copy ("command / dossier / radar / LIVE
-  PREVIEW") — use neutral, scannable Chinese labels.
-- Event browsing should use a persistent filter rail plus compact event
-  rows as the primary list shape. Do not return to a heading + toolbar panel
-    - three-column card grid as the default browsing mode.
-- Event details should use a card grid: header (badges + title + cover) →
-  fact tiles (time/region/venue) → description → actions aside, so core
-  facts and actions are visible before long-form description.
-- Public submission should use sectioned cards while preserving every
-  `name` attribute expected by `/api/submit`.
+- Homepage first viewport is discovery-first: current location controls, one
+  featured upcoming event, a concise upcoming list, and a direct catalogue
+  action. Do not lead with statistics, feature marketing, or narrative copy
+  ("command / dossier / radar / LIVE PREVIEW").
+- Event browsing uses compact cover-led rows. Keep common filters directly
+  visible and move advanced conditions to the accessible side panel; do not
+  expose every control at equal weight or return to a three-column card grid.
+- Event details use a wide stable-ratio media stage followed by date/region/
+  venue facts, an unframed description column, and a restrained action rail.
+  Offline and missing-event states stay explicit and JSON-LD stays unchanged.
+- Public submission uses required fieldsets plus optional progressive
+  disclosure inside one form. Inputs must never be moved out of the form or
+  removed from the DOM when disclosure closes.
+
+## Admin Page Structure
+
+- Desktop uses a persistent sidebar and aligned table columns; mobile uses a
+  compact top bar with the shared `side-panel` navigation.
+- Each event queue owns exactly one semantic `<table>`. Below `lg`, keep the
+  header in the DOM and style each `<tr>` as a task card; expose cell labels
+  through `data-label`. Do not render separate desktop and mobile forms.
+- Mount `admin/EventActions.svelte` once per row. Desktop and mobile therefore
+  share the same status, schedule, location, provenance, edit link, rejection
+  reason, confirmation, loading, and error behavior.
+- If Cloudflare Access prevents local authenticated rendering, use fabricated
+  records in a temporary localhost-only preview route for visual checks, then
+  delete that route. Never weaken middleware or read/use real credentials just
+  to capture a screenshot.
 
 ## Copy Voice
 
@@ -155,5 +195,15 @@
   eslint-plugin-svelte and eslint-plugin-astro).
 - Run `pnpm exec tsc --noEmit` for a type pass when `astro check` is not
   available.
+- Keep the installed TypeScript version inside `@typescript-eslint/parser`'s
+  declared peer range. As of this spec update, parser 8.64 supports
+  `>=4.8.4 <6.1.0`, so the project pins TypeScript `^6.0.3`; upgrading the
+  compiler without checking this range makes ESLint fail during config import
+  before any source rule runs.
+- Validate public routes and `/admin/login` at approximately 390x844,
+  768x1024, and 1440x1000. Assert `scrollWidth <= clientWidth`, stable media
+  dimensions, focusable disclosure/dialog controls, and visible workflow
+  states. For normal text, token foreground/background pairs must reach at
+  least 4.5:1 in both color schemes.
 - For visual-only frontend work, verify the diff does not include backend
   data, API, or database changes unless the task explicitly requested them.
