@@ -134,7 +134,7 @@
 <div class="flex min-w-0 flex-col gap-1.5">
     <span class="text-sm font-semibold text-muted-foreground">{label}</span>
     <input type="hidden" {name} value={selectedValue} {required} />
-    <div class:list={["grid gap-2", wide ? "grid-cols-1" : "sm:grid-cols-3 grid-cols-1"]}>
+    <div class={wide ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}>
         <SelectField
             label={`${label}省份`}
             value={selectedProvinceCode}
