@@ -299,3 +299,36 @@ Rebuilt the public discovery experience and responsive admin workspace, restored
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: 支持活动页查询已结束活动
+
+**Date**: 2026-07-16
+**Task**: 支持活动页查询已结束活动
+**Branch**: `main`
+
+### Summary
+
+新增未结束、已结束、全部三项活动状态筛选；按北京时间和可选结束时间分类活动；验证真实已结束活动可检索；记录 TypeScript 7 下 ESLint 上游兼容例外。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0e47433` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
