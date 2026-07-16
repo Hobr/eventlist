@@ -25,10 +25,11 @@ const adminLabel =
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <meta name="description" content={description ?? `${title} · Eventlist 管理后台`} />
+        <meta name="color-scheme" content="light dark" />
+        <meta name="description" content={description ?? `${title} · 野活网管理后台`} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
-        <title>{title} - Eventlist Admin</title>
+        <title>{title} - 野活网管理后台</title>
     </head>
     <body class="bg-background text-foreground min-h-screen">
         <div class="min-h-screen lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
@@ -37,16 +38,10 @@ const adminLabel =
             >
                 <a
                     href="/admin"
-                    class="border-border focus-visible:ring-ring/60 flex h-16 items-center gap-3 border-b px-5 focus-visible:ring-2 focus-visible:outline-none"
+                    class="border-border focus-visible:ring-ring/60 flex h-16 items-center border-b px-5 focus-visible:ring-2 focus-visible:outline-none"
                 >
-                    <span
-                        class="bg-foreground text-background inline-flex size-8 items-center justify-center rounded-md text-sm font-black"
-                        aria-hidden="true"
-                    >
-                        E
-                    </span>
                     <span>
-                        <strong class="text-foreground block text-sm">Eventlist</strong>
+                        <strong class="text-foreground block text-sm">野活网</strong>
                         <span class="text-muted block text-xs">管理工作台</span>
                     </span>
                 </a>
@@ -101,14 +96,8 @@ const adminLabel =
                 >
                     <a
                         href="/admin"
-                        class="focus-visible:ring-ring/60 flex min-w-0 items-center gap-2 focus-visible:ring-2 focus-visible:outline-none"
+                        class="focus-visible:ring-ring/60 flex min-w-0 items-center focus-visible:ring-2 focus-visible:outline-none"
                     >
-                        <span
-                            class="bg-foreground text-background inline-flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-black"
-                            aria-hidden="true"
-                        >
-                            E
-                        </span>
                         <span class="text-foreground truncate text-sm font-bold">{title}</span>
                     </a>
                     <AdminMobileNav {currentPath} {title} {adminLabel} client:load />

@@ -72,7 +72,7 @@
         <AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/45" />
         <AlertDialog.Content
             class={cn(
-                "bg-surface-raised border-border fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border p-5 shadow-popover focus:outline-none sm:p-6",
+                "bg-surface-raised border-border shadow-popover fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border p-5 focus:outline-none sm:p-6",
                 contentClass
             )}
         >

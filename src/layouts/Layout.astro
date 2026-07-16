@@ -11,12 +11,12 @@ interface Props {
 }
 
 const {
-    title = "Eventlist",
+    title = "野活网",
     description = "浏览与投稿近期 ACG 活动的工具目录。",
     jsonLd
 } = Astro.props;
 const currentPath = Astro.url.pathname;
-const siteTitle = title === "Eventlist" ? title : `${title} - Eventlist`;
+const siteTitle = title === "野活网" ? title : `${title} - 野活网`;
 
 function isCurrent(href: string) {
     if (href === "/") return currentPath === "/";
@@ -38,6 +38,7 @@ function navClasses(href: string) {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
+        <meta name="color-scheme" content="light dark" />
         <meta name="description" content={description} />
         <meta name="generator" content={Astro.generator} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -56,18 +57,10 @@ function navClasses(href: string) {
                     <div class="flex h-14 items-center justify-between sm:h-auto">
                         <a
                             href="/"
-                            class="text-foreground focus-visible:ring-ring/60 inline-flex items-center gap-2.5 font-bold focus-visible:ring-2 focus-visible:outline-none"
+                            class="text-foreground focus-visible:ring-ring/60 inline-flex items-center font-bold focus-visible:ring-2 focus-visible:outline-none"
                         >
-                            <span
-                                class="bg-primary text-primary-foreground relative inline-flex size-8 items-center justify-center overflow-hidden rounded-sm text-sm font-black"
-                            >
-                                E
-                                <span
-                                    class="bg-accent absolute right-0 bottom-0 h-1.5 w-3"
-                                    aria-hidden="true"></span>
-                            </span>
                             <span class="flex flex-col leading-none">
-                                <span class="text-base">Eventlist</span>
+                                <span class="text-base">野活网</span>
                                 <span class="text-muted mt-1 text-[0.65rem] font-medium"
                                     >ACG 活动日历</span
                                 >
@@ -115,7 +108,7 @@ function navClasses(href: string) {
                 <div
                     class="text-muted mx-auto flex min-h-16 w-full max-w-7xl flex-col justify-center gap-1 px-4 py-4 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
                 >
-                    <span>Eventlist · 已审核 ACG 活动目录</span>
+                    <span>野活网 · 已审核 ACG 活动目录</span>
                     <span>按城市发现，按兴趣出发</span>
                 </div>
             </footer>

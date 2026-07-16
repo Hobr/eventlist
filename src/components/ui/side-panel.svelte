@@ -37,7 +37,7 @@
         <Dialog.Overlay class="fixed inset-0 z-50 bg-black/45" />
         <Dialog.Content
             class={cn(
-                "bg-surface-raised border-border fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l shadow-popover focus:outline-none",
+                "bg-surface-raised border-border shadow-popover fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l focus:outline-none",
                 contentClass
             )}
         >

@@ -74,9 +74,9 @@
     {#if siteKey}
         <div bind:this={container}></div>
     {:else}
-        <p class="text-sm font-semibold text-danger">投稿保护未配置</p>
+        <p class="text-danger text-sm font-semibold">投稿保护未配置</p>
     {/if}
     {#if errorMessage}
-        <p class="text-sm font-semibold text-danger">{errorMessage}</p>
+        <p class="text-danger text-sm font-semibold">{errorMessage}</p>
     {/if}
 </div>
