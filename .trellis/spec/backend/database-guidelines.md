@@ -1,232 +1,239 @@
 # Database Guidelines
 
-> Database patterns and conventions for this project.
+> Executable D1 contracts for the event directory.
 
 ---
 
-## Scenario: Foundation D1 Schema
+## Scenario: Single-File D1 Baseline
 
 ### 1. Scope / Trigger
 
-- Trigger: `foundation-db` establishes the project D1 database, base migrations, seed data, and shared access layer.
+- Trigger: any change to the initial D1 schema, constraints, indexes, or dimension seeds before the first production deployment.
+- The site has no deployed database migration history. Keep one deterministic baseline at `migrations/0001_init.sql` until the first deployment.
 - D1 database: `eventlist-db`, binding `DB`, database id `b11ea70c-4597-4049-a650-718cfbc5b04f`.
-- Base migrations must run before downstream admin/public features:
-    - `migrations/0001_init.sql`: tables, foreign keys, status/date checks, indexes.
-    - `migrations/0002_seed.sql`: `event_types`, `event_scales`, `cities`.
-    - `migrations/0003_audit.sql`: admin audit log extension.
 
 ### 2. Signatures
 
 - Wrangler config:
     - `wrangler.jsonc.d1_databases[0].binding = "DB"`
     - `database_name = "eventlist-db"`
-    - `database_id = "b11ea70c-4597-4049-a650-718cfbc5b04f"`
     - `migrations_dir = "migrations"`
+- Baseline file: `migrations/0001_init.sql` creates tables, constraints, indexes, and the `event_types` / `event_scales` seeds.
 - Access helper: `await getDB(runtimeEnv): Promise<D1Database>`.
-- FK helper: `await ensureFK(db)` executes `PRAGMA foreign_keys = ON;`.
-- Generated binding type: `worker-configuration.d.ts` must include `DB: D1Database`.
+- Generated binding: `worker-configuration.d.ts` contains `DB: D1Database`.
+- Tables: `event_types`, `event_scales`, `tags`, `events`, `event_tags`, `audit_logs`.
 
 ### 3. Contracts
 
-- Base tables: `cities`, `event_types`, `event_scales`, `tags`, `events`, `event_tags`.
-- Seed counts:
-    - `event_types` = 8
-    - `event_scales` = 4
-    - `cities` >= 50, current seed = 72
-    - `tags` = 0
-- Event status values are enforced by SQL CHECK: `pending`, `published`, `rejected`, `offline`.
-- `events.type`, `events.scale`, and `events.city_id` are foreign keys into their dimension tables.
-- `events.start_date` and `events.end_date` must parse as dates, and `end_date >= start_date`.
-- D1 generated globals are the source of truth for local aliases in `src/types/cloudflare.ts`; do not hand-write full D1 interfaces.
+- All application tables are SQLite `STRICT` tables.
+- There is no `cities` table. Administrative location truth is `events.division_code`, validated and displayed through `src/lib/divisions.ts`.
+- Seed counts on an empty database:
+    - `event_types = 8`
+    - `event_scales = 4`
+    - `tags = 0`
+    - `events = 0`
+- `tags.name` is trimmed, 1-24 characters, `COLLATE NOCASE UNIQUE`; aliases cannot reference themselves.
+- `events.type` and `events.scale` are foreign keys into their dimension tables.
+- `start_date` / `end_date` are canonical `YYYY-MM-DD`; `end_date >= start_date`.
+- `start_time` / `end_time` are nullable local `HH:MM` values. When both exist on the same date, `end_time >= start_time`.
+- `tag_suggestions` is nullable free text with a maximum length of 240. It is not a canonical tag relationship.
+- Status is one of `pending`, `published`, `rejected`, `offline`.
+- `audit_logs.meta` must be valid JSON.
+- Query indexes cover public status/date listing, status/division listing, admin status/created order, sitemap status/updated order, tag-to-event lookup, and audit time/action lookup.
 
 ### 4. Validation & Error Matrix
 
-- Missing `d1_databases` binding or stale generated types -> `worker-configuration.d.ts` lacks `DB`; rerun `corepack pnpm generate-types` after config changes.
-- Missing `env.DB` at runtime -> `getDB` throws a setup error naming `wrangler.jsonc d1_databases`.
-- Foreign key writes fail unexpectedly -> confirm callers use `await getDB(...)` or call `ensureFK(db)` before direct D1 writes.
-- Invalid status/date/type/scale/city writes -> rejected by SQL CHECK/FK constraints.
+- Missing `env.DB` -> `getDB` throws a setup error naming the D1 binding.
+- Unknown type or scale -> foreign key failure.
+- Invalid division code, date, time, date order, same-day time order, status, or overlong `tag_suggestions` -> SQL CHECK failure.
+- Duplicate tags that differ only by ASCII case -> UNIQUE failure.
+- Invalid audit JSON -> SQL CHECK failure.
+- Multiple migration files before first deployment -> baseline drift; consolidate back into `0001_init.sql` and test from an empty persistence directory.
 
 ### 5. Good/Base/Bad Cases
 
-- Good: apply local and remote migrations, then verify counts: `event_types=8`, `event_scales=4`, `cities=72`, `tags=0`.
-- Base: downstream routes call `const db = await getDB(getRuntimeEnv())` before queries.
-- Bad: adding a second DB binding name for the same database. Keep `DB` as the single app binding.
-- Bad: adding seed tags. Tags are user/admin-created and start empty.
+- Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, 8 types, 4 scales, and no `cities` table.
+- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts valid events/tags without schema changes.
+- Bad: validating a rewritten baseline against an old `.wrangler/state` database; previous migration records can hide missing statements.
+- Bad: creating a `cities` mirror of `cn-division`; it creates two location sources of truth.
+- Bad: adding `0002_*` before first deployment instead of updating the baseline.
 
 ### 6. Tests Required
 
-- Config/types/build:
-    - `corepack pnpm generate-types`
-    - `corepack pnpm exec tsc --noEmit`
-    - `corepack pnpm lint`
-    - `corepack pnpm build`
-- D1 migration checks:
-    - `corepack pnpm exec wrangler d1 migrations apply eventlist-db --local`
-    - `corepack pnpm exec wrangler d1 migrations apply eventlist-db --remote` for first remote setup.
-    - `corepack pnpm exec wrangler d1 execute eventlist-db --local --command "SELECT COUNT(*) AS count FROM cities"` -> `>= 50`.
-    - Same count checks for remote after first setup.
+- Fresh migration:
+    - `tmp=$(mktemp -d)`
+    - `corepack pnpm exec wrangler d1 migrations apply eventlist-db --local --persist-to "$tmp"`
+    - Assert only `0001_init.sql` is recorded.
+- Schema assertions:
+    - tables and indexes from `sqlite_schema`
+    - `PRAGMA table_info(events)` includes `tag_suggestions`, `start_time`, `end_time`
+    - `PRAGMA foreign_key_list(events)` references `event_types` and `event_scales`
+    - no `cities` table
+- Constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions, duplicate case-insensitive tags, invalid audit JSON.
+- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert 4 events and 4 tags.
+- Project gates: `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm build`.
 
 ### 7. Wrong vs Correct
 
 #### Wrong
 
-```ts
-const db = getDB(getRuntimeEnv());
+```text
+migrations/0001_init.sql
+migrations/0002_seed.sql
+migrations/0003_audit.sql
+migrations/0004_event_metadata.sql
 ```
+
+before the first deployment.
 
 #### Correct
 
-```ts
-const db = await getDB(getRuntimeEnv());
+```text
+migrations/0001_init.sql
 ```
 
-## Scenario: Admin Review D1 Contracts
+containing the complete fresh-install contract.
+
+---
+
+## Scenario: Admin Review And Canonical Tags
 
 ### 1. Scope / Trigger
 
-- Trigger: admin-review adds D1-backed `/admin` pages, `/api/admin/*` mutations, and `migrations/0003_audit.sql`.
-- D1 is the source of truth. Do not introduce KV mirrors for public or admin event truth.
-- `foundation-db` owns the base schema; downstream tasks may extend `src/lib/db/queries.ts` but must preserve the shared constants in `src/lib/db/index.ts`.
+- Trigger: authenticated `/admin` event edits, status transitions, audit writes, and tag merging.
+- D1 is the only event/tag source of truth; do not introduce KV mirrors.
 
 ### 2. Signatures
 
-- Binding: `env.DB` via Wrangler `d1_databases` binding name `DB`.
-- Access helper: `getDB(runtimeEnv): D1Database`; throws a clear setup error if `DB` is missing.
-- Status helper: `updateEventStatus(db, id, fromStatus, toStatus, extra)` returns `"changed" | "already-target" | "conflict"`.
-- Edit helper: `editEvent(db, id, input)` first verifies the event exists, then batches the `events` update, `event_tags` reset, and replacement inserts with `db.batch()`.
-- Audit helper: `insertAudit(db, action, targetId, meta)` writes `audit_logs(action, target_id, meta, at)`.
-- Tag merge helper: `mergeTags(db, from, to)` returns `"changed" | "already-target" | "conflict"` and updates `event_tags` plus `tags.alias_of_id` using `db.batch()`.
+- `updateEventStatus(db, id, fromStatus, toStatus, extra)` -> `"changed" | "already-target" | "conflict"`.
+- `editEvent(db, id, input: AdminEventInput)` batches the event update and complete `event_tags` replacement.
+- `hasCanonicalEventTag(db, eventId)` -> `boolean`.
+- `insertAudit(db, action, targetId, meta)` writes JSON metadata.
+- `mergeTags(db, from, to)` -> `"changed" | "already-target" | "conflict"`.
+- `AdminEventInput` includes nullable `start_time`, nullable `end_time`, and `tags: string[]`.
 
 ### 3. Contracts
 
-- Status values: `pending`, `published`, `rejected`, `offline`.
-- Admin status transitions:
-    - `pending -> published` for approve, sets `published_at`.
-    - `pending -> rejected` for reject, requires `reject_reason`.
-    - `published -> offline` for offline.
-    - `offline -> published` for republish.
-- Audit actions: `approve`, `reject`, `edit`, `offline`, `republish`, `merge`.
-- Tag merge:
-    - `from` and `to` must be different positive IDs.
-    - `from` must be canonical or already aliased to `to`.
-    - `to` must be canonical: `tags.alias_of_id IS NULL`.
-    - Delete duplicate `(event_id, tag_id)` rows before updating `from -> to`.
-- Event edits:
-    - Validate `type`, `scale`, `city_id`, dates, and required strings at the route/form layer.
-    - Create missing canonical tags before the replacement batch, then batch event update + delete old joins + insert new joins.
+- Allowed transitions: pending->published, pending->rejected, published->offline, offline->published.
+- Approve and republish require at least one canonical tag (`alias_of_id IS NULL`).
+- Published/offline edits cannot replace tags with an empty set. Pending events may be saved without tags while moderation is incomplete.
+- Admin tag input may reuse an existing canonical tag or create a new one; aliases resolve to the canonical target.
+- Tag merge removes duplicate event relationships before replacing source IDs and marking the source as an alias.
+- Multi-statement application writes use `db.batch()`, not SQL transaction strings.
 
 ### 4. Validation & Error Matrix
 
-- Missing `env.DB` -> throw `"D1 binding DB is not configured..."` so setup errors are obvious.
-- Status update changes one row -> API returns `{ ok: true }` and writes audit.
-- Status update finds the target status already applied -> API returns `{ ok: true }` and does not write duplicate audit.
-- Status update finds another state or missing event -> API returns 409 from the route layer.
-- Tag merge `from === to` -> error.
-- Tag merge source or target is missing/aliased unexpectedly -> conflict.
-- Tag merge source is already aliased to target -> success, no duplicate audit row.
+- Zero canonical tags on approve/republish -> HTTP 409 with a user-facing Chinese message; no state/audit change.
+- Published/offline edit with zero tags -> HTTP 400 from the edit route.
+- Wrong source status or missing event -> HTTP 409.
+- Already-target transition -> HTTP 200 without duplicate audit.
+- Same-day end time earlier than start -> HTTP 400.
+- Merge source equals target or uses unexpected aliases -> error/conflict.
 
 ### 5. Good/Base/Bad Cases
 
-- Good: approve pending event, write one `audit_logs` row, then a browser retry returns success without a second audit row.
-- Base: list pages join `events` to `cities`, `event_types`, `event_scales`, and canonical `tags` for display.
-- Base: editing an event replaces all `event_tags` in the same D1 batch as the event row update.
-- Bad: using separate `BEGIN; ... COMMIT;` strings for D1 multi-step writes from application code. Use `db.batch([...])` for grouped statements.
+- Good: save canonical tags on a pending event, approve it, and write one audit row.
+- Base: pending event keeps `tag_suggestions` for moderator reference while `event_tags` remains empty.
+- Bad: enabling the approve button based only on UI state; the API must independently query canonical tags.
+- Bad: deleting/adding event tags outside the same D1 batch as the event edit.
 
 ### 6. Tests Required
 
-- Type/build checks: `corepack pnpm generate-types`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm lint`, `corepack pnpm build`.
-- Integration/manual checks once `foundation-db` exists:
-    - pending -> approve -> published, one audit row.
-    - approve retry -> success, no duplicate audit row.
-    - published -> offline -> republish.
-    - merge tag B into A, duplicate event tag rows removed.
-    - merge retry after B is already aliased to A returns success without a second audit row.
-    - edit event replaces removed tags and added tags together.
+- Pending without tags -> approve 409; no audit row.
+- Add a canonical tag -> approve 200; status published; one audit row.
+- Published/offline edit to zero tags -> rejected.
+- Offline without canonical tags -> republish 409.
+- Tag merge removes duplicate relationships and is idempotent on retry.
+- Optional time cases: none, start-only, end-only, same-day pair, cross-day pair, reversed same-day pair.
 
 ### 7. Wrong vs Correct
 
 #### Wrong
 
 ```ts
-await db.exec("BEGIN; UPDATE event_tags ...; UPDATE tags ...; COMMIT;");
+await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 ```
+
+without checking tags.
 
 #### Correct
 
 ```ts
-await db.batch([
-    db.prepare("DELETE FROM event_tags WHERE tag_id = ? AND event_id IN (...)").bind(from, to),
-    db.prepare("UPDATE event_tags SET tag_id = ? WHERE tag_id = ?").bind(to, from),
-    db.prepare("UPDATE tags SET alias_of_id = ? WHERE id = ?").bind(to, from)
-]);
+if (!(await hasCanonicalEventTag(db, id))) {
+    return jsonError("请先整理至少一个规范标签，再发布活动", 409);
+}
+await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 ```
 
-## Scenario: Public Site D1 Contracts
+---
+
+## Scenario: Public Submission And Discovery
 
 ### 1. Scope / Trigger
 
-- Trigger: `public-site` adds public SSR routes, visitor submission, tag search, sitemap rows, and Turnstile-protected pending writes.
-- Public event truth still lives only in D1. Do not introduce KV/cache mirrors for event visibility before this contract is updated.
+- Trigger: public lists/details, visitor submission, tag discovery/filtering, and event JSON-LD.
+- Public truth is D1; pending/rejected events never leak through public detail helpers.
 
 ### 2. Signatures
 
-- Public list helper: `listPublishedEvents(db, filters)` returns `{ events, page, pageSize, hasNext }`.
-- Public detail helper: `getPublicEvent(db, id)` returns only `published` or `offline` events; `pending`/`rejected` return `null`.
-- Submission helper: `insertSubmission(db, input)` writes `events.status = 'pending'` and attaches canonical tag ids.
-- Tag helpers: `topTags(db, limit)` and `searchTags(db, query, limit)` count only canonical tags attached to `published` events whose `end_date >= date('now')`.
-- Sitemap helper: `listPublishedEventSitemapRows(db, limit)` returns only `published` event ids and `updated_at`.
+- `listPublishedEvents(db, filters)` -> `{ events, page, pageSize, hasNext }`.
+- `getPublicEvent(db, id)` -> published/offline event or `null`.
+- `insertSubmission(db, input: SubmissionInput)` -> new pending event ID.
+- `SubmissionInput` has `tag_suggestions: string | null`, `start_time: string | null`, `end_time: string | null`; it has no canonical `tags` array.
+- `searchTags(db, query, limit)` performs suggestion search; the public `tag` event filter performs exact canonical-name matching.
+- `buildEventJsonLd(event, canonicalUrl)` combines known times with local `+08:00` ISO values.
 
 ### 3. Contracts
 
-- Public lists must include `events.status = 'published'` and `date(events.end_date) >= date('now')`.
-- Default list page size is 20; route code may request smaller home page limits.
-- Supported public filters: `cityId`, `type`, `scale`, `tag`, `from`, `to`, `page`, `pageSize`, `sort`.
-- `sort` values are `start_asc` and `start_desc`; unknown route query values must normalize to `start_asc`.
-- Visitor submissions must validate `type`, `scale`, and `city_id` against dimension tables before insert.
-- Submission tags are normalized through `findOrCreateTagIds`; if a submitted tag is already aliased, attach the canonical target id.
+- Public lists require `status = published` and `end_date >= date('now')`.
+- Location filtering uses `divisionCode`; 6/12-digit values match exactly, shorter province/city prefixes use `LIKE '<prefix>%'`.
+- Supported URL fields remain `city`, `type`, `scale`, `tag`, `from`, `to`, `page`, `sort`.
+- Submission free-text suggestions are stored only in `events.tag_suggestions`; submission must not create rows in `tags` or `event_tags`.
+- Canonical tags displayed on cards/details come only from canonical `event_tags` relationships.
+- `tag` filtering is exact; `searchTags` may use substring search for suggestions.
+- Date filtering, expiry, and sort remain date-based even when times exist.
 
 ### 4. Validation & Error Matrix
 
-- Invalid route id -> 404 page for public detail.
-- `pending` or `rejected` detail -> 404 page, not a partial event.
-- `offline` detail -> 200 with an offline banner; it must not appear in public lists or sitemap.
-- Invalid type/scale/city submission -> JSON 400.
-- Missing D1 binding -> setup error from `getDB`.
-- Local concurrent D1 CLI checks may return `SQLITE_BUSY_RECOVERY`; rerun serially before blaming query code.
+- Invalid division/type/scale/date/time/URL -> HTTP 400 JSON.
+- Same-day reversed times -> HTTP 400 JSON.
+- Tag suggestions over 240 characters -> HTTP 400 JSON.
+- Missing/failed Turnstile -> existing 400/500/502 behavior from the public API error contract.
+- Pending/rejected public detail -> 404; offline detail -> 200 with offline notice.
+- Unknown exact tag -> empty list, not a substring match.
 
 ### 5. Good/Base/Bad Cases
 
-- Good: `GET /events?city=1&tag=初音` returns published, unended events only.
-- Good: `GET /events/<offline id>` returns 200 with historical detail and offline notice.
-- Base: `/sitemap.xml` includes `/`, `/events`, `/submit`, and `published` detail URLs only.
-- Bad: using `getEvent()` directly in public detail without status gating.
-- Bad: counting tags via `event_tags` alone; that counts pending/offline events and aliases.
+- Good: submit `"东方、同人展、大型舞台"` as suggestion text; tag inventory count does not change.
+- Good: `?tag=同人` does not match an event tagged only `同人展`.
+- Base: historical event with null times renders dates only.
+- Bad: calling `findOrCreateTagIds()` from `insertSubmission()`.
+- Bad: using `%${tag}%` in the public event filter.
 
 ### 6. Tests Required
 
-- `corepack pnpm generate-types`
-- `corepack pnpm exec tsc --noEmit`
-- `corepack pnpm lint`
-- `corepack pnpm exec astro build --outDir <temp-dir>` when default `dist` cleanup is blocked by local filesystem state.
-- Local D1 checks after `docs/dev/seed-public-site.sql`:
-    - published list query returns only `published` future rows.
-    - offline sample is visible by detail route but absent from list/sitemap.
-    - pending sample returns public 404.
-    - tag API returns canonical tag counts from published unended events.
+- Seeded public list/detail/offline/pending behavior.
+- Exact-vs-extended tag pair returns only the exact event for each query.
+- Submission code path contains no canonical tag creation/attachment.
+- Date/time formatter cases and JSON-LD date-only vs `+08:00` datetime output.
+- Responsive public routes and `/admin/login`; light/dark token checks.
+- Lint, TypeScript, and production build.
 
 ### 7. Wrong vs Correct
 
 #### Wrong
 
 ```ts
-const event = await getEvent(db, id);
+const tagIds = await findOrCreateTagIds(db, input.tags);
 ```
 
-from a public detail route.
+inside visitor submission.
 
 #### Correct
 
 ```ts
-const event = await getPublicEvent(db, id);
-if (!event) Astro.response.status = 404;
+await db
+    .prepare("INSERT INTO events(..., tag_suggestions, status) VALUES (..., ?, ?)")
+    .bind(...values, input.tag_suggestions, STATUS.PENDING)
+    .run();
 ```

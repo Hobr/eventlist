@@ -47,6 +47,8 @@
 - Provide light and dark values through `prefers-color-scheme` in
   `tokens.css`. Dark mode is automatic; do NOT add a `.dark` class toggle or
   ThemeToggle unless a future task explicitly requests manual control.
+- Public/admin HTML documents declare `<meta name="color-scheme" content="light dark">`
+  so native controls follow the same system preference as semantic tokens.
 - Do not reintroduce `--md-sys-*` tokens or Material 3 as the frontend
   contract.
 
@@ -89,7 +91,12 @@
 - `DivisionPicker.svelte`, `CitySelector.svelte`, and `FilterBar.svelte`
   depend on `SelectField.svelte`; visual changes must keep URL query names
   and hidden form field behavior intact.
-- `TagInput.svelte` keeps the hidden `name="tags"` input joined by `、`.
+- `DivisionPicker.svelte` labels its levels `省`, `市`, `区/县`. The four
+  municipalities expose one auto-selected city node; Chongqing must merge
+  counties from both upstream city groups.
+- `TagInput.svelte` is the admin canonical-tag editor. It keeps hidden
+  `name="tags"` data joined by `、` and serializes the current draft too, so
+  clicking Save directly after typing does not lose the new tag.
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
 - Keep action buttons icon+text where the icon clarifies the command
@@ -104,17 +111,21 @@
   link to the same URL with exactly one parameter removed.
 - Public submission remains one native `<form>`. Required controls are always
   visible: `title`, `type`, `scale`, `division_code`, `venue`, `start_date`,
-  `end_date`, `source_url`, and `submitter_contact`. Optional controls remain in
-  the same DOM/FormData inside native `<details>`: `tags`, `address`,
-  `cover_url`, `description`, `qq_group`, and `ticket_url`. Keep
+  `end_date`, `source_url`, and `submitter_contact`. Optional `start_time` and
+  `end_time` remain visible beside their dates and may be filled independently.
+  Optional controls inside native `<details>` include `tag_suggestions`,
+  `address`, `cover_url`, `description`, `qq_group`, and `ticket_url`. Visitor
+  submissions never send canonical `tags`. Keep
   `cf-turnstile-response`, POST `/api/submit`, and success redirect
   `/submit?sent=1` unchanged.
 - Admin moderation islands submit POST to
   `/api/admin/events/:id/{approve|reject|offline|republish}`. Rejection sends
   `reject_reason`; tag merge POSTs `from` and `to` to
   `/api/admin/tags/merge`; edit submits the existing event fields with PATCH to
-  `/api/admin/events/:id`. Actions expose pending, disabled, inline error, and
-  destructive-confirmation states without duplicating hidden forms.
+  `/api/admin/events/:id`. Approve/republish are disabled and rejected by the
+  API until at least one canonical tag exists. Actions expose pending,
+  disabled, inline error, and destructive-confirmation states without
+  duplicating hidden forms.
 
 ## Public Page Structure
 
@@ -127,7 +138,8 @@
   expose every control at equal weight or return to a three-column card grid.
 - Event details use a wide stable-ratio media stage followed by date/region/
   venue facts, an unframed description column, and a restrained action rail.
-  Offline and missing-event states stay explicit and JSON-LD stays unchanged.
+  Offline and missing-event states stay explicit. Known event times appear in
+  cards/details and JSON-LD; null historical times keep date-only output.
 - Public submission uses required fieldsets plus optional progressive
   disclosure inside one form. Inputs must never be moved out of the form or
   removed from the DOM when disclosure closes.

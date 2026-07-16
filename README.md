@@ -1,4 +1,4 @@
-# ACG 活动目录
+# 野活网
 
 国内ACG活动清单
 
@@ -38,7 +38,8 @@ corepack pnpm exec wrangler secret put ADMIN_TOKEN
 
 ## 日常维护
 
-- 新增表结构或字段: 在 `migrations/` 添加迁移, 然后执行 `corepack pnpm exec wrangler d1 migrations apply DB`
+- 首次部署前修改表结构: 直接更新单一基线 `migrations/0001_init.sql`, 并用全新本地 D1 验证
+- 首次部署后修改表结构: 在 `migrations/` 新增递增迁移, 然后执行 `corepack pnpm exec wrangler d1 migrations apply DB`
 - 更新类型绑定: 修改 `wrangler.jsonc` 或 Cloudflare 绑定后执行 `corepack pnpm generate-types`
 - 发布前检查: 执行 `corepack pnpm lint` 和 `corepack pnpm build`
 - 观察线上日志: 执行 `corepack pnpm exec wrangler tail`

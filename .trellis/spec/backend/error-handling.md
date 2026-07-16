@@ -34,6 +34,7 @@
 - Wrong source status -> 409.
 - Already-merged tag mutation -> 200 `{ ok: true }` and no new audit row.
 - Missing or non-canonical tag merge endpoint -> 409.
+- Approve/republish without a canonical event tag -> 409 with an instruction to organize tags first.
 
 ### 5. Good/Base/Bad Cases
 
@@ -76,7 +77,6 @@ return jsonError("Unauthorized", 401);
 
 ### 2. Signatures
 
-- `GET /api/cities` -> `{ ok: true, data: { cities } }`.
 - `GET /api/tags?q=<query>` -> `{ ok: true, data: { tags } }`.
 - `POST /api/submit` accepts `FormData` and returns `201 { ok: true, data: { id } }` after a pending insert.
 - Turnstile wrapper: `verifyTurnstile(token, secret, remoteIp?)` returns `{ success, errors }` or throws a setup/upstream error.
@@ -91,7 +91,9 @@ return jsonError("Unauthorized", 401);
 ### 4. Validation & Error Matrix
 
 - Missing required form field -> 400 JSON with a user-facing validation message.
-- Invalid URL/date/type/scale/city -> 400 JSON.
+- Invalid URL/date/time/type/scale/division code -> 400 JSON.
+- Same-day end time earlier than start time -> 400 JSON.
+- Tag suggestions longer than 240 characters -> 400 JSON.
 - Missing `TURNSTILE_SECRET_KEY` -> 500 JSON.
 - Turnstile siteverify network/TLS failure -> 502 JSON with `Turnstile verification request failed`.
 - Turnstile verification returns `success: false` -> 400 JSON.
