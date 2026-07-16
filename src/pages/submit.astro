@@ -5,7 +5,6 @@ import Send from "@lucide/astro/icons/send";
 import DivisionPicker from "../components/DivisionPicker.svelte";
 import SelectField from "../components/SelectField.svelte";
 import SubmissionSection from "../components/SubmissionSection.astro";
-import TagInput from "../components/TagInput.svelte";
 import Turnstile from "../components/Turnstile.svelte";
 import Layout from "../layouts/Layout.astro";
 import { getDB } from "../lib/db";
@@ -136,6 +135,14 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 <span class={labelCls}>结束日期</span>
                                 <input type="date" name="end_date" required class={fieldCls} />
                             </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>开始时间（选填）</span>
+                                <input type="time" name="start_time" class={fieldCls} />
+                            </label>
+                            <label class="flex flex-col gap-1.5">
+                                <span class={labelCls}>结束时间（选填）</span>
+                                <input type="time" name="end_time" class={fieldCls} />
+                            </label>
                         </div>
                     </SubmissionSection>
 
@@ -145,9 +152,18 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                         optional
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-2">
-                                <TagInput client:load />
-                            </div>
+                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>标签描述</span>
+                                <textarea
+                                    name="tag_suggestions"
+                                    maxlength="240"
+                                    placeholder="例如：东方 Project、同人展、舞台表演；管理员会整理为统一标签"
+                                    class={`${textareaCls} min-h-24`}
+                                />
+                                <span class="text-muted text-xs">
+                                    这里只需大概描述，正式标签会在审核时统一整理。
+                                </span>
+                            </label>
                             <label class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>详细地址</span>
                                 <input name="address" maxlength="240" class={fieldCls} />

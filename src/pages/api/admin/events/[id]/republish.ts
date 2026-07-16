@@ -1,5 +1,9 @@
 import type { APIRoute } from "astro";
-import { insertAudit, updateEventStatus } from "../../../../../lib/db/queries";
+import {
+    hasCanonicalEventTag,
+    insertAudit,
+    updateEventStatus
+} from "../../../../../lib/db/queries";
 import { getDB, STATUS } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
@@ -13,6 +17,9 @@ export const POST: APIRoute = async ({ params }) => {
 
     try {
         const db = await getDB(getRuntimeEnv());
+        if (!(await hasCanonicalEventTag(db, id))) {
+            return jsonError("请先整理至少一个规范标签，再重新发布活动", 409);
+        }
         const outcome = await updateEventStatus(db, id, STATUS.OFFLINE, STATUS.PUBLISHED);
         if (outcome === "conflict") return jsonError("Event is not offline", 409);
         if (outcome === "already-target") return jsonOk();

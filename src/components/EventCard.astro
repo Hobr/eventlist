@@ -4,6 +4,7 @@ import MapPin from "@lucide/astro/icons/map-pin";
 import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import type { EventRecord } from "../lib/db/queries";
 import { getDivisionLabel } from "../lib/divisions";
+import { formatEventSchedule } from "../lib/events/datetime";
 import Badge from "./ui/badge.svelte";
 import EventArtwork from "./EventArtwork.astro";
 
@@ -16,12 +17,9 @@ interface Props {
 const { event, variant = "card", priority = false } = Astro.props;
 const tags = event.tags ? event.tags.split("、").filter(Boolean).slice(0, 3) : [];
 const divisionLabel = getDivisionLabel(event.division_code) ?? "未知地区";
-const startLabel = event.start_date.slice(5).replace("-", "/");
-const endLabel = event.end_date.slice(5).replace("-", "/");
-const dateLabel =
-    event.start_date === event.end_date
-        ? event.start_date
-        : `${event.start_date} - ${event.end_date}`;
+const startLabel = `${event.start_date.slice(5).replace("-", "/")}${event.start_time ? ` ${event.start_time}` : ""}`;
+const endLabel = `${event.end_date.slice(5).replace("-", "/")}${event.end_time ? ` ${event.end_time}` : ""}`;
+const dateLabel = formatEventSchedule(event);
 const href = `/events/${event.id}`;
 ---
 

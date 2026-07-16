@@ -3,10 +3,11 @@ import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import Save from "@lucide/astro/icons/save";
 import DivisionPicker from "../../../../components/DivisionPicker.svelte";
 import SelectField from "../../../../components/SelectField.svelte";
+import TagInput from "../../../../components/TagInput.svelte";
 import Badge from "../../../../components/ui/badge.svelte";
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import { getDB } from "../../../../lib/db";
-import { getEvent, listScales, listTypes } from "../../../../lib/db/queries";
+import { getEvent, listScales, listTags, listTypes } from "../../../../lib/db/queries";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;
@@ -15,22 +16,25 @@ const id = Number.parseInt(Astro.params.id ?? "", 10);
 let eventRecord = null;
 let types = [];
 let scales = [];
+let canonicalTags = [];
 let errorMessage = "";
 
 try {
     if (!Number.isInteger(id) || id <= 0) throw new Error("活动 ID 无效");
 
     const db = await getDB(getRuntimeEnv());
-    const [loadedEvent, loadedTypes, loadedScales] = await Promise.all([
+    const [loadedEvent, loadedTypes, loadedScales, loadedTags] = await Promise.all([
         getEvent(db, id),
         listTypes(db),
-        listScales(db)
+        listScales(db),
+        listTags(db)
     ]);
 
     if (!loadedEvent) throw new Error("活动不存在");
     eventRecord = loadedEvent;
     types = loadedTypes;
     scales = loadedScales;
+    canonicalTags = loadedTags;
 } catch (error) {
     errorMessage = error instanceof Error ? error.message : "无法加载活动";
 }
@@ -218,6 +222,30 @@ const returnHref =
                                 class={`mt-1.5 ${fieldCls}`}
                             />
                         </div>
+                        <div>
+                            <label class={labelCls} for="start_time">
+                                开始时间（选填）
+                            </label>
+                            <input
+                                id="start_time"
+                                name="start_time"
+                                type="time"
+                                value={eventRecord.start_time ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
+                        <div>
+                            <label class={labelCls} for="end_time">
+                                结束时间（选填）
+                            </label>
+                            <input
+                                id="end_time"
+                                name="end_time"
+                                type="time"
+                                value={eventRecord.end_time ?? ""}
+                                class={`mt-1.5 ${fieldCls}`}
+                            />
+                        </div>
                     </section>
 
                     <section
@@ -303,17 +331,20 @@ const returnHref =
                                 公开内容
                             </h2>
                         </div>
-                        <div>
-                            <label class={labelCls} for="tags">
-                                相关作品标签
-                            </label>
-                            <input
-                                id="tags"
-                                name="tags"
-                                value={eventRecord.tags ?? ""}
-                                class={`mt-1.5 ${fieldCls}`}
-                            />
-                        </div>
+                        {eventRecord.tag_suggestions ? (
+                            <div class="border-border bg-surface-subtle rounded-md border p-4">
+                                <p class="text-muted text-xs font-semibold">投稿标签建议</p>
+                                <p class="text-foreground mt-1.5 text-sm whitespace-pre-wrap">
+                                    {eventRecord.tag_suggestions}
+                                </p>
+                            </div>
+                        ) : null}
+                        <TagInput
+                            initial={eventRecord.tags ?? ""}
+                            label="规范标签（至少一个才能发布）"
+                            available={canonicalTags}
+                            client:load
+                        />
                         <div>
                             <label class={labelCls} for="description">
                                 活动说明

@@ -10,6 +10,7 @@ import TableHeader from "../ui/table-header.svelte";
 import TableRow from "../ui/table-row.svelte";
 import type { EventRecord } from "../../lib/db/queries";
 import { getDivisionLabel } from "../../lib/divisions";
+import { formatEventSchedule } from "../../lib/events/datetime";
 
 interface Props {
     events: EventRecord[];
@@ -96,7 +97,7 @@ const mobileCell =
                                 dataLabel="时间与地点"
                             >
                                 <div class="text-foreground font-semibold">
-                                    {event.start_date} - {event.end_date}
+                                    {formatEventSchedule(event)}
                                 </div>
                                 <div class="text-muted-foreground mt-1">
                                     {getDivisionLabel(event.division_code) ?? "未设置地区"}
@@ -119,6 +120,10 @@ const mobileCell =
                                 {event.tags ? (
                                     <div class="text-muted mt-1 text-xs break-words">
                                         {event.tags}
+                                    </div>
+                                ) : event.tag_suggestions ? (
+                                    <div class="text-warning mt-1 text-xs break-words">
+                                        投稿建议：{event.tag_suggestions}
                                     </div>
                                 ) : null}
                             </TableCell>
@@ -189,7 +194,12 @@ const mobileCell =
                                 ]}
                                 dataLabel="操作"
                             >
-                                <EventActions eventId={event.id} {mode} client:load />
+                                <EventActions
+                                    eventId={event.id}
+                                    {mode}
+                                    hasTags={Boolean(event.tags)}
+                                    client:load
+                                />
                             </TableCell>
                         </TableRow>
                     ))}

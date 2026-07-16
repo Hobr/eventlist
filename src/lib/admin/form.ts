@@ -1,4 +1,5 @@
 import type { AdminEventInput } from "../db/queries";
+import { normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
 
 function readRequired(formData: FormData, name: string) {
     const value = formData.get(name);
@@ -23,6 +24,19 @@ export function parseEventForm(formData: FormData): AdminEventInput {
     }
 
     const tagsValue = readOptional(formData, "tags") ?? "";
+    const startDate = readRequired(formData, "start_date");
+    const endDate = readRequired(formData, "end_date");
+    if (endDate < startDate) {
+        throw new Error("结束日期不能早于开始日期");
+    }
+    const startTime = normalizeOptionalTime(readOptional(formData, "start_time"), "开始时间");
+    const endTime = normalizeOptionalTime(readOptional(formData, "end_time"), "结束时间");
+    validateEventSchedule({
+        start_date: startDate,
+        end_date: endDate,
+        start_time: startTime,
+        end_time: endTime
+    });
 
     return {
         title: readRequired(formData, "title"),
@@ -31,8 +45,10 @@ export function parseEventForm(formData: FormData): AdminEventInput {
         division_code: divisionCode,
         venue: readRequired(formData, "venue"),
         address: readOptional(formData, "address"),
-        start_date: readRequired(formData, "start_date"),
-        end_date: readRequired(formData, "end_date"),
+        start_date: startDate,
+        end_date: endDate,
+        start_time: startTime,
+        end_time: endTime,
         cover_url: readOptional(formData, "cover_url"),
         description: readOptional(formData, "description"),
         qq_group: readOptional(formData, "qq_group"),

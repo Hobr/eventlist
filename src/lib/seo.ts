@@ -1,5 +1,6 @@
 import type { EventRecord } from "./db/queries";
 import { getDivisionLabel } from "./divisions";
+import { toEventIsoDateTime } from "./events/datetime";
 
 export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
     const divisionLabel = getDivisionLabel(event.division_code);
@@ -7,8 +8,8 @@ export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
         "@context": "https://schema.org",
         "@type": "Event",
         name: event.title,
-        startDate: event.start_date,
-        endDate: event.end_date,
+        startDate: toEventIsoDateTime(event.start_date, event.start_time),
+        endDate: toEventIsoDateTime(event.end_date, event.end_time),
         eventStatus:
             event.status === "offline"
                 ? "https://schema.org/EventCancelled"

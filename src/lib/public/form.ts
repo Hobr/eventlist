@@ -1,12 +1,12 @@
 import type { SubmissionInput } from "../db/queries";
+import { normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
 
 export interface ParsedSubmissionForm {
     input: SubmissionInput;
     turnstileToken: string | null;
 }
 
-const MAX_TAGS = 12;
-const MAX_TAG_LENGTH = 24;
+const MAX_TAG_SUGGESTIONS_LENGTH = 240;
 
 function readRequired(formData: FormData, name: string, label: string) {
     const value = formData.get(name);
@@ -66,23 +66,24 @@ function readUrl(formData: FormData, name: string, label: string, required = fal
     }
 }
 
-function parseTags(value: string | null) {
-    return [
-        ...new Set(
-            (value ?? "")
-                .split(/[,\n，、]/)
-                .map((tag) => tag.trim())
-                .filter(Boolean)
-                .map((tag) => tag.slice(0, MAX_TAG_LENGTH))
-        )
-    ].slice(0, MAX_TAGS);
-}
-
 export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
     const startDate = readDate(formData, "start_date", "开始日期");
     const endDate = readDate(formData, "end_date", "结束日期");
     if (endDate < startDate) {
         throw new Error("结束日期不能早于开始日期");
+    }
+    const startTime = normalizeOptionalTime(readOptional(formData, "start_time"), "开始时间");
+    const endTime = normalizeOptionalTime(readOptional(formData, "end_time"), "结束时间");
+    validateEventSchedule({
+        start_date: startDate,
+        end_date: endDate,
+        start_time: startTime,
+        end_time: endTime
+    });
+    const tagSuggestions =
+        readOptional(formData, "tag_suggestions") ?? readOptional(formData, "tags");
+    if (tagSuggestions && tagSuggestions.length > MAX_TAG_SUGGESTIONS_LENGTH) {
+        throw new Error("标签描述不能超过 240 个字符");
     }
 
     return {
@@ -95,13 +96,15 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
             address: readOptional(formData, "address"),
             start_date: startDate,
             end_date: endDate,
+            start_time: startTime,
+            end_time: endTime,
             cover_url: readUrl(formData, "cover_url", "封面 URL"),
             description: readOptional(formData, "description"),
             qq_group: readOptional(formData, "qq_group"),
             ticket_url: readUrl(formData, "ticket_url", "购票地址"),
             source_url: readUrl(formData, "source_url", "来源链接", true),
             submitter_contact: readRequired(formData, "submitter_contact", "联系方式"),
-            tags: parseTags(readOptional(formData, "tags"))
+            tag_suggestions: tagSuggestions
         },
         turnstileToken: readOptional(formData, "cf-turnstile-response")
     };

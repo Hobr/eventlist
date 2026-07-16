@@ -13,6 +13,8 @@ export interface EventRecord {
     address: string | null;
     start_date: string;
     end_date: string;
+    start_time: string | null;
+    end_time: string | null;
     cover_url: string | null;
     description: string | null;
     qq_group: string | null;
@@ -24,10 +26,11 @@ export interface EventRecord {
     created_at: string;
     updated_at: string;
     published_at: string | null;
+    tag_suggestions: string | null;
     tags: string | null;
 }
 
-export interface AdminEventInput {
+interface EventBaseInput {
     title: string;
     type: string;
     scale: string;
@@ -36,16 +39,23 @@ export interface AdminEventInput {
     address: string | null;
     start_date: string;
     end_date: string;
+    start_time: string | null;
+    end_time: string | null;
     cover_url: string | null;
     description: string | null;
     qq_group: string | null;
     ticket_url: string | null;
     source_url: string;
     submitter_contact: string;
+}
+
+export interface AdminEventInput extends EventBaseInput {
     tags: string[];
 }
 
-export type SubmissionInput = AdminEventInput;
+export interface SubmissionInput extends EventBaseInput {
+    tag_suggestions: string | null;
+}
 export type EventSort = "start_asc" | "start_desc";
 
 export interface PublishedEventFilters {
@@ -224,6 +234,22 @@ export async function listTags(db: D1Database) {
     return requireSuccess(result, "Failed to list tags").results ?? [];
 }
 
+export async function hasCanonicalEventTag(db: D1Database, eventId: number) {
+    const row = await db
+        .prepare(
+            `SELECT 1 AS found
+             FROM event_tags
+             JOIN tags ON tags.id = event_tags.tag_id
+             WHERE event_tags.event_id = ?
+               AND tags.alias_of_id IS NULL
+             LIMIT 1`
+        )
+        .bind(eventId)
+        .first<{ found: number }>();
+
+    return row !== null;
+}
+
 export async function topTags(db: D1Database, limit = 20) {
     const result = await db
         .prepare(
@@ -317,10 +343,10 @@ export async function listPublishedEvents(
                 JOIN tags filter_tags ON filter_tags.id = filter_event_tags.tag_id
                 WHERE filter_event_tags.event_id = events.id
                   AND filter_tags.alias_of_id IS NULL
-                  AND filter_tags.name LIKE ? ESCAPE '\\'
+                  AND filter_tags.name = ? COLLATE NOCASE
             )`
         );
-        values.push(`%${escapeLike(filters.tag)}%`);
+        values.push(filters.tag.trim());
     }
 
     const direction = filters.sort === "start_desc" ? "DESC" : "ASC";
@@ -360,15 +386,14 @@ export async function listPublishedEventSitemapRows(db: D1Database, limit = 1000
 }
 
 export async function insertSubmission(db: D1Database, input: SubmissionInput) {
-    const tagIds = await findOrCreateTagIds(db, input.tags);
     const inserted = await db
         .prepare(
             `INSERT INTO events(
                  title, type, scale, division_code, venue, address,
-                 start_date, end_date, cover_url, description,
-                 qq_group, ticket_url, source_url, submitter_contact, status
+                 start_date, end_date, start_time, end_time, cover_url, description,
+                 qq_group, ticket_url, source_url, submitter_contact, tag_suggestions, status
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
         .bind(
             input.title,
@@ -379,12 +404,15 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
             input.address,
             input.start_date,
             input.end_date,
+            input.start_time,
+            input.end_time,
             input.cover_url,
             input.description,
             input.qq_group,
             input.ticket_url,
             input.source_url,
             input.submitter_contact,
+            input.tag_suggestions,
             STATUS.PENDING
         )
         .run();
@@ -393,22 +421,7 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
         throw new Error("Failed to insert submission");
     }
 
-    const eventId = inserted.meta.last_row_id;
-    if (tagIds.length === 0) return eventId;
-
-    const results = await db.batch(
-        tagIds.map((tagId) =>
-            db
-                .prepare("INSERT OR IGNORE INTO event_tags(event_id, tag_id) VALUES (?, ?)")
-                .bind(eventId, tagId)
-        )
-    );
-
-    for (const result of results) {
-        requireSuccess(result, "Failed to attach submission tags");
-    }
-
-    return eventId;
+    return inserted.meta.last_row_id;
 }
 
 export async function editEvent(db: D1Database, id: number, input: AdminEventInput) {
@@ -416,12 +429,19 @@ export async function editEvent(db: D1Database, id: number, input: AdminEventInp
     if (!currentStatus) return 0;
 
     const tagIds = await findOrCreateTagIds(db, input.tags);
+    if (
+        tagIds.length === 0 &&
+        (currentStatus === STATUS.PUBLISHED || currentStatus === STATUS.OFFLINE)
+    ) {
+        throw new Error("已发布或已下线活动必须至少保留一个规范标签");
+    }
     const statements = [
         db
             .prepare(
                 `UPDATE events
                  SET title = ?, type = ?, scale = ?, division_code = ?, venue = ?, address = ?,
-                     start_date = ?, end_date = ?, cover_url = ?, description = ?,
+                     start_date = ?, end_date = ?, start_time = ?, end_time = ?,
+                     cover_url = ?, description = ?,
                      qq_group = ?, ticket_url = ?, source_url = ?, submitter_contact = ?,
                      updated_at = datetime('now')
                  WHERE id = ?`
@@ -435,6 +455,8 @@ export async function editEvent(db: D1Database, id: number, input: AdminEventInp
                 input.address,
                 input.start_date,
                 input.end_date,
+                input.start_time,
+                input.end_time,
                 input.cover_url,
                 input.description,
                 input.qq_group,

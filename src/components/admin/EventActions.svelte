@@ -14,9 +14,10 @@
     interface Props {
         eventId: number;
         mode: Mode;
+        hasTags: boolean;
     }
 
-    let { eventId, mode }: Props = $props();
+    let { eventId, mode, hasTags }: Props = $props();
     let pendingAction = $state<Action | null>(null);
     let errorMessage = $state("");
     let rejectReason = $state("");
@@ -63,10 +64,14 @@
 
 <div class="flex min-w-32 flex-col gap-2">
     {#if mode === "pending"}
+        <Button href={`/admin/events/${eventId}/edit`} variant="outline" size="sm" class="w-full">
+            <Pencil class="size-3.5" aria-hidden="true" />
+            整理标签
+        </Button>
         <Button
             size="sm"
             class="w-full"
-            disabled={busy}
+            disabled={busy || !hasTags}
             onclick={() => void submitAction("approve")}
         >
             {#if pendingAction === "approve"}
@@ -76,6 +81,11 @@
             {/if}
             {pendingAction === "approve" ? "处理中" : "通过"}
         </Button>
+        {#if !hasTags}
+            <p class="text-warning text-xs leading-5 font-semibold" role="status">
+                请先整理至少一个规范标签。
+            </p>
+        {/if}
 
         <ConfirmDialog
             title="驳回这条投稿？"
@@ -134,7 +144,7 @@
             variant="tonal"
             size="sm"
             class="w-full"
-            disabled={busy}
+            disabled={busy || !hasTags}
             onclick={() => void submitAction("republish")}
         >
             {#if pendingAction === "republish"}
@@ -144,6 +154,11 @@
             {/if}
             {pendingAction === "republish" ? "处理中" : "重新发布"}
         </Button>
+        {#if !hasTags}
+            <p class="text-warning text-xs leading-5 font-semibold" role="status">
+                请先整理至少一个规范标签。
+            </p>
+        {/if}
     {/if}
 
     {#if errorMessage}
