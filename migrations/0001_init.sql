@@ -1,66 +1,138 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS event_types (
+CREATE TABLE event_types (
     name TEXT PRIMARY KEY,
     label TEXT NOT NULL,
     sort INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+) STRICT;
 
-CREATE TABLE IF NOT EXISTS event_scales (
+CREATE TABLE event_scales (
     name TEXT PRIMARY KEY,
     label TEXT NOT NULL,
     sort INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+) STRICT;
 
-CREATE TABLE IF NOT EXISTS tags (
+CREATE TABLE tags (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (
+        length(name) BETWEEN 1 AND 24
+        AND name = trim(name)
+    ),
     alias_of_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    CHECK (alias_of_id IS NULL OR alias_of_id <> id),
     FOREIGN KEY (alias_of_id) REFERENCES tags(id) ON DELETE SET NULL
-);
+) STRICT;
 
-CREATE TABLE IF NOT EXISTS events (
+CREATE TABLE events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     type TEXT NOT NULL,
     scale TEXT NOT NULL,
-    division_code TEXT NOT NULL,
+    division_code TEXT NOT NULL CHECK (
+        division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]'
+        OR division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
+    ),
     venue TEXT NOT NULL,
     address TEXT,
-    start_date TEXT NOT NULL,
-    end_date TEXT NOT NULL,
+    start_date TEXT NOT NULL CHECK (
+        date(start_date) IS NOT NULL
+        AND start_date = date(start_date)
+    ),
+    end_date TEXT NOT NULL CHECK (
+        date(end_date) IS NOT NULL
+        AND end_date = date(end_date)
+    ),
+    start_time TEXT CHECK (
+        start_time IS NULL OR (
+            length(start_time) = 5
+            AND start_time GLOB '[0-2][0-9]:[0-5][0-9]'
+            AND CAST(substr(start_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23
+        )
+    ),
+    end_time TEXT CHECK (
+        end_time IS NULL OR (
+            length(end_time) = 5
+            AND end_time GLOB '[0-2][0-9]:[0-5][0-9]'
+            AND CAST(substr(end_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23
+        )
+    ),
     cover_url TEXT,
     description TEXT,
     qq_group TEXT,
     ticket_url TEXT,
     source_url TEXT NOT NULL,
     submitter_contact TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'published', 'rejected', 'offline')),
+    tag_suggestions TEXT CHECK (
+        tag_suggestions IS NULL OR length(tag_suggestions) <= 240
+    ),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (
+        status IN ('pending', 'published', 'rejected', 'offline')
+    ),
     reject_reason TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-    published_at TEXT,
-    CHECK (date(start_date) IS NOT NULL),
-    CHECK (date(end_date) IS NOT NULL),
+    published_at TEXT CHECK (
+        published_at IS NULL OR datetime(published_at) IS NOT NULL
+    ),
     CHECK (date(end_date) >= date(start_date)),
-    CHECK (division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]' OR division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+    CHECK (
+        start_date <> end_date
+        OR start_time IS NULL
+        OR end_time IS NULL
+        OR end_time >= start_time
+    ),
     FOREIGN KEY (type) REFERENCES event_types(name),
     FOREIGN KEY (scale) REFERENCES event_scales(name)
-);
+) STRICT;
 
-CREATE TABLE IF NOT EXISTS event_tags (
+CREATE TABLE event_tags (
     event_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
     PRIMARY KEY (event_id, tag_id),
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
-);
+) STRICT;
 
-CREATE INDEX IF NOT EXISTS idx_events_status_start ON events(status, start_date);
-CREATE INDEX IF NOT EXISTS idx_events_division_end ON events(division_code, end_date);
-CREATE INDEX IF NOT EXISTS idx_events_status_division_start ON events(status, division_code, start_date);
-CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
-CREATE INDEX IF NOT EXISTS idx_event_tags_tag ON event_tags(tag_id);
+CREATE TABLE audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL CHECK (
+        action IN ('approve', 'reject', 'edit', 'offline', 'republish', 'merge')
+    ),
+    target_id INTEGER,
+    meta TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(meta)),
+    at TEXT NOT NULL DEFAULT (datetime('now'))
+) STRICT;
+
+CREATE INDEX idx_events_public_start
+    ON events(status, end_date, start_date, id);
+CREATE INDEX idx_events_public_division
+    ON events(status, division_code, end_date, start_date, id);
+CREATE INDEX idx_events_status_created
+    ON events(status, created_at, id);
+CREATE INDEX idx_events_status_updated
+    ON events(status, updated_at, id);
+CREATE INDEX idx_event_tags_tag_event
+    ON event_tags(tag_id, event_id);
+CREATE INDEX idx_audit_logs_at
+    ON audit_logs(at);
+CREATE INDEX idx_audit_logs_action_at
+    ON audit_logs(action, at);
+
+INSERT INTO event_types(name, label, sort) VALUES
+    ('comic', '漫展', 10),
+    ('doujin', '同人展', 20),
+    ('concert', '演唱会', 30),
+    ('stage', '舞台剧·2.5次元', 40),
+    ('dance', '舞见·宅舞', 50),
+    ('ipflash', 'IP主题快闪', 60),
+    ('online', '线上活动', 70),
+    ('other', '其它', 90);
+
+INSERT INTO event_scales(name, label, sort) VALUES
+    ('small', '小型(地区级)', 10),
+    ('mid', '中型(省级)', 20),
+    ('large', '大型(全国级)', 30),
+    ('mega', '超大型(国际级)', 40);

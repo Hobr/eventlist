@@ -8,7 +8,7 @@ INSERT OR IGNORE INTO tags(name) VALUES
 
 INSERT INTO events(
     title, type, scale, division_code, venue, address,
-    start_date, end_date, cover_url, description,
+    start_date, end_date, start_time, end_time, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status, published_at
 )
 SELECT
@@ -20,6 +20,8 @@ SELECT
     '北京市朝阳区测试路 1 号',
     '2026-08-02',
     '2026-08-02',
+    '10:00',
+    '18:00',
     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f',
     '本地开发用 published 样例，用于验证首页、列表、详情与 sitemap。',
     '123456789',
@@ -35,7 +37,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO events(
     title, type, scale, division_code, venue, address,
-    start_date, end_date, cover_url, description,
+    start_date, end_date, start_time, end_time, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status, published_at
 )
 SELECT
@@ -47,6 +49,8 @@ SELECT
     '上海市浦东新区测试路 2 号',
     '2026-08-16',
     '2026-08-17',
+    '09:30',
+    NULL,
     NULL,
     '本地开发用 published 样例，用于验证跨城市筛选。',
     NULL,
