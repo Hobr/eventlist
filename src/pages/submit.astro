@@ -89,9 +89,15 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                 >
                     <SubmissionSection title="活动基本信息">
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label for="title" class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>标题</span>
-                                <input name="title" required maxlength="120" class={fieldCls} />
+                                <input
+                                    id="title"
+                                    name="title"
+                                    required
+                                    maxlength="120"
+                                    class={fieldCls}
+                                />
                             </label>
                             <SelectField
                                 name="type"
@@ -123,25 +129,48 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     client:load
                                 />
                             </div>
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label for="venue" class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>地点</span>
-                                <input name="venue" required maxlength="120" class={fieldCls} />
+                                <input
+                                    id="venue"
+                                    name="venue"
+                                    required
+                                    maxlength="120"
+                                    class={fieldCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5">
+                            <label for="start-date" class="flex flex-col gap-1.5">
                                 <span class={labelCls}>开始日期</span>
-                                <input type="date" name="start_date" required class={fieldCls} />
+                                <input
+                                    id="start-date"
+                                    type="date"
+                                    name="start_date"
+                                    required
+                                    class={fieldCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5">
+                            <label for="end-date" class="flex flex-col gap-1.5">
                                 <span class={labelCls}>结束日期</span>
-                                <input type="date" name="end_date" required class={fieldCls} />
+                                <input
+                                    id="end-date"
+                                    type="date"
+                                    name="end_date"
+                                    required
+                                    class={fieldCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5">
+                            <label for="start-time" class="flex flex-col gap-1.5">
                                 <span class={labelCls}>开始时间（选填）</span>
-                                <input type="time" name="start_time" class={fieldCls} />
+                                <input
+                                    id="start-time"
+                                    type="time"
+                                    name="start_time"
+                                    class={fieldCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5">
+                            <label for="end-time" class="flex flex-col gap-1.5">
                                 <span class={labelCls}>结束时间（选填）</span>
-                                <input type="time" name="end_time" class={fieldCls} />
+                                <input id="end-time" type="time" name="end_time" class={fieldCls} />
                             </label>
                         </div>
                     </SubmissionSection>
@@ -152,9 +181,13 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                         optional
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label
+                                for="tag-suggestions"
+                                class="flex flex-col gap-1.5 sm:col-span-2"
+                            >
                                 <span class={labelCls}>标签描述</span>
                                 <textarea
+                                    id="tag-suggestions"
                                     name="tag_suggestions"
                                     maxlength="240"
                                     placeholder="例如：东方 Project、同人展、舞台表演；管理员会整理为统一标签"
@@ -164,30 +197,47 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     这里只需大概描述，正式标签会在审核时统一整理。
                                 </span>
                             </label>
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label for="address" class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>详细地址</span>
-                                <input name="address" maxlength="240" class={fieldCls} />
+                                <input
+                                    id="address"
+                                    name="address"
+                                    maxlength="240"
+                                    class={fieldCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label for="cover-url" class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>封面 URL</span>
                                 <input
+                                    id="cover-url"
                                     type="url"
                                     name="cover_url"
                                     placeholder="https://..."
                                     class={fieldCls}
                                 />
                             </label>
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label for="description" class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>活动描述</span>
-                                <textarea name="description" maxlength="4000" class={textareaCls} />
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    maxlength="4000"
+                                    class={textareaCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5">
+                            <label for="qq-group" class="flex flex-col gap-1.5">
                                 <span class={labelCls}>官方交流群 QQ</span>
-                                <input name="qq_group" maxlength="80" class={fieldCls} />
+                                <input
+                                    id="qq-group"
+                                    name="qq_group"
+                                    maxlength="80"
+                                    class={fieldCls}
+                                />
                             </label>
-                            <label class="flex flex-col gap-1.5">
+                            <label for="ticket-url" class="flex flex-col gap-1.5">
                                 <span class={labelCls}>购票地址</span>
                                 <input
+                                    id="ticket-url"
                                     type="url"
                                     name="ticket_url"
                                     placeholder="https://..."
@@ -202,9 +252,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                         description="联系方式仅用于核对信息，不会在前台公开。"
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label for="source-url" class="flex flex-col gap-1.5 sm:col-span-2">
                                 <span class={labelCls}>活动来源链接</span>
                                 <input
+                                    id="source-url"
                                     type="url"
                                     name="source_url"
                                     placeholder="https://..."
@@ -212,9 +263,13 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     class={fieldCls}
                                 />
                             </label>
-                            <label class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label
+                                for="submitter-contact"
+                                class="flex flex-col gap-1.5 sm:col-span-2"
+                            >
                                 <span class={labelCls}>投稿联系方式</span>
                                 <input
+                                    id="submitter-contact"
                                     name="submitter_contact"
                                     required
                                     maxlength="120"

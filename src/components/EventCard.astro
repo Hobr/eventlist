@@ -96,6 +96,7 @@ const href = `/events/${event.id}`;
             <EventArtwork
                 src={event.cover_url}
                 alt={`${event.title} 封面`}
+                loading={priority ? "eager" : "lazy"}
                 class="aspect-[4/3] w-full"
             />
             <div class="min-w-0">

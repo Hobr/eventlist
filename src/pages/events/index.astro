@@ -134,8 +134,8 @@ try {
             ) : events.length > 0 ? (
                 <>
                     <section aria-label="活动结果" class="border-border border-t">
-                        {events.map((event) => (
-                            <EventCard event={event} variant="row" />
+                        {events.map((event, index) => (
+                            <EventCard event={event} variant="row" priority={index < 2} />
                         ))}
                     </section>
                     <nav
