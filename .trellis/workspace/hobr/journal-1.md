@@ -331,3 +331,36 @@ Rebuilt the public discovery experience and responsive admin workspace, restored
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: Replace event option tables with shared constants
+
+**Date**: 2026-07-16
+**Task**: Replace event option tables with shared constants
+**Branch**: `main`
+
+### Summary
+
+Replaced D1 event type and scale lookup tables with shared typed constants, server-side guards, and SQL CHECK constraints; removed runtime joins and option queries; validated fresh local D1 schema, seeds, API errors, pages, type checking, compatible ESLint, and production build.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `cfeb53d` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

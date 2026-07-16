@@ -7,11 +7,9 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
-
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 9
+- **Total Sessions**: 10
 - **Last Active**: 2026-07-16
-
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,11 +17,9 @@
 ## Active Documents
 
 <!-- @@@auto:active-documents -->
-
-| File           | Lines | Status |
-| -------------- | ----- | ------ |
-| `journal-1.md` | ~334  | Active |
-
+| File | Lines | Status |
+|------|-------|--------|
+| `journal-1.md` | ~366 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -32,8 +28,9 @@
 
 <!-- @@@auto:session-history -->
 
-| #   | Date       | Title                              | Commits                                    | Branch |
-| --- | ---------- | ---------------------------------- | ------------------------------------------ | ------ |
+| # | Date | Title | Commits | Branch |
+|---|------|-------|---------|--------|
+| 10 | 2026-07-16 | Replace event option tables with shared constants | `cfeb53d` | `main` |
 | 9   | 2026-07-16 | 支持活动页查询已结束活动           | `0e47433`                                  | `main` |
 | 8   | 2026-07-15 | Frontend refactor                  | `871e4ac`, `393cccc`, `f1cbf0d`, `4ffb239` | `main` |
 | 7   | 2026-07-01 | bits-ui + Tailwind v4 前端整体重写 | `e6e2cfd`, `b89e190`                       | `main` |
