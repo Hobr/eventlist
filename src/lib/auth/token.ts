@@ -46,7 +46,3 @@ export async function verifyTokenValue(token: string | null, runtimeEnv: Runtime
 export async function verifyTokenCookie(cookieHeader: string | null, runtimeEnv: RuntimeEnv) {
     return verifyTokenValue(readCookie(cookieHeader, "admin_token"), runtimeEnv);
 }
-
-export function createAdminCookie(token: string) {
-    return `admin_token=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`;
-}

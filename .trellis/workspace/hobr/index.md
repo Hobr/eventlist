@@ -7,9 +7,11 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
+
 - **Active File**: `journal-1.md`
 - **Total Sessions**: 9
 - **Last Active**: 2026-07-16
+
 <!-- @@@/auto:current-status -->
 
 ---
@@ -17,9 +19,11 @@
 ## Active Documents
 
 <!-- @@@auto:active-documents -->
-| File | Lines | Status |
-|------|-------|--------|
-| `journal-1.md` | ~334 | Active |
+
+| File           | Lines | Status |
+| -------------- | ----- | ------ |
+| `journal-1.md` | ~334  | Active |
+
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -28,9 +32,9 @@
 
 <!-- @@@auto:session-history -->
 
-| # | Date | Title | Commits | Branch |
-|---|------|-------|---------|--------|
-| 9 | 2026-07-16 | 支持活动页查询已结束活动 | `0e47433` | `main` |
+| #   | Date       | Title                              | Commits                                    | Branch |
+| --- | ---------- | ---------------------------------- | ------------------------------------------ | ------ |
+| 9   | 2026-07-16 | 支持活动页查询已结束活动           | `0e47433`                                  | `main` |
 | 8   | 2026-07-15 | Frontend refactor                  | `871e4ac`, `393cccc`, `f1cbf0d`, `4ffb239` | `main` |
 | 7   | 2026-07-01 | bits-ui + Tailwind v4 前端整体重写 | `e6e2cfd`, `b89e190`                       | `main` |
 | 6   | 2026-07-01 | Structural frontend redesign       | `8cf10fe`, `f4c37af`                       | `main` |

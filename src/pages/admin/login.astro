@@ -3,7 +3,7 @@ import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import LockKeyhole from "@lucide/astro/icons/lock-keyhole";
 import ShieldCheck from "@lucide/astro/icons/shield-check";
 import "../../styles/app.css";
-import { createAdminCookie, verifyTokenValue } from "../../lib/auth/token";
+import { verifyTokenValue } from "../../lib/auth/token";
 import { getAuthMode, getRuntimeEnv } from "../../lib/runtime/env";
 
 export const prerender = false;
@@ -22,7 +22,13 @@ if (Astro.request.method === "POST") {
         errorMessage = "Token 无效。";
     } else {
         const next = Astro.url.searchParams.get("next") ?? "/admin";
-        Astro.response.headers.set("Set-Cookie", createAdminCookie(token));
+        Astro.cookies.set("admin_token", token, {
+            path: "/",
+            httpOnly: true,
+            secure: Astro.url.protocol === "https:",
+            sameSite: "strict",
+            maxAge: 86400
+        });
         return Astro.redirect(next.startsWith("/admin") ? next : "/admin");
     }
 }

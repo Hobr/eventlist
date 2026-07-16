@@ -300,7 +300,6 @@ Rebuilt the public discovery experience and responsive admin workspace, restored
 
 - None - task complete
 
-
 ## Session 9: 支持活动页查询已结束活动
 
 **Date**: 2026-07-16
@@ -317,8 +316,8 @@ Rebuilt the public discovery experience and responsive admin workspace, restored
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `0e47433` | (see git log) |
 
 ### Testing
