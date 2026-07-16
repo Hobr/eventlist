@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+
 interface Props {
     src?: string | null;
     alt: string;
@@ -27,20 +29,22 @@ const fallbackUrl = "/images/event-fallback.webp";
     role="img"
     aria-label={alt}
 >
-    <img
+    <Image
         src={fallbackUrl}
         alt=""
-        aria-hidden="true"
+        width={1200}
+        height={675}
         loading={loading}
         decoding="async"
         class="absolute inset-0 size-full object-cover"
     />
     {
         coverUrl ? (
-            <img
+            <Image
                 src={coverUrl}
                 alt=""
-                aria-hidden="true"
+                width={1200}
+                height={675}
                 loading={loading}
                 decoding="async"
                 fetchpriority={loading === "eager" ? "high" : "auto"}
