@@ -1,6 +1,6 @@
 # 野活网
 
-国内ACG活动清单
+国内 ACG 活动清单
 
 ## 开发
 
@@ -18,29 +18,73 @@ corepack pnpm format
 
 ## 部署
 
-首次部署前需要登录 Cloudflare, 并确认 `wrangler.jsonc` 中的 D1 `database_id` 指向目标环境
+### 上线前
+
+- 使用 Node.js 22.12+
+- 确认 `wrangler.jsonc` 中的 D1 `database_id` 指向生产数据库
+- 将 `TURNSTILE_SITE_KEY` 换成正式 Site Key, 并为正式域名创建 Turnstile Widget
+- 在 `routes` 中配置 Custom Domain, 例如 `{"pattern":"events.example.com","custom_domain":true}`
+- 默认后台鉴权是 Cloudflare Access. 设置 `ACCESS_TEAM` 和 `ACCESS_AUD`
+
+在 Cloudflare Access 中保护 `/admin`, `/admin/*`, `/api/admin`, `/api/admin/*`
+
+普通变量应写在 `wrangler.jsonc` 中. 如需 Token 登录, 再设置 `AUTH_MODE=token` 和 `ADMIN_TOKEN` Secret
+
+如果生产 D1 不存在, 执行 `corepack pnpm exec wrangler d1 create eventlist-db`, 再更新 `database_id`
+MIN_TOKEN`. 不要提交或打印 Secret
+
+### 首次部署
 
 ```bash
+corepack pnpm install --frozen-lockfile
 corepack pnpm exec wrangler login
-corepack pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
-corepack pnpm exec wrangler d1 migrations apply DB
+corepack pnpm exec wrangler whoami
+corepack pnpm generate-types
+
+corepack pnpm exec wrangler d1 migrations list DB --remote
+corepack pnpm exec wrangler d1 migrations apply DB --remote
+
+corepack pnpm lint
 corepack pnpm build
+corepack pnpm exec wrangler types --check
+corepack pnpm exec wrangler deploy --dry-run
 corepack pnpm exec wrangler deploy
 ```
 
-如果后台使用 Token 登录, 还需要设置:
+D1 生产命令必须带 `--remote`. 任一检查失败时不要继续部署
+
+### 部署后
 
 ```bash
-corepack pnpm exec wrangler secret put ADMIN_TOKEN
+corepack pnpm exec wrangler secret list
+corepack pnpm exec wrangler d1 migrations list DB --remote
 ```
 
-默认后台鉴权模式是 Cloudflare Access, 生产环境建议为 `/admin/*` 和 `/api/admin/*` 配置 Cloudflare Access, 并设置 `ACCESS_TEAM`、`ACCESS_AUD`, 如需改用 Token 表单登录, 设置普通环境变量 `AUTH_MODE=token`, 再写入 `ADMIN_TOKEN` secret
+## 维护
 
-## 日常维护
+发布代码:
 
-- 首次部署前修改表结构: 直接更新单一基线 `migrations/0001_init.sql`, 并用全新本地 D1 验证
-- 首次部署后修改表结构: 在 `migrations/` 新增递增迁移, 然后执行 `corepack pnpm exec wrangler d1 migrations apply DB`
-- 更新类型绑定: 修改 `wrangler.jsonc` 或 Cloudflare 绑定后执行 `corepack pnpm generate-types`
-- 发布前检查: 执行 `corepack pnpm lint` 和 `corepack pnpm build`
-- 观察线上日志: 执行 `corepack pnpm exec wrangler tail`
-- 更新活动内容: 优先通过后台审核、编辑、下线和标签归并功能维护, 避免直接改生产数据库
+```bash
+corepack pnpm lint
+corepack pnpm build
+corepack pnpm exec wrangler types --check
+corepack pnpm exec wrangler deploy --dry-run
+corepack pnpm exec wrangler deploy
+```
+
+修改生产数据库前先备份:
+
+```bash
+corepack pnpm exec wrangler d1 export DB --remote --output backup.sql
+corepack pnpm exec wrangler d1 migrations list DB --remote
+corepack pnpm exec wrangler d1 migrations apply DB --remote
+```
+
+不要提交 `backup.sql`. 常用维护命令:
+
+```bash
+corepack pnpm exec wrangler tail
+corepack pnpm exec wrangler versions list
+corepack pnpm exec wrangler rollback VERSION_ID
+corepack pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
+```
