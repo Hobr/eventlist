@@ -66,6 +66,35 @@ WHERE NOT EXISTS (
 
 INSERT INTO events(
     title, type, scale, division_code, venue, address,
+    start_date, end_date, start_time, end_time, cover_url, description,
+    qq_group, ticket_url, source_url, submitter_contact, status, published_at
+)
+SELECT
+    'Eventlist Dev 已结束同人展',
+    'doujin',
+    'mid',
+    '320102',
+    '南京同好会馆',
+    '南京市玄武区测试路 5 号',
+    date('now', '+8 hours', '-15 days'),
+    date('now', '+8 hours', '-14 days'),
+    '09:30',
+    '17:00',
+    NULL,
+    '本地开发用已结束 published 样例，可通过活动页的“已结束”状态筛选检索。',
+    NULL,
+    NULL,
+    'https://example.com/eventlist/dev-ended-doujin',
+    'dev@example.com',
+    'published',
+    datetime('now')
+WHERE NOT EXISTS (
+      SELECT 1 FROM events
+      WHERE source_url = 'https://example.com/eventlist/dev-ended-doujin'
+  );
+
+INSERT INTO events(
+    title, type, scale, division_code, venue, address,
     start_date, end_date, cover_url, description,
     qq_group, ticket_url, source_url, submitter_contact, status, published_at
 )
@@ -129,6 +158,13 @@ SELECT events.id, tags.id
 FROM events
 JOIN tags ON tags.name = '同人展'
 WHERE events.source_url = 'https://example.com/eventlist/dev-shanghai-doujin'
+ON CONFLICT(event_id, tag_id) DO NOTHING;
+
+INSERT INTO event_tags(event_id, tag_id)
+SELECT events.id, tags.id
+FROM events
+JOIN tags ON tags.name = '同人展'
+WHERE events.source_url = 'https://example.com/eventlist/dev-ended-doujin'
 ON CONFLICT(event_id, tag_id) DO NOTHING;
 
 INSERT INTO event_tags(event_id, tag_id)
