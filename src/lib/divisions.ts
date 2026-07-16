@@ -1,4 +1,5 @@
 import {
+    MUNICIPALITY_CODES,
     citiesCode,
     countiesCode,
     formatFullPath,
@@ -247,7 +248,7 @@ export function listDivisionTree(): DivisionTree {
         provinces: [
             ...provincesCode.map((province, provinceIndex) => {
                 const provinceCode = toProvinceCode(province.c);
-                const cities = getCitiesByProvince(provinceCode).map((city, cityIndex) => {
+                const sourceCities = getCitiesByProvince(provinceCode).map((city, cityIndex) => {
                     const cityCode = String(city.c);
                     const counties = getCountiesByCity(cityCode).map((county, countyIndex) => ({
                         code: String(county.c),
@@ -272,6 +273,27 @@ export function listDivisionTree(): DivisionTree {
                         sort: cityIndex
                     };
                 });
+                const cities = MUNICIPALITY_CODES.includes(provinceCode)
+                    ? [
+                          {
+                              code: provinceCode,
+                              name: province.n,
+                              label: province.n,
+                              level: "city" as const,
+                              province: province.n,
+                              city: province.n,
+                              provinceCode,
+                              counties: sourceCities.flatMap((city) =>
+                                  city.counties.map((county) => ({
+                                      ...county,
+                                      city: province.n,
+                                      cityCode: provinceCode
+                                  }))
+                              ),
+                              sort: 0
+                          }
+                      ]
+                    : sourceCities;
 
                 return {
                     code: provinceCode,

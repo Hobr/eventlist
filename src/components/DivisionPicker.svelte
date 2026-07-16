@@ -88,7 +88,7 @@
     let cityOptions = $derived([
         {
             value: "",
-            label: mode === "region" && selectedProvince ? "全部城市" : "选择城市",
+            label: mode === "region" && selectedProvince ? "全部市" : "选择市",
             disabled: mode === "county"
         },
         ...cities.map((city) => ({
@@ -99,7 +99,7 @@
     let countyOptions = $derived([
         {
             value: "",
-            label: mode === "region" && selectedCity ? "全部区县" : "选择区县",
+            label: mode === "region" && selectedCity ? "全部区/县" : "选择区/县",
             disabled: mode === "county"
         },
         ...counties.map((county) => ({
@@ -114,7 +114,9 @@
 
     function handleProvinceChange(value: string) {
         selectedProvinceCode = value;
-        selectedCityCode = "";
+        const province = provinces.find((item) => item.code === value) ?? null;
+        const municipalityCity = province?.cities.find((city) => city.code === province.code);
+        selectedCityCode = municipalityCity?.code ?? "";
         selectedCountyCode = "";
         syncChange();
     }
@@ -132,11 +134,11 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-1.5">
-    <span class="text-sm font-semibold text-muted-foreground">{label}</span>
+    <span class="text-muted-foreground text-sm font-semibold">{label}</span>
     <input type="hidden" {name} value={selectedValue} {required} />
     <div class={wide ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}>
         <SelectField
-            label={`${label}省份`}
+            label="省"
             value={selectedProvinceCode}
             options={provinceOptions}
             placeholder="省"
@@ -144,7 +146,7 @@
             onchange={handleProvinceChange}
         />
         <SelectField
-            label={`${label}城市`}
+            label="市"
             value={selectedCityCode}
             options={cityOptions}
             placeholder="市"
@@ -153,10 +155,10 @@
             onchange={handleCityChange}
         />
         <SelectField
-            label={`${label}区县`}
+            label="区/县"
             value={selectedCountyCode}
             options={countyOptions}
-            placeholder="区县"
+            placeholder="区/县"
             disabled={!selectedCity}
             required={required && mode === "county"}
             onchange={handleCountyChange}
