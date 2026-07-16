@@ -11,6 +11,7 @@ import TableRow from "../ui/table-row.svelte";
 import type { EventRecord } from "../../lib/db/queries";
 import { getDivisionLabel } from "../../lib/divisions";
 import { formatEventSchedule } from "../../lib/events/datetime";
+import { getEventScaleLabel, getEventTypeLabel } from "../../lib/events/options";
 
 interface Props {
     events: EventRecord[];
@@ -112,10 +113,10 @@ const mobileCell =
                                 dataLabel="分类"
                             >
                                 <div class="text-foreground font-semibold">
-                                    {event.type_label ?? event.type}
+                                    {getEventTypeLabel(event.type)}
                                 </div>
                                 <div class="text-muted-foreground mt-1">
-                                    {event.scale_label ?? event.scale}
+                                    {getEventScaleLabel(event.scale)}
                                 </div>
                                 {event.tags ? (
                                     <div class="text-muted mt-1 text-xs break-words">

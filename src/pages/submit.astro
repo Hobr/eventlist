@@ -7,32 +7,20 @@ import SelectField from "../components/SelectField.svelte";
 import SubmissionSection from "../components/SubmissionSection.astro";
 import Turnstile from "../components/Turnstile.svelte";
 import Layout from "../layouts/Layout.astro";
-import { getDB } from "../lib/db";
-import { listScales, listTypes } from "../lib/db/queries";
+import { EVENT_SCALES, EVENT_TYPES } from "../lib/events/options";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;
 
 const runtimeEnv = getRuntimeEnv();
 const sent = Astro.url.searchParams.get("sent") === "1";
-let types = [];
-let scales = [];
-let errorMessage = "";
-
-try {
-    const db = await getDB(runtimeEnv);
-    [types, scales] = await Promise.all([listTypes(db), listScales(db)]);
-} catch (error) {
-    errorMessage = error instanceof Error ? error.message : "无法加载投稿表单";
-}
-
-const typeOptions = types.map((type) => ({
+const typeOptions = EVENT_TYPES.map((type) => ({
     value: type.name,
-    label: type.label ?? type.name
+    label: type.label
 }));
-const scaleOptions = scales.map((scale) => ({
+const scaleOptions = EVENT_SCALES.map((scale) => ({
     value: scale.name,
-    label: scale.label ?? scale.name
+    label: scale.label
 }));
 
 const fieldCls =
@@ -64,13 +52,6 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                     </a>
                 </div>
             </section>
-        ) : errorMessage ? (
-            <div
-                class="bg-danger-subtle text-danger rounded-md p-5 text-sm font-semibold"
-                role="alert"
-            >
-                {errorMessage}
-            </div>
         ) : (
             <div class="mx-auto max-w-4xl">
                 <header class="border-border border-b pb-7">

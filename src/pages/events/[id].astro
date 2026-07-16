@@ -12,6 +12,7 @@ import { getDB, STATUS } from "../../lib/db";
 import { getPublicEvent } from "../../lib/db/queries";
 import { getDivisionLabel } from "../../lib/divisions";
 import { formatEventSchedule } from "../../lib/events/datetime";
+import { getEventScaleLabel, getEventTypeLabel } from "../../lib/events/options";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 import { buildEventJsonLd } from "../../lib/seo";
 
@@ -86,10 +87,10 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                     <div class="absolute inset-x-0 bottom-0 bg-black/80 p-5 text-white sm:p-8">
                         <div class="flex flex-wrap gap-1.5">
                             <Badge tone="primary" class="bg-primary border-white/15 text-white">
-                                {event.type_label ?? event.type}
+                                {getEventTypeLabel(event.type)}
                             </Badge>
                             <Badge class="border-white/20 bg-black/35 text-white">
-                                {event.scale_label ?? event.scale}
+                                {getEventScaleLabel(event.scale)}
                             </Badge>
                         </div>
                         <h1 class="mt-4 max-w-4xl text-3xl leading-tight font-black sm:text-5xl">

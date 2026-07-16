@@ -8,7 +8,7 @@
 
 ### 1. Scope / Trigger
 
-- Trigger: any change to the initial D1 schema, constraints, indexes, or dimension seeds before the first production deployment.
+- Trigger: any change to the initial D1 schema, constraints, indexes, or static event option catalogue before the first production deployment.
 - The site has no deployed database migration history. Keep one deterministic baseline at `migrations/0001_init.sql` until the first deployment.
 - D1 database: `eventlist-db`, binding `DB`, database id `b11ea70c-4597-4049-a650-718cfbc5b04f`.
 
@@ -18,22 +18,25 @@
     - `wrangler.jsonc.d1_databases[0].binding = "DB"`
     - `database_name = "eventlist-db"`
     - `migrations_dir = "migrations"`
-- Baseline file: `migrations/0001_init.sql` creates tables, constraints, indexes, and the `event_types` / `event_scales` seeds.
+- Baseline file: `migrations/0001_init.sql` creates all application tables, constraints, and indexes without mutable type/scale dimension tables.
+- Shared option module: `src/lib/events/options.ts` exports `EVENT_TYPES`, `EVENT_SCALES`, `EventType`, `EventScale`, membership guards, and label helpers.
 - Access helper: `await getDB(runtimeEnv): Promise<D1Database>`.
 - Generated binding: `worker-configuration.d.ts` contains `DB: D1Database`.
-- Tables: `event_types`, `event_scales`, `tags`, `events`, `event_tags`, `audit_logs`.
+- Application tables: `tags`, `events`, `event_tags`, `audit_logs`.
 
 ### 3. Contracts
 
 - All application tables are SQLite `STRICT` tables.
 - There is no `cities` table. Administrative location truth is `events.division_code`, validated and displayed through `src/lib/divisions.ts`.
 - Seed counts on an empty database:
-    - `event_types = 8`
-    - `event_scales = 4`
     - `tags = 0`
     - `events = 0`
+- Event types are the ordered `comic`, `doujin`, `concert`, `stage`, `dance`, `ipflash`, `online`, and `other` entries in `EVENT_TYPES`.
+- Event scales are the ordered `small`, `mid`, `large`, and `mega` entries in `EVENT_SCALES`.
+- Array order and labels in `src/lib/events/options.ts` are the UI catalogue; pages and components must not query D1 for these options.
 - `tags.name` is trimmed, 1-24 characters, `COLLATE NOCASE UNIQUE`; aliases cannot reference themselves.
-- `events.type` and `events.scale` are foreign keys into their dimension tables.
+- `events.type` and `events.scale` use SQL `CHECK (... IN (...))` constraints containing the same codes as the shared TypeScript catalogue.
+- `SubmissionInput` / `AdminEventInput` use `EventType` and `EventScale`; public and admin form parsers validate raw strings with the shared membership guards.
 - `start_date` / `end_date` are canonical `YYYY-MM-DD`; `end_date >= start_date`.
 - `start_time` / `end_time` are nullable local `HH:MM` values. When both exist on the same date, `end_time >= start_time`.
 - `tag_suggestions` is nullable free text with a maximum length of 240. It is not a canonical tag relationship.
@@ -44,7 +47,8 @@
 ### 4. Validation & Error Matrix
 
 - Missing `env.DB` -> `getDB` throws a setup error naming the D1 binding.
-- Unknown type or scale -> foreign key failure.
+- Unknown type or scale submitted through public/admin forms -> explicit validation error; API routes return HTTP 400 JSON.
+- Unknown type or scale written directly to D1 -> SQL CHECK failure.
 - Invalid division code, date, time, date order, same-day time order, status, or overlong `tag_suggestions` -> SQL CHECK failure.
 - Duplicate tags that differ only by ASCII case -> UNIQUE failure.
 - Invalid audit JSON -> SQL CHECK failure.
@@ -52,8 +56,10 @@
 
 ### 5. Good/Base/Bad Cases
 
-- Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, 8 types, 4 scales, and no `cities` table.
-- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts valid events/tags without schema changes.
+- Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, four application tables, and no `event_types`, `event_scales`, or `cities` table.
+- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts five valid events plus four canonical tags without schema changes.
+- Bad: querying D1 for type/scale options or joining dimension tables; these values are application-owned constants.
+- Bad: defining a second TypeScript list of type/scale codes instead of importing `src/lib/events/options.ts`.
 - Bad: validating a rewritten baseline against an old `.wrangler/state` database; previous migration records can hide missing statements.
 - Bad: creating a `cities` mirror of `cn-division`; it creates two location sources of truth.
 - Bad: adding `0002_*` before first deployment instead of updating the baseline.
@@ -67,15 +73,29 @@
 - Schema assertions:
     - tables and indexes from `sqlite_schema`
     - `PRAGMA table_info(events)` includes `tag_suggestions`, `start_time`, `end_time`
-    - `PRAGMA foreign_key_list(events)` references `event_types` and `event_scales`
-    - no `cities` table
-- Constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions, duplicate case-insensitive tags, invalid audit JSON.
-- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert 4 events and 4 tags.
+    - `PRAGMA foreign_key_list(events)` is empty
+    - `PRAGMA foreign_key_list(event_tags)` still references `events` and `tags` with cascade deletes
+    - no `event_types`, `event_scales`, or `cities` table
+- Option assertions: all 32 type/scale combinations insert successfully; an unknown type and an unknown scale each fail their SQL CHECK.
+- Other constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions, duplicate case-insensitive tags, invalid audit JSON.
+- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert five events and four canonical tags.
 - Project gates: `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm build`.
 
 ### 7. Wrong vs Correct
 
-#### Wrong
+#### Wrong: D1-backed immutable options
+
+```ts
+const [types, scales] = await Promise.all([listTypes(db), listScales(db)]);
+```
+
+#### Correct: shared application catalogue
+
+```ts
+import { EVENT_SCALES, EVENT_TYPES } from "../lib/events/options";
+```
+
+#### Wrong: additional pre-production migrations
 
 ```text
 migrations/0001_init.sql
@@ -84,15 +104,11 @@ migrations/0003_audit.sql
 migrations/0004_event_metadata.sql
 ```
 
-before the first deployment.
-
-#### Correct
+#### Correct: one deterministic baseline
 
 ```text
 migrations/0001_init.sql
 ```
-
-containing the complete fresh-install contract.
 
 ---
 
@@ -110,7 +126,7 @@ containing the complete fresh-install contract.
 - `hasCanonicalEventTag(db, eventId)` -> `boolean`.
 - `insertAudit(db, action, targetId, meta)` writes JSON metadata.
 - `mergeTags(db, from, to)` -> `"changed" | "already-target" | "conflict"`.
-- `AdminEventInput` includes nullable `start_time`, nullable `end_time`, and `tags: string[]`.
+- `AdminEventInput` includes `type: EventType`, `scale: EventScale`, nullable `start_time`, nullable `end_time`, and `tags: string[]`.
 
 ### 3. Contracts
 
@@ -179,7 +195,7 @@ await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 - `listPublishedEvents(db, filters)` -> `{ events, page, pageSize, hasNext }`.
 - `getPublicEvent(db, id)` -> published/offline event or `null`.
 - `insertSubmission(db, input: SubmissionInput)` -> new pending event ID.
-- `SubmissionInput` has `tag_suggestions: string | null`, `start_time: string | null`, `end_time: string | null`; it has no canonical `tags` array.
+- `SubmissionInput` has `type: EventType`, `scale: EventScale`, `tag_suggestions: string | null`, `start_time: string | null`, and `end_time: string | null`; it has no canonical `tags` array.
 - `searchTags(db, query, limit)` performs suggestion search; the public `tag` event filter performs exact canonical-name matching.
 - `buildEventJsonLd(event, canonicalUrl)` combines known times with local `+08:00` ISO values.
 
@@ -189,6 +205,7 @@ await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 - Timing is evaluated in China local time with SQLite `date/time('now', '+8 hours')`. An event is ended when its end date is before the local date, or when the date is today and a non-null `end_time` has passed. A date-only event remains upcoming through its entire end date.
 - Location filtering uses `divisionCode`; 6/12-digit values match exactly, shorter province/city prefixes use `LIKE '<prefix>%'`.
 - Supported URL fields are `status`, `city`, `type`, `scale`, `tag`, `from`, `to`, `page`, and `sort`.
+- Public type/scale option lists and display labels come from `src/lib/events/options.ts`; D1 stores only stable codes.
 - Submission free-text suggestions are stored only in `events.tag_suggestions`; submission must not create rows in `tags` or `event_tags`.
 - Canonical tags displayed on cards/details come only from canonical `event_tags` relationships.
 - `tag` filtering is exact; `searchTags` may use substring search for suggestions.

@@ -6,19 +6,19 @@
     import type {
         EventSort,
         EventTiming,
-        OptionRow,
         PublishedEventFilters,
         TagSummary
     } from "../lib/db/queries";
     import { getDivisionLabel } from "../lib/divisions";
+    import type { EventOption } from "../lib/events/options";
     import DivisionPicker from "./DivisionPicker.svelte";
     import SelectField from "./SelectField.svelte";
     import Button from "./ui/button.svelte";
     import SidePanel from "./ui/side-panel.svelte";
 
     interface Props {
-        types: OptionRow[];
-        scales: OptionRow[];
+        types: readonly EventOption[];
+        scales: readonly EventOption[];
         tags: TagSummary[];
         filters: PublishedEventFilters;
     }
@@ -32,14 +32,14 @@
         { value: "", label: "全部类型" },
         ...types.map((type) => ({
             value: type.name,
-            label: type.label ?? type.name
+            label: type.label
         }))
     ]);
     const scaleOptions = $derived([
         { value: "", label: "全部规模" },
         ...scales.map((scale) => ({
             value: scale.name,
-            label: scale.label ?? scale.name
+            label: scale.label
         }))
     ]);
     const sortOptions = [

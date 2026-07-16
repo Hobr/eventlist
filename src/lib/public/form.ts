@@ -1,5 +1,6 @@
 import type { SubmissionInput } from "../db/queries";
 import { normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
+import { isEventScale, isEventType } from "../events/options";
 
 export interface ParsedSubmissionForm {
     input: SubmissionInput;
@@ -31,6 +32,18 @@ function readDivisionCode(formData: FormData) {
     }
 
     return code;
+}
+
+function readEventType(formData: FormData) {
+    const value = readRequired(formData, "type", "类型");
+    if (!isEventType(value)) throw new Error("类型无效");
+    return value;
+}
+
+function readEventScale(formData: FormData) {
+    const value = readRequired(formData, "scale", "规模");
+    if (!isEventScale(value)) throw new Error("规模无效");
+    return value;
 }
 
 function readDate(formData: FormData, name: string, label: string) {
@@ -89,8 +102,8 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
     return {
         input: {
             title: readRequired(formData, "title", "标题"),
-            type: readRequired(formData, "type", "类型"),
-            scale: readRequired(formData, "scale", "规模"),
+            type: readEventType(formData),
+            scale: readEventScale(formData),
             division_code: readDivisionCode(formData),
             venue: readRequired(formData, "venue", "地点"),
             address: readOptional(formData, "address"),

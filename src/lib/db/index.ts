@@ -7,24 +7,6 @@ export const STATUS = {
     OFFLINE: "offline"
 } as const;
 
-export const TYPES = {
-    COMIC: "comic",
-    DOUJIN: "doujin",
-    CONCERT: "concert",
-    STAGE: "stage",
-    DANCE: "dance",
-    IP_FLASH: "ipflash",
-    ONLINE: "online",
-    OTHER: "other"
-} as const;
-
-export const SCALES = {
-    SMALL: "small",
-    MID: "mid",
-    LARGE: "large",
-    MEGA: "mega"
-} as const;
-
 export type EventStatus = (typeof STATUS)[keyof typeof STATUS];
 
 export async function getDB(runtimeEnv: RuntimeEnv): Promise<D1Database> {

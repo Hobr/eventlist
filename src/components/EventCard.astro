@@ -5,6 +5,7 @@ import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import type { EventRecord } from "../lib/db/queries";
 import { getDivisionLabel } from "../lib/divisions";
 import { formatEventSchedule } from "../lib/events/datetime";
+import { getEventScaleLabel, getEventTypeLabel } from "../lib/events/options";
 import Badge from "./ui/badge.svelte";
 import EventArtwork from "./EventArtwork.astro";
 
@@ -17,6 +18,8 @@ interface Props {
 const { event, variant = "card", priority = false } = Astro.props;
 const tags = event.tags ? event.tags.split("、").filter(Boolean).slice(0, 3) : [];
 const divisionLabel = getDivisionLabel(event.division_code) ?? "未知地区";
+const typeLabel = getEventTypeLabel(event.type);
+const scaleLabel = getEventScaleLabel(event.scale);
 const startLabel = `${event.start_date.slice(5).replace("-", "/")}${event.start_time ? ` ${event.start_time}` : ""}`;
 const endLabel = `${event.end_date.slice(5).replace("-", "/")}${event.end_time ? ` ${event.end_time}` : ""}`;
 const dateLabel = formatEventSchedule(event);
@@ -42,7 +45,7 @@ const href = `/events/${event.id}`;
             />
             <div class="absolute inset-x-0 bottom-0 p-5 sm:p-7 lg:p-8">
                 <p class="mb-3 text-xs font-bold text-zinc-50/80 sm:text-sm">
-                    {event.type_label ?? event.type} / {event.scale_label ?? event.scale}
+                    {typeLabel} / {scaleLabel}
                 </p>
                 <h2 class="max-w-3xl text-2xl leading-tight font-black tracking-[-0.025em] sm:text-4xl">
                     {event.title}
@@ -101,8 +104,8 @@ const href = `/events/${event.id}`;
             />
             <div class="min-w-0">
                 <div class="mb-2 flex flex-wrap gap-1.5">
-                    <Badge tone="primary">{event.type_label ?? event.type}</Badge>
-                    <Badge>{event.scale_label ?? event.scale}</Badge>
+                    <Badge tone="primary">{typeLabel}</Badge>
+                    <Badge>{scaleLabel}</Badge>
                 </div>
                 <h3 class="text-foreground text-base leading-tight font-bold sm:text-lg">
                     {event.title}
@@ -144,8 +147,8 @@ const href = `/events/${event.id}`;
             />
             <div class="flex flex-1 flex-col p-4">
                 <div class="flex flex-wrap gap-1.5">
-                    <Badge tone="primary">{event.type_label ?? event.type}</Badge>
-                    <Badge>{event.scale_label ?? event.scale}</Badge>
+                    <Badge tone="primary">{typeLabel}</Badge>
+                    <Badge>{scaleLabel}</Badge>
                 </div>
                 <h3 class="text-foreground mt-3 text-base leading-tight font-bold">
                     {event.title}

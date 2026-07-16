@@ -1,5 +1,6 @@
 import type { AdminEventInput } from "../db/queries";
 import { normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
+import { isEventScale, isEventType } from "../events/options";
 
 function readRequired(formData: FormData, name: string) {
     const value = formData.get(name);
@@ -15,6 +16,18 @@ function readOptional(formData: FormData, name: string) {
     if (typeof value !== "string") return null;
     const trimmed = value.trim();
     return trimmed === "" ? null : trimmed;
+}
+
+function readEventType(formData: FormData) {
+    const value = readRequired(formData, "type");
+    if (!isEventType(value)) throw new Error("类型无效");
+    return value;
+}
+
+function readEventScale(formData: FormData) {
+    const value = readRequired(formData, "scale");
+    if (!isEventScale(value)) throw new Error("规模无效");
+    return value;
 }
 
 export function parseEventForm(formData: FormData): AdminEventInput {
@@ -40,8 +53,8 @@ export function parseEventForm(formData: FormData): AdminEventInput {
 
     return {
         title: readRequired(formData, "title"),
-        type: readRequired(formData, "type"),
-        scale: readRequired(formData, "scale"),
+        type: readEventType(formData),
+        scale: readEventScale(formData),
         division_code: divisionCode,
         venue: readRequired(formData, "venue"),
         address: readOptional(formData, "address"),

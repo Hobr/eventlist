@@ -1,19 +1,5 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE event_types (
-    name TEXT PRIMARY KEY,
-    label TEXT NOT NULL,
-    sort INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-) STRICT;
-
-CREATE TABLE event_scales (
-    name TEXT PRIMARY KEY,
-    label TEXT NOT NULL,
-    sort INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-) STRICT;
-
 CREATE TABLE tags (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (
@@ -29,8 +15,12 @@ CREATE TABLE tags (
 CREATE TABLE events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    type TEXT NOT NULL,
-    scale TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (
+        type IN ('comic', 'doujin', 'concert', 'stage', 'dance', 'ipflash', 'online', 'other')
+    ),
+    scale TEXT NOT NULL CHECK (
+        scale IN ('small', 'mid', 'large', 'mega')
+    ),
     division_code TEXT NOT NULL CHECK (
         division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]'
         OR division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
@@ -83,9 +73,7 @@ CREATE TABLE events (
         OR start_time IS NULL
         OR end_time IS NULL
         OR end_time >= start_time
-    ),
-    FOREIGN KEY (type) REFERENCES event_types(name),
-    FOREIGN KEY (scale) REFERENCES event_scales(name)
+    )
 ) STRICT;
 
 CREATE TABLE event_tags (
@@ -120,19 +108,3 @@ CREATE INDEX idx_audit_logs_at
     ON audit_logs(at);
 CREATE INDEX idx_audit_logs_action_at
     ON audit_logs(action, at);
-
-INSERT INTO event_types(name, label, sort) VALUES
-    ('comic', '漫展', 10),
-    ('doujin', '同人展', 20),
-    ('concert', '演唱会', 30),
-    ('stage', '舞台剧·2.5次元', 40),
-    ('dance', '舞见·宅舞', 50),
-    ('ipflash', 'IP主题快闪', 60),
-    ('online', '线上活动', 70),
-    ('other', '其它', 90);
-
-INSERT INTO event_scales(name, label, sort) VALUES
-    ('small', '小型(地区级)', 10),
-    ('mid', '中型(省级)', 20),
-    ('large', '大型(全国级)', 30),
-    ('mega', '超大型(国际级)', 40);

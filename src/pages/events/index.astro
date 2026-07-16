@@ -7,14 +7,13 @@ import Layout from "../../layouts/Layout.astro";
 import { getDB } from "../../lib/db";
 import {
     listPublishedEvents,
-    listScales,
-    listTypes,
     topTags,
     type EventSort,
     type EventTiming,
     type PublishedEventFilters
 } from "../../lib/db/queries";
 import { isRegionCode } from "../../lib/divisions";
+import { EVENT_SCALES, EVENT_TYPES } from "../../lib/events/options";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 
 export const prerender = false;
@@ -80,8 +79,8 @@ const timingCopy = {
     }
 }[filters.timing ?? "upcoming"];
 
-let types = [];
-let scales = [];
+const types = EVENT_TYPES;
+const scales = EVENT_SCALES;
 let tags = [];
 let events = [];
 let hasNext = false;
@@ -89,15 +88,11 @@ let errorMessage = "";
 
 try {
     const db = await getDB(getRuntimeEnv());
-    const [loadedTypes, loadedScales, loadedTags, page] = await Promise.all([
-        listTypes(db),
-        listScales(db),
+    const [loadedTags, page] = await Promise.all([
         topTags(db, 20),
         listPublishedEvents(db, filters)
     ]);
 
-    types = loadedTypes;
-    scales = loadedScales;
     tags = loadedTags;
     events = page.events;
     hasNext = page.hasNext;

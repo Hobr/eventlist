@@ -1,13 +1,12 @@
 import { STATUS, type EventStatus } from "./index";
 import type { D1Database, D1Result } from "../../types/cloudflare";
+import type { EventScale, EventType } from "../events/options";
 
 export interface EventRecord {
     id: number;
     title: string;
-    type: string;
-    type_label: string | null;
-    scale: string;
-    scale_label: string | null;
+    type: EventType;
+    scale: EventScale;
     division_code: string;
     venue: string;
     address: string | null;
@@ -32,8 +31,8 @@ export interface EventRecord {
 
 interface EventBaseInput {
     title: string;
-    type: string;
-    scale: string;
+    type: EventType;
+    scale: EventScale;
     division_code: string;
     venue: string;
     address: string | null;
@@ -90,13 +89,6 @@ export interface TagSummary {
     event_count: number;
 }
 
-export interface OptionRow {
-    id?: number;
-    name: string;
-    label?: string;
-    sort: number;
-}
-
 export type AuditAction = "approve" | "reject" | "edit" | "offline" | "republish" | "merge";
 export type StatusUpdateOutcome = "changed" | "already-target" | "conflict";
 export type TagMergeOutcome = "changed" | "already-target" | "conflict";
@@ -104,12 +96,8 @@ export type TagMergeOutcome = "changed" | "already-target" | "conflict";
 const EVENT_SELECT = `
     SELECT
         events.*,
-        event_types.label AS type_label,
-        event_scales.label AS scale_label,
         group_concat(tags.name, '、') AS tags
     FROM events
-    LEFT JOIN event_types ON event_types.name = events.type
-    LEFT JOIN event_scales ON event_scales.name = events.scale
     LEFT JOIN event_tags ON event_tags.event_id = events.id
     LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
 `;
@@ -214,20 +202,6 @@ export async function updateEventStatus(
     if (currentStatus === toStatus) return "already-target" satisfies StatusUpdateOutcome;
 
     return "conflict" satisfies StatusUpdateOutcome;
-}
-
-export async function listTypes(db: D1Database) {
-    const result = await db
-        .prepare("SELECT name, label, sort FROM event_types ORDER BY sort ASC, label ASC")
-        .all<OptionRow>();
-    return requireSuccess(result, "Failed to list event types").results ?? [];
-}
-
-export async function listScales(db: D1Database) {
-    const result = await db
-        .prepare("SELECT name, label, sort FROM event_scales ORDER BY sort ASC, label ASC")
-        .all<OptionRow>();
-    return requireSuccess(result, "Failed to list event scales").results ?? [];
 }
 
 export async function listTags(db: D1Database) {

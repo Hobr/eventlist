@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../../lib/db";
-import { insertSubmission, listScales, listTypes } from "../../lib/db/queries";
+import { insertSubmission } from "../../lib/db/queries";
 import { isCountyDivisionCode } from "../../lib/divisions";
 import { jsonError, jsonOk } from "../../lib/http/json";
 import { parseSubmissionForm } from "../../lib/public/form";
@@ -8,10 +8,6 @@ import { getRuntimeEnv } from "../../lib/runtime/env";
 import { verifyTurnstile } from "../../lib/turnstile";
 
 export const prerender = false;
-
-function hasName(rows: Array<{ name: string }>, name: string) {
-    return rows.some((row) => row.name === name);
-}
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -28,10 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const db = await getDB(runtimeEnv);
-        const [types, scales] = await Promise.all([listTypes(db), listScales(db)]);
         if (!isCountyDivisionCode(input.division_code)) return jsonError("行政区无效", 400);
-        if (!hasName(types, input.type)) return jsonError("类型无效", 400);
-        if (!hasName(scales, input.scale)) return jsonError("规模无效", 400);
 
         const id = await insertSubmission(db, input);
         return jsonOk({ id }, { status: 201 });
