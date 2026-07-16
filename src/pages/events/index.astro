@@ -11,6 +11,7 @@ import {
     listTypes,
     topTags,
     type EventSort,
+    type EventTiming,
     type PublishedEventFilters
 } from "../../lib/db/queries";
 import { isRegionCode } from "../../lib/divisions";
@@ -31,8 +32,14 @@ function parseDate(value: string | null) {
     return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
 }
 
-function parseSort(value: string | null): EventSort {
-    return value === "start_desc" ? "start_desc" : "start_asc";
+function parseTiming(value: string | null): EventTiming {
+    return value === "ended" || value === "all" ? value : "upcoming";
+}
+
+function parseSort(value: string | null): EventSort | undefined {
+    return value === "start_asc" || value === "start_desc" || value === "end_desc"
+        ? value
+        : undefined;
 }
 
 function nextHref(page: number) {
@@ -43,6 +50,7 @@ function nextHref(page: number) {
 }
 
 const filters: PublishedEventFilters = {
+    timing: parseTiming(Astro.url.searchParams.get("status")),
     divisionCode: parseDivisionCode(Astro.url.searchParams.get("city")),
     type: Astro.url.searchParams.get("type") || undefined,
     scale: Astro.url.searchParams.get("scale") || undefined,
@@ -53,6 +61,24 @@ const filters: PublishedEventFilters = {
     pageSize: 20,
     sort: parseSort(Astro.url.searchParams.get("sort"))
 };
+
+const timingCopy = {
+    upcoming: {
+        description: "筛选近期已发布且未结束的 ACG 活动。",
+        kicker: "已发布 · 未结束",
+        emptyTitle: "没有匹配的近期活动"
+    },
+    ended: {
+        description: "查询已发布且已经结束的 ACG 活动。",
+        kicker: "已发布 · 已结束",
+        emptyTitle: "没有匹配的已结束活动"
+    },
+    all: {
+        description: "查询全部已发布的 ACG 活动。",
+        kicker: "已发布 · 全部",
+        emptyTitle: "没有匹配的活动"
+    }
+}[filters.timing ?? "upcoming"];
 
 let types = [];
 let scales = [];
@@ -80,13 +106,13 @@ try {
 }
 ---
 
-<Layout title="活动列表" description="筛选近期已发布且未结束的 ACG 活动。">
+<Layout title="活动列表" description={timingCopy.description}>
     <div class="flex flex-col gap-8">
         <header
             class="border-border flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between"
         >
             <div>
-                <p class="text-accent text-sm font-bold">已发布 · 未结束</p>
+                <p class="text-accent text-sm font-bold">{timingCopy.kicker}</p>
                 <h1 class="text-foreground mt-2 text-3xl font-black sm:text-4xl">活动列表</h1>
             </div>
             <div class="flex items-center gap-3">
@@ -139,7 +165,7 @@ try {
                 </>
             ) : (
                 <div class="border-border border-y py-12 text-center">
-                    <h2 class="text-foreground text-xl font-bold">没有匹配的近期活动</h2>
+                    <h2 class="text-foreground text-xl font-bold">{timingCopy.emptyTitle}</h2>
                     <p class="text-muted-foreground mt-2 text-sm">尝试移除部分筛选条件。</p>
                     <a
                         href="/events"

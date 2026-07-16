@@ -185,13 +185,14 @@ await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 
 ### 3. Contracts
 
-- Public lists require `status = published` and `end_date >= date('now')`.
+- Public lists require `status = published`. Catalogue timing uses `status=ended|all`; a missing or unknown value means `upcoming`.
+- Timing is evaluated in China local time with SQLite `date/time('now', '+8 hours')`. An event is ended when its end date is before the local date, or when the date is today and a non-null `end_time` has passed. A date-only event remains upcoming through its entire end date.
 - Location filtering uses `divisionCode`; 6/12-digit values match exactly, shorter province/city prefixes use `LIKE '<prefix>%'`.
-- Supported URL fields remain `city`, `type`, `scale`, `tag`, `from`, `to`, `page`, `sort`.
+- Supported URL fields are `status`, `city`, `type`, `scale`, `tag`, `from`, `to`, `page`, and `sort`.
 - Submission free-text suggestions are stored only in `events.tag_suggestions`; submission must not create rows in `tags` or `event_tags`.
 - Canonical tags displayed on cards/details come only from canonical `event_tags` relationships.
 - `tag` filtering is exact; `searchTags` may use substring search for suggestions.
-- Date filtering, expiry, and sort remain date-based even when times exist.
+- User date filters remain date-based. Timing classification uses `end_time` only when it exists; ended results default to end-date descending, while the default upcoming list remains start-date ascending.
 
 ### 4. Validation & Error Matrix
 
@@ -207,6 +208,8 @@ await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 - Good: submit `"东方、同人展、大型舞台"` as suggestion text; tag inventory count does not change.
 - Good: `?tag=同人` does not match an event tagged only `同人展`.
 - Base: historical event with null times renders dates only.
+- Base: an event ending today without `end_time` stays in the upcoming list until the local day changes.
+- Good: an event ending today at `18:00` moves to ended at or after `18:00` China local time.
 - Bad: calling `findOrCreateTagIds()` from `insertSubmission()`.
 - Bad: using `%${tag}%` in the public event filter.
 
@@ -216,10 +219,30 @@ await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 - Exact-vs-extended tag pair returns only the exact event for each query.
 - Submission code path contains no canonical tag creation/attachment.
 - Date/time formatter cases and JSON-LD date-only vs `+08:00` datetime output.
+- Timing fixtures on both sides of the China-local day boundary, including today with null, future, and passed `end_time` values.
 - Responsive public routes and `/admin/login`; light/dark token checks.
 - Lint, TypeScript, and production build.
 
 ### 7. Wrong vs Correct
+
+#### Wrong
+
+```sql
+date(events.end_date) < date('now')
+```
+
+This uses UTC and cannot classify an event that already ended earlier today.
+
+#### Correct
+
+```sql
+date(events.end_date) < date('now', '+8 hours')
+OR (
+    date(events.end_date) = date('now', '+8 hours')
+    AND events.end_time IS NOT NULL
+    AND time(events.end_time) <= time('now', '+8 hours')
+)
+```
 
 #### Wrong
 

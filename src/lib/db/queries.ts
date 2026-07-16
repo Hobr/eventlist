@@ -56,9 +56,11 @@ export interface AdminEventInput extends EventBaseInput {
 export interface SubmissionInput extends EventBaseInput {
     tag_suggestions: string | null;
 }
-export type EventSort = "start_asc" | "start_desc";
+export type EventSort = "start_asc" | "start_desc" | "end_desc";
+export type EventTiming = "upcoming" | "ended" | "all";
 
 export interface PublishedEventFilters {
+    timing?: EventTiming;
     divisionCode?: string;
     type?: string;
     scale?: string;
@@ -111,6 +113,15 @@ const EVENT_SELECT = `
     LEFT JOIN event_tags ON event_tags.event_id = events.id
     LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
 `;
+
+const EVENT_ENDED_CLAUSE = `(
+    date(events.end_date) < date('now', '+8 hours')
+    OR (
+        date(events.end_date) = date('now', '+8 hours')
+        AND events.end_time IS NOT NULL
+        AND time(events.end_time) <= time('now', '+8 hours')
+    )
+)`;
 
 function escapeLike(value: string) {
     return value.replace(/[\\%_]/g, "\\$&");
@@ -302,8 +313,14 @@ export async function listPublishedEvents(
     const page = Math.max(1, filters.page ?? 1);
     const pageSize = Math.min(50, Math.max(1, filters.pageSize ?? 20));
     const offset = (page - 1) * pageSize;
-    const clauses = ["events.status = ?", "date(events.end_date) >= date('now')"];
+    const clauses = ["events.status = ?"];
     const values: Array<number | string> = [STATUS.PUBLISHED];
+
+    if (filters.timing === "ended") {
+        clauses.push(EVENT_ENDED_CLAUSE);
+    } else if (filters.timing !== "all") {
+        clauses.push(`NOT ${EVENT_ENDED_CLAUSE}`);
+    }
 
     if (filters.divisionCode) {
         if (filters.divisionCode.length === 6 || filters.divisionCode.length === 12) {
@@ -349,13 +366,17 @@ export async function listPublishedEvents(
         values.push(filters.tag.trim());
     }
 
-    const direction = filters.sort === "start_desc" ? "DESC" : "ASC";
+    const effectiveSort = filters.sort ?? (filters.timing === "ended" ? "end_desc" : "start_asc");
+    const orderBy =
+        effectiveSort === "end_desc"
+            ? "date(events.end_date) DESC, events.id DESC"
+            : `date(events.start_date) ${effectiveSort === "start_desc" ? "DESC" : "ASC"}, events.id ${effectiveSort === "start_desc" ? "DESC" : "ASC"}`;
     const result = await db
         .prepare(
             `${EVENT_SELECT}
             WHERE ${clauses.join(" AND ")}
             GROUP BY events.id
-            ORDER BY date(events.start_date) ${direction}, events.id ${direction}
+            ORDER BY ${orderBy}
             LIMIT ? OFFSET ?`
         )
         .bind(...values, pageSize + 1, offset)

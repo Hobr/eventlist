@@ -5,6 +5,7 @@
     import X from "@lucide/svelte/icons/x";
     import type {
         EventSort,
+        EventTiming,
         OptionRow,
         PublishedEventFilters,
         TagSummary
@@ -43,12 +44,27 @@
     ]);
     const sortOptions = [
         { value: "start_asc", label: "最近开始" },
-        { value: "start_desc", label: "最晚开始" }
+        { value: "start_desc", label: "最晚开始" },
+        { value: "end_desc", label: "最晚结束" }
     ];
-    const sortValue: EventSort = $derived(filters.sort ?? "start_asc");
+    const timingOptions = [
+        { value: "upcoming", label: "未结束" },
+        { value: "ended", label: "已结束" },
+        { value: "all", label: "全部" }
+    ];
+    const timingValue: EventTiming = $derived(filters.timing ?? "upcoming");
+    const sortValue: EventSort = $derived(
+        filters.sort ?? (timingValue === "ended" ? "end_desc" : "start_asc")
+    );
 
     const activeFilters = $derived.by(() => {
         const result: Array<{ key: string; label: string }> = [];
+        if (timingValue !== "upcoming") {
+            result.push({
+                key: "status",
+                label: timingValue === "ended" ? "已结束" : "全部活动"
+            });
+        }
         if (filters.divisionCode) {
             result.push({
                 key: "city",
@@ -66,7 +82,10 @@
             result.push({ key: "scale", label: option?.label ?? filters.scale });
         }
         if (filters.tag) result.push({ key: "tag", label: `# ${filters.tag}` });
-        if (sortValue === "start_desc") result.push({ key: "sort", label: "最晚开始" });
+        if (filters.sort) {
+            const option = sortOptions.find((item) => item.value === filters.sort);
+            result.push({ key: "sort", label: option?.label ?? filters.sort });
+        }
         return result;
     });
 
@@ -81,13 +100,14 @@
 
     function currentParams() {
         const params = new URLSearchParams();
+        if (timingValue !== "upcoming") params.set("status", timingValue);
         if (filters.divisionCode) params.set("city", filters.divisionCode);
         if (filters.type) params.set("type", filters.type);
         if (filters.scale) params.set("scale", filters.scale);
         if (filters.tag) params.set("tag", filters.tag);
         if (filters.from) params.set("from", filters.from);
         if (filters.to) params.set("to", filters.to);
-        if (sortValue !== "start_asc") params.set("sort", sortValue);
+        if (filters.sort) params.set("sort", filters.sort);
         return params;
     }
 
@@ -127,7 +147,7 @@
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <form
             id="quick-event-filters"
-            class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(20rem,1.4fr)_minmax(11rem,0.8fr)_minmax(10rem,0.7fr)_auto] lg:items-end"
+            class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(18rem,1.3fr)_minmax(9rem,0.65fr)_minmax(11rem,0.8fr)_minmax(10rem,0.7fr)_auto] lg:items-end"
             action="/events"
             method="GET"
         >
@@ -139,6 +159,7 @@
                 allowEmpty
                 emptyLabel="全部地区"
             />
+            <SelectField name="status" label="状态" value={timingValue} options={timingOptions} />
             <SelectField
                 name="type"
                 label="类型"
@@ -157,9 +178,7 @@
             {#if filters.scale}<input type="hidden" name="scale" value={filters.scale} />{/if}
             {#if filters.tag}<input type="hidden" name="tag" value={filters.tag} />{/if}
             {#if filters.to}<input type="hidden" name="to" value={filters.to} />{/if}
-            {#if sortValue !== "start_asc"}
-                <input type="hidden" name="sort" value={sortValue} />
-            {/if}
+            {#if filters.sort}<input type="hidden" name="sort" value={filters.sort} />{/if}
             <Button type="submit" class="w-full lg:w-auto">
                 <Filter class="size-4" aria-hidden="true" />
                 筛选
@@ -193,6 +212,9 @@
                 {/if}
                 {#if filters.type}<input type="hidden" name="type" value={filters.type} />{/if}
                 {#if filters.from}<input type="hidden" name="from" value={filters.from} />{/if}
+                {#if timingValue !== "upcoming"}
+                    <input type="hidden" name="status" value={timingValue} />
+                {/if}
 
                 <SelectField
                     name="scale"

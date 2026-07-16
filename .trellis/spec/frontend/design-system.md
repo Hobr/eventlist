@@ -207,11 +207,14 @@
   eslint-plugin-svelte and eslint-plugin-astro).
 - Run `pnpm exec tsc --noEmit` for a type pass when `astro check` is not
   available.
-- Keep the installed TypeScript version inside `@typescript-eslint/parser`'s
-  declared peer range. As of this spec update, parser 8.64 supports
-  `>=4.8.4 <6.1.0`, so the project pins TypeScript `^6.0.3`; upgrading the
-  compiler without checking this range makes ESLint fail during config import
-  before any source rule runs.
+- The project currently uses TypeScript 7. `@typescript-eslint/parser` 8.64 is
+  not yet compatible with TypeScript 7 and can fail while importing
+  `eslint.config.js` before any project rule runs (for example, an internal
+  Node assertion or a `typescript-estree` enum access error). Treat this as a
+  known upstream tooling gap: continue to run Prettier, `tsc --noEmit`, and the
+  production build, but do not downgrade TypeScript, patch dependencies, or
+  change application code merely to make ESLint load. Re-enable the ESLint
+  gate once the installed parser officially supports TypeScript 7.
 - Validate public routes and `/admin/login` at approximately 390x844,
   768x1024, and 1440x1000. Assert `scrollWidth <= clientWidth`, stable media
   dimensions, focusable disclosure/dialog controls, and visible workflow
