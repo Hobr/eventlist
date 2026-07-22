@@ -7,9 +7,11 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
+
 - **Active File**: `journal-1.md`
 - **Total Sessions**: 10
 - **Last Active**: 2026-07-16
+
 <!-- @@@/auto:current-status -->
 
 ---
@@ -17,9 +19,11 @@
 ## Active Documents
 
 <!-- @@@auto:active-documents -->
-| File | Lines | Status |
-|------|-------|--------|
-| `journal-1.md` | ~366 | Active |
+
+| File           | Lines | Status |
+| -------------- | ----- | ------ |
+| `journal-1.md` | ~366  | Active |
+
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -28,18 +32,18 @@
 
 <!-- @@@auto:session-history -->
 
-| # | Date | Title | Commits | Branch |
-|---|------|-------|---------|--------|
-| 10 | 2026-07-16 | Replace event option tables with shared constants | `cfeb53d` | `main` |
-| 9   | 2026-07-16 | 支持活动页查询已结束活动           | `0e47433`                                  | `main` |
-| 8   | 2026-07-15 | Frontend refactor                  | `871e4ac`, `393cccc`, `f1cbf0d`, `4ffb239` | `main` |
-| 7   | 2026-07-01 | bits-ui + Tailwind v4 前端整体重写 | `e6e2cfd`, `b89e190`                       | `main` |
-| 6   | 2026-07-01 | Structural frontend redesign       | `8cf10fe`, `f4c37af`                       | `main` |
-| 5   | 2026-06-30 | Bits UI frontend redesign          | `ab8c1cd`, `72deb2e`                       | `main` |
-| 4   | 2026-06-30 | Archive ACG event site parent      | `f3e4431`, `22fc030`, `f894577`            | `main` |
-| 3   | 2026-06-30 | Public site                        | `f894577`                                  | `main` |
-| 2   | 2026-06-30 | Foundation D1 schema               | `f3e4431`, `151f97e`                       | `main` |
-| 1   | 2026-06-30 | Admin review backend               | `762d0f1`, `22fc030`                       | `main` |
+| #   | Date       | Title                                             | Commits                                    | Branch |
+| --- | ---------- | ------------------------------------------------- | ------------------------------------------ | ------ |
+| 10  | 2026-07-16 | Replace event option tables with shared constants | `cfeb53d`                                  | `main` |
+| 9   | 2026-07-16 | 支持活动页查询已结束活动                          | `0e47433`                                  | `main` |
+| 8   | 2026-07-15 | Frontend refactor                                 | `871e4ac`, `393cccc`, `f1cbf0d`, `4ffb239` | `main` |
+| 7   | 2026-07-01 | bits-ui + Tailwind v4 前端整体重写                | `e6e2cfd`, `b89e190`                       | `main` |
+| 6   | 2026-07-01 | Structural frontend redesign                      | `8cf10fe`, `f4c37af`                       | `main` |
+| 5   | 2026-06-30 | Bits UI frontend redesign                         | `ab8c1cd`, `72deb2e`                       | `main` |
+| 4   | 2026-06-30 | Archive ACG event site parent                     | `f3e4431`, `22fc030`, `f894577`            | `main` |
+| 3   | 2026-06-30 | Public site                                       | `f894577`                                  | `main` |
+| 2   | 2026-06-30 | Foundation D1 schema                              | `f3e4431`, `151f97e`                       | `main` |
+| 1   | 2026-06-30 | Admin review backend                              | `762d0f1`, `22fc030`                       | `main` |
 
 <!-- @@@/auto:session-history -->
 

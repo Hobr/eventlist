@@ -332,7 +332,6 @@ Rebuilt the public discovery experience and responsive admin workspace, restored
 
 - None - task complete
 
-
 ## Session 10: Replace event option tables with shared constants
 
 **Date**: 2026-07-16
@@ -349,8 +348,8 @@ Replaced D1 event type and scale lookup tables with shared typed constants, serv
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
+| Hash      | Message       |
+| --------- | ------------- |
 | `cfeb53d` | (see git log) |
 
 ### Testing

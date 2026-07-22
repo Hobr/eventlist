@@ -1,7 +1,7 @@
 ---
 name: check
 description: |
-  Code quality auditor for the Trellis channel runtime. Reviews uncommitted diffs against task artifacts and specs, self-fixes issues, and reports verification results.
+    Code quality auditor for the Trellis channel runtime. Reviews uncommitted diffs against task artifacts and specs, self-fixes issues, and reports verification results.
 provider: claude
 labels: [trellis, check]
 ---
@@ -42,8 +42,8 @@ The supervising main session owns commits. Report the post-fix state; do not com
 1. Run `git diff --name-only` and `git diff` to scope the changes
 2. Read the task artifacts and relevant spec files
 3. For each issue:
-   - If mechanical (lint nit, missing type, wrong import, dead branch) → fix in-place
-   - If a design/judgment issue → record and report, do not silently rewrite
+    - If mechanical (lint nit, missing type, wrong import, dead branch) → fix in-place
+    - If a design/judgment issue → record and report, do not silently rewrite
 4. Run the project's lint and typecheck on the changed scope after self-fixes
 5. Report
 
