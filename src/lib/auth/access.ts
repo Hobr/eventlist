@@ -27,7 +27,7 @@ const decoder = new TextDecoder();
 const jwksCache = new Map<string, { expiresAt: number; keys: AccessJsonWebKey[] }>();
 const JWKS_CACHE_MS = 5 * 60 * 1000;
 
-function base64UrlToBytes(value: string) {
+function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
     const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
     const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
     const binary = atob(padded);
@@ -77,13 +77,25 @@ export async function verifyAccessJWT(jwt: string | null, runtimeEnv: RuntimeEnv
         return null;
     }
 
-    const [encodedHeader, encodedPayload, encodedSignature] = jwt.split(".");
+    const parts = jwt.split(".");
+    if (parts.length !== 3) return null;
+
+    const [encodedHeader, encodedPayload, encodedSignature] = parts;
     if (!encodedHeader || !encodedPayload || !encodedSignature) return null;
 
-    const header = parseBase64UrlJson<JwtHeader>(encodedHeader);
+    let header: JwtHeader;
+    let payload: AccessJwtPayload;
+    let signature: Uint8Array<ArrayBuffer>;
+    try {
+        header = parseBase64UrlJson<JwtHeader>(encodedHeader);
+        payload = parseBase64UrlJson<AccessJwtPayload>(encodedPayload);
+        signature = base64UrlToBytes(encodedSignature);
+    } catch {
+        return null;
+    }
+
     if (header.alg !== "RS256" || !header.kid) return null;
 
-    const payload = parseBase64UrlJson<AccessJwtPayload>(encodedPayload);
     const teamDomain = normalizeTeamDomain(runtimeEnv.ACCESS_TEAM);
     const expectedIssuer = teamDomain;
     const now = Math.floor(Date.now() / 1000);
@@ -103,8 +115,8 @@ export async function verifyAccessJWT(jwt: string | null, runtimeEnv: RuntimeEnv
         false,
         ["verify"]
     );
-    const signedData = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`);
-    const signature = base64UrlToBytes(encodedSignature);
+    const encodedData = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`);
+    const signedData: Uint8Array<ArrayBuffer> = new Uint8Array(encodedData);
     const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, signedData);
 
     return valid ? payload : null;

@@ -42,9 +42,22 @@ export async function verifyTurnstile(
         throw new Error("Turnstile verification request failed");
     }
 
-    const result = (await response.json()) as TurnstileResponseBody;
+    let result: TurnstileResponseBody;
+    try {
+        const body: unknown = await response.json();
+        if (!body || typeof body !== "object") {
+            throw new Error("Invalid Turnstile response");
+        }
+        result = body as TurnstileResponseBody;
+    } catch {
+        throw new Error("Turnstile verification request failed");
+    }
+
+    const errors = Array.isArray(result["error-codes"])
+        ? result["error-codes"].filter((error): error is string => typeof error === "string")
+        : [];
     return {
         success: result.success === true,
-        errors: result["error-codes"] ?? []
+        errors
     };
 }
