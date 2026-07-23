@@ -31,7 +31,7 @@ corepack pnpm format
 普通变量应写在 `wrangler.jsonc` 中. 如需 Token 登录, 再设置 `AUTH_MODE=token` 和 `ADMIN_TOKEN` Secret
 
 如果生产 D1 不存在, 执行 `corepack pnpm exec wrangler d1 create eventlist-db`, 再更新 `database_id`
-MIN_TOKEN`. 不要提交或打印 Secret
+不要提交或打印 Secret
 
 ### 首次部署
 

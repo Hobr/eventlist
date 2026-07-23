@@ -11,3 +11,4 @@ bun.lockb
 wrangler.jsonc
 .wrangler/
 worker-configuration.d.ts
+.trellis/
