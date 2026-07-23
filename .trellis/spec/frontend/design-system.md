@@ -97,6 +97,9 @@
 - `TagInput.svelte` is the admin canonical-tag editor. It keeps hidden
   `name="tags"` data joined by `、` and serializes the current draft too, so
   clicking Save directly after typing does not lose the new tag.
+- `admin/AdminEventForm.astro` owns the shared create/edit field composition.
+  New and edit pages provide page-specific submit methods, busy/error copy,
+  and redirects instead of duplicating event fields.
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
 - Keep action buttons icon+text where the icon clarifies the command
@@ -126,6 +129,10 @@
   API until at least one canonical tag exists. Actions expose pending,
   disabled, inline error, and destructive-confirmation states without
   duplicating hidden forms.
+- Admin creation submits POST `/api/admin/events`, requires at least one
+  canonical or newly entered tag, and redirects a successful 201 response to
+  `/admin/events/:id/edit`. It does not include Turnstile and publishes
+  immediately because the route is protected by admin middleware.
 
 ## Public Page Structure
 
@@ -148,6 +155,8 @@
 
 - Desktop uses a persistent sidebar and aligned table columns; mobile uses a
   compact top bar with the shared `side-panel` navigation.
+- Both navigation surfaces expose `/admin/events/new` as `增加活动`; the new
+  route owns its active state and must not activate the published queue item.
 - Each event queue owns exactly one semantic `<table>`. Below `lg`, keep the
   header in the DOM and style each `<tr>` as a task card; expose cell labels
   through `data-label`. Do not render separate desktop and mobile forms.

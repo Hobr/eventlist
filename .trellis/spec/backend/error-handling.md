@@ -16,6 +16,7 @@
 - Success: `jsonOk(data?) -> Response` with `{ ok: true, data? }`.
 - Failure: `jsonError(error, status?) -> Response` with `{ ok: false, error }`.
 - Routes live under `src/pages/api/admin/**` and use Astro `APIRoute`.
+- `POST /api/admin/events` accepts administrator `FormData` and returns `201 { ok: true, data: { id } }` after an immediate published insert.
 
 ### 3. Contracts
 
@@ -35,12 +36,16 @@
 - Already-merged tag mutation -> 200 `{ ok: true }` and no new audit row.
 - Missing or non-canonical tag merge endpoint -> 409.
 - Approve/republish without a canonical event tag -> 409 with an instruction to organize tags first.
+- Admin create validation failure, including zero canonical tags -> 400 with a user-facing Chinese message.
+- Unexpected admin create D1/binding failure -> 500; the D1 batch leaves no partial event, tag relationship, or audit row.
 
 ### 5. Good/Base/Bad Cases
 
 - Good: frontend `fetch()` checks `response.ok`, then reads `body.error` only on failure.
+- Good: the create page reads `body.data.id` on a 201 response and redirects to `/admin/events/:id/edit`.
 - Base: form endpoints accept `FormData` because admin pages submit forms.
 - Bad: returning HTML redirects from `/api/admin/*`; browser fetch callers will not surface useful errors.
+- Bad: returning 201 before tag relationships and the `create` audit row are committed.
 
 ### 6. Tests Required
 
@@ -51,6 +56,8 @@
     - wrong transition returns 409 JSON.
     - duplicate target transition returns 200 JSON without duplicate audit.
     - duplicate tag merge returns 200 JSON without duplicate audit.
+    - valid admin create returns 201, a published event ID, canonical tags, and one audit row.
+    - invalid/no-tag admin create returns 400 and writes no event.
 
 ### 7. Wrong vs Correct
 

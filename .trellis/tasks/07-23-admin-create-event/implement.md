@@ -2,25 +2,32 @@
 
 ## Ordered Checklist
 
-- [ ] Update the baseline audit action contract and query types to support
+- [x] Update the baseline audit action contract and query types to support
   `create` and define `createPublishedEvent` with candidate-ID retry, tag
   resolution, event-tag attachment, and audit insertion.
-- [ ] Strengthen `parseEventForm` for strict dates and HTTP(S) URL validation,
-  and enforce canonical tag count/length/non-empty rules for the new and
-  existing admin forms.
-- [ ] Extract the shared administrator event form from the existing edit page
+- [x] Strengthen `parseEventForm` for strict dates and HTTP(S) URL validation,
+  enforce tag count/length/deduplication in the shared parser, and preserve the
+  applicable non-empty rules for create and published/offline edit flows.
+- [x] Extract the shared administrator event form from the existing edit page
   into a reusable Astro component that can render empty or populated values.
-- [ ] Add `/admin/events/new` with server-side tag inventory loading and a
+- [x] Add `/admin/events/new` with server-side tag inventory loading and a
   browser `fetch` submit flow that redirects to the new event's edit page.
-- [ ] Add authenticated `POST /api/admin/events` returning the new event ID,
+- [x] Add authenticated `POST /api/admin/events` returning the new event ID,
   with 400 validation errors and 500 unexpected-error handling.
-- [ ] Add the “增加活动” navigation item and plus icon to desktop/mobile admin
+- [x] Add the “增加活动” navigation item and plus icon to desktop/mobile admin
   navigation, preserving active-state behavior.
-- [ ] Add focused local D1 verification for immediate publication, tag reuse,
+- [x] Add focused local D1 verification for immediate publication, tag reuse,
   new-tag creation, alias resolution, duplicate-tag handling, missing-tag
   rejection, and rollback on a failed batch.
 - [ ] Run `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`,
   `corepack pnpm build`, and route/API checks against a fresh local D1 state.
+
+  Verification note: TypeScript, Prettier, task manifests, fresh D1 migration,
+  and Miniflare integration checks pass. ESLint cannot start because the
+  installed typescript-eslint does not support TypeScript 7. Astro build/sync
+  and background dev stall during Cloudflare adapter initialization in this
+  environment; the background command exits after its 30-second startup
+  timeout without opening a server.
 
 ## Validation Commands
 

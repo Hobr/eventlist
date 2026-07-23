@@ -123,10 +123,12 @@ migrations/0001_init.sql
 
 - `updateEventStatus(db, id, fromStatus, toStatus, extra)` -> `"changed" | "already-target" | "conflict"`.
 - `editEvent(db, id, input: AdminEventInput)` batches the event update and complete `event_tags` replacement.
+- `createPublishedEvent(db, input: AdminEventInput, auditMeta)` creates a published event, canonical tags, relationships, and a `create` audit row in one D1 batch.
 - `hasCanonicalEventTag(db, eventId)` -> `boolean`.
 - `insertAudit(db, action, targetId, meta)` writes JSON metadata.
 - `mergeTags(db, from, to)` -> `"changed" | "already-target" | "conflict"`.
 - `AdminEventInput` includes `type: EventType`, `scale: EventScale`, nullable `start_time`, nullable `end_time`, and `tags: string[]`.
+- `AdminCreateAuditMeta` includes `authMode: "access" | "token"` and an optional authenticated email.
 
 ### 3. Contracts
 
@@ -134,6 +136,9 @@ migrations/0001_init.sql
 - Approve and republish require at least one canonical tag (`alias_of_id IS NULL`).
 - Published/offline edits cannot replace tags with an empty set. Pending events may be saved without tags while moderation is incomplete.
 - Admin tag input may reuse an existing canonical tag or create a new one; aliases resolve to the canonical target.
+- Admin-created events require at least one normalized tag input, resolve aliases and new names to canonical relationships, write `status = published` plus `published_at`, and never enter the pending queue.
+- The create batch uses one explicit `MAX(events.id) + 1` candidate for the event, relationships, and audit row. A concurrent ID conflict rolls back and retries the whole batch up to three times.
+- `audit_logs.action` includes `create`; its metadata records `source = admin-create`, normalized tag names, auth mode, and authenticated email when available.
 - Tag merge removes duplicate event relationships before replacing source IDs and marking the source as an alias.
 - Multi-statement application writes use `db.batch()`, not SQL transaction strings.
 
@@ -145,13 +150,17 @@ migrations/0001_init.sql
 - Already-target transition -> HTTP 200 without duplicate audit.
 - Same-day end time earlier than start -> HTTP 400.
 - Merge source equals target or uses unexpected aliases -> error/conflict.
+- Admin create with zero tags, more than 12 tags, or a tag over 24 characters -> HTTP 400 before D1 writes.
+- Concurrent candidate-ID collision -> full batch rollback and retry; other D1 failures -> HTTP 500 with no event/tag/audit partial state.
 
 ### 5. Good/Base/Bad Cases
 
 - Good: save canonical tags on a pending event, approve it, and write one audit row.
+- Good: create an admin event with an existing tag, an alias, and a new tag; publish immediately, attach canonical IDs, and write one `create` audit row.
 - Base: pending event keeps `tag_suggestions` for moderator reference while `event_tags` remains empty.
 - Bad: enabling the approve button based only on UI state; the API must independently query canonical tags.
 - Bad: deleting/adding event tags outside the same D1 batch as the event edit.
+- Bad: inserting an admin event first and attaching tags or audit rows in later calls; a failure would expose a partially created published event.
 
 ### 6. Tests Required
 
@@ -161,6 +170,7 @@ migrations/0001_init.sql
 - Offline without canonical tags -> republish 409.
 - Tag merge removes duplicate relationships and is idempotent on retry.
 - Optional time cases: none, start-only, end-only, same-day pair, cross-day pair, reversed same-day pair.
+- Admin create: existing/new/alias/case-duplicate tags, published timestamp, audit metadata, invalid-data rollback, and two concurrent candidate-ID allocations.
 
 ### 7. Wrong vs Correct
 
@@ -180,6 +190,9 @@ if (!(await hasCanonicalEventTag(db, id))) {
 }
 await updateEventStatus(db, id, STATUS.PENDING, STATUS.PUBLISHED);
 ```
+
+For direct admin creation, use `createPublishedEvent()` instead of composing
+`insertSubmission()`, `editEvent()`, and `insertAudit()` as separate calls.
 
 ---
 
