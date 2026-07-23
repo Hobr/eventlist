@@ -7,19 +7,18 @@ import { getRuntimeEnv } from "../../../../lib/runtime/env";
 export const prerender = false;
 
 function parsePositiveInt(value: FormDataEntryValue | null) {
-    if (typeof value !== "string") return null;
-    const parsed = Number.parseInt(value, 10);
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+    if (typeof value !== "string" || !/^[1-9]\d*$/.test(value)) return null;
+    const parsed = Number(value);
+    return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
 export const POST: APIRoute = async ({ request }) => {
-    const formData = await request.formData();
-    const from = parsePositiveInt(formData.get("from"));
-    const to = parsePositiveInt(formData.get("to"));
-
-    if (!from || !to) return jsonError("from and to are required", 400);
-
     try {
+        const formData = await request.formData();
+        const from = parsePositiveInt(formData.get("from"));
+        const to = parsePositiveInt(formData.get("to"));
+        if (!from || !to) return jsonError("from and to are required", 400);
+
         const db = await getDB(getRuntimeEnv());
         const outcome = await mergeTags(db, from, to);
         if (outcome === "conflict")

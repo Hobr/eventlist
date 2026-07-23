@@ -13,13 +13,14 @@ import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;
 
-const id = Number.parseInt(Astro.params.id ?? "", 10);
+const rawId = Astro.params.id ?? "";
+const id = /^[1-9]\d*$/.test(rawId) ? Number(rawId) : Number.NaN;
 let eventRecord = null;
 let canonicalTags = [];
 let errorMessage = "";
 
 try {
-    if (!Number.isInteger(id) || id <= 0) throw new Error("活动 ID 无效");
+    if (!Number.isSafeInteger(id)) throw new Error("活动 ID 无效");
 
     const db = await getDB(getRuntimeEnv());
     const [loadedEvent, loadedTags] = await Promise.all([getEvent(db, id), listTags(db)]);

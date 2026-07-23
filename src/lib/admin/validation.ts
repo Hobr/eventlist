@@ -1,4 +1,6 @@
 export function parseId(value: string | undefined): number | null {
-    const id = Number.parseInt(value ?? "", 10);
-    return Number.isInteger(id) && id > 0 ? id : null;
+    if (!value || !/^[1-9]\d*$/.test(value)) return null;
+
+    const id = Number(value);
+    return Number.isSafeInteger(id) ? id : null;
 }

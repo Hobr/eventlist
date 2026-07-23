@@ -11,13 +11,13 @@ export const POST: APIRoute = async ({ request, params }) => {
     const id = parseId(params.id);
     if (!id) return jsonError("Invalid event id", 400);
 
-    const formData = await request.formData();
-    const rejectReason = formData.get("reject_reason");
-    if (typeof rejectReason !== "string" || rejectReason.trim() === "") {
-        return jsonError("reject_reason is required", 400);
-    }
-
     try {
+        const formData = await request.formData();
+        const rejectReason = formData.get("reject_reason");
+        if (typeof rejectReason !== "string" || rejectReason.trim() === "") {
+            return jsonError("reject_reason is required", 400);
+        }
+
         const db = await getDB(getRuntimeEnv());
         const outcome = await updateEventStatus(db, id, STATUS.PENDING, STATUS.REJECTED, {
             rejectReason: rejectReason.trim()

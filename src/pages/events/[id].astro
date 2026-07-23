@@ -18,12 +18,13 @@ import { buildEventJsonLd } from "../../lib/seo";
 
 export const prerender = false;
 
-const id = Number.parseInt(Astro.params.id ?? "", 10);
+const rawId = Astro.params.id ?? "";
+const id = /^[1-9]\d*$/.test(rawId) ? Number(rawId) : Number.NaN;
 let event = null;
 let errorMessage = "";
 
 try {
-    if (!Number.isInteger(id) || id <= 0) throw new Error("活动不存在");
+    if (!Number.isSafeInteger(id)) throw new Error("活动不存在");
 
     const db = await getDB(getRuntimeEnv());
     event = await getPublicEvent(db, id);
