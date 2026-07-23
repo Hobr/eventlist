@@ -26,6 +26,7 @@
     let { types, scales, tags, filters }: Props = $props();
     let searchResults = $state<TagSummary[] | null>(null);
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let suggestionRequest = 0;
     const suggestions = $derived(searchResults ?? tags);
 
     const typeOptions = $derived([
@@ -118,19 +119,24 @@
         return query ? `/events?${query}` : "/events";
     }
 
-    async function refreshTagSuggestions(value: string) {
+    async function refreshTagSuggestions(value: string, requestId: number) {
         const query = value.trim();
         if (!query) {
-            searchResults = null;
+            if (requestId === suggestionRequest) searchResults = null;
             return;
         }
 
-        const response = await fetch(`/api/tags?q=${encodeURIComponent(query)}`);
-        const body = (await response.json().catch(() => null)) as {
-            ok?: boolean;
-            data?: { tags?: TagSummary[] };
-        } | null;
-        if (body?.ok && body.data?.tags) searchResults = body.data.tags;
+        try {
+            const response = await fetch(`/api/tags?q=${encodeURIComponent(query)}`);
+            const body = (await response.json().catch(() => null)) as {
+                ok?: boolean;
+                data?: { tags?: TagSummary[] };
+            } | null;
+            if (requestId !== suggestionRequest) return;
+            searchResults = body?.ok && body.data?.tags ? body.data.tags : [];
+        } catch {
+            if (requestId === suggestionRequest) searchResults = [];
+        }
     }
 
     function handleTagInput(event: Event) {
@@ -138,7 +144,12 @@
         if (!(input instanceof HTMLInputElement)) return;
         if (timer) clearTimeout(timer);
         const nextValue = input.value;
-        timer = setTimeout(() => void refreshTagSuggestions(nextValue), 160);
+        const requestId = ++suggestionRequest;
+        if (!nextValue.trim()) {
+            searchResults = null;
+            return;
+        }
+        timer = setTimeout(() => void refreshTagSuggestions(nextValue, requestId), 160);
     }
 </script>
 

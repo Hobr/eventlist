@@ -20,6 +20,7 @@
     let draft = $state("");
     let suggestions = $state<TagSummary[]>([]);
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let suggestionRequest = 0;
     let serializedTags = $derived.by(() => {
         const draftTag = draft.trim().slice(0, 24);
         return [...new Set([...tags, ...(draftTag ? [draftTag] : [])])].slice(0, 12).join("、");
@@ -30,6 +31,9 @@
         if (!tag || tags.includes(tag) || tags.length >= 12) return;
         tags = [...tags, tag];
         draft = "";
+        suggestionRequest += 1;
+        if (timer) clearTimeout(timer);
+        suggestions = [];
     }
 
     function removeTag(tag: string) {
@@ -44,24 +48,30 @@
         addTag();
     }
 
-    async function refreshSuggestions(value: string) {
+    async function refreshSuggestions(value: string, requestId: number) {
         const query = value.trim();
         if (!query) {
-            suggestions = [];
+            if (requestId === suggestionRequest) suggestions = [];
             return;
         }
         if (available.length > 0) {
+            if (requestId !== suggestionRequest) return;
             suggestions = available
                 .filter((suggestion) => suggestion.name.includes(query))
                 .slice(0, 12);
             return;
         }
-        const response = await fetch(`/api/tags?q=${encodeURIComponent(query)}`);
-        const body = (await response.json().catch(() => null)) as {
-            ok?: boolean;
-            data?: { tags?: TagSummary[] };
-        } | null;
-        suggestions = body?.ok && body.data?.tags ? body.data.tags : [];
+        try {
+            const response = await fetch(`/api/tags?q=${encodeURIComponent(query)}`);
+            const body = (await response.json().catch(() => null)) as {
+                ok?: boolean;
+                data?: { tags?: TagSummary[] };
+            } | null;
+            if (requestId !== suggestionRequest) return;
+            suggestions = body?.ok && body.data?.tags ? body.data.tags : [];
+        } catch {
+            if (requestId === suggestionRequest) suggestions = [];
+        }
     }
 
     function handleInput(event: Event) {
@@ -69,7 +79,12 @@
         if (!(input instanceof HTMLInputElement)) return;
         draft = input.value;
         if (timer) clearTimeout(timer);
-        timer = setTimeout(() => void refreshSuggestions(draft), 160);
+        const requestId = ++suggestionRequest;
+        if (!draft.trim()) {
+            suggestions = [];
+            return;
+        }
+        timer = setTimeout(() => void refreshSuggestions(draft, requestId), 160);
     }
 </script>
 

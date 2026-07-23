@@ -244,7 +244,7 @@ export async function topTags(db: D1Database, limit = 20) {
              JOIN events ON events.id = event_tags.event_id
              WHERE tags.alias_of_id IS NULL
                AND events.status = ?
-               AND date(events.end_date) >= date('now')
+               AND NOT ${EVENT_ENDED_CLAUSE}
              GROUP BY tags.id
              ORDER BY event_count DESC, tags.name ASC
              LIMIT ?`
@@ -267,7 +267,7 @@ export async function searchTags(db: D1Database, query: string, limit = 12) {
              LEFT JOIN events
                ON events.id = event_tags.event_id
               AND events.status = ?
-              AND date(events.end_date) >= date('now')
+              AND NOT ${EVENT_ENDED_CLAUSE}
              WHERE tags.alias_of_id IS NULL
                AND tags.name LIKE ? ESCAPE '\\'
              GROUP BY tags.id
