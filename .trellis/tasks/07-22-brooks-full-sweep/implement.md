@@ -10,33 +10,34 @@
 
 ## Phase 2: Baseline And Configuration
 
-- [ ] Enumerate the final tracked-file scope and classify protected/generated paths.
-- [ ] Read and validate `.brooks-lint.yaml`; if absent, record default `balanced` settings.
-- [ ] Run the baseline gates with `corepack pnpm`: TypeScript, lint, build, and `git diff --check`.
-- [ ] Record the absence of a test script/test suite and preserve any known environment/tooling limitations.
+- [x] Enumerate the final tracked-file scope and classify protected/generated paths (233 tracked; 110 non-Trellis analyzed; 123 Trellis files protected).
+- [x] Read and validate `.brooks-lint.yaml`; it is absent, so default `balanced` settings apply.
+- [x] Run the baseline and post-fix gates with `corepack pnpm`: TypeScript, Prettier, lint, build, and `git diff --check`.
+- [x] Record the absence of a test script/test suite and preserve the known TypeScript 7 parser and Wrangler read-only-log limitations.
+- [x] Validate a fresh local D1 baseline: one migration, four application tables, and no forbidden dimension tables.
 
 ## Phase 3: Dimension Passes
 
-- [ ] Run review (R1-R6), classify each finding, apply only Safe/Extended-Safe fixes, and verify or revert.
-- [ ] Run test (T1-T6), including coverage-illusion evidence for untested active code; do not create test infrastructure as an automatic fix.
-- [ ] Run debt analysis, score pain × spread, and avoid duplicating isolated review findings without accumulation evidence.
-- [ ] Run architecture audit, map dependency direction, and leave module-boundary/public-contract changes as Residual unless trivially safe.
-- [ ] Update dimension counters and `fix_log` after every attempted fix.
+- [x] Run review (R1-R6), classify each finding, apply only Safe/Extended-Safe fixes, and verify or revert.
+- [x] Run test (T1-T6), including coverage-illusion evidence for untested active code; do not create test infrastructure as an automatic fix.
+- [x] Run debt analysis, score pain × spread, and avoid duplicating isolated review findings without accumulation evidence.
+- [x] Run architecture audit, map dependency direction, and leave module-boundary/public-contract changes as Residual unless trivially safe.
+- [x] Update dimension counters and `fix_log` after every attempted fix.
 
 ## Phase 4: Iteration And Convergence
 
-- [ ] Re-scan modified files, their same-module neighbors, and direct static consumers.
-- [ ] Retry Critical findings until fixed or retired after three failed attempts.
-- [ ] Stop non-critical iteration after a clean round or three non-critical rounds; record iteration-cap residuals.
-- [ ] Ensure no finding is silently dropped, duplicated, or re-queued after retirement.
+- [x] Re-scan modified files, their same-module neighbors, and direct static consumers.
+- [x] Retry Critical findings until fixed or retired after three failed attempts.
+- [x] Stop non-critical iteration after a clean round; no iteration-cap residuals were produced.
+- [x] Ensure no finding is silently dropped, duplicated, or re-queued after retirement.
 
 ## Phase 5: Final Verification And Report
 
-- [ ] Re-run final TypeScript, lint, build, and diff checks; restore any tracked generated-config drift.
-- [ ] Assemble the Full Sweep report with scope, config, dimension table, iteration history, fix log, health delta, residuals, and summary.
-- [ ] Append the report score record to `.brooks-lint-history.json` only if the Brooks history contract permits it; otherwise document why no history file was written.
-- [ ] Review whether any reusable project convention was discovered; update a scoped Trellis spec only when a concrete, code-backed rule is learned.
-- [ ] Do not deploy, push, amend, or commit as part of the Brooks pipeline. Leave the final repository state and validation evidence explicit for handoff.
+- [x] Re-run final TypeScript, Prettier, lint, build, and diff checks; no tracked generated-config drift was introduced.
+- [x] Assemble the Full Sweep report with scope, config, dimension table, iteration history, fix log, health delta, residuals, and summary in `sweep-report.md`.
+- [x] Append the first report score record to `.brooks-lint-history.json`.
+- [x] Review whether any reusable project convention was discovered; no code-spec update was needed because the fix was formatting-only and existing specs already cover the residual contracts.
+- [x] Do not deploy, push, amend, or commit as part of the Brooks pipeline. Leave the final repository state and validation evidence explicit for handoff.
 
 ## Validation Commands
 

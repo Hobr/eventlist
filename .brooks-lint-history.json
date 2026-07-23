@@ -1,0 +1,13 @@
+[
+    {
+        "date": "2026-07-23",
+        "mode": "Full Sweep",
+        "score": 74,
+        "findings": {
+            "critical": 1,
+            "warning": 2,
+            "suggestion": 1
+        },
+        "scope": "Entire tracked repository (233 files; 110 non-Trellis files analyzed)"
+    }
+]
