@@ -53,9 +53,8 @@
         { value: "all", label: "全部" }
     ];
     const timingValue: EventTiming = $derived(filters.timing ?? "upcoming");
-    const sortValue: EventSort = $derived(
-        filters.sort ?? (timingValue === "ended" ? "end_desc" : "start_asc")
-    );
+    const defaultSort: EventSort = $derived(timingValue === "ended" ? "end_desc" : "start_asc");
+    const sortValue: EventSort = $derived(filters.sort ?? defaultSort);
 
     const activeFilters = $derived.by(() => {
         const result: Array<{ key: string; label: string }> = [];
@@ -82,7 +81,7 @@
             result.push({ key: "scale", label: option?.label ?? filters.scale });
         }
         if (filters.tag) result.push({ key: "tag", label: `# ${filters.tag}` });
-        if (filters.sort) {
+        if (filters.sort && filters.sort !== defaultSort) {
             const option = sortOptions.find((item) => item.value === filters.sort);
             result.push({ key: "sort", label: option?.label ?? filters.sort });
         }
@@ -94,7 +93,7 @@
             filters.scale,
             filters.tag,
             filters.to,
-            sortValue === "start_desc" ? sortValue : null
+            filters.sort && filters.sort !== defaultSort ? filters.sort : null
         ].filter(Boolean).length
     );
 

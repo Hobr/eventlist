@@ -36,6 +36,9 @@
     }: Props = $props();
 
     let selectedValue = $state(untrack(() => value ?? ""));
+    $effect(() => {
+        selectedValue = value ?? "";
+    });
     const items = $derived(
         options.map((option) => ({
             value: option.value,
