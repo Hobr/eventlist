@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Defines the D1 baseline, status and audit constraints, canonical-tag alias rules, batch-write contract, and required database checks for the new published-event write path."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Defines authenticated admin API JSON envelopes, validation/status codes, and the no-redirect contract for the new POST route."}
+{"file":".trellis/spec/frontend/design-system.md","reason":"Defines admin layout density, Bits UI reuse, TagInput serialization, navigation behavior, accessibility, and frontend validation gates."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Maps the FormData -> parser -> D1 -> admin redirect contract and highlights boundary validation and round-trip checks."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Requires search-before-create and shared form/control extraction so the new page does not duplicate the existing admin editor."}

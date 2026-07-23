@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Check that create writes remain within the single D1 baseline, status/audit constraints, canonical-tag alias behavior, and batch transaction expectations."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Check 401/400/500 JSON behavior and ensure the browser fetch caller never receives an HTML redirect from the admin API."}
+{"file":".trellis/spec/frontend/design-system.md","reason":"Check responsive admin navigation, form semantics, TagInput hidden-field behavior, Bits UI reuse, focus states, and no prohibited styling/tooling."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check that tags, publication status, audit metadata, API response data, and redirect behavior survive every layer boundary."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check for duplicated event-form markup, validation, option catalogues, or tag serialization after extraction."}
