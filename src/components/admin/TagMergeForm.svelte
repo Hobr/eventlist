@@ -67,7 +67,7 @@
             errorMessage = "";
         }}
     />
-    <span class="text-muted hidden pb-3 text-sm font-semibold lg:block" aria-hidden="true">→</span>
+    <span class="hidden pb-3 text-sm font-semibold text-muted lg:block" aria-hidden="true">→</span>
     <SelectField
         name="to"
         label="目标标签"
@@ -96,7 +96,7 @@
 </form>
 
 {#if sourceId && targetId && sourceId === targetId}
-    <p class="text-danger mt-3 text-sm font-semibold" role="alert">源标签和目标标签不能相同</p>
+    <p class="mt-3 text-sm font-semibold text-danger" role="alert">源标签和目标标签不能相同</p>
 {:else if errorMessage}
-    <p class="text-danger mt-3 text-sm font-semibold" role="alert">{errorMessage}</p>
+    <p class="mt-3 text-sm font-semibold text-danger" role="alert">{errorMessage}</p>
 {/if}

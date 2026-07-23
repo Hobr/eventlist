@@ -89,17 +89,17 @@
 </script>
 
 <div class="flex flex-col gap-1.5">
-    <label for="tag-input" class="text-muted-foreground text-sm font-semibold">{label}</label>
+    <label for="tag-input" class="text-sm font-semibold text-muted-foreground">{label}</label>
     <input type="hidden" {name} value={serializedTags} />
     <div
-        class="border-border-strong bg-surface focus-within:border-ring focus-within:ring-ring/40 flex flex-wrap items-center gap-1.5 rounded-md border p-1.5 focus-within:ring-2"
+        class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-strong bg-surface p-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40"
     >
         {#each tags as tag (tag)}
             <button
                 type="button"
                 onclick={() => removeTag(tag)}
                 aria-label={`移除标签 ${tag}`}
-                class="bg-surface-subtle text-muted-foreground hover:bg-surface-raised inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold transition-colors"
+                class="inline-flex items-center gap-1 rounded-sm bg-surface-subtle px-2 py-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-surface-raised"
             >
                 {tag}
                 <X class="size-3" aria-hidden="true" />
@@ -115,7 +115,7 @@
             onblur={() => addTag()}
             autocomplete="off"
             placeholder="输入后按 Enter 添加"
-            class="text-foreground placeholder:text-muted flex-1 bg-transparent px-1.5 py-1 text-sm outline-none"
+            class="flex-1 bg-transparent px-1.5 py-1 text-sm text-foreground outline-none placeholder:text-muted"
         />
     </div>
     <datalist id="submit-tag-suggestions">

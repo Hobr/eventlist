@@ -68,36 +68,36 @@ const upcomingEvents = featuredEvent
                 class="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(34rem,1.28fr)] lg:items-end lg:gap-12"
             >
                 <header class="max-w-xl">
-                    <p class="text-primary text-sm font-bold">
+                    <p class="text-sm font-bold text-primary">
                         {selectedDivision?.label ?? "北京"}
                     </p>
                     <h1
                         id="home-heading"
-                        class="text-foreground mt-3 max-w-[11ch] text-4xl leading-[1.05] font-black tracking-[-0.04em] sm:text-5xl lg:text-6xl"
+                        class="mt-3 max-w-[11ch] text-4xl leading-[1.05] font-black tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl"
                     >
                         发现附近的 ACG 活动
                     </h1>
                     <p
-                        class="text-muted-foreground mt-4 max-w-md text-sm leading-relaxed sm:text-base"
+                        class="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base"
                     >
                         只看已审核、未结束的本地活动。
                     </p>
                     <a
                         href={`/events?city=${selectedDivisionCode}`}
-                        class="bg-foreground text-background focus-visible:ring-ring/60 mt-6 inline-flex h-11 items-center gap-2 rounded-md px-5 text-sm font-bold whitespace-nowrap transition-transform focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98]"
+                        class="mt-6 inline-flex h-11 items-center gap-2 rounded-md bg-foreground px-5 text-sm font-bold whitespace-nowrap text-background transition-transform focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
                     >
                         浏览全部活动
                         <ArrowRight class="size-4" aria-hidden="true" />
                     </a>
                 </header>
 
-                <div class="border-border bg-surface-subtle rounded-md border p-4 sm:p-5">
+                <div class="rounded-md border border-border bg-surface-subtle p-4 sm:p-5">
                     <CitySelector
                         selectedDivisionCode={selectedDivisionCode}
                         label="浏览地区"
                         client:load
                     />
-                    <div class="text-muted mt-3 flex items-center gap-2 text-xs">
+                    <div class="mt-3 flex items-center gap-2 text-xs text-muted">
                         <MapPinned class="size-4" aria-hidden="true" />
                         当前地区来自{sourceLabel}
                     </div>
@@ -107,7 +107,7 @@ const upcomingEvents = featuredEvent
             {
                 errorMessage ? (
                     <div
-                        class="bg-danger-subtle text-danger rounded-md p-5 text-sm font-semibold"
+                        class="rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
                         role="alert"
                     >
                         {errorMessage}
@@ -117,16 +117,16 @@ const upcomingEvents = featuredEvent
                         <EventCard event={featuredEvent} variant="featured" priority />
                         <aside
                             aria-labelledby="upcoming-heading"
-                            class="border-border bg-surface flex flex-col rounded-md border p-5 sm:p-6"
+                            class="flex flex-col rounded-md border border-border bg-surface p-5 sm:p-6"
                         >
-                            <div class="border-border flex items-end justify-between gap-4 border-b pb-4">
+                            <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
                                 <h2
                                     id="upcoming-heading"
-                                    class="text-foreground text-xl font-black tracking-tight"
+                                    class="text-xl font-black tracking-tight text-foreground"
                                 >
                                     接下来
                                 </h2>
-                                <span class="text-muted text-right text-xs">
+                                <span class="text-right text-xs text-muted">
                                     本地区 {events.length} 场
                                 </span>
                             </div>
@@ -137,7 +137,7 @@ const upcomingEvents = featuredEvent
                                     ))
                                 ) : (
                                     <div class="flex min-h-32 items-center py-6">
-                                        <p class="text-muted-foreground max-w-xs text-sm leading-relaxed">
+                                        <p class="max-w-xs text-sm leading-relaxed text-muted-foreground">
                                             当前地区暂时只有这一场近期活动。新的活动通过审核后会显示在这里。
                                         </p>
                                     </div>
@@ -146,25 +146,25 @@ const upcomingEvents = featuredEvent
                         </aside>
                     </div>
                 ) : (
-                    <div class="border-border bg-surface rounded-md border px-5 py-12 sm:px-8 sm:py-16">
+                    <div class="rounded-md border border-border bg-surface px-5 py-12 sm:px-8 sm:py-16">
                         <div class="max-w-lg">
-                            <h2 class="text-foreground text-2xl font-black">
+                            <h2 class="text-2xl font-black text-foreground">
                                 这个地区还没有近期活动
                             </h2>
-                            <p class="text-muted-foreground mt-3 text-sm leading-relaxed sm:text-base">
+                            <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
                                 可以切换地区，或提交一条新的活动信息。
                             </p>
                         </div>
                         <div class="mt-6 flex flex-wrap gap-3">
                             <a
                                 href="/events"
-                                class="bg-foreground text-background inline-flex h-10 items-center rounded-md px-4 text-sm font-bold whitespace-nowrap active:scale-[0.98]"
+                                class="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-sm font-bold whitespace-nowrap text-background active:scale-[0.98]"
                             >
                                 查看全部地区
                             </a>
                             <a
                                 href="/submit"
-                                class="border-border-strong bg-surface inline-flex h-10 items-center rounded-md border px-4 text-sm font-bold whitespace-nowrap active:scale-[0.98]"
+                                class="inline-flex h-10 items-center rounded-md border border-border-strong bg-surface px-4 text-sm font-bold whitespace-nowrap active:scale-[0.98]"
                             >
                                 提交活动
                             </a>
@@ -180,24 +180,24 @@ const upcomingEvents = featuredEvent
                     <div class="max-w-xl">
                         <h2
                             id="discover-heading"
-                            class="text-foreground text-3xl leading-tight font-black tracking-[-0.03em] sm:text-4xl"
+                            class="text-3xl leading-tight font-black tracking-[-0.03em] text-foreground sm:text-4xl"
                         >
                             按兴趣继续发现
                         </h2>
-                        <p class="text-muted-foreground mt-3 text-sm leading-relaxed sm:text-base">
+                        <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
                             从活动类型或热门标签进入完整目录。
                         </p>
                     </div>
 
                     <div class="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)]">
                         {types.length > 0 ? (
-                            <div class="bg-primary text-primary-foreground rounded-md p-5 sm:p-7">
+                            <div class="rounded-md bg-primary p-5 text-primary-foreground sm:p-7">
                                 <h3 class="text-xl font-black">活动类型</h3>
                                 <div class="mt-5 grid grid-cols-2 gap-x-5 sm:grid-cols-4 lg:grid-cols-2">
                                     {types.slice(0, 8).map((type) => (
                                         <a
                                             href={`/events?type=${type.name}`}
-                                            class="border-primary-foreground/20 focus-visible:ring-primary-foreground/60 group flex min-w-0 items-center justify-between gap-3 border-b py-3 text-sm font-semibold text-current transition-opacity hover:opacity-75 focus-visible:ring-2 focus-visible:outline-none"
+                                            class="group flex min-w-0 items-center justify-between gap-3 border-b border-primary-foreground/20 py-3 text-sm font-semibold text-current transition-opacity hover:opacity-75 focus-visible:ring-2 focus-visible:ring-primary-foreground/60 focus-visible:outline-none"
                                         >
                                             <span class="truncate">{type.label}</span>
                                             <ArrowRight
@@ -211,13 +211,13 @@ const upcomingEvents = featuredEvent
                         ) : null}
 
                         {tags.length > 0 ? (
-                            <div class="bg-surface-subtle border-border rounded-md border p-5 sm:p-7">
-                                <h3 class="text-foreground text-xl font-black">热门标签</h3>
+                            <div class="rounded-md border border-border bg-surface-subtle p-5 sm:p-7">
+                                <h3 class="text-xl font-black text-foreground">热门标签</h3>
                                 <div class="mt-5 flex flex-wrap gap-2">
                                     {tags.slice(0, 8).map((tag) => (
                                         <a
                                             href={`/events?tag=${encodeURIComponent(tag.name)}`}
-                                            class="border-border-strong bg-surface text-foreground hover:border-primary hover:text-primary focus-visible:ring-ring/60 inline-flex min-h-10 items-center rounded-sm border px-3 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                                            class="inline-flex min-h-10 items-center rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                         >
                                             {tag.name}
                                         </a>

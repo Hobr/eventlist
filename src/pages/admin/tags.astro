@@ -27,19 +27,19 @@ const tagOptions = tags.map((tag) => ({
     {
         errorMessage ? (
             <div
-                class="border-danger/25 bg-danger-subtle text-danger rounded-md border p-6 text-center text-sm font-semibold"
+                class="rounded-md border border-danger/25 bg-danger-subtle p-6 text-center text-sm font-semibold text-danger"
                 role="alert"
             >
                 {errorMessage}
             </div>
         ) : (
             <div class="flex flex-col gap-8">
-                <section class="border-border border-b pb-8" aria-labelledby="merge-heading">
+                <section class="border-b border-border pb-8" aria-labelledby="merge-heading">
                     <div class="mb-5">
-                        <h2 id="merge-heading" class="text-foreground text-base font-black">
+                        <h2 id="merge-heading" class="text-base font-black text-foreground">
                             归并重复标签
                         </h2>
-                        <p class="text-muted-foreground mt-1 text-sm">
+                        <p class="mt-1 text-sm text-muted-foreground">
                             源标签会被移除，关联活动将改用目标标签。
                         </p>
                     </div>
@@ -51,34 +51,34 @@ const tagOptions = tags.map((tag) => ({
                         <div>
                             <h2
                                 id="tag-inventory-heading"
-                                class="text-foreground text-base font-black"
+                                class="text-base font-black text-foreground"
                             >
                                 标签目录
                             </h2>
-                            <p class="text-muted-foreground mt-1 text-sm">
+                            <p class="mt-1 text-sm text-muted-foreground">
                                 当前共 {tags.length} 个规范标签
                             </p>
                         </div>
                     </div>
 
                     {tags.length > 0 ? (
-                        <div class="border-border divide-border divide-y border-y">
+                        <div class="divide-y divide-border border-y border-border">
                             {tags.map((tag) => (
                                 <div class="flex items-center justify-between gap-4 py-3">
                                     <div class="min-w-0">
-                                        <p class="text-foreground truncate text-sm font-bold">
+                                        <p class="truncate text-sm font-bold text-foreground">
                                             {tag.name}
                                         </p>
-                                        <p class="text-muted mt-0.5 text-xs">标签 #{tag.id}</p>
+                                        <p class="mt-0.5 text-xs text-muted">标签 #{tag.id}</p>
                                     </div>
-                                    <span class="bg-surface-subtle text-muted-foreground shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold">
+                                    <span class="shrink-0 rounded-full bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                                         {tag.event_count} 个活动
                                     </span>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div class="border-border text-muted-foreground rounded-md border p-8 text-center text-sm">
+                        <div class="rounded-md border border-border p-8 text-center text-sm text-muted-foreground">
                             暂无标签。
                         </div>
                     )}

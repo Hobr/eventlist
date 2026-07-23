@@ -39,12 +39,12 @@ const mobileCell =
 
 {
     events.length === 0 ? (
-        <div class="border-border bg-surface text-muted-foreground flex min-h-44 items-center justify-center rounded-md border px-6 text-center text-sm">
+        <div class="flex min-h-44 items-center justify-center rounded-md border border-border bg-surface px-6 text-center text-sm text-muted-foreground">
             当前队列暂无活动。
         </div>
     ) : (
-        <div class="lg:border-border lg:bg-surface lg:overflow-x-auto lg:rounded-md lg:border">
-            <Table class="text-foreground block w-full text-sm lg:table lg:min-w-[70rem]">
+        <div class="lg:overflow-x-auto lg:rounded-md lg:border lg:border-border lg:bg-surface">
+            <Table class="block w-full text-sm text-foreground lg:table lg:min-w-[70rem]">
                 <caption class="sr-only">
                     {mode === "pending"
                         ? "待审核活动"
@@ -53,37 +53,37 @@ const mobileCell =
                           : "已下线活动"}
                 </caption>
                 <TableHeader class="sr-only lg:not-sr-only lg:table-header-group">
-                    <TableRow class="border-border border-b hover:bg-transparent">
-                        <TableHead class="text-muted-foreground h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold">
+                    <TableRow class="border-b border-border hover:bg-transparent">
+                        <TableHead class="h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                             活动
                         </TableHead>
-                        <TableHead class="text-muted-foreground h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold">
+                        <TableHead class="h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                             时间地点
                         </TableHead>
-                        <TableHead class="text-muted-foreground h-auto w-[13%] px-4 py-3 text-left text-xs font-semibold">
+                        <TableHead class="h-auto w-[13%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                             分类
                         </TableHead>
-                        <TableHead class="text-muted-foreground h-auto w-[17%] px-4 py-3 text-left text-xs font-semibold">
+                        <TableHead class="h-auto w-[17%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                             来源与联系
                         </TableHead>
-                        <TableHead class="text-muted-foreground h-auto px-4 py-3 text-left text-xs font-semibold">
+                        <TableHead class="h-auto px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                             说明
                         </TableHead>
-                        <TableHead class="text-muted-foreground h-auto w-36 px-4 py-3 text-left text-xs font-semibold">
+                        <TableHead class="h-auto w-36 px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                             操作
                         </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody class="grid gap-3 lg:table-row-group [&_tr:last-child]:border lg:[&_tr:last-child]:border-0">
                     {events.map((event) => (
-                        <TableRow class="border-border bg-surface hover:bg-surface lg:hover:bg-surface-subtle/60 grid grid-cols-2 gap-x-4 gap-y-4 rounded-md border p-4 lg:table-row lg:rounded-none lg:border-x-0 lg:border-t-0 lg:p-0">
-                            <TableCell class="border-border col-span-2 border-b p-0 pb-3 align-top lg:table-cell lg:border-b-0 lg:p-4">
+                        <TableRow class="grid grid-cols-2 gap-x-4 gap-y-4 rounded-md border border-border bg-surface p-4 hover:bg-surface lg:table-row lg:rounded-none lg:border-x-0 lg:border-t-0 lg:p-0 lg:hover:bg-surface-subtle/60">
+                            <TableCell class="col-span-2 border-b border-border p-0 pb-3 align-top lg:table-cell lg:border-b-0 lg:p-4">
                                 <div class="flex items-start justify-between gap-3 lg:block">
                                     <div class="min-w-0">
-                                        <div class="text-foreground leading-5 font-bold break-words">
+                                        <div class="leading-5 font-bold break-words text-foreground">
                                             {event.title}
                                         </div>
-                                        <div class="text-muted mt-1 text-xs">活动 #{event.id}</div>
+                                        <div class="mt-1 text-xs text-muted">活动 #{event.id}</div>
                                     </div>
                                     <Badge
                                         tone={statusTones[event.status] ?? "default"}
@@ -97,33 +97,33 @@ const mobileCell =
                                 class:list={[mobileCell, "align-top lg:table-cell lg:p-4"]}
                                 dataLabel="时间与地点"
                             >
-                                <div class="text-foreground font-semibold">
+                                <div class="font-semibold text-foreground">
                                     {formatEventSchedule(event)}
                                 </div>
-                                <div class="text-muted-foreground mt-1">
+                                <div class="mt-1 text-muted-foreground">
                                     {getDivisionLabel(event.division_code) ?? "未设置地区"}
                                 </div>
-                                <div class="text-muted mt-0.5 text-xs">{event.venue}</div>
+                                <div class="mt-0.5 text-xs text-muted">{event.venue}</div>
                                 {event.address ? (
-                                    <div class="text-muted mt-0.5 text-xs">{event.address}</div>
+                                    <div class="mt-0.5 text-xs text-muted">{event.address}</div>
                                 ) : null}
                             </TableCell>
                             <TableCell
                                 class:list={[mobileCell, "align-top lg:table-cell lg:p-4"]}
                                 dataLabel="分类"
                             >
-                                <div class="text-foreground font-semibold">
+                                <div class="font-semibold text-foreground">
                                     {getEventTypeLabel(event.type)}
                                 </div>
-                                <div class="text-muted-foreground mt-1">
+                                <div class="mt-1 text-muted-foreground">
                                     {getEventScaleLabel(event.scale)}
                                 </div>
                                 {event.tags ? (
-                                    <div class="text-muted mt-1 text-xs break-words">
+                                    <div class="mt-1 text-xs break-words text-muted">
                                         {event.tags}
                                     </div>
                                 ) : event.tag_suggestions ? (
-                                    <div class="text-warning mt-1 text-xs break-words">
+                                    <div class="mt-1 text-xs break-words text-warning">
                                         投稿建议：{event.tag_suggestions}
                                     </div>
                                 ) : null}
@@ -140,7 +140,7 @@ const mobileCell =
                                         href={event.source_url}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
-                                        class="text-link focus-visible:ring-ring/60 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:outline-none"
+                                        class="inline-flex items-center gap-1 font-semibold text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                     >
                                         来源
                                         <ExternalLink class="size-3" aria-hidden="true" />
@@ -150,7 +150,7 @@ const mobileCell =
                                             href={event.ticket_url}
                                             target="_blank"
                                             rel="nofollow noopener noreferrer"
-                                            class="text-link focus-visible:ring-ring/60 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:outline-none"
+                                            class="inline-flex items-center gap-1 font-semibold text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                         >
                                             购票
                                             <ExternalLink class="size-3" aria-hidden="true" />
@@ -161,14 +161,14 @@ const mobileCell =
                                             href={event.cover_url}
                                             target="_blank"
                                             rel="nofollow noopener noreferrer"
-                                            class="text-link focus-visible:ring-ring/60 inline-flex items-center gap-1 font-semibold underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:outline-none"
+                                            class="inline-flex items-center gap-1 font-semibold text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                         >
                                             封面
                                             <ExternalLink class="size-3" aria-hidden="true" />
                                         </a>
                                     ) : null}
                                 </div>
-                                <div class="text-muted mt-2 text-xs break-all">
+                                <div class="mt-2 text-xs break-all text-muted">
                                     {event.submitter_contact}
                                 </div>
                             </TableCell>
@@ -179,11 +179,11 @@ const mobileCell =
                                 ]}
                                 dataLabel="补充说明"
                             >
-                                <div class="text-muted-foreground line-clamp-3 leading-5">
+                                <div class="line-clamp-3 leading-5 text-muted-foreground">
                                     {event.description ?? "无活动说明"}
                                 </div>
                                 {event.qq_group ? (
-                                    <div class="text-muted mt-1 text-xs">
+                                    <div class="mt-1 text-xs text-muted">
                                         QQ群：{event.qq_group}
                                     </div>
                                 ) : null}
@@ -191,7 +191,7 @@ const mobileCell =
                             <TableCell
                                 class:list={[
                                     mobileCell,
-                                    "border-border col-span-2 border-t pt-3 align-top lg:table-cell lg:border-t-0 lg:p-4"
+                                    "col-span-2 border-t border-border pt-3 align-top lg:table-cell lg:border-t-0 lg:p-4"
                                 ]}
                                 dataLabel="操作"
                             >

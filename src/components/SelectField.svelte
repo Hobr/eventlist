@@ -54,7 +54,7 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-1.5">
-    <span class="text-muted-foreground text-sm font-semibold">{label}</span>
+    <span class="text-sm font-semibold text-muted-foreground">{label}</span>
     <Select.Root
         type="single"
         {name}
@@ -65,18 +65,18 @@
         onValueChange={handleValueChange}
     >
         <Select.Trigger
-            class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle focus-visible:border-ring focus-visible:ring-ring/40 data-[state=open]:border-ring data-[state=open]:ring-ring/40 flex h-10 w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=open]:ring-2"
+            class="flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border-strong bg-surface px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-surface-subtle focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[state=open]:border-ring data-[state=open]:ring-2 data-[state=open]:ring-ring/40"
             aria-label={label}
         >
-            <Select.Value {placeholder} class="data-[placeholder]:text-muted truncate" />
-            <ChevronDown class="text-muted size-4 shrink-0" aria-hidden="true" />
+            <Select.Value {placeholder} class="truncate data-[placeholder]:text-muted" />
+            <ChevronDown class="size-4 shrink-0 text-muted" aria-hidden="true" />
         </Select.Trigger>
         <Select.Portal>
             <Select.Content
                 sideOffset={6}
-                class="border-border-strong bg-surface-raised text-foreground shadow-popover z-50 max-h-80 min-w-[var(--bits-select-anchor-width)] overflow-hidden rounded-md border"
+                class="z-50 max-h-80 min-w-[var(--bits-select-anchor-width)] overflow-hidden rounded-md border border-border-strong bg-surface-raised text-foreground shadow-popover"
             >
-                <Select.ScrollUpButton class="text-muted flex h-8 items-center justify-center">
+                <Select.ScrollUpButton class="flex h-8 items-center justify-center text-muted">
                     <ChevronUp class="size-4" aria-hidden="true" />
                 </Select.ScrollUpButton>
                 <Select.Viewport class="max-h-72 p-1">
@@ -85,7 +85,7 @@
                             value={option.value}
                             label={option.label}
                             disabled={option.disabled}
-                            class="text-foreground data-[highlighted]:bg-surface-subtle data-[selected]:text-primary relative flex h-9 cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                            class="relative flex h-9 cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-foreground outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-subtle data-[selected]:text-primary"
                         >
                             {#snippet children({ selected })}
                                 <span class="truncate">{option.label}</span>
@@ -98,7 +98,7 @@
                         </Select.Item>
                     {/each}
                 </Select.Viewport>
-                <Select.ScrollDownButton class="text-muted flex h-8 items-center justify-center">
+                <Select.ScrollDownButton class="flex h-8 items-center justify-center text-muted">
                     <ChevronDown class="size-4" aria-hidden="true" />
                 </Select.ScrollDownButton>
             </Select.Content>

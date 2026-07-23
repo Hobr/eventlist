@@ -177,12 +177,12 @@
                 options={typeOptions}
             />
             <label class="flex flex-col gap-1.5">
-                <span class="text-muted-foreground text-sm font-semibold">开始日期</span>
+                <span class="text-sm font-semibold text-muted-foreground">开始日期</span>
                 <input
                     type="date"
                     name="from"
                     value={filters.from ?? ""}
-                    class="border-border-strong bg-surface text-foreground focus-visible:border-ring focus-visible:ring-ring/40 flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                 />
             </label>
             {#if filters.scale}<input type="hidden" name="scale" value={filters.scale} />{/if}
@@ -205,7 +205,7 @@
                 高级筛选
                 {#if advancedCount > 0}
                     <span
-                        class="bg-primary text-primary-foreground inline-flex size-5 items-center justify-center rounded-full text-[0.65rem]"
+                        class="inline-flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] text-primary-foreground"
                     >
                         {advancedCount}
                     </span>
@@ -234,23 +234,23 @@
                 />
                 <SelectField name="sort" label="排序" value={sortValue} options={sortOptions} />
                 <label class="flex flex-col gap-1.5">
-                    <span class="text-muted-foreground text-sm font-semibold">结束日期</span>
+                    <span class="text-sm font-semibold text-muted-foreground">结束日期</span>
                     <input
                         type="date"
                         name="to"
                         value={filters.to ?? ""}
-                        class="border-border-strong bg-surface text-foreground focus-visible:border-ring focus-visible:ring-ring/40 flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     />
                 </label>
                 <label class="flex flex-col gap-1.5">
-                    <span class="text-muted-foreground text-sm font-semibold">标签</span>
+                    <span class="text-sm font-semibold text-muted-foreground">标签</span>
                     <input
                         type="search"
                         name="tag"
                         list="event-tag-suggestions"
                         value={filters.tag ?? ""}
                         oninput={handleTagInput}
-                        class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     />
                     <datalist id="event-tag-suggestions">
                         {#each suggestions as tag (tag.id)}
@@ -258,7 +258,7 @@
                         {/each}
                     </datalist>
                 </label>
-                <div class="border-border flex gap-3 border-t pt-5">
+                <div class="flex gap-3 border-t border-border pt-5">
                     <Button type="submit" class="flex-1">应用筛选</Button>
                     <Button href="/events" variant="outline">
                         <RotateCcw class="size-4" aria-hidden="true" />
@@ -271,14 +271,14 @@
 
     {#if activeFilters.length > 0}
         <div
-            class="border-border flex flex-wrap items-center gap-2 border-t pt-4"
+            class="flex flex-wrap items-center gap-2 border-t border-border pt-4"
             aria-label="已启用筛选"
         >
-            <span class="text-muted text-xs font-semibold">已筛选</span>
+            <span class="text-xs font-semibold text-muted">已筛选</span>
             {#each activeFilters as filter (filter.key)}
                 <a
                     href={hrefWithout(filter.key)}
-                    class="bg-surface-subtle text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-semibold transition-colors"
+                    class="inline-flex items-center gap-1.5 rounded-sm bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     aria-label={`移除筛选：${filter.label}`}
                 >
                     {filter.label}
@@ -287,7 +287,7 @@
             {/each}
             <a
                 href="/events"
-                class="text-link ml-auto inline-flex items-center gap-1.5 text-xs font-semibold"
+                class="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-link"
             >
                 <RotateCcw class="size-3" aria-hidden="true" />
                 全部重置

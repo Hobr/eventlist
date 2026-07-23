@@ -82,7 +82,7 @@
             {pendingAction === "approve" ? "处理中" : "通过"}
         </Button>
         {#if !hasTags}
-            <p class="text-warning text-xs leading-5 font-semibold" role="status">
+            <p class="text-xs leading-5 font-semibold text-warning" role="status">
                 请先整理至少一个规范标签。
             </p>
         {/if}
@@ -102,7 +102,7 @@
             {/snippet}
             {#snippet children()}
                 <label
-                    class="text-muted-foreground text-sm font-semibold"
+                    class="text-sm font-semibold text-muted-foreground"
                     for={`reject-reason-${eventId}`}
                 >
                     驳回理由
@@ -113,7 +113,7 @@
                     bind:value={rejectReason}
                     required
                     rows="3"
-                    class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 mt-1.5 flex w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    class="mt-1.5 flex w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     placeholder="例如：请补充官方来源链接"></textarea>
             {/snippet}
         </ConfirmDialog>
@@ -155,13 +155,13 @@
             {pendingAction === "republish" ? "处理中" : "重新发布"}
         </Button>
         {#if !hasTags}
-            <p class="text-warning text-xs leading-5 font-semibold" role="status">
+            <p class="text-xs leading-5 font-semibold text-warning" role="status">
                 请先整理至少一个规范标签。
             </p>
         {/if}
     {/if}
 
     {#if errorMessage}
-        <p class="text-danger text-xs leading-5 font-semibold" role="alert">{errorMessage}</p>
+        <p class="text-xs leading-5 font-semibold text-danger" role="alert">{errorMessage}</p>
     {/if}
 </div>

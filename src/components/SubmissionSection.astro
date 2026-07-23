@@ -12,15 +12,15 @@ const { title, description, optional = false } = Astro.props;
 
 {
     optional ? (
-        <details class="group border-border border-y py-5" data-form-disclosure>
-            <summary class="focus-visible:ring-ring/60 flex cursor-pointer items-center justify-between gap-4 rounded-sm focus-visible:ring-2 focus-visible:outline-none">
+        <details class="group border-y border-border py-5" data-form-disclosure>
+            <summary class="flex cursor-pointer items-center justify-between gap-4 rounded-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none">
                 <span>
-                    <strong class="text-foreground block text-base font-bold">{title}</strong>
+                    <strong class="block text-base font-bold text-foreground">{title}</strong>
                     {description ? (
-                        <span class="text-muted-foreground mt-1 block text-sm">{description}</span>
+                        <span class="mt-1 block text-sm text-muted-foreground">{description}</span>
                     ) : null}
                 </span>
-                <span class="text-muted inline-flex shrink-0 items-center gap-2 text-xs font-semibold">
+                <span class="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-muted">
                     选填
                     <ChevronDown
                         class="size-4 transition-transform group-open:rotate-180"
@@ -33,9 +33,9 @@ const { title, description, optional = false } = Astro.props;
             </div>
         </details>
     ) : (
-        <fieldset class="border-border border-t pt-6">
-            <legend class="text-foreground pr-4 text-base font-bold">{title}</legend>
-            {description ? <p class="text-muted-foreground mt-1 text-sm">{description}</p> : null}
+        <fieldset class="border-t border-border pt-6">
+            <legend class="pr-4 text-base font-bold text-foreground">{title}</legend>
+            {description ? <p class="mt-1 text-sm text-muted-foreground">{description}</p> : null}
             <div class="mt-5">
                 <slot />
             </div>

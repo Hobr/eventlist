@@ -15,7 +15,7 @@ function hrefFor(nextPage: number) {
 }
 ---
 
-<nav class="text-muted flex items-center justify-center gap-3 py-4 text-sm" aria-label="分页">
+<nav class="flex items-center justify-center gap-3 py-4 text-sm text-muted" aria-label="分页">
     {
         page > 1 ? (
             <Button variant="outline" size="sm" href={hrefFor(page - 1)}>
@@ -23,7 +23,7 @@ function hrefFor(nextPage: number) {
             </Button>
         ) : null
     }
-    <span class="text-muted-foreground font-medium">第 {page} 页</span>
+    <span class="font-medium text-muted-foreground">第 {page} 页</span>
     {
         hasNext ? (
             <Button variant="outline" size="sm" href={hrefFor(page + 1)}>

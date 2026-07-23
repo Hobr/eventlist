@@ -134,7 +134,7 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-1.5">
-    <span class="text-muted-foreground text-sm font-semibold">{label}</span>
+    <span class="text-sm font-semibold text-muted-foreground">{label}</span>
     <input type="hidden" {name} value={selectedValue} {required} />
     <div class={wide ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}>
         <SelectField

@@ -72,17 +72,17 @@ const returnHref =
     {
         errorMessage || !eventRecord ? (
             <div
-                class="border-danger/25 bg-danger-subtle text-danger rounded-md border p-6 text-center text-sm font-semibold"
+                class="rounded-md border border-danger/25 bg-danger-subtle p-6 text-center text-sm font-semibold text-danger"
                 role="alert"
             >
                 {errorMessage}
             </div>
         ) : (
             <div>
-                <div class="border-border mb-8 flex flex-wrap items-center justify-between gap-3 border-b pb-5">
+                <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
                     <a
                         href={returnHref}
-                        class="text-muted-foreground hover:text-foreground focus-visible:ring-ring/60 inline-flex items-center gap-2 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                     >
                         <ArrowLeft class="size-4" aria-hidden="true" />
                         返回活动队列
@@ -99,17 +99,17 @@ const returnHref =
                     class="flex flex-col gap-8"
                 >
                     <section
-                        class="border-border grid gap-4 border-b pb-8 sm:grid-cols-2"
+                        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
                         aria-labelledby="edit-identity-heading"
                     >
                         <div class="sm:col-span-2">
                             <h2
                                 id="edit-identity-heading"
-                                class="text-foreground text-base font-black"
+                                class="text-base font-black text-foreground"
                             >
                                 活动识别
                             </h2>
-                            <p class="text-muted-foreground mt-1 text-sm">
+                            <p class="mt-1 text-sm text-muted-foreground">
                                 用清晰、可检索的名称与分类描述活动。
                             </p>
                         </div>
@@ -144,13 +144,13 @@ const returnHref =
                     </section>
 
                     <section
-                        class="border-border grid gap-4 border-b pb-8 sm:grid-cols-2"
+                        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
                         aria-labelledby="edit-schedule-heading"
                     >
                         <div class="sm:col-span-2">
                             <h2
                                 id="edit-schedule-heading"
-                                class="text-foreground text-base font-black"
+                                class="text-base font-black text-foreground"
                             >
                                 时间与地点
                             </h2>
@@ -242,13 +242,13 @@ const returnHref =
                     </section>
 
                     <section
-                        class="border-border grid gap-4 border-b pb-8 sm:grid-cols-2"
+                        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
                         aria-labelledby="edit-links-heading"
                     >
                         <div class="sm:col-span-2">
                             <h2
                                 id="edit-links-heading"
-                                class="text-foreground text-base font-black"
+                                class="text-base font-black text-foreground"
                             >
                                 来源与参与信息
                             </h2>
@@ -319,15 +319,15 @@ const returnHref =
                         <div>
                             <h2
                                 id="edit-content-heading"
-                                class="text-foreground text-base font-black"
+                                class="text-base font-black text-foreground"
                             >
                                 公开内容
                             </h2>
                         </div>
                         {eventRecord.tag_suggestions ? (
-                            <div class="border-border bg-surface-subtle rounded-md border p-4">
-                                <p class="text-muted text-xs font-semibold">投稿标签建议</p>
-                                <p class="text-foreground mt-1.5 text-sm whitespace-pre-wrap">
+                            <div class="rounded-md border border-border bg-surface-subtle p-4">
+                                <p class="text-xs font-semibold text-muted">投稿标签建议</p>
+                                <p class="mt-1.5 text-sm whitespace-pre-wrap text-foreground">
                                     {eventRecord.tag_suggestions}
                                 </p>
                             </div>
@@ -345,17 +345,17 @@ const returnHref =
                             <textarea
                                 id="description"
                                 name="description"
-                                class="border-border-strong bg-surface text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-ring/40 mt-1.5 flex min-h-36 w-full resize-y rounded-md border px-3 py-2 text-sm leading-6 focus-visible:ring-2 focus-visible:outline-none"
+                                class="mt-1.5 flex min-h-36 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                             >
                                 {eventRecord.description ?? ""}
                             </textarea>
                         </div>
                     </section>
 
-                    <div class="border-border bg-surface-raised shadow-popover sticky bottom-4 z-10 flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-md border border-border bg-surface-raised p-3 shadow-popover sm:flex-row sm:items-center sm:justify-between">
                         <p
                             id="edit-save-status"
-                            class="text-muted-foreground min-h-5 text-sm"
+                            class="min-h-5 text-sm text-muted-foreground"
                             role="status"
                             aria-live="polite"
                         >
@@ -363,14 +363,14 @@ const returnHref =
                         </p>
                         <div class="flex gap-2">
                             <a
-                                class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle focus-visible:ring-ring/60 inline-flex h-10 flex-1 items-center justify-center rounded-md border px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none sm:flex-none"
+                                class="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:flex-none"
                                 href={returnHref}
                             >
                                 取消
                             </a>
                             <button
                                 id="edit-save-button"
-                                class="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring/60 inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 sm:flex-none"
+                                class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 sm:flex-none"
                                 type="submit"
                             >
                                 <Save class="size-4" aria-hidden="true" />

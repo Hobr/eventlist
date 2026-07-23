@@ -30,7 +30,7 @@ const href = `/events/${event.id}`;
     variant === "featured" ? (
         <a
             href={href}
-            class="group focus-visible:ring-ring/70 bg-foreground relative block min-h-[23rem] overflow-hidden rounded-md text-zinc-50 transition-transform focus-visible:ring-2 focus-visible:outline-none active:scale-[0.995] sm:min-h-[28rem]"
+            class="group relative block min-h-[23rem] overflow-hidden rounded-md bg-foreground text-zinc-50 transition-transform focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.995] sm:min-h-[28rem]"
         >
             <EventArtwork
                 src={event.cover_url}
@@ -72,29 +72,29 @@ const href = `/events/${event.id}`;
     ) : variant === "compact" ? (
         <a
             href={href}
-            class="group border-border focus-visible:ring-ring/60 hover:text-primary grid grid-cols-[4.25rem_minmax(0,1fr)_auto] items-center gap-3 border-b py-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            class="group grid grid-cols-[4.25rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-4 transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
         >
             <div class="flex flex-col">
-                <strong class="text-primary text-lg leading-none font-black">{startLabel}</strong>
-                <span class="text-muted mt-1 text-xs">至 {endLabel}</span>
+                <strong class="text-lg leading-none font-black text-primary">{startLabel}</strong>
+                <span class="mt-1 text-xs text-muted">至 {endLabel}</span>
             </div>
             <div class="min-w-0">
-                <h3 class="text-foreground group-hover:text-primary truncate text-sm font-bold transition-colors sm:text-base">
+                <h3 class="truncate text-sm font-bold text-foreground transition-colors group-hover:text-primary sm:text-base">
                     {event.title}
                 </h3>
-                <p class="text-muted-foreground mt-1 truncate text-xs sm:text-sm">
+                <p class="mt-1 truncate text-xs text-muted-foreground sm:text-sm">
                     {divisionLabel} · {event.venue}
                 </p>
             </div>
             <ArrowUpRight
-                class="text-muted size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                class="size-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                 aria-hidden="true"
             />
         </a>
     ) : variant === "row" ? (
         <a
             href={href}
-            class="group border-border focus-visible:ring-ring/60 grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-4 border-b py-4 focus-visible:ring-2 focus-visible:outline-none sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center"
+            class="group grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-4 border-b border-border py-4 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center"
         >
             <EventArtwork
                 src={event.cover_url}
@@ -107,10 +107,10 @@ const href = `/events/${event.id}`;
                     <Badge tone="primary">{typeLabel}</Badge>
                     <Badge>{scaleLabel}</Badge>
                 </div>
-                <h3 class="text-foreground text-base leading-tight font-bold sm:text-lg">
+                <h3 class="text-base leading-tight font-bold text-foreground sm:text-lg">
                     {event.title}
                 </h3>
-                <div class="text-muted-foreground mt-2 flex flex-col gap-1 text-xs sm:flex-row sm:flex-wrap sm:gap-x-4 sm:text-sm">
+                <div class="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4 sm:text-sm">
                     <span class="inline-flex items-center gap-1.5">
                         <CalendarDays class="size-3.5" aria-hidden="true" />
                         {dateLabel}
@@ -131,14 +131,14 @@ const href = `/events/${event.id}`;
                 ) : null}
             </div>
             <ArrowUpRight
-                class="text-muted hidden size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:block"
+                class="hidden size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:block"
                 aria-hidden="true"
             />
         </a>
     ) : (
         <a
             href={href}
-            class="group border-border bg-surface focus-visible:ring-ring/60 flex flex-col overflow-hidden rounded-md border focus-visible:ring-2 focus-visible:outline-none"
+            class="group flex flex-col overflow-hidden rounded-md border border-border bg-surface focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
         >
             <EventArtwork
                 src={event.cover_url}
@@ -150,11 +150,11 @@ const href = `/events/${event.id}`;
                     <Badge tone="primary">{typeLabel}</Badge>
                     <Badge>{scaleLabel}</Badge>
                 </div>
-                <h3 class="text-foreground mt-3 text-base leading-tight font-bold">
+                <h3 class="mt-3 text-base leading-tight font-bold text-foreground">
                     {event.title}
                 </h3>
-                <p class="text-muted-foreground mt-3 text-sm">{dateLabel}</p>
-                <p class="text-muted mt-1 text-xs">
+                <p class="mt-3 text-sm text-muted-foreground">{dateLabel}</p>
+                <p class="mt-1 text-xs text-muted">
                     {divisionLabel} · {event.venue}
                 </p>
             </div>

@@ -61,7 +61,7 @@
         type="button"
         {disabled}
         class={cn(
-            "focus-visible:ring-ring/60 inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+            "inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
             triggerTone,
             triggerClass
         )}
@@ -72,22 +72,22 @@
         <AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/45" />
         <AlertDialog.Content
             class={cn(
-                "bg-surface-raised border-border shadow-popover fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border p-5 focus:outline-none sm:p-6",
+                "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface-raised p-5 shadow-popover focus:outline-none sm:p-6",
                 contentClass
             )}
         >
             <div class="flex items-start justify-between gap-4">
                 <div>
-                    <AlertDialog.Title class="text-foreground text-lg font-bold">
+                    <AlertDialog.Title class="text-lg font-bold text-foreground">
                         {title}
                     </AlertDialog.Title>
-                    <AlertDialog.Description class="text-muted-foreground mt-1 text-sm leading-6">
+                    <AlertDialog.Description class="mt-1 text-sm leading-6 text-muted-foreground">
                         {description}
                     </AlertDialog.Description>
                 </div>
                 <AlertDialog.Cancel
                     aria-label="关闭"
-                    class="text-muted-foreground hover:bg-surface-subtle focus-visible:ring-ring/60 inline-flex size-9 shrink-0 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
+                    class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                 >
                     <X class="size-4" aria-hidden="true" />
                 </AlertDialog.Cancel>
@@ -99,7 +99,7 @@
 
             <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <AlertDialog.Cancel
-                    class="border-border-strong bg-surface text-foreground hover:bg-surface-subtle focus-visible:ring-ring/60 inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                    class="inline-flex h-10 items-center justify-center rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                 >
                     {cancelLabel}
                 </AlertDialog.Cancel>
@@ -109,7 +109,7 @@
                     aria-busy={pending}
                     onclick={handleConfirm}
                     class={cn(
-                        "focus-visible:ring-ring/60 inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+                        "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
                         confirmTone
                     )}
                 >

@@ -27,7 +27,7 @@
             <a
                 href={item.href}
                 aria-current={isAdminNavItemActive(currentPath, item.href) ? "page" : undefined}
-                class="text-muted-foreground hover:bg-surface-subtle hover:text-foreground aria-[current=page]:bg-primary-subtle aria-[current=page]:text-primary-subtle-foreground focus-visible:ring-ring/60 flex h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                class="flex h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-muted-foreground hover:bg-surface-subtle hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none aria-[current=page]:bg-primary-subtle aria-[current=page]:text-primary-subtle-foreground"
             >
                 {#if item.kind === "pending"}
                     <Inbox class="size-4" aria-hidden="true" />
@@ -43,8 +43,8 @@
         {/each}
     </nav>
 
-    <div class="border-border mt-6 border-t pt-5">
-        <p class="text-muted text-xs font-semibold">当前管理员</p>
-        <p class="text-foreground mt-1 truncate text-sm font-semibold">{adminLabel}</p>
+    <div class="mt-6 border-t border-border pt-5">
+        <p class="text-xs font-semibold text-muted">当前管理员</p>
+        <p class="mt-1 truncate text-sm font-semibold text-foreground">{adminLabel}</p>
     </div>
 </SidePanel>
