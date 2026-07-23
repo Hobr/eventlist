@@ -7,11 +7,9 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
-
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 10
-- **Last Active**: 2026-07-16
-
+- **Total Sessions**: 11
+- **Last Active**: 2026-07-23
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,11 +17,9 @@
 ## Active Documents
 
 <!-- @@@auto:active-documents -->
-
-| File           | Lines | Status |
-| -------------- | ----- | ------ |
-| `journal-1.md` | ~366  | Active |
-
+| File | Lines | Status |
+|------|-------|--------|
+| `journal-1.md` | ~411 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -32,8 +28,9 @@
 
 <!-- @@@auto:session-history -->
 
-| #   | Date       | Title                                             | Commits                                    | Branch |
-| --- | ---------- | ------------------------------------------------- | ------------------------------------------ | ------ |
+| # | Date | Title | Commits | Branch |
+|---|------|-------|---------|--------|
+| 11 | 2026-07-23 | Archive completed event metadata and Brooks sweep tasks | `e1c7310`, `05151e4`, `d803f7d`, `4650508`, `4d3cf51`, `49e6780`, `0049ccb`, `ac55970`, `9bb5b25`, `4f892d1`, `77c9c18`, `5e62cab`, `04a2d8d`, `a3939c6` | `main` |
 | 10  | 2026-07-16 | Replace event option tables with shared constants | `cfeb53d`                                  | `main` |
 | 9   | 2026-07-16 | 支持活动页查询已结束活动                          | `0e47433`                                  | `main` |
 | 8   | 2026-07-15 | Frontend refactor                                 | `871e4ac`, `393cccc`, `f1cbf0d`, `4ffb239` | `main` |

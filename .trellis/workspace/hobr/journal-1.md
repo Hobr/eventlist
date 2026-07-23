@@ -363,3 +363,49 @@ Replaced D1 event type and scale lookup tables with shared typed constants, serv
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: Archive completed event metadata and Brooks sweep tasks
+
+**Date**: 2026-07-23
+**Task**: Archive completed event metadata and Brooks sweep tasks
+**Branch**: `main`
+
+### Summary
+
+Archived the completed event metadata/theme task and the Brooks full-sweep task. The 07-23-admin-create-event planning task remains active and was preserved outside the archive and journal commits.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e1c7310` | (see git log) |
+| `05151e4` | (see git log) |
+| `d803f7d` | (see git log) |
+| `4650508` | (see git log) |
+| `4d3cf51` | (see git log) |
+| `49e6780` | (see git log) |
+| `0049ccb` | (see git log) |
+| `ac55970` | (see git log) |
+| `9bb5b25` | (see git log) |
+| `4f892d1` | (see git log) |
+| `77c9c18` | (see git log) |
+| `5e62cab` | (see git log) |
+| `04a2d8d` | (see git log) |
+| `a3939c6` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
