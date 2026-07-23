@@ -409,3 +409,37 @@ Archived the completed event metadata/theme task and the Brooks full-sweep task.
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: Implement admin event creation
+
+**Date**: 2026-07-24
+**Task**: Implement admin event creation
+**Branch**: `main`
+
+### Summary
+
+Added authenticated admin event creation with immediate publication, canonical tag selection or creation, atomic D1 event/tag/audit writes, shared create/edit form UI, navigation entry, and updated backend/frontend contracts.
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a4816c2` | (see git log) |
+| `dba3aff` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
