@@ -87,7 +87,7 @@ CREATE TABLE event_tags (
 CREATE TABLE audit_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     action TEXT NOT NULL CHECK (
-        action IN ('approve', 'reject', 'edit', 'offline', 'republish', 'merge')
+        action IN ('create', 'approve', 'reject', 'edit', 'offline', 'republish', 'merge')
     ),
     target_id INTEGER,
     meta TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(meta)),

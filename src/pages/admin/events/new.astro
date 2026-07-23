@@ -1,0 +1,103 @@
+---
+import ArrowLeft from "@lucide/astro/icons/arrow-left";
+import AdminEventForm from "../../../components/admin/AdminEventForm.astro";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { getDB } from "../../../lib/db";
+import { listTags } from "../../../lib/db/queries";
+import { getRuntimeEnv } from "../../../lib/runtime/env";
+
+export const prerender = false;
+
+const runtimeEnv = getRuntimeEnv();
+let canonicalTags = [];
+let errorMessage = "";
+
+try {
+    canonicalTags = await listTags(await getDB(runtimeEnv));
+} catch (error) {
+    errorMessage = error instanceof Error ? error.message : "无法加载标签库";
+}
+---
+
+<AdminLayout title="增加活动" description="录入后立即发布到公开活动目录。">
+    {
+        errorMessage ? (
+            <div
+                class="rounded-md border border-danger/25 bg-danger-subtle p-6 text-center text-sm font-semibold text-danger"
+                role="alert"
+            >
+                {errorMessage}
+            </div>
+        ) : (
+            <div>
+                <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+                    <a
+                        href="/admin"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                    >
+                        <ArrowLeft class="size-4" aria-hidden="true" />
+                        返回活动队列
+                    </a>
+                    <p class="text-xs font-semibold text-muted-foreground">管理员创建后立即公开</p>
+                </div>
+
+                <AdminEventForm
+                    canonicalTags={canonicalTags}
+                    formId="create-event-form"
+                    cancelHref="/admin"
+                    submitButtonId="create-save-button"
+                    statusId="create-save-status"
+                    submitLabel="发布活动"
+                    statusText="请至少选择一个规范标签。新标签会在发布时加入标签库。"
+                    defaultDivisionCode={runtimeEnv.DEFAULT_DIVISION_CODE}
+                />
+            </div>
+        )
+    }
+</AdminLayout>
+
+<script>
+    const form = document.querySelector("#create-event-form");
+    const saveButton = document.querySelector("#create-save-button");
+    const saveLabel = saveButton?.querySelector("[data-save-label]");
+    const saveStatus = document.querySelector("#create-save-status");
+
+    if (
+        form instanceof HTMLFormElement &&
+        saveButton instanceof HTMLButtonElement &&
+        saveLabel instanceof HTMLElement &&
+        saveStatus instanceof HTMLElement
+    ) {
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            saveButton.disabled = true;
+            saveButton.setAttribute("aria-busy", "true");
+            saveLabel.textContent = "发布中";
+            saveStatus.textContent = "正在保存活动、标签和审计记录…";
+            saveStatus.classList.remove("text-danger");
+
+            try {
+                const response = await fetch("/api/admin/events", {
+                    method: "POST",
+                    body: new FormData(form)
+                });
+                const body = (await response.json().catch(() => null)) as {
+                    error?: string;
+                    data?: { id?: number };
+                } | null;
+                if (!response.ok) throw new Error(body?.error ?? "发布失败，请重试");
+                if (!body?.data?.id) throw new Error("发布成功但未返回活动 ID");
+
+                saveStatus.textContent = "发布成功，正在打开活动编辑页…";
+                window.location.assign(`/admin/events/${body.data.id}/edit`);
+            } catch (error) {
+                saveStatus.textContent =
+                    error instanceof Error ? error.message : "发布失败，请重试";
+                saveStatus.classList.add("text-danger");
+                saveButton.disabled = false;
+                saveButton.removeAttribute("aria-busy");
+                saveLabel.textContent = "发布活动";
+            }
+        });
+    }
+</script>

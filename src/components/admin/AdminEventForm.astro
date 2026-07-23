@@ -1,0 +1,292 @@
+---
+import Save from "@lucide/astro/icons/save";
+import DivisionPicker from "../DivisionPicker.svelte";
+import SelectField from "../SelectField.svelte";
+import TagInput from "../TagInput.svelte";
+import type { EventRecord, TagSummary } from "../../lib/db/queries";
+import { EVENT_SCALES, EVENT_TYPES } from "../../lib/events/options";
+
+interface Props {
+    eventRecord?: EventRecord | null;
+    canonicalTags: TagSummary[];
+    formId: string;
+    cancelHref: string;
+    submitButtonId: string;
+    statusId: string;
+    submitLabel: string;
+    statusText: string;
+    defaultDivisionCode?: string;
+}
+
+const {
+    eventRecord = null,
+    canonicalTags,
+    formId,
+    cancelHref,
+    submitButtonId,
+    statusId,
+    submitLabel,
+    statusText,
+    defaultDivisionCode = ""
+} = Astro.props;
+
+const typeOptions = EVENT_TYPES.map((type) => ({ value: type.name, label: type.label }));
+const scaleOptions = EVENT_SCALES.map((scale) => ({ value: scale.name, label: scale.label }));
+const headingId = (name: string) => `${formId}-${name}-heading`;
+const value = (name: keyof EventRecord) => {
+    const current = eventRecord?.[name];
+    return typeof current === "string" ? current : "";
+};
+const fieldCls =
+    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+const labelCls = "text-sm font-semibold text-muted-foreground";
+---
+
+<form
+    id={formId}
+    data-event-id={eventRecord?.id}
+    data-return-href={cancelHref}
+    class="flex flex-col gap-8"
+>
+    <section
+        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
+        aria-labelledby={headingId("identity")}
+    >
+        <div class="sm:col-span-2">
+            <h2 id={headingId("identity")} class="text-base font-black text-foreground">
+                活动识别
+            </h2>
+            <p class="mt-1 text-sm text-muted-foreground">用清晰、可检索的名称与分类描述活动。</p>
+        </div>
+        <div class="sm:col-span-2">
+            <label class={labelCls} for="title">活动名称</label>
+            <input
+                id="title"
+                name="title"
+                required
+                value={value("title")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <SelectField
+            name="type"
+            label="类型"
+            value={value("type")}
+            options={typeOptions}
+            required
+            client:load
+        />
+        <SelectField
+            name="scale"
+            label="规模"
+            value={value("scale")}
+            options={scaleOptions}
+            required
+            client:load
+        />
+    </section>
+
+    <section
+        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
+        aria-labelledby={headingId("schedule")}
+    >
+        <div class="sm:col-span-2">
+            <h2 id={headingId("schedule")} class="text-base font-black text-foreground">
+                时间与地点
+            </h2>
+        </div>
+        <div class="sm:col-span-2">
+            <DivisionPicker
+                name="division_code"
+                value={eventRecord?.division_code ?? defaultDivisionCode}
+                label="地区"
+                mode="county"
+                required
+                wide
+                client:load
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="venue">场馆</label>
+            <input
+                id="venue"
+                name="venue"
+                required
+                value={value("venue")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="address">详细地址</label>
+            <input
+                id="address"
+                name="address"
+                value={value("address")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="start_date">开始日期</label>
+            <input
+                id="start_date"
+                name="start_date"
+                type="date"
+                required
+                value={value("start_date")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="end_date">结束日期</label>
+            <input
+                id="end_date"
+                name="end_date"
+                type="date"
+                required
+                value={value("end_date")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="start_time">开始时间（选填）</label>
+            <input
+                id="start_time"
+                name="start_time"
+                type="time"
+                value={value("start_time")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="end_time">结束时间（选填）</label>
+            <input
+                id="end_time"
+                name="end_time"
+                type="time"
+                value={value("end_time")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+    </section>
+
+    <section
+        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
+        aria-labelledby={headingId("links")}
+    >
+        <div class="sm:col-span-2">
+            <h2 id={headingId("links")} class="text-base font-black text-foreground">
+                来源与参与信息
+            </h2>
+        </div>
+        <div class="sm:col-span-2">
+            <label class={labelCls} for="source_url">来源链接</label>
+            <input
+                id="source_url"
+                name="source_url"
+                type="url"
+                required
+                value={value("source_url")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="submitter_contact">投稿联系方式</label>
+            <input
+                id="submitter_contact"
+                name="submitter_contact"
+                required
+                value={value("submitter_contact")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="ticket_url">购票地址</label>
+            <input
+                id="ticket_url"
+                name="ticket_url"
+                type="url"
+                value={value("ticket_url")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="qq_group">官方交流群</label>
+            <input
+                id="qq_group"
+                name="qq_group"
+                value={value("qq_group")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="cover_url">封面 URL</label>
+            <input
+                id="cover_url"
+                name="cover_url"
+                type="url"
+                value={value("cover_url")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+    </section>
+
+    <section class="grid gap-4" aria-labelledby={headingId("content")}>
+        <div>
+            <h2 id={headingId("content")} class="text-base font-black text-foreground">公开内容</h2>
+        </div>
+        {
+            eventRecord?.tag_suggestions ? (
+                <div class="rounded-md border border-border bg-surface-subtle p-4">
+                    <p class="text-xs font-semibold text-muted">投稿标签建议</p>
+                    <p class="mt-1.5 text-sm whitespace-pre-wrap text-foreground">
+                        {eventRecord.tag_suggestions}
+                    </p>
+                </div>
+            ) : null
+        }
+        <TagInput
+            initial={eventRecord?.tags ?? ""}
+            label="规范标签（至少一个）"
+            available={canonicalTags}
+            client:load
+        />
+        <div>
+            <label class={labelCls} for="description">活动说明</label>
+            <textarea
+                id="description"
+                name="description"
+                class="mt-1.5 flex min-h-36 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                >{value("description")}</textarea
+            >
+        </div>
+    </section>
+
+    <div
+        class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-md border border-border bg-surface-raised p-3 shadow-popover sm:flex-row sm:items-center sm:justify-between"
+    >
+        <p
+            id={statusId}
+            class="min-h-5 text-sm text-muted-foreground"
+            role="status"
+            aria-live="polite"
+        >
+            {statusText}
+        </p>
+        <div class="flex gap-2">
+            <a
+                class="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:flex-none"
+                href={cancelHref}
+            >
+                取消
+            </a>
+            <button
+                id={submitButtonId}
+                class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 sm:flex-none"
+                type="submit"
+            >
+                <Save class="size-4" aria-hidden="true" />
+                <span data-save-label>{submitLabel}</span>
+            </button>
+        </div>
+    </div>
+</form>

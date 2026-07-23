@@ -3,6 +3,7 @@
     import CircleOff from "@lucide/svelte/icons/circle-off";
     import Inbox from "@lucide/svelte/icons/inbox";
     import Menu from "@lucide/svelte/icons/menu";
+    import Plus from "@lucide/svelte/icons/plus";
     import Tags from "@lucide/svelte/icons/tags";
     import SidePanel from "../ui/side-panel.svelte";
     import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "./navigation";
@@ -31,6 +32,8 @@
             >
                 {#if item.kind === "pending"}
                     <Inbox class="size-4" aria-hidden="true" />
+                {:else if item.kind === "create"}
+                    <Plus class="size-4" aria-hidden="true" />
                 {:else if item.kind === "published"}
                     <CheckCircle2 class="size-4" aria-hidden="true" />
                 {:else if item.kind === "offline"}

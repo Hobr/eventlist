@@ -89,9 +89,15 @@ export interface TagSummary {
     event_count: number;
 }
 
-export type AuditAction = "approve" | "reject" | "edit" | "offline" | "republish" | "merge";
+export type AuditAction =
+    "create" | "approve" | "reject" | "edit" | "offline" | "republish" | "merge";
 export type StatusUpdateOutcome = "changed" | "already-target" | "conflict";
 export type TagMergeOutcome = "changed" | "already-target" | "conflict";
+
+export interface AdminCreateAuditMeta {
+    authMode: "access" | "token";
+    email?: string;
+}
 
 const EVENT_SELECT = `
     SELECT
@@ -417,6 +423,108 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
     }
 
     return inserted.meta.last_row_id;
+}
+
+function isEventIdConflict(error: unknown) {
+    return (
+        error instanceof Error &&
+        /unique constraint failed:\s*events\.id|constraint failed[^\n]*events\.id/i.test(
+            error.message
+        )
+    );
+}
+
+async function nextEventId(db: D1Database) {
+    const row = await db
+        .prepare("SELECT COALESCE(MAX(id), 0) + 1 AS id FROM events")
+        .first<{ id: number }>();
+    if (!row || !Number.isSafeInteger(row.id) || row.id < 1) {
+        throw new Error("Failed to allocate event id");
+    }
+    return row.id;
+}
+
+export async function createPublishedEvent(
+    db: D1Database,
+    input: AdminEventInput,
+    auditMeta: AdminCreateAuditMeta
+) {
+    if (input.tags.length === 0) throw new Error("请至少选择或新增一个规范标签");
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        const eventId = await nextEventId(db);
+        const statements = [
+            ...input.tags.map((tag) =>
+                db.prepare("INSERT OR IGNORE INTO tags(name) VALUES (?)").bind(tag)
+            ),
+            db
+                .prepare(
+                    `INSERT INTO events(
+                         id, title, type, scale, division_code, venue, address,
+                         start_date, end_date, start_time, end_time, cover_url, description,
+                         qq_group, ticket_url, source_url, submitter_contact, status, published_at
+                     )
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+                )
+                .bind(
+                    eventId,
+                    input.title,
+                    input.type,
+                    input.scale,
+                    input.division_code,
+                    input.venue,
+                    input.address,
+                    input.start_date,
+                    input.end_date,
+                    input.start_time,
+                    input.end_time,
+                    input.cover_url,
+                    input.description,
+                    input.qq_group,
+                    input.ticket_url,
+                    input.source_url,
+                    input.submitter_contact,
+                    STATUS.PUBLISHED
+                ),
+            ...input.tags.map((tag) =>
+                db
+                    .prepare(
+                        `INSERT OR IGNORE INTO event_tags(event_id, tag_id)
+                         SELECT ?, COALESCE(alias_of_id, id)
+                         FROM tags
+                         WHERE name = ? COLLATE NOCASE`
+                    )
+                    .bind(eventId, tag)
+            ),
+            db
+                .prepare(
+                    `INSERT INTO audit_logs(action, target_id, meta, at)
+                     VALUES ('create', ?, ?, datetime('now'))`
+                )
+                .bind(
+                    eventId,
+                    JSON.stringify({
+                        source: "admin-create",
+                        tags: input.tags,
+                        auth_mode: auditMeta.authMode,
+                        ...(auditMeta.email ? { email: auditMeta.email } : {})
+                    })
+                )
+        ];
+
+        try {
+            const results = await db.batch(statements);
+            for (const result of results) {
+                requireSuccess(result, "Failed to create published event");
+            }
+            return eventId;
+        } catch (error) {
+            if (attempt < 2 && isEventIdConflict(error)) continue;
+            throw error;
+        }
+    }
+
+    throw new Error("Failed to allocate event id");
 }
 
 export async function editEvent(db: D1Database, id: number, input: AdminEventInput) {

@@ -3,6 +3,7 @@ import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import CircleCheck from "@lucide/astro/icons/circle-check";
 import CircleOff from "@lucide/astro/icons/circle-off";
 import Inbox from "@lucide/astro/icons/inbox";
+import Plus from "@lucide/astro/icons/plus";
 import Tags from "@lucide/astro/icons/tags";
 import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
 import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "../components/admin/navigation";
@@ -65,6 +66,8 @@ const adminLabel =
                             >
                                 {item.kind === "pending" ? (
                                     <Inbox class="size-4" aria-hidden="true" />
+                                ) : item.kind === "create" ? (
+                                    <Plus class="size-4" aria-hidden="true" />
                                 ) : item.kind === "published" ? (
                                     <CircleCheck class="size-4" aria-hidden="true" />
                                 ) : item.kind === "offline" ? (
