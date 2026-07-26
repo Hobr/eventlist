@@ -454,6 +454,15 @@ Added authenticated admin event creation with immediate publication, canonical t
 ### Summary
 
 完成管理员 CSV 批量创建功能并合并至主线；通过应用内浏览器验证登录、预览、原子创建、重复确认和三种响应式视口；恢复主线测试配置并归档任务。
+## Session 13: Implement homepage event recommendations
+
+**Date**: 2026-07-26
+**Task**: Implement homepage event recommendations
+**Branch**: `feat/homepage-event-recommendations`
+
+### Summary
+
+Added deterministic nearby discovery, exact date filters, anonymous per-event popularity tracking, compact homepage ranking UI, dense development fixtures, and executable backend/frontend contracts.
 
 ### Git Commits
 
@@ -463,6 +472,8 @@ Added authenticated admin event creation with immediate publication, canonical t
 | `d2f6e12` | (see git log) |
 | `29fa01d` | (see git log) |
 | `ac6081f` | (see git log) |
+| `6c8705d` | (see git log) |
+| `96b58ea` | (see git log) |
 
 ### Status
 
