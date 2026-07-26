@@ -14,7 +14,7 @@
 ### 2. Signatures
 
 - Success: `jsonOk(data?) -> Response` with `{ ok: true, data? }`.
-- Failure: `jsonError(error, status?) -> Response` with `{ ok: false, error }`.
+- Failure: `jsonError(error, status?, details?) -> Response` with `{ ok: false, error, details? }`.
 - Routes live under `src/pages/api/admin/**` and use Astro `APIRoute`.
 - `POST /api/admin/events` accepts administrator `FormData` and returns `201 { ok: true, data: { id } }` after an immediate published insert.
 
@@ -25,6 +25,7 @@
 - State conflict -> HTTP 409, JSON error.
 - Unexpected D1/setup failure -> HTTP 500, JSON error.
 - Authenticated pages can redirect; APIs must not redirect.
+- 需要返回逐记录错误、警告或最新预览时，稳定结构放在可选的 `details` 中；现有只读取 `error` 的调用方必须保持兼容。
 
 ### 4. Validation & Error Matrix
 

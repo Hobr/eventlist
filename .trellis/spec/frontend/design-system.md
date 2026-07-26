@@ -157,6 +157,8 @@
   compact top bar with the shared `side-panel` navigation.
 - Both navigation surfaces expose `/admin/events/new` as `增加活动`; the new
   route owns its active state and must not activate the published queue item.
+- 桌面和移动导航都必须暴露 `/admin/events/bulk` 为“批量导入”；该路由只激活自身，不得误激活“增加活动”或“已发布”。
+- 批量导入使用单个 Svelte 状态流：客户端先通过共享解析器执行文件和记录限制，再请求服务端预览；提交时必须重新上传原文件。预览表格在小视口内自身横向滚动，不得扩张页面宽度。
 - Each event queue owns exactly one semantic `<table>`. Below `lg`, keep the
   header in the DOM and style each `<tr>` as a task card; expose cell labels
   through `data-label`. Do not render separate desktop and mobile forms.

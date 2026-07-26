@@ -99,6 +99,30 @@ export interface AdminCreateAuditMeta {
     email?: string;
 }
 
+export interface BulkEventDuplicateCandidate {
+    id: number;
+    title: string;
+    start_date: string;
+    venue: string;
+}
+
+export interface BulkPublishedEventInput {
+    row: number;
+    event: AdminEventInput;
+}
+
+export interface BulkPublishedEventResult {
+    id: number;
+    title: string;
+}
+
+export class BulkEventIdConflictError extends Error {
+    constructor() {
+        super("活动 ID 已被其他请求占用，请重新预览后再提交");
+        this.name = "BulkEventIdConflictError";
+    }
+}
+
 const EVENT_SELECT = `
     SELECT
         events.*,
@@ -442,6 +466,132 @@ async function nextEventId(db: D1Database) {
         throw new Error("Failed to allocate event id");
     }
     return row.id;
+}
+
+export async function findBulkEventDuplicateCandidates(db: D1Database, startDates: string[]) {
+    const dates = [...new Set(startDates)];
+    if (dates.length === 0) return [];
+
+    const result = await db
+        .prepare(
+            `SELECT id, title, start_date, venue
+             FROM events
+             WHERE start_date IN (
+                 SELECT CAST(value AS TEXT)
+                 FROM json_each(?)
+             )
+             ORDER BY id ASC`
+        )
+        .bind(JSON.stringify(dates))
+        .all<BulkEventDuplicateCandidate>();
+
+    return requireSuccess(result, "Failed to find duplicate event candidates").results ?? [];
+}
+
+export async function createBulkPublishedEvents(
+    db: D1Database,
+    items: BulkPublishedEventInput[],
+    auditMeta: AdminCreateAuditMeta
+): Promise<BulkPublishedEventResult[]> {
+    if (items.length === 0) throw new Error("请至少提交一条活动");
+    if (items.some(({ event }) => event.tags.length === 0)) {
+        throw new Error("每条活动都必须至少包含一个规范标签");
+    }
+
+    const firstEventId = await nextEventId(db);
+    const created = items.map(({ event }, index) => ({
+        id: firstEventId + index,
+        title: event.title
+    }));
+    const uniqueTags = [
+        ...new Set(items.flatMap(({ event }) => event.tags.map((tag) => tag.trim())))
+    ];
+    const auditRows = items.map(({ row, event }, index) => ({
+        target_id: firstEventId + index,
+        meta: {
+            source: "admin-bulk-create",
+            csv_row: row,
+            batch_size: items.length,
+            tags: event.tags,
+            auth_mode: auditMeta.authMode,
+            ...(auditMeta.email ? { email: auditMeta.email } : {})
+        }
+    }));
+
+    const statements = [
+        db
+            .prepare(
+                `INSERT OR IGNORE INTO tags(name)
+                 SELECT CAST(value AS TEXT)
+                 FROM json_each(?)`
+            )
+            .bind(JSON.stringify(uniqueTags)),
+        ...items.map(({ event }, index) =>
+            db
+                .prepare(
+                    `INSERT INTO events(
+                         id, title, type, scale, division_code, venue, address,
+                         start_date, end_date, start_time, end_time, cover_url, description,
+                         qq_group, ticket_url, source_url, submitter_contact, status, published_at
+                     )
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+                )
+                .bind(
+                    firstEventId + index,
+                    event.title,
+                    event.type,
+                    event.scale,
+                    event.division_code,
+                    event.venue,
+                    event.address,
+                    event.start_date,
+                    event.end_date,
+                    event.start_time,
+                    event.end_time,
+                    event.cover_url,
+                    event.description,
+                    event.qq_group,
+                    event.ticket_url,
+                    event.source_url,
+                    event.submitter_contact,
+                    STATUS.PUBLISHED
+                )
+        ),
+        ...items.map(({ event }, index) =>
+            db
+                .prepare(
+                    `INSERT OR IGNORE INTO event_tags(event_id, tag_id)
+                     SELECT ?, COALESCE(tags.alias_of_id, tags.id)
+                     FROM json_each(?) AS requested_tags
+                     JOIN tags
+                       ON tags.name = CAST(requested_tags.value AS TEXT) COLLATE NOCASE`
+                )
+                .bind(firstEventId + index, JSON.stringify(event.tags))
+        ),
+        db
+            .prepare(
+                `INSERT INTO audit_logs(action, target_id, meta, at)
+                 SELECT
+                     'create',
+                     CAST(json_extract(value, '$.target_id') AS INTEGER),
+                     json_extract(value, '$.meta'),
+                     datetime('now')
+                 FROM json_each(?)`
+            )
+            .bind(JSON.stringify(auditRows))
+    ];
+
+    try {
+        const results = await db.batch(statements);
+        for (const result of results) {
+            requireSuccess(result, "Failed to create bulk published events");
+        }
+    } catch (error) {
+        if (isEventIdConflict(error)) throw new BulkEventIdConflictError();
+        throw error;
+    }
+
+    return created;
 }
 
 export async function createPublishedEvent(

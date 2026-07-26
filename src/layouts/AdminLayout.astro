@@ -3,6 +3,7 @@ import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
 import CircleCheck from "@lucide/astro/icons/circle-check";
 import CircleOff from "@lucide/astro/icons/circle-off";
 import Inbox from "@lucide/astro/icons/inbox";
+import FileSpreadsheet from "@lucide/astro/icons/file-spreadsheet";
 import Plus from "@lucide/astro/icons/plus";
 import Tags from "@lucide/astro/icons/tags";
 import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
@@ -68,6 +69,8 @@ const adminLabel =
                                     <Inbox class="size-4" aria-hidden="true" />
                                 ) : item.kind === "create" ? (
                                     <Plus class="size-4" aria-hidden="true" />
+                                ) : item.kind === "bulk" ? (
+                                    <FileSpreadsheet class="size-4" aria-hidden="true" />
                                 ) : item.kind === "published" ? (
                                     <CircleCheck class="size-4" aria-hidden="true" />
                                 ) : item.kind === "offline" ? (

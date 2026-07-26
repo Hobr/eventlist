@@ -2,6 +2,7 @@
     import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
     import CircleOff from "@lucide/svelte/icons/circle-off";
     import Inbox from "@lucide/svelte/icons/inbox";
+    import FileSpreadsheet from "@lucide/svelte/icons/file-spreadsheet";
     import Menu from "@lucide/svelte/icons/menu";
     import Plus from "@lucide/svelte/icons/plus";
     import Tags from "@lucide/svelte/icons/tags";
@@ -34,6 +35,8 @@
                     <Inbox class="size-4" aria-hidden="true" />
                 {:else if item.kind === "create"}
                     <Plus class="size-4" aria-hidden="true" />
+                {:else if item.kind === "bulk"}
+                    <FileSpreadsheet class="size-4" aria-hidden="true" />
                 {:else if item.kind === "published"}
                     <CheckCircle2 class="size-4" aria-hidden="true" />
                 {:else if item.kind === "offline"}
