@@ -57,7 +57,7 @@
 ### 5. Good/Base/Bad Cases
 
 - Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, four application tables, and no `event_types`, `event_scales`, or `cities` table.
-- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts five valid events plus four canonical tags without schema changes.
+- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts 17 valid events plus 10 canonical tags without schema changes.
 - Bad: querying D1 for type/scale options or joining dimension tables; these values are application-owned constants.
 - Bad: defining a second TypeScript list of type/scale codes instead of importing `src/lib/events/options.ts`.
 - Bad: validating a rewritten baseline against an old `.wrangler/state` database; previous migration records can hide missing statements.
@@ -78,7 +78,7 @@
     - no `event_types`, `event_scales`, or `cities` table
 - Option assertions: all 32 type/scale combinations insert successfully; an unknown type and an unknown scale each fail their SQL CHECK.
 - Other constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions, duplicate case-insensitive tags, invalid audit JSON.
-- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert five events and four canonical tags.
+- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert 17 events and 10 canonical tags.
 - Project gates: `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm build`.
 
 ### 7. Wrong vs Correct

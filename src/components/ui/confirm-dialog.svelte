@@ -38,12 +38,7 @@
 
     let open = $state(false);
 
-    const triggerTone = $derived(
-        tone === "danger"
-            ? "bg-danger text-danger-foreground hover:bg-danger/90"
-            : "bg-primary text-primary-foreground hover:bg-primary/90"
-    );
-    const confirmTone = $derived(
+    const actionTone = $derived(
         tone === "danger"
             ? "bg-danger text-danger-foreground hover:bg-danger/90"
             : "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -62,7 +57,7 @@
         {disabled}
         class={cn(
             "inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-            triggerTone,
+            actionTone,
             triggerClass
         )}
     >
@@ -110,7 +105,7 @@
                     onclick={handleConfirm}
                     class={cn(
                         "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        confirmTone
+                        actionTone
                     )}
                 >
                     {#if pending}

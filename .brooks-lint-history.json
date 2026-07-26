@@ -9,5 +9,16 @@
             "suggestion": 1
         },
         "scope": "Entire tracked repository (233 files; 110 non-Trellis files analyzed)"
+    },
+    {
+        "date": "2026-07-26",
+        "mode": "Full Sweep",
+        "score": 69,
+        "findings": {
+            "critical": 1,
+            "warning": 3,
+            "suggestion": 1
+        },
+        "scope": "Entire tracked repository (245 approved files; 115 non-Trellis files analyzed)"
     }
 ]

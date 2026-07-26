@@ -3,20 +3,19 @@ import { insertAudit, mergeTags } from "../../../../lib/db/queries";
 import { getDB } from "../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
+import { parseId } from "../../../../lib/admin/validation";
 
 export const prerender = false;
 
-function parsePositiveInt(value: FormDataEntryValue | null) {
-    if (typeof value !== "string" || !/^[1-9]\d*$/.test(value)) return null;
-    const parsed = Number(value);
-    return Number.isSafeInteger(parsed) ? parsed : null;
+function readId(value: FormDataEntryValue | null) {
+    return parseId(typeof value === "string" ? value : undefined);
 }
 
 export const POST: APIRoute = async ({ request }) => {
     try {
         const formData = await request.formData();
-        const from = parsePositiveInt(formData.get("from"));
-        const to = parsePositiveInt(formData.get("to"));
+        const from = readId(formData.get("from"));
+        const to = readId(formData.get("to"));
         if (!from || !to) return jsonError("from and to are required", 400);
 
         const db = await getDB(getRuntimeEnv());
