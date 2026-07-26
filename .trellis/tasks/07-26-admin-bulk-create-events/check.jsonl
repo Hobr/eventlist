@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"检查原子回滚、查询预算、规范标签关系、审计记录以及公开/管理员流程回归。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"检查鉴权、校验、冲突和意外失败响应是否符合项目 API 合同。"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"检查管理界面密度、共享原语、响应式表格、导航激活和无障碍状态。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查同一类型化 CSV 与预览合同能否完整通过前端、API、服务和数据库边界。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查表头、字段映射、校验器、重复键和响应解码是否各自只有一个所有者。"}
