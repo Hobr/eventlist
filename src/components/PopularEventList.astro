@@ -1,0 +1,74 @@
+---
+import ArrowUpRight from "@lucide/astro/icons/arrow-up-right";
+import MapPin from "@lucide/astro/icons/map-pin";
+import type { PopularEvent } from "../lib/db/queries";
+import { getDivisionLabel } from "../lib/divisions";
+
+interface Props {
+    headingId: string;
+    title: string;
+    scope: string;
+    events: PopularEvent[];
+}
+
+const { headingId, title, scope, events } = Astro.props;
+const numberFormat = new Intl.NumberFormat("zh-CN");
+---
+
+<section aria-labelledby={headingId} class="min-w-0 border-t border-border pt-4">
+    <header class="flex items-end justify-between gap-4 pb-3">
+        <div class="min-w-0">
+            <h3 id={headingId} class="text-lg font-black text-foreground">{title}</h3>
+            <p class="mt-1 text-xs text-muted">{scope}</p>
+        </div>
+        <span class="shrink-0 font-mono text-xs text-muted">最多 5 场</span>
+    </header>
+
+    {
+        events.length > 0 ? (
+            <ol>
+                {events.map((event, index) => (
+                    <li class="border-t border-border first:border-t-0">
+                        <a
+                            href={`/events/${event.id}`}
+                            class="group grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 py-3 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                        >
+                            <span class="font-mono text-lg font-black text-primary">
+                                {String(index + 1).padStart(2, "0")}
+                            </span>
+                            <span class="min-w-0">
+                                <strong class="block truncate text-sm text-foreground group-hover:text-primary sm:text-base">
+                                    {event.title}
+                                </strong>
+                                <span class="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted">
+                                    <MapPin class="size-3.5 shrink-0" aria-hidden="true" />
+                                    <span class="truncate">
+                                        {getDivisionLabel(event.division_code) ?? "未知地区"}
+                                    </span>
+                                    <span class="shrink-0">{event.start_date}</span>
+                                </span>
+                            </span>
+                            <span class="flex shrink-0 items-center gap-2 text-right">
+                                <span>
+                                    <strong class="block font-mono text-sm text-foreground">
+                                        {numberFormat.format(event.unique_visitors)}
+                                    </strong>
+                                    <span class="block text-[0.65rem] text-muted">独立访客</span>
+                                </span>
+                                <ArrowUpRight
+                                    class="size-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                                    aria-hidden="true"
+                                />
+                            </span>
+                        </a>
+                    </li>
+                ))}
+            </ol>
+        ) : (
+            <div class="border-t border-border py-8">
+                <p class="text-sm font-semibold text-muted-foreground">暂无足够浏览数据</p>
+                <p class="mt-1 text-xs text-muted">详情页产生访问后会显示排行。</p>
+            </div>
+        )
+    }
+</section>

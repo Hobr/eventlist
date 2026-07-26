@@ -13,4 +13,5 @@ export interface RuntimeEnv {
     DEFAULT_DIVISION_CODE?: string;
     TURNSTILE_SITE_KEY?: string;
     TURNSTILE_SECRET_KEY?: string;
+    VIEW_HASH_SECRET?: string;
 }

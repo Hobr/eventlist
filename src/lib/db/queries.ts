@@ -1,6 +1,7 @@
 import { STATUS, type EventStatus } from "./index";
 import type { D1Database, D1Result } from "../../types/cloudflare";
 import type { EventScale, EventType } from "../events/options";
+import type { PopularityWindow } from "../events/popularity";
 
 export interface EventRecord {
     id: number;
@@ -66,6 +67,8 @@ export interface PublishedEventFilters {
     tag?: string;
     from?: string;
     to?: string;
+    starts?: string;
+    active?: string;
     page?: number;
     pageSize?: number;
     sort?: EventSort;
@@ -87,6 +90,28 @@ export interface TagSummary {
     id: number;
     name: string;
     event_count: number;
+}
+
+export interface HomepageDateCluster {
+    date: string;
+    total: number;
+    events: EventRecord[];
+}
+
+export interface HomepageNearby {
+    featured: EventRecord | null;
+    ongoing: EventRecord[];
+    clusters: HomepageDateCluster[];
+}
+
+export interface PopularEvent extends EventRecord {
+    unique_visitors: number;
+}
+
+export interface HomepagePopularity {
+    window: PopularityWindow;
+    local: PopularEvent[];
+    nationwide: PopularEvent[];
 }
 
 export type AuditAction =
@@ -141,8 +166,30 @@ const EVENT_ENDED_CLAUSE = `(
     )
 )`;
 
+const EVENT_SCALE_ORDER = `CASE events.scale
+    WHEN 'mega' THEN 4
+    WHEN 'large' THEN 3
+    WHEN 'mid' THEN 2
+    WHEN 'small' THEN 1
+    ELSE 0
+END`;
+
+interface HomepageQueryRow extends EventRecord {
+    cluster_date?: string;
+    cluster_total?: number;
+    cluster_position?: number;
+}
+
 function escapeLike(value: string) {
     return value.replace(/[\\%_]/g, "\\$&");
+}
+
+function divisionFilter(column: string, divisionCode: string) {
+    if (divisionCode.length === 6 || divisionCode.length === 12) {
+        return { clause: `${column} = ?`, value: divisionCode };
+    }
+
+    return { clause: `${column} LIKE ?`, value: `${divisionCode}%` };
 }
 
 function requireSuccess<T>(result: D1Result<T>, message: string) {
@@ -327,13 +374,9 @@ export async function listPublishedEvents(
     }
 
     if (filters.divisionCode) {
-        if (filters.divisionCode.length === 6 || filters.divisionCode.length === 12) {
-            clauses.push("events.division_code = ?");
-            values.push(filters.divisionCode);
-        } else {
-            clauses.push("events.division_code LIKE ?");
-            values.push(`${filters.divisionCode}%`);
-        }
+        const division = divisionFilter("events.division_code", filters.divisionCode);
+        clauses.push(division.clause);
+        values.push(division.value);
     }
 
     if (filters.type) {
@@ -354,6 +397,17 @@ export async function listPublishedEvents(
     if (filters.to) {
         clauses.push("date(events.end_date) <= date(?)");
         values.push(filters.to);
+    }
+
+    if (filters.starts) {
+        clauses.push("date(events.start_date) = date(?)");
+        values.push(filters.starts);
+    }
+
+    if (filters.active) {
+        clauses.push("date(events.start_date) <= date(?)");
+        clauses.push("date(events.end_date) >= date(?)");
+        values.push(filters.active, filters.active);
     }
 
     if (filters.tag) {
@@ -393,6 +447,198 @@ export async function listPublishedEvents(
         pageSize,
         hasNext: rows.length > pageSize
     };
+}
+
+export async function listHomepageNearby(
+    db: D1Database,
+    divisionCode: string
+): Promise<HomepageNearby> {
+    const division = divisionFilter("events.division_code", divisionCode);
+    const [featuredResult, ongoingResult, clusterResult] = await db.batch<HomepageQueryRow>([
+        db
+            .prepare(
+                `${EVENT_SELECT}
+                 WHERE events.status = ?
+                   AND NOT ${EVENT_ENDED_CLAUSE}
+                   AND ${division.clause}
+                   AND date(events.start_date) BETWEEN date('now', '+8 hours')
+                       AND date('now', '+8 hours', '+14 days')
+                 GROUP BY events.id
+                 ORDER BY ${EVENT_SCALE_ORDER} DESC,
+                          date(events.start_date) ASC,
+                          CASE WHEN events.cover_url IS NULL OR trim(events.cover_url) = '' THEN 0 ELSE 1 END DESC,
+                          events.id ASC
+                 LIMIT 1`
+            )
+            .bind(STATUS.PUBLISHED, division.value),
+        db
+            .prepare(
+                `${EVENT_SELECT}
+                 WHERE events.status = ?
+                   AND NOT ${EVENT_ENDED_CLAUSE}
+                   AND ${division.clause}
+                   AND date(events.start_date) < date('now', '+8 hours')
+                 GROUP BY events.id
+                 ORDER BY date(events.end_date) ASC,
+                          ${EVENT_SCALE_ORDER} DESC,
+                          events.id ASC
+                 LIMIT 4`
+            )
+            .bind(STATUS.PUBLISHED, division.value),
+        db
+            .prepare(
+                `WITH ranked_events AS (
+                    SELECT
+                        events.id,
+                        date(events.start_date) AS cluster_date,
+                        COUNT(*) OVER (PARTITION BY date(events.start_date)) AS cluster_total,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY date(events.start_date)
+                            ORDER BY ${EVENT_SCALE_ORDER} DESC, events.id ASC
+                        ) AS cluster_position,
+                        DENSE_RANK() OVER (ORDER BY date(events.start_date) ASC) AS date_position
+                    FROM events
+                    WHERE events.status = ?
+                      AND NOT ${EVENT_ENDED_CLAUSE}
+                      AND ${division.clause}
+                      AND date(events.start_date) >= date('now', '+8 hours')
+                ),
+                limited_events AS (
+                    SELECT id, cluster_date, cluster_total, cluster_position
+                    FROM ranked_events
+                    WHERE date_position <= 3 AND cluster_position <= 5
+                )
+                SELECT
+                    events.*,
+                    group_concat(tags.name, '、') AS tags,
+                    limited_events.cluster_date,
+                    limited_events.cluster_total,
+                    limited_events.cluster_position
+                FROM limited_events
+                JOIN events ON events.id = limited_events.id
+                LEFT JOIN event_tags ON event_tags.event_id = events.id
+                LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
+                GROUP BY events.id, limited_events.cluster_date,
+                         limited_events.cluster_total, limited_events.cluster_position
+                ORDER BY limited_events.cluster_date ASC, limited_events.cluster_position ASC`
+            )
+            .bind(STATUS.PUBLISHED, division.value)
+    ]);
+
+    const featuredRows = requireSuccess(
+        featuredResult,
+        "Failed to load homepage featured event"
+    ).results;
+    const ongoing =
+        requireSuccess(ongoingResult, "Failed to load ongoing homepage events").results ?? [];
+    const clusterRows =
+        requireSuccess(clusterResult, "Failed to load homepage date clusters").results ?? [];
+    const clusters = new Map<string, HomepageDateCluster>();
+
+    for (const row of clusterRows) {
+        const { cluster_date, cluster_total } = row;
+        if (!cluster_date || typeof cluster_total !== "number") continue;
+
+        const cluster = clusters.get(cluster_date) ?? {
+            date: cluster_date,
+            total: cluster_total,
+            events: []
+        };
+        cluster.events.push(row);
+        clusters.set(cluster_date, cluster);
+    }
+
+    return {
+        featured: featuredRows?.[0] ?? null,
+        ongoing,
+        clusters: [...clusters.values()]
+    };
+}
+
+function popularityStatement(db: D1Database, divisionCode?: string) {
+    const division = divisionCode ? divisionFilter("events.division_code", divisionCode) : null;
+    const divisionClause = division ? `AND ${division.clause}` : "";
+
+    return {
+        statement: db.prepare(
+            `WITH recent_visitors AS (
+                SELECT event_id, COUNT(*) AS unique_visitors
+                FROM event_visitors
+                WHERE date(last_seen_date) BETWEEN date('now', '+8 hours', ?)
+                    AND date('now', '+8 hours')
+                GROUP BY event_id
+            )
+            SELECT
+                events.*,
+                group_concat(tags.name, '、') AS tags,
+                recent_visitors.unique_visitors
+            FROM recent_visitors
+            JOIN events ON events.id = recent_visitors.event_id
+            LEFT JOIN event_tags ON event_tags.event_id = events.id
+            LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
+            WHERE events.status = ?
+              AND NOT ${EVENT_ENDED_CLAUSE}
+              ${divisionClause}
+            GROUP BY events.id, recent_visitors.unique_visitors
+            ORDER BY recent_visitors.unique_visitors DESC,
+                     ${EVENT_SCALE_ORDER} DESC,
+                     date(events.start_date) ASC,
+                     events.id ASC
+            LIMIT 5`
+        ),
+        divisionValue: division?.value
+    };
+}
+
+export async function listHomepagePopularity(
+    db: D1Database,
+    divisionCode: string,
+    window: PopularityWindow
+): Promise<HomepagePopularity> {
+    const offset = `-${window - 1} days`;
+    const local = popularityStatement(db, divisionCode);
+    const nationwide = popularityStatement(db);
+    if (!local.divisionValue) {
+        throw new Error("Homepage division code is required");
+    }
+    const [localResult, nationwideResult] = await db.batch<PopularEvent>([
+        local.statement.bind(offset, STATUS.PUBLISHED, local.divisionValue),
+        nationwide.statement.bind(offset, STATUS.PUBLISHED)
+    ]);
+
+    return {
+        window,
+        local: requireSuccess(localResult, "Failed to load local popular events").results ?? [],
+        nationwide:
+            requireSuccess(nationwideResult, "Failed to load nationwide popular events").results ??
+            []
+    };
+}
+
+export async function recordEventView(db: D1Database, eventId: number, visitorKey: string) {
+    const results = await db.batch([
+        db.prepare(
+            `DELETE FROM event_visitors
+             WHERE date(last_seen_date) < date('now', '+8 hours', '-29 days')`
+        ),
+        db
+            .prepare(
+                `INSERT INTO event_visitors(event_id, visitor_key, last_seen_date)
+                 SELECT events.id, ?, date('now', '+8 hours')
+                 FROM events
+                 WHERE events.id = ?
+                   AND events.status = ?
+                   AND NOT ${EVENT_ENDED_CLAUSE}
+                 ON CONFLICT(event_id, visitor_key) DO UPDATE SET
+                    last_seen_date = excluded.last_seen_date
+                 WHERE event_visitors.last_seen_date <> excluded.last_seen_date`
+            )
+            .bind(visitorKey, eventId, STATUS.PUBLISHED)
+    ]);
+
+    for (const result of results) {
+        requireSuccess(result, "Failed to record event view");
+    }
 }
 
 export async function listPublishedEventSitemapRows(db: D1Database, limit = 1000) {

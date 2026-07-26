@@ -214,6 +214,102 @@ WHERE NOT EXISTS (
     SELECT 1 FROM events WHERE events.source_url = shanghai_samples.source_url
 );
 
+WITH ongoing_samples(n) AS (
+    VALUES (1), (2), (3), (4), (5), (6)
+)
+INSERT INTO events(
+    title, type, scale, division_code, venue, address,
+    start_date, end_date, start_time, end_time, cover_url, description,
+    qq_group, ticket_url, source_url, submitter_contact, status, published_at
+)
+SELECT
+    'Eventlist Dev 上海进行中活动 ' || printf('%02d', n),
+    CASE n % 3 WHEN 0 THEN 'comic' WHEN 1 THEN 'ipflash' ELSE 'stage' END,
+    CASE n % 4 WHEN 0 THEN 'mega' WHEN 1 THEN 'large' WHEN 2 THEN 'mid' ELSE 'small' END,
+    CASE n % 3 WHEN 0 THEN '310101' WHEN 1 THEN '310104' ELSE '310115' END,
+    '上海跨日测试场地 ' || printf('%02d', n),
+    '上海市跨日测试路 ' || n || ' 号',
+    date('now', '+8 hours', printf('-%d days', 1 + n % 3)),
+    date('now', '+8 hours', printf('+%d days', 1 + n % 3)),
+    NULL,
+    NULL,
+    NULL,
+    '无具体时间的跨日活动样例，用于验证正在进行分组与数量上限。',
+    NULL,
+    NULL,
+    'https://example.com/eventlist/dev-shanghai-ongoing-' || printf('%02d', n),
+    'dev@example.com',
+    'published',
+    datetime('now')
+FROM ongoing_samples
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM events
+    WHERE events.source_url =
+        'https://example.com/eventlist/dev-shanghai-ongoing-' || printf('%02d', ongoing_samples.n)
+);
+
+WITH RECURSIVE sequence(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM sequence WHERE n < 120
+)
+INSERT INTO events(
+    title, type, scale, division_code, venue, address,
+    start_date, end_date, start_time, end_time, cover_url, description,
+    qq_group, ticket_url, source_url, submitter_contact, status, published_at
+)
+SELECT
+    'Eventlist Dev 上海同日活动 ' || printf('%03d', n),
+    CASE n % 6
+        WHEN 0 THEN 'comic'
+        WHEN 1 THEN 'doujin'
+        WHEN 2 THEN 'concert'
+        WHEN 3 THEN 'stage'
+        WHEN 4 THEN 'dance'
+        ELSE 'ipflash'
+    END,
+    CASE n % 8
+        WHEN 0 THEN 'mega'
+        WHEN 1 THEN 'large'
+        WHEN 2 THEN 'mid'
+        WHEN 3 THEN 'small'
+        WHEN 4 THEN 'large'
+        WHEN 5 THEN 'mid'
+        WHEN 6 THEN 'small'
+        ELSE 'mid'
+    END,
+    CASE n % 4
+        WHEN 0 THEN '310115'
+        WHEN 1 THEN '310104'
+        WHEN 2 THEN '310101'
+        ELSE '310106'
+    END,
+    '上海同日测试场地 ' || printf('%03d', n),
+    '上海市同日测试路 ' || n || ' 号',
+    date('now', '+8 hours', '+2 days'),
+    date('now', '+8 hours', '+2 days'),
+    CASE WHEN n % 3 = 0 THEN '10:00' ELSE NULL END,
+    CASE WHEN n % 3 = 0 THEN '17:00' ELSE NULL END,
+    CASE
+        WHEN n = 8 THEN 'https://images.unsplash.com/photo-1540575467063-178a50c2df87'
+        ELSE NULL
+    END,
+    '同一开始日期的高密度样例，用于验证稳定规模排序、无时间展示与首页数量上限。',
+    NULL,
+    NULL,
+    'https://example.com/eventlist/dev-shanghai-same-day-' || printf('%03d', n),
+    'dev@example.com',
+    'published',
+    datetime('now')
+FROM sequence
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM events
+    WHERE events.source_url =
+        'https://example.com/eventlist/dev-shanghai-same-day-' || printf('%03d', sequence.n)
+);
+
 INSERT INTO events(
     title, type, scale, division_code, venue, address,
     start_date, end_date, start_time, end_time, cover_url, description,
@@ -302,6 +398,48 @@ FROM events
 JOIN tags ON tags.name IN ('初音未来', '购票开放')
 WHERE events.source_url = 'https://example.com/eventlist/dev-beijing-concert'
 ON CONFLICT(event_id, tag_id) DO NOTHING;
+
+WITH RECURSIVE visitor_numbers(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM visitor_numbers WHERE n < 24
+),
+popular_targets(source_url, visitor_count, recent_7_count, recent_3_count) AS (
+    VALUES
+        ('https://example.com/eventlist/dev-shanghai-same-day-008', 24, 11, 5),
+        ('https://example.com/eventlist/dev-shanghai-same-day-016', 20, 8, 4),
+        ('https://example.com/eventlist/dev-shanghai-anime-carnival', 16, 7, 3),
+        ('https://example.com/eventlist/dev-shanghai-virtual-singer-live', 12, 5, 2),
+        ('https://example.com/eventlist/dev-beijing-concert', 18, 4, 1)
+)
+INSERT INTO event_visitors(event_id, visitor_key, last_seen_date)
+SELECT
+    events.id,
+    printf('%064x', events.id * 100000 + visitor_numbers.n),
+    CASE
+        WHEN visitor_numbers.n <= popular_targets.recent_3_count THEN
+            date('now', '+8 hours', printf('-%d days', (visitor_numbers.n - 1) % 3))
+        WHEN visitor_numbers.n <= popular_targets.recent_7_count THEN
+            date(
+                'now',
+                '+8 hours',
+                printf(
+                    '-%d days',
+                    3 + (visitor_numbers.n - popular_targets.recent_3_count - 1) % 4
+                )
+            )
+        ELSE
+            date(
+                'now',
+                '+8 hours',
+                printf('-%d days', 7 + visitor_numbers.n - popular_targets.recent_7_count - 1)
+            )
+    END
+FROM popular_targets
+JOIN events ON events.source_url = popular_targets.source_url
+JOIN visitor_numbers ON visitor_numbers.n <= popular_targets.visitor_count
+ON CONFLICT(event_id, visitor_key) DO UPDATE SET
+    last_seen_date = excluded.last_seen_date;
 
 INSERT INTO event_tags(event_id, tag_id)
 SELECT events.id, tags.id

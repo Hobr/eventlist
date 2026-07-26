@@ -76,6 +76,20 @@ CREATE TABLE events (
     )
 ) STRICT;
 
+CREATE TABLE event_visitors (
+    event_id INTEGER NOT NULL,
+    visitor_key TEXT NOT NULL CHECK (
+        length(visitor_key) = 64
+        AND visitor_key NOT GLOB '*[^0-9a-f]*'
+    ),
+    last_seen_date TEXT NOT NULL CHECK (
+        date(last_seen_date) IS NOT NULL
+        AND last_seen_date = date(last_seen_date)
+    ),
+    PRIMARY KEY (event_id, visitor_key),
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+) STRICT;
+
 CREATE TABLE event_tags (
     event_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
@@ -102,6 +116,8 @@ CREATE INDEX idx_events_status_created
     ON events(status, created_at, id);
 CREATE INDEX idx_events_status_updated
     ON events(status, updated_at, id);
+CREATE INDEX idx_event_visitors_recent
+    ON event_visitors(last_seen_date, event_id);
 CREATE INDEX idx_event_tags_tag_event
     ON event_tags(tag_id, event_id);
 CREATE INDEX idx_audit_logs_at

@@ -61,7 +61,12 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                 </a>
             </div>
         ) : (
-            <article class="flex flex-col gap-8">
+            <article
+                class="flex flex-col gap-8"
+                data-event-view-endpoint={
+                    event.status === STATUS.PUBLISHED ? `/api/events/${event.id}/view` : undefined
+                }
+            >
                 <a
                     href="/events"
                     class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
@@ -197,3 +202,16 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
         )
     }
 </Layout>
+
+<script>
+    const viewTarget = document.querySelector<HTMLElement>("[data-event-view-endpoint]");
+    const endpoint = viewTarget?.dataset.eventViewEndpoint;
+
+    if (endpoint) {
+        void fetch(endpoint, {
+            method: "POST",
+            credentials: "same-origin",
+            keepalive: true
+        }).catch(() => undefined);
+    }
+</script>

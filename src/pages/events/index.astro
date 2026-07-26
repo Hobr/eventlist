@@ -56,6 +56,8 @@ const filters: PublishedEventFilters = {
     tag: Astro.url.searchParams.get("tag") || undefined,
     from: parseDate(Astro.url.searchParams.get("from")),
     to: parseDate(Astro.url.searchParams.get("to")),
+    starts: parseDate(Astro.url.searchParams.get("starts")),
+    active: parseDate(Astro.url.searchParams.get("active")),
     page: parsePositiveInt(Astro.url.searchParams.get("page")) ?? 1,
     pageSize: 20,
     sort: parseSort(Astro.url.searchParams.get("sort"))

@@ -1,45 +1,50 @@
 ---
 import ArrowRight from "@lucide/astro/icons/arrow-right";
+import CalendarClock from "@lucide/astro/icons/calendar-clock";
+import Flame from "@lucide/astro/icons/flame";
 import MapPinned from "@lucide/astro/icons/map-pinned";
 import CitySelector from "../components/CitySelector.svelte";
 import EventCard from "../components/EventCard.astro";
+import PopularEventList from "../components/PopularEventList.astro";
 import Layout from "../layouts/Layout.astro";
 import { getDB } from "../lib/db";
-import { FALLBACK_DIVISION_CODE } from "../lib/divisions";
-import { EVENT_TYPES } from "../lib/events/options";
+import {
+    listHomepageNearby,
+    listHomepagePopularity,
+    type HomepageNearby,
+    type HomepagePopularity
+} from "../lib/db/queries";
+import { FALLBACK_DIVISION_CODE, type RegionOption } from "../lib/divisions";
+import { getChinaLocalDate } from "../lib/events/datetime";
+import { getEventScaleLabel } from "../lib/events/options";
+import { POPULARITY_WINDOWS, parsePopularityWindow } from "../lib/events/popularity";
 import { resolveSelectedDivision } from "../lib/geo";
-import { listPublishedEvents, topTags } from "../lib/db/queries";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;
 
 const runtimeEnv = getRuntimeEnv();
 const defaultDivisionCode = runtimeEnv.DEFAULT_DIVISION_CODE || FALLBACK_DIVISION_CODE;
-let events = [];
-let tags = [];
-const types = EVENT_TYPES;
-let selectedDivision = null;
+const trendWindow = parsePopularityWindow(Astro.url.searchParams.get("trend"));
+const today = getChinaLocalDate();
+let selectedDivision: RegionOption | null = null;
 let sourceLabel = "默认城市";
-let errorMessage = "";
+let regionError = "";
+let nearbyError = "";
+let popularityError = "";
+let nearby: HomepageNearby = { featured: null, ongoing: [], clusters: [] };
+let popularity: HomepagePopularity = {
+    window: trendWindow,
+    local: [],
+    nationwide: []
+};
 
 try {
-    const db = await getDB(runtimeEnv);
     const resolved = await resolveSelectedDivision(
         Astro.request,
         Astro.url.searchParams,
         defaultDivisionCode
     );
-    const [eventPage, loadedTags] = await Promise.all([
-        listPublishedEvents(db, {
-            divisionCode: resolved.division.code,
-            pageSize: 8,
-            sort: "start_asc"
-        }),
-        topTags(db, 8)
-    ]);
-
-    events = eventPage.events;
-    tags = loadedTags;
     selectedDivision = resolved.division;
     sourceLabel =
         resolved.source === "query"
@@ -48,52 +53,111 @@ try {
               ? "IP 定位"
               : "默认城市";
 } catch (error) {
-    errorMessage = error instanceof Error ? error.message : "无法加载活动";
+    regionError = error instanceof Error ? error.message : "无法识别当前地区";
+    nearbyError = "无法确定地区，暂时不能加载附近活动";
+    popularityError = "无法确定地区，暂时不能加载本地热门活动";
 }
 
 const selectedDivisionCode = selectedDivision?.code ?? defaultDivisionCode;
-const featuredEvent = events.find((event) => event.cover_url) ?? events[0];
-const upcomingEvents = featuredEvent
-    ? events.filter((event) => event.id !== featuredEvent.id).slice(0, 4)
-    : [];
+
+if (selectedDivision) {
+    try {
+        const db = await getDB(runtimeEnv);
+        const [nearbyResult, popularityResult] = await Promise.allSettled([
+            listHomepageNearby(db, selectedDivisionCode),
+            listHomepagePopularity(db, selectedDivisionCode, trendWindow)
+        ]);
+
+        if (nearbyResult.status === "fulfilled") {
+            nearby = nearbyResult.value;
+        } else {
+            nearbyError =
+                nearbyResult.reason instanceof Error
+                    ? nearbyResult.reason.message
+                    : "无法加载附近活动";
+        }
+
+        if (popularityResult.status === "fulfilled") {
+            popularity = popularityResult.value;
+        } else {
+            popularityError =
+                popularityResult.reason instanceof Error
+                    ? popularityResult.reason.message
+                    : "无法加载热门活动";
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "无法加载活动";
+        nearbyError = message;
+        popularityError = message;
+    }
+}
+
+const featuredId = nearby.featured?.id;
+const dateClusters = nearby.clusters
+    .map((cluster) => ({
+        ...cluster,
+        events: cluster.events.filter((event) => event.id !== featuredId).slice(0, 4)
+    }))
+    .filter((cluster) => cluster.events.length > 0);
+const hasNearbyEvents =
+    Boolean(nearby.featured) || nearby.ongoing.length > 0 || dateClusters.length > 0;
+const featuredReason = nearby.featured
+    ? `未来 14 天内，${getEventScaleLabel(nearby.featured.scale)}`
+    : "";
+
+function eventsHref(params: Record<string, string> = {}) {
+    const searchParams = new URLSearchParams({ city: selectedDivisionCode, ...params });
+    return `/events?${searchParams.toString()}`;
+}
+
+function trendHref(window: 3 | 7 | 30) {
+    const searchParams = new URLSearchParams({
+        city: selectedDivisionCode,
+        trend: String(window)
+    });
+    return `/?${searchParams.toString()}#popular`;
+}
+
+function formatClusterDate(value: string) {
+    return new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai",
+        month: "long",
+        day: "numeric",
+        weekday: "short"
+    }).format(new Date(`${value}T00:00:00+08:00`));
+}
 ---
 
 <Layout
     title="ACG 活动目录"
-    description="按城市、时间、类型、规模和标签浏览近期 ACG 活动，也可以提交待审核活动。"
+    description="按地区和自然日期浏览附近 ACG 活动，并查看近 3 日、7 日和 30 日热门活动。"
 >
-    <div class="flex flex-col gap-14 sm:gap-16">
-        <section aria-labelledby="home-heading" class="flex flex-col gap-6 sm:gap-8">
+    <div class="flex flex-col gap-12 sm:gap-14">
+        <section aria-labelledby="home-heading" class="border-b border-border pb-7">
             <div
-                class="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(34rem,1.28fr)] lg:items-end lg:gap-12"
+                class="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(32rem,1.2fr)] lg:items-end lg:gap-10"
             >
                 <header class="max-w-xl">
                     <p class="text-sm font-bold text-primary">
-                        {selectedDivision?.label ?? "北京"}
+                        {selectedDivision?.label ?? "当前地区"}
                     </p>
                     <h1
                         id="home-heading"
-                        class="mt-3 max-w-[11ch] text-4xl leading-[1.05] font-black tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl"
+                        class="mt-2 text-3xl leading-tight font-black text-foreground sm:text-4xl"
                     >
                         发现附近的 ACG 活动
                     </h1>
                     <p
-                        class="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base"
+                        class="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base"
                     >
-                        只看已审核、未结束的本地活动。
+                        按自然日期快速浏览，也可以查看本地与全国热门活动。
                     </p>
-                    <a
-                        href={`/events?city=${selectedDivisionCode}`}
-                        class="mt-6 inline-flex h-11 items-center gap-2 rounded-md bg-foreground px-5 text-sm font-bold whitespace-nowrap text-background transition-transform focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-                    >
-                        浏览全部活动
-                        <ArrowRight class="size-4" aria-hidden="true" />
-                    </a>
                 </header>
 
                 <div class="rounded-md border border-border bg-surface-subtle p-4 sm:p-5">
                     <CitySelector
                         selectedDivisionCode={selectedDivisionCode}
+                        action={`/?trend=${trendWindow}`}
                         label="浏览地区"
                         client:load
                     />
@@ -104,67 +168,179 @@ const upcomingEvents = featuredEvent
                 </div>
             </div>
 
+            <nav class="mt-5 grid max-w-md grid-cols-2 gap-2" aria-label="首页活动区域">
+                <a
+                    href="#nearby"
+                    class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                    <CalendarClock class="size-4" aria-hidden="true" />
+                    附近活动
+                </a>
+                <a
+                    href="#popular"
+                    class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                    <Flame class="size-4" aria-hidden="true" />
+                    热门活动
+                </a>
+            </nav>
+        </section>
+
+        {
+            regionError ? (
+                <div
+                    class="rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
+                    role="alert"
+                >
+                    {regionError}
+                </div>
+            ) : null
+        }
+
+        <section id="nearby" aria-labelledby="nearby-heading" class="scroll-mt-24">
+            <header
+                class="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between"
+            >
+                <div>
+                    <h2 id="nearby-heading" class="text-2xl font-black text-foreground sm:text-3xl">
+                        附近活动
+                    </h2>
+                    <p class="mt-1 text-sm text-muted-foreground">
+                        {selectedDivision?.label ?? "当前地区"}，正在进行与最近开始日期
+                    </p>
+                </div>
+                <a
+                    href={eventsHref()}
+                    class="inline-flex w-fit items-center gap-2 text-sm font-bold text-link"
+                >
+                    查看完整目录
+                    <ArrowRight class="size-4" aria-hidden="true" />
+                </a>
+            </header>
+
             {
-                errorMessage ? (
+                nearbyError ? (
                     <div
-                        class="rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
+                        class="mt-5 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
                         role="alert"
                     >
-                        {errorMessage}
+                        {nearbyError}
                     </div>
-                ) : featuredEvent ? (
-                    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(19rem,0.8fr)] lg:items-start">
-                        <EventCard event={featuredEvent} variant="featured" priority />
-                        <aside
-                            aria-labelledby="upcoming-heading"
-                            class="flex flex-col rounded-md border border-border bg-surface p-5 sm:p-6"
+                ) : hasNearbyEvents ? (
+                    <div class="mt-6 flex flex-col gap-8">
+                        <div
+                            class:list={[
+                                "grid gap-7",
+                                nearby.ongoing.length > 0
+                                    ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.65fr)]"
+                                    : "grid-cols-1"
+                            ]}
                         >
-                            <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
-                                <h2
-                                    id="upcoming-heading"
-                                    class="text-xl font-black tracking-tight text-foreground"
-                                >
-                                    接下来
-                                </h2>
-                                <span class="text-right text-xs text-muted">
-                                    本地区 {events.length} 场
-                                </span>
-                            </div>
-                            <div class="flex-1">
-                                {upcomingEvents.length > 0 ? (
-                                    upcomingEvents.map((event) => (
-                                        <EventCard event={event} variant="compact" />
-                                    ))
-                                ) : (
-                                    <div class="flex min-h-32 items-center py-6">
-                                        <p class="max-w-xs text-sm leading-relaxed text-muted-foreground">
-                                            当前地区暂时只有这一场近期活动。新的活动通过审核后会显示在这里。
+                            {nearby.featured ? (
+                                <div class="min-w-0">
+                                    <div class="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                        <h3 class="text-lg font-black text-foreground">主推荐</h3>
+                                        <p class="text-xs font-semibold text-primary">
+                                            {featuredReason}
                                         </p>
                                     </div>
-                                )}
+                                    <EventCard
+                                        event={nearby.featured}
+                                        variant="featured"
+                                        priority
+                                    />
+                                </div>
+                            ) : null}
+
+                            {nearby.ongoing.length > 0 ? (
+                                <section
+                                    aria-labelledby="ongoing-heading"
+                                    class="min-w-0 border-t border-border pt-4"
+                                >
+                                    <div class="flex items-end justify-between gap-4 pb-2">
+                                        <div>
+                                            <h3
+                                                id="ongoing-heading"
+                                                class="text-lg font-black text-foreground"
+                                            >
+                                                正在进行
+                                            </h3>
+                                            <p class="mt-1 text-xs text-muted">跨日且尚未结束</p>
+                                        </div>
+                                        <a
+                                            href={eventsHref({ active: today })}
+                                            class="shrink-0 text-xs font-bold text-link"
+                                        >
+                                            查看全部
+                                        </a>
+                                    </div>
+                                    <div>
+                                        {nearby.ongoing.map((event) => (
+                                            <EventCard event={event} variant="compact" />
+                                        ))}
+                                    </div>
+                                </section>
+                            ) : null}
+                        </div>
+
+                        {dateClusters.length > 0 ? (
+                            <div class="grid gap-x-7 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
+                                {dateClusters.map((cluster) => (
+                                    <section
+                                        aria-labelledby={`cluster-${cluster.date}`}
+                                        class="min-w-0 border-t border-border pt-4"
+                                    >
+                                        <div class="flex items-end justify-between gap-4 pb-2">
+                                            <div class="min-w-0">
+                                                <h3
+                                                    id={`cluster-${cluster.date}`}
+                                                    class="text-lg font-black text-foreground"
+                                                >
+                                                    {formatClusterDate(cluster.date)}
+                                                </h3>
+                                                <p class="mt-1 font-mono text-xs text-muted">
+                                                    {cluster.date}
+                                                </p>
+                                            </div>
+                                            <a
+                                                href={eventsHref({ starts: cluster.date })}
+                                                class="shrink-0 text-xs font-bold text-link"
+                                            >
+                                                全部 {cluster.total} 场
+                                            </a>
+                                        </div>
+                                        {cluster.events.length > 0 ? (
+                                            <div>
+                                                {cluster.events.map((event) => (
+                                                    <EventCard event={event} variant="compact" />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p class="border-t border-border py-6 text-sm text-muted-foreground">
+                                                该日期的活动已作为主推荐展示。
+                                            </p>
+                                        )}
+                                    </section>
+                                ))}
                             </div>
-                        </aside>
+                        ) : null}
                     </div>
                 ) : (
-                    <div class="rounded-md border border-border bg-surface px-5 py-12 sm:px-8 sm:py-16">
-                        <div class="max-w-lg">
-                            <h2 class="text-2xl font-black text-foreground">
-                                这个地区还没有近期活动
-                            </h2>
-                            <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                                可以切换地区，或提交一条新的活动信息。
-                            </p>
-                        </div>
-                        <div class="mt-6 flex flex-wrap gap-3">
+                    <div class="mt-6 border-y border-border py-10">
+                        <h3 class="text-xl font-black text-foreground">这个地区还没有近期活动</h3>
+                        <p class="mt-2 text-sm text-muted-foreground">
+                            可以切换地区，或提交新的活动信息。
+                        </p>
+                        <div class="mt-5 flex flex-wrap gap-3">
                             <a
                                 href="/events"
-                                class="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-sm font-bold whitespace-nowrap text-background active:scale-[0.98]"
+                                class="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-sm font-bold whitespace-nowrap text-background"
                             >
                                 查看全部地区
                             </a>
                             <a
                                 href="/submit"
-                                class="inline-flex h-10 items-center rounded-md border border-border-strong bg-surface px-4 text-sm font-bold whitespace-nowrap active:scale-[0.98]"
+                                class="inline-flex h-10 items-center rounded-md border border-border-strong bg-surface px-4 text-sm font-bold whitespace-nowrap text-foreground"
                             >
                                 提交活动
                             </a>
@@ -174,60 +350,67 @@ const upcomingEvents = featuredEvent
             }
         </section>
 
-        {
-            types.length > 0 || tags.length > 0 ? (
-                <section aria-labelledby="discover-heading" class="flex flex-col gap-6">
-                    <div class="max-w-xl">
-                        <h2
-                            id="discover-heading"
-                            class="text-3xl leading-tight font-black tracking-[-0.03em] text-foreground sm:text-4xl"
-                        >
-                            按兴趣继续发现
-                        </h2>
-                        <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                            从活动类型或热门标签进入完整目录。
-                        </p>
-                    </div>
+        <section id="popular" aria-labelledby="popular-heading" class="scroll-mt-24">
+            <header
+                class="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between"
+            >
+                <div>
+                    <h2
+                        id="popular-heading"
+                        class="text-2xl font-black text-foreground sm:text-3xl"
+                    >
+                        热门活动
+                    </h2>
+                    <p class="mt-1 text-sm text-muted-foreground">按活动详情独立访客数排序</p>
+                </div>
+                <nav
+                    class="grid h-10 w-full grid-cols-3 overflow-hidden rounded-md border border-border-strong sm:w-60"
+                    aria-label="热度统计时间范围"
+                >
+                    {
+                        POPULARITY_WINDOWS.map((window) => (
+                            <a
+                                href={trendHref(window)}
+                                aria-current={trendWindow === window ? "page" : undefined}
+                                class:list={[
+                                    "inline-flex items-center justify-center border-l border-border-strong px-3 text-sm font-bold first:border-l-0",
+                                    trendWindow === window
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-surface text-muted-foreground hover:text-foreground"
+                                ]}
+                            >
+                                {window} 日
+                            </a>
+                        ))
+                    }
+                </nav>
+            </header>
 
-                    <div class="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)]">
-                        {types.length > 0 ? (
-                            <div class="rounded-md bg-primary p-5 text-primary-foreground sm:p-7">
-                                <h3 class="text-xl font-black">活动类型</h3>
-                                <div class="mt-5 grid grid-cols-2 gap-x-5 sm:grid-cols-4 lg:grid-cols-2">
-                                    {types.slice(0, 8).map((type) => (
-                                        <a
-                                            href={`/events?type=${type.name}`}
-                                            class="group flex min-w-0 items-center justify-between gap-3 border-b border-primary-foreground/20 py-3 text-sm font-semibold text-current transition-opacity hover:opacity-75 focus-visible:ring-2 focus-visible:ring-primary-foreground/60 focus-visible:outline-none"
-                                        >
-                                            <span class="truncate">{type.label}</span>
-                                            <ArrowRight
-                                                class="size-4 shrink-0 transition-transform group-hover:translate-x-0.5"
-                                                aria-hidden="true"
-                                            />
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : null}
-
-                        {tags.length > 0 ? (
-                            <div class="rounded-md border border-border bg-surface-subtle p-5 sm:p-7">
-                                <h3 class="text-xl font-black text-foreground">热门标签</h3>
-                                <div class="mt-5 flex flex-wrap gap-2">
-                                    {tags.slice(0, 8).map((tag) => (
-                                        <a
-                                            href={`/events?tag=${encodeURIComponent(tag.name)}`}
-                                            class="inline-flex min-h-10 items-center rounded-sm border border-border-strong bg-surface px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                                        >
-                                            {tag.name}
-                                        </a>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : null}
+            {
+                popularityError ? (
+                    <div
+                        class="mt-5 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
+                        role="alert"
+                    >
+                        {popularityError}
                     </div>
-                </section>
-            ) : null
-        }
+                ) : (
+                    <div class="mt-6 grid gap-8 lg:grid-cols-2">
+                        <PopularEventList
+                            headingId="local-popular-heading"
+                            title="本地热门"
+                            scope={`${selectedDivision?.label ?? "当前地区"}，近 ${trendWindow} 日`}
+                            events={popularity.local}
+                        />
+                        <PopularEventList
+                            headingId="nationwide-popular-heading"
+                            title="全国热门"
+                            scope={`全国范围，近 ${trendWindow} 日`}
+                            events={popularity.nationwide}
+                        />
+                    </div>
+                )
+            }
+        </section>
     </div>
 </Layout>

@@ -42,6 +42,17 @@ export function formatEventSchedule(schedule: EventSchedule) {
     return `${start} - ${end}`;
 }
 
+export function getChinaLocalDate(now = new Date()) {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Shanghai",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(now);
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
 export function toEventIsoDateTime(date: string, time: string | null) {
     return time ? `${date}T${time}:00+08:00` : date;
 }

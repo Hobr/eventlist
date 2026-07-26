@@ -77,6 +77,12 @@
         }
         if (filters.from) result.push({ key: "from", label: `始于 ${filters.from}` });
         if (filters.to) result.push({ key: "to", label: `止于 ${filters.to}` });
+        if (filters.starts) {
+            result.push({ key: "starts", label: `开始于 ${filters.starts}` });
+        }
+        if (filters.active) {
+            result.push({ key: "active", label: `${filters.active} 活动中` });
+        }
         if (filters.scale) {
             const option = scales.find((item) => item.name === filters.scale);
             result.push({ key: "scale", label: option?.label ?? filters.scale });
@@ -107,6 +113,8 @@
         if (filters.tag) params.set("tag", filters.tag);
         if (filters.from) params.set("from", filters.from);
         if (filters.to) params.set("to", filters.to);
+        if (filters.starts) params.set("starts", filters.starts);
+        if (filters.active) params.set("active", filters.active);
         if (filters.sort) params.set("sort", filters.sort);
         return params;
     }
@@ -188,6 +196,8 @@
             {#if filters.scale}<input type="hidden" name="scale" value={filters.scale} />{/if}
             {#if filters.tag}<input type="hidden" name="tag" value={filters.tag} />{/if}
             {#if filters.to}<input type="hidden" name="to" value={filters.to} />{/if}
+            {#if filters.starts}<input type="hidden" name="starts" value={filters.starts} />{/if}
+            {#if filters.active}<input type="hidden" name="active" value={filters.active} />{/if}
             {#if filters.sort}<input type="hidden" name="sort" value={filters.sort} />{/if}
             <Button type="submit" class="w-full lg:w-auto">
                 <Filter class="size-4" aria-hidden="true" />
@@ -222,6 +232,12 @@
                 {/if}
                 {#if filters.type}<input type="hidden" name="type" value={filters.type} />{/if}
                 {#if filters.from}<input type="hidden" name="from" value={filters.from} />{/if}
+                {#if filters.starts}
+                    <input type="hidden" name="starts" value={filters.starts} />
+                {/if}
+                {#if filters.active}
+                    <input type="hidden" name="active" value={filters.active} />
+                {/if}
                 {#if timingValue !== "upcoming"}
                     <input type="hidden" name="status" value={timingValue} />
                 {/if}
