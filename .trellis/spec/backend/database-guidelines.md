@@ -22,7 +22,7 @@
 - Shared option module: `src/lib/events/options.ts` exports `EVENT_TYPES`, `EVENT_SCALES`, `EventType`, `EventScale`, membership guards, and label helpers.
 - Access helper: `await getDB(runtimeEnv): Promise<D1Database>`.
 - Generated binding: `worker-configuration.d.ts` contains `DB: D1Database`.
-- Application tables: `tags`, `events`, `event_tags`, `audit_logs`.
+- Application tables: `tags`, `events`, `event_visitors`, `event_tags`, `audit_logs`.
 
 ### 3. Contracts
 
@@ -31,6 +31,7 @@
 - Seed counts on an empty database:
     - `tags = 0`
     - `events = 0`
+    - `event_visitors = 0`
 - Event types are the ordered `comic`, `doujin`, `concert`, `stage`, `dance`, `ipflash`, `online`, and `other` entries in `EVENT_TYPES`.
 - Event scales are the ordered `small`, `mid`, `large`, and `mega` entries in `EVENT_SCALES`.
 - Array order and labels in `src/lib/events/options.ts` are the UI catalogue; pages and components must not query D1 for these options.
@@ -56,8 +57,8 @@
 
 ### 5. Good/Base/Bad Cases
 
-- Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, four application tables, and no `event_types`, `event_scales`, or `cities` table.
-- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts 17 valid events plus 10 canonical tags without schema changes.
+- Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, five application tables, and no `event_types`, `event_scales`, or `cities` table.
+- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts 143 valid events, 10 canonical tags, and 90 anonymous event visitor rows without schema changes.
 - Bad: querying D1 for type/scale options or joining dimension tables; these values are application-owned constants.
 - Bad: defining a second TypeScript list of type/scale codes instead of importing `src/lib/events/options.ts`.
 - Bad: validating a rewritten baseline against an old `.wrangler/state` database; previous migration records can hide missing statements.
@@ -78,7 +79,7 @@
     - no `event_types`, `event_scales`, or `cities` table
 - Option assertions: all 32 type/scale combinations insert successfully; an unknown type and an unknown scale each fail their SQL CHECK.
 - Other constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions, duplicate case-insensitive tags, invalid audit JSON.
-- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert 17 events and 10 canonical tags.
+- Compatibility: apply `docs/dev/seed-public-site.sql`, then assert 143 events, 10 canonical tags, and 90 anonymous event visitor rows.
 - Project gates: `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm build`.
 
 ### 7. Wrong vs Correct
@@ -217,7 +218,7 @@ For direct admin creation, use `createPublishedEvent()` instead of composing
 - Public lists require `status = published`. Catalogue timing uses `status=ended|all`; a missing or unknown value means `upcoming`.
 - Timing is evaluated in China local time with SQLite `date/time('now', '+8 hours')`. An event is ended when its end date is before the local date, or when the date is today and a non-null `end_time` has passed. A date-only event remains upcoming through its entire end date.
 - Location filtering uses `divisionCode`; 6/12-digit values match exactly, shorter province/city prefixes use `LIKE '<prefix>%'`.
-- Supported URL fields are `status`, `city`, `type`, `scale`, `tag`, `from`, `to`, `page`, and `sort`.
+- Supported URL fields are `status`, `city`, `type`, `scale`, `tag`, `from`, `to`, `starts`, `active`, `page`, and `sort`.
 - Public type/scale option lists and display labels come from `src/lib/events/options.ts`; D1 stores only stable codes.
 - Submission free-text suggestions are stored only in `events.tag_suggestions`; submission must not create rows in `tags` or `event_tags`.
 - Canonical tags displayed on cards/details come only from canonical `event_tags` relationships.
@@ -289,4 +290,76 @@ await db
     .prepare("INSERT INTO events(..., tag_suggestions, status) VALUES (..., ?, ?)")
     .bind(...values, input.tag_suggestions, STATUS.PENDING)
     .run();
+```
+
+---
+
+## Scenario: Homepage Discovery And Anonymous Popularity
+
+### 1. Scope / Trigger
+
+- Trigger: homepage nearby discovery, exact-date catalogue links, event detail view deduplication, or 3/7/30-day popularity ranking changes.
+- D1 remains the only event and popularity source of truth. Do not add a KV mirror, Analytics Engine projection, or third-party recommendation store.
+
+### 2. Signatures
+
+- `listHomepageNearby(db, divisionCode) -> Promise<HomepageNearby>` returns one optional featured event, up to four ongoing events, and up to three start-date clusters.
+- `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns local and nationwide rankings from one `db.batch()` call.
+- `recordEventView(db, eventId, visitorKey) -> Promise<void>` purges expired rows and inserts or refreshes one event-scoped visitor row in one D1 batch.
+- `hashEventVisitor(eventId, ip, secret) -> Promise<string>` returns a 64-character lowercase HMAC-SHA-256 key.
+- `PublishedEventFilters.starts` and `.active` are optional canonical `YYYY-MM-DD` strings.
+- `event_visitors(event_id, visitor_key, last_seen_date)` has primary key `(event_id, visitor_key)` and `ON DELETE CASCADE` to `events`.
+
+### 3. Contracts
+
+- `event_visitors` is `STRICT`; `visitor_key` is exactly 64 lowercase hexadecimal characters and `last_seen_date` is a canonical China-local date.
+- The raw `CF-Connecting-IP` value is hashed at the API boundary and must never reach D1, logs, responses, page props, or popularity result types.
+- The HMAC input includes `eventId`, so one address cannot be correlated across different events from stored keys.
+- `recordEventView` deletes rows older than the current China-local day minus 29 days before recording a published, not-ended event.
+- Repeated views update only `last_seen_date`; the primary key guarantees one contribution per event visitor in every selected window.
+- Featured ranking is deterministic: scale descending, start date ascending, cover presence descending, then event ID ascending. The featured window is today through 14 days ahead.
+- Ongoing means `start_date < today` and not ended; return at most four ordered by end date, scale, then ID.
+- Date clusters use the first three distinct non-ended start dates at or after today. Return at most five candidates per date so the page can remove the featured ID and still render four rows. Cluster order uses scale then ID; optional times and covers do not sort rows.
+- Popularity counts visitor rows whose `last_seen_date` is within the selected inclusive window. Local and nationwide lists each return at most five published, not-ended events.
+- `starts=date` means `date(start_date) = date(?)`; `active=date` means `start_date <= date AND end_date >= date`. Existing timing filters still apply independently.
+
+### 4. Validation & Error Matrix
+
+- Missing or empty homepage division code -> reject before running popularity statements.
+- Any failed D1 batch result -> throw a query-specific error; callers render nearby and popularity failures independently.
+- Invalid popularity URL value -> parse to the default 7-day window.
+- Invalid `starts` / `active` URL value -> ignore it through the shared date parser.
+- Invalid visitor key length or characters -> SQL CHECK failure.
+- Missing, unpublished, offline, or ended event during `recordEventView` -> successful no-op insert; do not reveal public-event state through the beacon.
+
+### 5. Good/Base/Bad Cases
+
+- Good: two requests for one event and one address store one row; the same address visiting another event stores an unrelated key.
+- Good: a date-only event remains eligible through its end date and never receives an invented time-based order.
+- Base: an empty `event_visitors` table returns two empty popularity lists while nearby discovery still renders.
+- Bad: `COUNT(*)` over raw request logs or a cross-event IP hash; both violate the event-scoped privacy boundary.
+- Bad: fetching more than the controlled candidate limits and trimming an unbounded result in Astro.
+
+### 6. Tests Required
+
+- Apply `0001_init.sql` to a fresh `--persist-to` directory; assert the visitor table, recent-date index, strict key/date constraints, foreign key, and one migration record.
+- Apply `docs/dev/seed-public-site.sql`; assert 120 same-date events, six ongoing events, 90 visitor rows, 64-character keys, and aggregate 3/7/30-day counts of 15/35/90.
+- Assert featured selection, ongoing limit, three date clusters, cluster totals, four rendered non-featured rows, and stable scale/ID tie order.
+- Assert one event-scoped key for repeated views, separate keys for different IPs or events, 30-day purge behavior, and no raw-IP column or value.
+- Assert `starts` and `active` catalogue URLs produce removable conditions and exact matching results.
+- Run Prettier, TypeScript, Wrangler type sync, and the production build; run ESLint when its installed parser supports TypeScript 7.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```ts
+await db.prepare("INSERT INTO event_visitors(event_id, ip) VALUES (?, ?)").bind(eventId, ip).run();
+```
+
+#### Correct
+
+```ts
+const visitorKey = await hashEventVisitor(eventId, ip, env.VIEW_HASH_SECRET);
+await recordEventView(db, eventId, visitorKey);
 ```

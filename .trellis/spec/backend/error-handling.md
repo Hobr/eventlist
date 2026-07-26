@@ -137,3 +137,65 @@ for Turnstile upstream failures.
 ```ts
 return jsonError("Turnstile verification request failed", 502);
 ```
+
+---
+
+## Scenario: Event View Beacon API
+
+### 1. Scope / Trigger
+
+- Trigger: `POST /api/events/:id/view` or the non-blocking script on a public event detail page changes.
+
+### 2. Signatures
+
+- `POST /api/events/<positive-safe-integer>/view` accepts an empty same-origin request body.
+- Required runtime inputs: `CF-Connecting-IP`, `VIEW_HASH_SECRET`, and the `DB` binding.
+- Success returns HTTP 204 with an empty body. Failures use `jsonError` unless Astro's own cross-site POST protection rejects the request first.
+
+### 3. Contracts
+
+- Only a published event detail page exposes `data-event-view-endpoint`; offline pages never emit the beacon target.
+- The browser sends a same-origin `fetch()` with `method: "POST"`, `credentials: "same-origin"`, and `keepalive: true`.
+- Beacon failure is swallowed in the browser and never delays or changes detail rendering.
+- The route validates origin and configuration before hashing. It never logs, returns, or forwards the raw IP to database code.
+- A valid request for a missing, unpublished, or ended event returns 204 without a write so the endpoint does not disclose event state.
+
+### 4. Validation & Error Matrix
+
+- Non-decimal, zero, negative, or unsafe event ID -> 400 JSON.
+- Missing or mismatched `Origin` -> 403 JSON; Astro may return its own 403 before route code for a cross-site POST.
+- Missing `CF-Connecting-IP` -> 503 JSON.
+- Missing `VIEW_HASH_SECRET` -> 503 JSON.
+- Hashing, binding, or D1 failure -> 500 JSON with `访问统计暂时不可用`.
+- Accepted request, including a duplicate or no-op event state -> 204 empty response.
+
+### 5. Good/Base/Bad Cases
+
+- Good: two concurrent requests for the same event/IP both return 204 and create only one row.
+- Good: a second IP creates a second row without exposing either key in the response.
+- Base: local Workers development may synthesize `CF-Connecting-IP`; use direct route tests to exercise the truly missing-header branch.
+- Bad: recording a view during SSR; crawlers and failed page renders would inflate the count and could block the detail page.
+- Bad: returning the visitor key for debugging or including the source IP in an error message.
+
+### 6. Tests Required
+
+- Detail HTML for a published event contains the endpoint; offline detail HTML does not.
+- Invalid ID returns 400, cross-origin returns 403, and missing secret returns 503.
+- With controlled IP headers, repeated same-IP POSTs and one different-IP POST all return 204; D1 increases by exactly two rows.
+- A missing or ended event returns 204 and does not change D1.
+- Search source, schema, seed, responses, and logs for raw IP persistence; only the API boundary and Turnstile forwarding may read the header.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```ts
+await recordEventView(db, eventId, request.headers.get("CF-Connecting-IP") ?? "");
+```
+
+#### Correct
+
+```ts
+const visitorKey = await hashEventVisitor(eventId, ip, runtimeEnv.VIEW_HASH_SECRET);
+await recordEventView(db, eventId, visitorKey);
+```

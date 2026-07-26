@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"检查数据库基线、D1 约束、日期语义、查询索引，以及是否引入 KV 或第二事实来源。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"检查访问接口状态，并确认统计失败绝不影响详情页渲染。"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"检查首页密度、禁止嵌套卡片、查询状态保留、响应式布局、焦点和视觉验证。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"追踪原始 IP 经哈希、存储、排行结果到展示的完整链路，确保合同不泄漏。"}
+{"file":".trellis/tasks/07-26-homepage-event-recommendations/research/homepage-data-design.md","reason":"根据研究结论检查选择、保留期限、去重、排行和测试数据行为。"}

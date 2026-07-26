@@ -108,10 +108,12 @@
 ## Interaction And Form Contracts
 
 - Catalogue URLs own filter state. Preserve `city`, `type`, `scale`, `tag`,
-  `from`, `to`, `page`, and `sort` whenever either the quick or advanced GET
-  form is applied. Quick controls are location, type, and start date; scale,
-  tag, sort, and end date belong in the `side-panel` surface. Active conditions
-  link to the same URL with exactly one parameter removed.
+  `from`, `to`, `starts`, `active`, `page`, and `sort` whenever either the quick
+  or advanced GET form is applied. Quick controls are location, type, and start
+  date; scale, tag, sort, and end date belong in the `side-panel` surface.
+  Homepage exact-date links use `starts`; the ongoing link uses `active` for
+  the current China-local date. Both appear as removable active conditions.
+  Active conditions link to the same URL with exactly one parameter removed.
 - Public submission remains one native `<form>`. Required controls are always
   visible: `title`, `type`, `scale`, `division_code`, `venue`, `start_date`,
   `end_date`, `source_url`, and `submitter_contact`. Optional `start_time` and
@@ -137,8 +139,21 @@
 ## Public Page Structure
 
 - Homepage first viewport is discovery-first: current location controls, one
-  featured upcoming event, a concise upcoming list, and a direct catalogue
-  action. Do not lead with statistics, feature marketing, or narrative copy
+  featured upcoming event, a concise nearby choice, direct nearby/popular
+  anchors, and a catalogue action. Nearby and popularity sections are both
+  rendered on the same page; do not introduce a top-level mode switch.
+- Featured selection is compact and explainable. It may use one controlled
+  bitmap cover, but repeated nearby items remain unframed compact rows.
+- Nearby discovery renders at most four ongoing rows and the next three actual
+  start-date groups, with at most four non-featured rows per group. Each group
+  shows its full D1 count and links to the exact catalogue condition.
+- Compact rows reserve a stable date/time column wide enough for `MM/DD HH:MM`.
+  Missing times display only known dates and never affect sorting.
+- Popularity uses one stable three-segment `3 / 7 / 30` control, defaults to
+  seven days, preserves the selected city, and updates local and nationwide
+  lists together. Each list renders at most five rows; use two equal columns on
+  wide screens and a vertical flow on narrow screens.
+- Do not lead with statistics, feature marketing, or narrative copy
   ("command / dossier / radar / LIVE PREVIEW").
 - Event browsing uses compact cover-led rows. Keep common filters directly
   visible and move advanced conditions to the accessible side panel; do not

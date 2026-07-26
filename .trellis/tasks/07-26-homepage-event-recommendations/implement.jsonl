@@ -1,0 +1,6 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"规定 D1 基线、中国本地日期、预处理语句、批处理和公开活动发现合同。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"规定访问统计接口的公开 API 响应和非阻塞失败行为。"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"规定发现优先首页、紧凑活动展示、Bits UI/Tailwind 边界、可访问性和验证视口。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"本功能跨越浏览器、API、加密、D1、查询结果、URL 状态和界面边界。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"规模排序、日期解析、活动结果和 URL 参数处理需要单一所有者，不能重复实现。"}
+{"file":".trellis/tasks/07-26-homepage-event-recommendations/research/homepage-data-design.md","reason":"记录仓库证据以及选定的匿名访问、排行和精确日期查询合同。"}
