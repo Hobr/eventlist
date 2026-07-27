@@ -478,3 +478,24 @@ Added deterministic nearby discovery, exact date filters, anonymous per-event po
 ### Status
 
 [OK] **Completed**
+
+
+## Session 14: Flowbite component migration
+
+**Date**: 2026-07-27
+**Task**: Flowbite component migration
+**Branch**: `main`
+
+### Summary
+
+Migrated Bits UI and Lucide usage to Flowbite Svelte and Flowbite Svelte Icons, preserved local adapter contracts, fixed Drawer and Modal focus restoration, completed responsive browser validation, and updated the frontend design-system spec.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6c5375d` | (see git log) |
+
+### Status
+
+[OK] **Completed**
