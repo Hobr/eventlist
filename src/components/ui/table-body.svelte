@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { TableBody as FlowbiteTableBody } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -9,4 +10,4 @@
     let classes = $derived(cn("[&_tr:last-child]:border-0", className));
 </script>
 
-<tbody class={classes}>{@render children?.()}</tbody>
+<FlowbiteTableBody class={classes}>{@render children?.()}</FlowbiteTableBody>

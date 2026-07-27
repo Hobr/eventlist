@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Table as FlowbiteTable } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -9,4 +10,6 @@
     let classes = $derived(cn("w-full caption-bottom text-sm text-foreground", className));
 </script>
 
-<table class={classes}>{@render children?.()}</table>
+<FlowbiteTable border={false} classes={{ div: "contents" }} class={classes}>
+    {@render children?.()}
+</FlowbiteTable>

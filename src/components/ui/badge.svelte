@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Badge as FlowbiteBadge } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     type Tone = "default" | "primary" | "accent" | "warning" | "outline" | "danger";
@@ -17,13 +18,22 @@
         children
     }: Props = $props();
 
+    const colors = {
+        default: "gray",
+        primary: "primary",
+        accent: "pink",
+        warning: "yellow",
+        outline: "gray",
+        danger: "red"
+    } as const;
+
     const tones: Record<Tone, string> = {
-        default: "bg-surface-subtle text-muted-foreground border border-border",
-        primary: "bg-primary-subtle text-primary-subtle-foreground border border-transparent",
-        accent: "bg-accent-subtle text-accent border border-transparent",
-        warning: "bg-warning-subtle text-warning border border-transparent",
-        outline: "bg-surface text-foreground border border-border-strong",
-        danger: "bg-danger-subtle text-danger border border-transparent"
+        default: "border border-border bg-surface-subtle text-muted-foreground",
+        primary: "border border-transparent bg-primary-subtle text-primary-subtle-foreground",
+        accent: "border border-transparent bg-accent-subtle text-accent",
+        warning: "border border-transparent bg-warning-subtle text-warning",
+        outline: "border border-border-strong bg-surface text-foreground",
+        danger: "border border-transparent bg-danger-subtle text-danger"
     };
 
     let classes = $derived(
@@ -35,8 +45,12 @@
     );
 </script>
 
-{#if href}
-    <a {href} class={classes}>{@render children?.()}</a>
-{:else}
-    <span class={classes}>{@render children?.()}</span>
-{/if}
+<FlowbiteBadge
+    color={colors[tone]}
+    border={tone === "outline"}
+    rounded={false}
+    {href}
+    class={classes}
+>
+    {@render children?.()}
+</FlowbiteBadge>

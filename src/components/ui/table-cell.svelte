@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { TableBodyCell as FlowbiteTableCell } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -10,4 +11,6 @@
     let classes = $derived(cn("p-3 align-top text-sm", className));
 </script>
 
-<td class={classes} data-label={dataLabel}>{@render children?.()}</td>
+<FlowbiteTableCell class={classes} data-label={dataLabel}>
+    {@render children?.()}
+</FlowbiteTableCell>

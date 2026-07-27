@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { Button as FlowbiteButton } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     type Variant = "default" | "outline" | "ghost" | "destructive" | "tonal";
@@ -34,11 +35,26 @@
 
     const variants: Record<Variant, string> = {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-border-strong bg-surface text-foreground hover:bg-surface-subtle",
-        ghost: "text-muted-foreground hover:bg-surface-subtle",
+        outline: "border-border-strong bg-surface text-foreground hover:bg-surface-subtle",
+        ghost: "border-transparent bg-transparent text-muted-foreground hover:bg-surface-subtle",
         destructive: "bg-danger text-danger-foreground hover:bg-danger/90",
-        tonal: "bg-primary-subtle text-primary-subtle-foreground hover:bg-primary-subtle/80"
+        tonal: "border-transparent bg-primary-subtle text-primary-subtle-foreground hover:bg-primary-subtle/80"
     };
+
+    const colors = {
+        default: "primary",
+        outline: "alternative",
+        ghost: "alternative",
+        destructive: "red",
+        tonal: "primary"
+    } as const;
+
+    const flowbiteSizes = {
+        sm: "xs",
+        md: "sm",
+        lg: "lg",
+        icon: "sm"
+    } as const;
 
     const sizes: Record<Size, string> = {
         sm: "h-8 gap-1.5 px-3 text-xs",
@@ -49,26 +65,53 @@
 
     let classes = $derived(
         cn(
-            "inline-flex shrink-0 items-center justify-center rounded-md font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 disabled:pointer-events-none disabled:opacity-50",
+            "shrink-0 rounded-md font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
             variants[variant],
             sizes[size],
             className
         )
     );
+
+    function handleAnchorClick(event: MouseEvent) {
+        if (disabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        onclick?.(event);
+    }
 </script>
 
 {#if href}
-    <a
-        {href}
+    <FlowbiteButton
+        tag="a"
+        href={disabled ? undefined : href}
+        color={colors[variant]}
+        outline={variant === "outline"}
+        size={flowbiteSizes[size]}
+        {disabled}
         class={classes}
         aria-disabled={disabled || undefined}
+        aria-label={ariaLabel}
+        tabindex={disabled ? -1 : undefined}
+        onclick={handleAnchorClick}
+    >
+        {@render children?.()}
+    </FlowbiteButton>
+{:else}
+    <FlowbiteButton
+        {type}
+        {name}
+        {value}
+        color={colors[variant]}
+        outline={variant === "outline"}
+        size={flowbiteSizes[size]}
+        {disabled}
+        class={classes}
         aria-label={ariaLabel}
         {onclick}
     >
         {@render children?.()}
-    </a>
-{:else}
-    <button {type} {name} {value} {disabled} class={classes} aria-label={ariaLabel} {onclick}>
-        {@render children?.()}
-    </button>
+    </FlowbiteButton>
 {/if}

@@ -1,10 +1,12 @@
 <script lang="ts">
-    import Check from "@lucide/svelte/icons/check";
-    import CircleOff from "@lucide/svelte/icons/circle-off";
-    import LoaderCircle from "@lucide/svelte/icons/loader-circle";
-    import Pencil from "@lucide/svelte/icons/pencil";
-    import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
-    import X from "@lucide/svelte/icons/x";
+    import { Spinner as LoaderCircle } from "flowbite-svelte";
+    import {
+        CheckOutline as Check,
+        CloseCircleOutline as CircleOff,
+        CloseOutline as X,
+        EditOutline as Pencil,
+        RefreshOutline as RotateCcw
+    } from "flowbite-svelte-icons";
     import Button from "../ui/button.svelte";
     import ConfirmDialog from "../ui/confirm-dialog.svelte";
 

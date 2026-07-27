@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { AlertDialog } from "bits-ui";
-    import LoaderCircle from "@lucide/svelte/icons/loader-circle";
-    import X from "@lucide/svelte/icons/x";
+    import { Button, Modal, Spinner } from "flowbite-svelte";
+    import { CloseOutline } from "flowbite-svelte-icons";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -37,12 +36,49 @@
     }: Props = $props();
 
     let open = $state(false);
+    let triggerElement: HTMLButtonElement | null = null;
+    const MODAL_TRANSITION_MS = 100;
+    const modalTransition = { duration: MODAL_TRANSITION_MS };
+    let hasOpened = false;
+    let focusRestoreTimer: ReturnType<typeof setTimeout> | undefined;
+    let focusRestoreFrame: number | undefined;
+    const color = $derived(tone === "danger" ? "red" : "primary");
 
-    const actionTone = $derived(
-        tone === "danger"
-            ? "bg-danger text-danger-foreground hover:bg-danger/90"
-            : "bg-primary text-primary-foreground hover:bg-primary/90"
-    );
+    $effect(() => {
+        if (open) {
+            hasOpened = true;
+            return;
+        }
+
+        if (!hasOpened) return;
+        hasOpened = false;
+        focusRestoreTimer = setTimeout(() => {
+            focusRestoreTimer = undefined;
+            focusRestoreFrame = requestAnimationFrame(() => {
+                // Svelte may start the outro on the first frame; the next frame follows dialog cleanup.
+                focusRestoreFrame = requestAnimationFrame(() => {
+                    focusRestoreFrame = undefined;
+                    if (!open && triggerElement?.isConnected) triggerElement.focus();
+                });
+            });
+        }, MODAL_TRANSITION_MS);
+
+        return () => {
+            if (focusRestoreTimer !== undefined) {
+                clearTimeout(focusRestoreTimer);
+                focusRestoreTimer = undefined;
+            }
+            if (focusRestoreFrame !== undefined) {
+                cancelAnimationFrame(focusRestoreFrame);
+                focusRestoreFrame = undefined;
+            }
+        };
+    });
+
+    function openDialog(event: MouseEvent) {
+        triggerElement = event.currentTarget as HTMLButtonElement;
+        open = true;
+    }
 
     async function handleConfirm(event: MouseEvent) {
         event.preventDefault();
@@ -51,69 +87,81 @@
     }
 </script>
 
-<AlertDialog.Root bind:open>
-    <AlertDialog.Trigger
-        type="button"
-        {disabled}
-        class={cn(
-            "inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-            actionTone,
-            triggerClass
-        )}
-    >
-        {@render trigger()}
-    </AlertDialog.Trigger>
-    <AlertDialog.Portal>
-        <AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/45" />
-        <AlertDialog.Content
-            class={cn(
-                "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-surface-raised p-5 shadow-popover focus:outline-none sm:p-6",
-                contentClass
-            )}
+<Button
+    type="button"
+    {color}
+    size="xs"
+    {disabled}
+    aria-haspopup="dialog"
+    aria-expanded={open}
+    onclick={openDialog}
+    class={cn("h-8 w-full rounded-md px-3 text-xs font-semibold", triggerClass)}
+>
+    {@render trigger()}
+</Button>
+
+<Modal
+    bind:open
+    size="xs"
+    role="alertdialog"
+    aria-label={title}
+    dismissable={false}
+    outsideclose={!pending}
+    focustrap
+    permanent={pending}
+    transitionParams={modalTransition}
+    class={cn(
+        "border border-border bg-surface-raised text-foreground shadow-popover dark:border-border dark:bg-surface-raised dark:text-foreground",
+        contentClass
+    )}
+    classes={{
+        header: "border-b-0 p-5 pb-0 sm:p-6 sm:pb-0",
+        body: "space-y-0 p-5 sm:p-6",
+        footer: "border-t-0 p-5 pt-0 sm:p-6 sm:pt-0"
+    }}
+>
+    {#snippet header()}
+        <h2 class="pr-4 text-lg font-bold text-foreground">{title}</h2>
+        <Button
+            type="button"
+            color="alternative"
+            size="xs"
+            disabled={pending}
+            aria-label="关闭"
+            onclick={() => (open = false)}
+            class="size-9 rounded-md p-0 text-muted-foreground"
         >
-            <div class="flex items-start justify-between gap-4">
-                <div>
-                    <AlertDialog.Title class="text-lg font-bold text-foreground">
-                        {title}
-                    </AlertDialog.Title>
-                    <AlertDialog.Description class="mt-1 text-sm leading-6 text-muted-foreground">
-                        {description}
-                    </AlertDialog.Description>
-                </div>
-                <AlertDialog.Cancel
-                    aria-label="关闭"
-                    class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                >
-                    <X class="size-4" aria-hidden="true" />
-                </AlertDialog.Cancel>
-            </div>
+            <CloseOutline class="size-4" />
+        </Button>
+    {/snippet}
 
-            {#if children}
-                <div class="mt-5">{@render children()}</div>
+    <p class="text-sm leading-6 text-muted-foreground">{description}</p>
+    {#if children}
+        <div class="mt-5">{@render children()}</div>
+    {/if}
+
+    {#snippet footer()}
+        <Button
+            type="button"
+            color="alternative"
+            disabled={pending}
+            onclick={() => (open = false)}
+            class="h-10 rounded-md px-4 text-sm font-semibold"
+        >
+            {cancelLabel}
+        </Button>
+        <Button
+            type="button"
+            {color}
+            disabled={pending || confirmDisabled}
+            aria-busy={pending}
+            onclick={handleConfirm}
+            class="h-10 rounded-md px-4 text-sm font-semibold"
+        >
+            {#if pending}
+                <Spinner size="4" />
             {/if}
-
-            <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <AlertDialog.Cancel
-                    class="inline-flex h-10 items-center justify-center rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                >
-                    {cancelLabel}
-                </AlertDialog.Cancel>
-                <button
-                    type="button"
-                    disabled={pending || confirmDisabled}
-                    aria-busy={pending}
-                    onclick={handleConfirm}
-                    class={cn(
-                        "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-                        actionTone
-                    )}
-                >
-                    {#if pending}
-                        <LoaderCircle class="size-4 animate-spin" aria-hidden="true" />
-                    {/if}
-                    {pending ? "处理中" : confirmLabel}
-                </button>
-            </div>
-        </AlertDialog.Content>
-    </AlertDialog.Portal>
-</AlertDialog.Root>
+            {pending ? "处理中" : confirmLabel}
+        </Button>
+    {/snippet}
+</Modal>

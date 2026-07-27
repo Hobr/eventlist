@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { TableBodyRow as FlowbiteTableRow } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -11,4 +12,6 @@
     );
 </script>
 
-<tr class={classes}>{@render children?.()}</tr>
+<FlowbiteTableRow color="default" class={classes}>
+    {@render children?.()}
+</FlowbiteTableRow>

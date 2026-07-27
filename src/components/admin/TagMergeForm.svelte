@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Merge from "@lucide/svelte/icons/git-merge";
+    import { CodeMergeOutline as Merge } from "flowbite-svelte-icons";
     import SelectField, { type SelectOption } from "../SelectField.svelte";
     import ConfirmDialog from "../ui/confirm-dialog.svelte";
 

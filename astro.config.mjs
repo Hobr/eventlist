@@ -11,10 +11,6 @@ export default defineConfig({
     integrations: [svelte()],
 
     vite: {
-        // Astro components must be compiled by Astro instead of Vite's dev dependency optimizer.
-        optimizeDeps: {
-            exclude: ["@lucide/astro"]
-        },
         plugins: [tailwindcss()]
     }
 });

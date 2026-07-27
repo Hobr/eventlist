@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "./tokens.css";
+@plugin "flowbite/plugin";
+@custom-variant dark (@media (prefers-color-scheme: dark));
+@source "../../node_modules/flowbite-svelte/dist";
+@source "../../node_modules/flowbite-svelte-icons/dist";
 
 /* Bridges the semantic tokens defined in tokens.css (with prefers-color-scheme
    dark values) into Tailwind v4 utilities. `inline` keeps the var reference in

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { untrack } from "svelte";
     import type { TagSummary } from "../lib/db/queries";
-    import X from "@lucide/svelte/icons/x";
+    import { CloseOutline as X } from "flowbite-svelte-icons";
 
     interface Props {
         name?: string;

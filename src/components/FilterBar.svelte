@@ -1,8 +1,10 @@
 <script lang="ts">
-    import Filter from "@lucide/svelte/icons/filter";
-    import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
-    import SlidersHorizontal from "@lucide/svelte/icons/sliders-horizontal";
-    import X from "@lucide/svelte/icons/x";
+    import {
+        AdjustmentsHorizontalOutline as SlidersHorizontal,
+        CloseOutline as X,
+        FilterOutline as Filter,
+        RefreshOutline as RotateCcw
+    } from "flowbite-svelte-icons";
     import type {
         EventSort,
         EventTiming,

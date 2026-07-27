@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { TableHeadCell as FlowbiteTableHeadCell } from "flowbite-svelte";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -11,4 +12,4 @@
     );
 </script>
 
-<th class={classes}>{@render children?.()}</th>
+<FlowbiteTableHeadCell class={classes}>{@render children?.()}</FlowbiteTableHeadCell>

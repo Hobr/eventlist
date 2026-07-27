@@ -1,11 +1,13 @@
 <script lang="ts">
-    import AlertTriangle from "@lucide/svelte/icons/triangle-alert";
-    import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
-    import Download from "@lucide/svelte/icons/download";
-    import FileSpreadsheet from "@lucide/svelte/icons/file-spreadsheet";
-    import LoaderCircle from "@lucide/svelte/icons/loader-circle";
-    import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
-    import Upload from "@lucide/svelte/icons/upload";
+    import { Spinner as LoaderCircle } from "flowbite-svelte";
+    import {
+        CheckCircleOutline as CheckCircle2,
+        DownloadOutline as Download,
+        ExclamationCircleOutline as AlertTriangle,
+        FileCsvOutline as FileSpreadsheet,
+        RefreshOutline as RotateCcw,
+        UploadOutline as Upload
+    } from "flowbite-svelte-icons";
     import { tick } from "svelte";
     import {
         BulkEventCsvError,

@@ -1,4 +1,4 @@
-# Design System: Bits UI + Tailwind v4 Frontend
+# Design System: Flowbite Svelte + Tailwind v4 Frontend
 
 > The project's visual language for public and admin frontend work.
 
@@ -6,25 +6,33 @@
 
 ## Source of Truth
 
-- **Component direction**: shadcn-svelte-style headless primitives built on
-  `bits-ui`, styled with Tailwind CSS v4 + the `cn()` helper.
+- **Component direction**: Flowbite Svelte visual and interactive components,
+  exposed through small local compatibility adapters where the project already
+  owns a stable component contract. Tailwind CSS v4 utilities and the `cn()`
+  helper continue to own project-specific layout and semantic-token styling.
 - **Implementation**: Astro pages + Svelte islands (Svelte 5 runes).
-- **Style layer**: Tailwind CSS v4 via `@tailwindcss/vite`. No handwritten
-  component CSS; all layout/visual rules live in Tailwind utility classes on
-  the components. `@theme inline` in `src/styles/app.css` bridges the semantic
-  tokens defined in `src/styles/tokens.css` into Tailwind utilities
-  (`bg-background`, `text-foreground`, `border-border`, `bg-primary`, ...).
-- **Interactive primitives**: `bits-ui` (v2) for Svelte controls that need
-  headless behavior. Wrap them in small typed components under
-  `src/components/ui/` — never consume `bits-ui` directly from pages/business
-  components.
+- **Style layer**: Tailwind CSS v4 via `@tailwindcss/vite`, plus
+  `flowbite/plugin` and explicit `@source` entries for `flowbite-svelte` and
+  `flowbite-svelte-icons`. No handwritten component CSS; layout and visual
+  overrides live in Tailwind utility classes. `@theme inline` in
+  `src/styles/app.css` bridges the semantic tokens defined in
+  `src/styles/tokens.css` into Tailwind utilities (`bg-background`,
+  `text-foreground`, `border-border`, `bg-primary`, ...).
+- **Interactive primitives**: `flowbite-svelte`. Shared Button, Badge, Table,
+  Drawer, and Modal behavior stays behind typed adapters in
+  `src/components/ui/`; `SelectField.svelte` owns the shared business-select
+  contract. Business components may import a stateless leaf such as `Spinner`
+  directly when no shared adapter contract exists. Do not import Flowbite's DOM
+  runtime, call `initFlowbite()`, or add data-attribute initialization.
 - **Class merge utility**: `src/lib/utils.ts` exports `cn(...)` built on
   `clsx` + `tailwind-merge`. NOTE: the `cn-division` package is a China
   administrative-division dataset, NOT a class-merge utility — do not confuse
   the two.
-- **Icons**: `@lucide/svelte`, imported per-icon from
-  `@lucide/svelte/icons/<name>` for tree-shaking. The Material Symbols Rounded
-  font is removed; do not reintroduce it.
+- **Icons**: `flowbite-svelte-icons`, imported by named outline export from the
+  package in both Astro and Svelte components. Decorative icons keep
+  `aria-hidden`; icon-only controls get their accessible name from the owning
+  button. Use Flowbite `Spinner` for loading state. The Material Symbols Rounded
+  font is removed; do not reintroduce it or hand-write replacement SVGs.
 - **Token source**: `src/styles/tokens.css` defines the shared visual tokens
   and is consumed by `app.css`'s `@theme inline` block. `app.css` also holds
   the minimal base reset (box-sizing, body font, focus-visible ring,
@@ -74,18 +82,20 @@
   `input`, `label`, `textarea`, `separator`, `table` + `table-header` /
   `table-body` / `table-row` / `table-head` / `table-cell`, `side-panel`, and
   `confirm-dialog`.
-- Wrap every newly used `bits-ui` primitive under `ui/`, even for its first
-  business use, so focus, overlay, title/description, and close behavior have
-  one owner. Add non-interactive primitives when a visual pattern repeats
-  across 3+ pages. Avoid a second runtime UI library (shadcn-svelte CLI
-  bundles, daisyUI, etc.) — the `ui/` layer is hand-maintained.
+- Wrap shared stateful Flowbite primitives under `ui/` so focus, overlay,
+  title/description, close behavior, variants, and project token overrides have
+  one owner. Reuse the existing Button, Badge, Table, SidePanel, and
+  ConfirmDialog adapters instead of importing those Flowbite components in
+  pages. Add non-interactive primitives when a visual pattern repeats across
+  3+ pages. Avoid a second runtime UI library (shadcn-svelte CLI bundles,
+  daisyUI, etc.); the `ui/` layer is hand-maintained.
 - Keep `ui/` components free of business field semantics (no `event`,
   `division`, etc.).
 
 ## Business Components
 
-- `SelectField.svelte` is the shared Bits UI `Select` wrapper. Preserve its
-  prop contract when restyling:
+- `SelectField.svelte` is the shared Flowbite native `Select` wrapper. Preserve
+  its real `<select>` form behavior and prop contract when restyling:
     - `name`, `label`, `value`, `options`, `placeholder`, `required`,
       `disabled`, `wide`, `onchange`.
 - `DivisionPicker.svelte`, `CitySelector.svelte`, and `FilterBar.svelte`
@@ -103,7 +113,7 @@
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
 - Keep action buttons icon+text where the icon clarifies the command
-  (Lucide icons).
+  (Flowbite Svelte Icons).
 
 ## Interaction And Form Contracts
 
@@ -211,6 +221,60 @@
 - Ensure Chinese labels fit in controls on mobile and desktop; wrap layout
   before shrinking text.
 
+### Flowbite Dialog Focus Contract
+
+Flowbite `Drawer` and `Modal` use native `<dialog>` plus a Svelte outro.
+Changing bound `open` to `false` starts the outro before native dialog cleanup;
+focusing the trigger synchronously can therefore be overwritten by the browser
+and leave focus on `<body>`.
+
+Shared adapters must capture the opening button, pass an explicit transition
+duration to Flowbite, and restore focus only after that duration plus dialog
+cleanup. The timeout and animation frame must be cancelled on reopen or
+unmount, and the final callback must confirm that the surface is still closed
+and the trigger is still connected.
+
+```svelte
+<script lang="ts">
+    const TRANSITION_MS = 300;
+    const transitionParams = { duration: TRANSITION_MS };
+    let open = $state(false);
+    let hasOpened = false;
+    let triggerElement: HTMLButtonElement | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let frame: number | undefined;
+
+    function cancelRestore() {
+        if (timer !== undefined) clearTimeout(timer);
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        timer = undefined;
+        frame = undefined;
+    }
+
+    $effect(() => {
+        if (open) {
+            hasOpened = true;
+            return cancelRestore;
+        }
+        if (!hasOpened) return;
+        hasOpened = false;
+        timer = setTimeout(() => {
+            frame = requestAnimationFrame(() => {
+                frame = requestAnimationFrame(() => {
+                    if (!open && triggerElement?.isConnected) triggerElement.focus();
+                });
+            });
+        }, TRANSITION_MS);
+        return cancelRestore;
+    });
+</script>
+
+<Drawer bind:open {transitionParams} />
+```
+
+Use this behavior through `ui/side-panel.svelte` and
+`ui/confirm-dialog.svelte`; do not duplicate timers in business components.
+
 ## Forbidden Patterns
 
 - Reintroducing Material 3 / `--md-sys-*` as the active visual system.
@@ -222,17 +286,26 @@
 - Decorative blobs, gradient-only heroes, or abstract SVGs as primary
   public-page media.
 - Introducing a second runtime CSS framework or UI library on top of
-  Tailwind v4 + `bits-ui` without an explicit product/tooling decision.
+  Tailwind v4 + Flowbite Svelte without an explicit product/tooling decision.
+- Importing Flowbite's client DOM runtime, calling `initFlowbite()`, adding
+  Flowbite data-attribute initialization, or introducing a manual `.dark`
+  theme state. Svelte components own interaction and system media owns theme.
 - Treating `cn-division` as a class-merge utility — it is an administrative
   division dataset. Use `src/lib/utils.ts`'s `cn()` instead.
 
 ## Validation
 
+- Run `corepack pnpm test`.
 - Run `corepack pnpm build`.
 - Run `corepack pnpm lint` (prettier --check + eslint, including
   eslint-plugin-svelte and eslint-plugin-astro).
-- Run `pnpm exec tsc --noEmit` for a type pass when `astro check` is not
+- Run `corepack pnpm exec tsc --noEmit` for a type pass when `astro check` is not
   available.
+- Run `corepack pnpm exec prettier --check .` and `git diff --check`.
+- Run `rg -n 'bits-ui|@lucide/(astro|svelte)' src package.json astro.config.mjs`;
+  it must return no matches. Confirm `src/styles/app.css` retains
+  `flowbite/plugin`, both Flowbite `@source` paths, and the system-media dark
+  variant. Production source must not call `initFlowbite()`.
 - The project currently uses TypeScript 7. `@typescript-eslint/parser` 8.64 is
   not yet compatible with TypeScript 7 and can fail while importing
   `eslint.config.js` before any project rule runs (for example, an internal

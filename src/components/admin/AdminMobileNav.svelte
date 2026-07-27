@@ -1,11 +1,13 @@
 <script lang="ts">
-    import CheckCircle2 from "@lucide/svelte/icons/check-circle-2";
-    import CircleOff from "@lucide/svelte/icons/circle-off";
-    import Inbox from "@lucide/svelte/icons/inbox";
-    import FileSpreadsheet from "@lucide/svelte/icons/file-spreadsheet";
-    import Menu from "@lucide/svelte/icons/menu";
-    import Plus from "@lucide/svelte/icons/plus";
-    import Tags from "@lucide/svelte/icons/tags";
+    import {
+        BarsOutline as Menu,
+        CheckCircleOutline as CheckCircle2,
+        CloseCircleOutline as CircleOff,
+        FileCsvOutline as FileSpreadsheet,
+        InboxOutline as Inbox,
+        PlusOutline as Plus,
+        TagOutline as Tags
+    } from "flowbite-svelte-icons";
     import SidePanel from "../ui/side-panel.svelte";
     import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "./navigation";
 
