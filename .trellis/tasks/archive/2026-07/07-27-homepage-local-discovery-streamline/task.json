@@ -1,0 +1,32 @@
+{
+  "id": "homepage-local-discovery-streamline",
+  "name": "homepage-local-discovery-streamline",
+  "title": "优化首页地区与本地活动流",
+  "description": "缩小并迁移首页地区选择到主导航，移除品牌名前图标，以热门活动和今日全部本地活动重组首页发现流。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "frontend",
+  "package": null,
+  "priority": "P2",
+  "creator": "hobr",
+  "assignee": "hobr",
+  "createdAt": "2026-07-27",
+  "completedAt": "2026-07-27",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "src/pages/index.astro",
+    "src/layouts/Layout.astro",
+    "src/components/CitySelector.svelte",
+    "src/components/PublicMobileNav.svelte",
+    "src/lib/db/queries.ts"
+  ],
+  "notes": "",
+  "meta": {}
+}

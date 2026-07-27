@@ -1,0 +1,2 @@
+{"file":".trellis/spec/frontend/design-system.md","reason":"实施必须遵守 Tailwind v4、Flowbite Svelte、首页发现结构、地区查询参数、Drawer 焦点和响应式约束。"}
+{"file":".trellis/tasks/07-27-homepage-local-discovery-streamline/research/current-homepage-contract.md","reason":"提供当前地区持久化、附近/热门查询、活动目录 URL 和单调用者替换边界。"}
