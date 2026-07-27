@@ -499,3 +499,24 @@ Migrated Bits UI and Lucide usage to Flowbite Svelte and Flowbite Svelte Icons, 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 15: 更新全站品牌文案为同频点
+
+**Date**: 2026-07-27
+**Task**: 更新全站品牌文案为同频点
+**Branch**: `main`
+
+### Summary
+
+将公共站点与管理后台品牌统一为同频点，更新 Slogan 和页面元数据；复验 lint、14 项测试及生产构建全部通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7ec1b89` | (see git log) |
+
+### Status
+
+[OK] **Completed**
