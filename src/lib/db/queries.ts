@@ -92,16 +92,9 @@ export interface TagSummary {
     event_count: number;
 }
 
-export interface HomepageDateCluster {
-    date: string;
-    total: number;
-    events: EventRecord[];
-}
-
-export interface HomepageNearby {
+export interface HomepageDiscovery {
     featured: EventRecord | null;
-    ongoing: EventRecord[];
-    clusters: HomepageDateCluster[];
+    today: EventRecord[];
 }
 
 export interface PopularEvent extends EventRecord {
@@ -173,12 +166,6 @@ const EVENT_SCALE_ORDER = `CASE events.scale
     WHEN 'small' THEN 1
     ELSE 0
 END`;
-
-interface HomepageQueryRow extends EventRecord {
-    cluster_date?: string;
-    cluster_total?: number;
-    cluster_position?: number;
-}
 
 function escapeLike(value: string) {
     return value.replace(/[\\%_]/g, "\\$&");
@@ -449,12 +436,12 @@ export async function listPublishedEvents(
     };
 }
 
-export async function listHomepageNearby(
+export async function listHomepageDiscovery(
     db: D1Database,
     divisionCode: string
-): Promise<HomepageNearby> {
+): Promise<HomepageDiscovery> {
     const division = divisionFilter("events.division_code", divisionCode);
-    const [featuredResult, ongoingResult, clusterResult] = await db.batch<HomepageQueryRow>([
+    const [featuredResult, todayResult] = await db.batch<EventRecord>([
         db
             .prepare(
                 `${EVENT_SELECT}
@@ -475,52 +462,25 @@ export async function listHomepageNearby(
             .prepare(
                 `${EVENT_SELECT}
                  WHERE events.status = ?
-                   AND NOT ${EVENT_ENDED_CLAUSE}
                    AND ${division.clause}
-                   AND date(events.start_date) < date('now', '+8 hours')
+                   AND date(events.start_date) <= date('now', '+8 hours')
+                   AND date(events.end_date) >= date('now', '+8 hours')
                  GROUP BY events.id
-                 ORDER BY date(events.end_date) ASC,
+                 ORDER BY CASE
+                              WHEN date(events.start_date) < date('now', '+8 hours') THEN 0
+                              ELSE 1
+                          END ASC,
+                          CASE
+                              WHEN date(events.start_date) = date('now', '+8 hours')
+                               AND events.start_time IS NOT NULL THEN 0
+                              ELSE 1
+                          END ASC,
+                          CASE
+                              WHEN date(events.start_date) = date('now', '+8 hours')
+                              THEN time(events.start_time)
+                          END ASC,
                           ${EVENT_SCALE_ORDER} DESC,
-                          events.id ASC
-                 LIMIT 4`
-            )
-            .bind(STATUS.PUBLISHED, division.value),
-        db
-            .prepare(
-                `WITH ranked_events AS (
-                    SELECT
-                        events.id,
-                        date(events.start_date) AS cluster_date,
-                        COUNT(*) OVER (PARTITION BY date(events.start_date)) AS cluster_total,
-                        ROW_NUMBER() OVER (
-                            PARTITION BY date(events.start_date)
-                            ORDER BY ${EVENT_SCALE_ORDER} DESC, events.id ASC
-                        ) AS cluster_position,
-                        DENSE_RANK() OVER (ORDER BY date(events.start_date) ASC) AS date_position
-                    FROM events
-                    WHERE events.status = ?
-                      AND NOT ${EVENT_ENDED_CLAUSE}
-                      AND ${division.clause}
-                      AND date(events.start_date) >= date('now', '+8 hours')
-                ),
-                limited_events AS (
-                    SELECT id, cluster_date, cluster_total, cluster_position
-                    FROM ranked_events
-                    WHERE date_position <= 3 AND cluster_position <= 5
-                )
-                SELECT
-                    events.*,
-                    group_concat(tags.name, '、') AS tags,
-                    limited_events.cluster_date,
-                    limited_events.cluster_total,
-                    limited_events.cluster_position
-                FROM limited_events
-                JOIN events ON events.id = limited_events.id
-                LEFT JOIN event_tags ON event_tags.event_id = events.id
-                LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
-                GROUP BY events.id, limited_events.cluster_date,
-                         limited_events.cluster_total, limited_events.cluster_position
-                ORDER BY limited_events.cluster_date ASC, limited_events.cluster_position ASC`
+                          events.id ASC`
             )
             .bind(STATUS.PUBLISHED, division.value)
     ]);
@@ -529,29 +489,12 @@ export async function listHomepageNearby(
         featuredResult,
         "Failed to load homepage featured event"
     ).results;
-    const ongoing =
-        requireSuccess(ongoingResult, "Failed to load ongoing homepage events").results ?? [];
-    const clusterRows =
-        requireSuccess(clusterResult, "Failed to load homepage date clusters").results ?? [];
-    const clusters = new Map<string, HomepageDateCluster>();
-
-    for (const row of clusterRows) {
-        const { cluster_date, cluster_total } = row;
-        if (!cluster_date || typeof cluster_total !== "number") continue;
-
-        const cluster = clusters.get(cluster_date) ?? {
-            date: cluster_date,
-            total: cluster_total,
-            events: []
-        };
-        cluster.events.push(row);
-        clusters.set(cluster_date, cluster);
-    }
+    const today =
+        requireSuccess(todayResult, "Failed to load today's homepage events").results ?? [];
 
     return {
         featured: featuredRows?.[0] ?? null,
-        ongoing,
-        clusters: [...clusters.values()]
+        today
     };
 }
 

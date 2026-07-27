@@ -32,6 +32,24 @@
     let focusRestoreTimer: ReturnType<typeof setTimeout> | undefined;
     let focusRestoreFrame: number | undefined;
 
+    function restoreFocusAfterDialogCleanup() {
+        focusRestoreFrame = undefined;
+        if (open) return;
+
+        const dialogIsOpen = [...document.querySelectorAll("dialog[open]")].some(
+            (dialog) => dialog.getAttribute("aria-label") === title
+        );
+        if (dialogIsOpen) {
+            focusRestoreFrame = requestAnimationFrame(restoreFocusAfterDialogCleanup);
+            return;
+        }
+
+        focusRestoreFrame = requestAnimationFrame(() => {
+            focusRestoreFrame = undefined;
+            if (!open && triggerElement?.isConnected) triggerElement.focus();
+        });
+    }
+
     $effect(() => {
         if (open) {
             hasOpened = true;
@@ -42,12 +60,7 @@
         hasOpened = false;
         focusRestoreTimer = setTimeout(() => {
             focusRestoreTimer = undefined;
-            focusRestoreFrame = requestAnimationFrame(() => {
-                focusRestoreFrame = requestAnimationFrame(() => {
-                    focusRestoreFrame = undefined;
-                    if (!open && triggerElement?.isConnected) triggerElement.focus();
-                });
-            });
+            focusRestoreFrame = requestAnimationFrame(restoreFocusAfterDialogCleanup);
         }, DRAWER_TRANSITION_MS);
 
         return () => {

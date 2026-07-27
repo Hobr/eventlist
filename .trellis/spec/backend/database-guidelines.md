@@ -298,12 +298,12 @@ await db
 
 ### 1. Scope / Trigger
 
-- Trigger: homepage nearby discovery, exact-date catalogue links, event detail view deduplication, or 3/7/30-day popularity ranking changes.
+- Trigger: homepage featured/today discovery, event detail view deduplication, or 3/7/30-day popularity ranking changes.
 - D1 remains the only event and popularity source of truth. Do not add a KV mirror, Analytics Engine projection, or third-party recommendation store.
 
 ### 2. Signatures
 
-- `listHomepageNearby(db, divisionCode) -> Promise<HomepageNearby>` returns one optional featured event, up to four ongoing events, and up to three start-date clusters.
+- `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns one optional featured event and every published local event whose date range covers the current China-local date.
 - `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns local and nationwide rankings from one `db.batch()` call.
 - `recordEventView(db, eventId, visitorKey) -> Promise<void>` purges expired rows and inserts or refreshes one event-scoped visitor row in one D1 batch.
 - `hashEventVisitor(eventId, ip, secret) -> Promise<string>` returns a 64-character lowercase HMAC-SHA-256 key.
@@ -318,15 +318,16 @@ await db
 - `recordEventView` deletes rows older than the current China-local day minus 29 days before recording a published, not-ended event.
 - Repeated views update only `last_seen_date`; the primary key guarantees one contribution per event visitor in every selected window.
 - Featured ranking is deterministic: scale descending, start date ascending, cover presence descending, then event ID ascending. The featured window is today through 14 days ahead.
-- Ongoing means `start_date < today` and not ended; return at most four ordered by end date, scale, then ID.
-- Date clusters use the first three distinct non-ended start dates at or after today. Return at most five candidates per date so the page can remove the featured ID and still render four rows. Cluster order uses scale then ID; optional times and covers do not sort rows.
+- Featured candidates use `NOT EVENT_ENDED_CLAUSE`, so an activity starting today remains eligible only while it has not ended.
+- `HomepageDiscovery.today` requires `start_date <= today <= end_date`, does not use `EVENT_ENDED_CLAUSE`, and has no homepage `LIMIT`. An activity that ended earlier today remains in the complete daily list.
+- Today ordering places cross-day activities first, then same-day activities with known start times, followed by scale and event ID. A featured activity starting today also remains in `today`; do not deduplicate across these two presentation roles.
 - Popularity counts visitor rows whose `last_seen_date` is within the selected inclusive window. Local and nationwide lists each return at most five published, not-ended events.
-- `starts=date` means `date(start_date) = date(?)`; `active=date` means `start_date <= date AND end_date >= date`. Existing timing filters still apply independently.
+- The homepage catalogue CTA carries only `city`. Catalogue support for `starts=date` and `active=date` remains unchanged, but the homepage does not preselect either filter.
 
 ### 4. Validation & Error Matrix
 
 - Missing or empty homepage division code -> reject before running popularity statements.
-- Any failed D1 batch result -> throw a query-specific error; callers render nearby and popularity failures independently.
+- Any failed D1 batch result -> throw a query-specific error; callers render homepage discovery and popularity failures independently.
 - Invalid popularity URL value -> parse to the default 7-day window.
 - Invalid `starts` / `active` URL value -> ignore it through the shared date parser.
 - Invalid visitor key length or characters -> SQL CHECK failure.
@@ -336,15 +337,18 @@ await db
 
 - Good: two requests for one event and one address store one row; the same address visiting another event stores an unrelated key.
 - Good: a date-only event remains eligible through its end date and never receives an invented time-based order.
-- Base: an empty `event_visitors` table returns two empty popularity lists while nearby discovery still renders.
+- Base: an empty `event_visitors` table returns two empty popularity lists while featured/today discovery still renders.
+- Good: an activity that ended earlier today is absent from `featured` but remains in `today`.
+- Bad: reusing `listPublishedEvents()` for the complete today list; its page size is capped at 50.
 - Bad: `COUNT(*)` over raw request logs or a cross-event IP hash; both violate the event-scoped privacy boundary.
-- Bad: fetching more than the controlled candidate limits and trimming an unbounded result in Astro.
+- Bad: excluding the featured ID from `today`; that makes the daily list incomplete.
 
 ### 6. Tests Required
 
 - Apply `0001_init.sql` to a fresh `--persist-to` directory; assert the visitor table, recent-date index, strict key/date constraints, foreign key, and one migration record.
 - Apply `docs/dev/seed-public-site.sql`; assert 120 same-date events, six ongoing events, 90 visitor rows, 64-character keys, and aggregate 3/7/30-day counts of 15/35/90.
-- Assert featured selection, ongoing limit, three date clusters, cluster totals, four rendered non-featured rows, and stable scale/ID tie order.
+- Assert featured selection includes today through 14 days ahead and still excludes activities that have already ended.
+- Assert the today SQL has no `LIMIT` or `EVENT_ENDED_CLAUSE`, returns every date-covering published local event, and keeps a featured-today event in the result.
 - Assert one event-scoped key for repeated views, separate keys for different IPs or events, 30-day purge behavior, and no raw-IP column or value.
 - Assert `starts` and `active` catalogue URLs produce removable conditions and exact matching results.
 - Run Prettier, TypeScript, Wrangler type sync, and the production build; run ESLint when its installed parser supports TypeScript 7.

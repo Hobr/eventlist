@@ -107,7 +107,10 @@
       `disabled`, `wide`, `onchange`.
 - `DivisionPicker.svelte`, `CitySelector.svelte`, and `FilterBar.svelte`
   depend on `SelectField.svelte`; visual changes must keep URL query names
-  and hidden form field behavior intact.
+  and hidden form field behavior intact. `NavLocationPicker.svelte` reuses
+  `CitySelector` inside `SidePanel` and restores `eventlist.divisionCode` from
+  its own always-mounted island, because Flowbite may not mount drawer content
+  until the panel opens.
 - `DivisionPicker.svelte` labels its levels `省`, `市`, `区/县`. The four
   municipalities expose one auto-selected city node; Chongqing must merge
   counties from both upstream city groups.
@@ -134,9 +137,9 @@
   `from`, `to`, `starts`, `active`, `page`, and `sort` whenever either the quick
   or advanced GET form is applied. Quick controls are location, type, and start
   date; scale, tag, sort, and end date belong in the `side-panel` surface.
-  Homepage exact-date links use `starts`; the ongoing link uses `active` for
-  the current China-local date. Both appear as removable active conditions.
-  Active conditions link to the same URL with exactly one parameter removed.
+  `starts` and `active` remain removable catalogue conditions. The homepage
+  continuation CTA uses exactly `/events?city=<divisionCode>` so users arrive
+  without a preselected date, type, scale, tag, or sort.
 - Public submission remains one native `<form>`. Required controls are always
   visible: `title`, `type`, `scale`, `division_code`, `venue`, `start_date`,
   `end_date`, `source_url`, and `submitter_contact`. Optional `start_time` and
@@ -161,17 +164,17 @@
 
 ## Public Page Structure
 
-- Homepage first viewport is discovery-first: current location controls, one
-  featured upcoming event, a concise nearby choice, direct nearby/popular
-  anchors, and a catalogue action. Nearby and popularity sections are both
-  rendered on the same page; do not introduce a top-level mode switch.
+- Homepage first viewport is discovery-first: one featured local event, a
+  compact homepage-only location trigger in the public navigation, direct
+  popular/today anchors, and a catalogue action. Do not restore the large
+  in-page location block or a separate nearby section.
 - Featured selection is compact and explainable. It may use one controlled
-  bitmap cover, but repeated nearby items remain unframed compact rows.
-- Nearby discovery renders at most four ongoing rows and the next three actual
-  start-date groups, with at most four non-featured rows per group. Each group
-  shows its full D1 count and links to the exact catalogue condition.
-- Compact rows reserve a stable date/time column wide enough for `MM/DD HH:MM`.
-  Missing times display only known dates and never affect sorting.
+  bitmap cover and may select a not-ended activity starting today or within the
+  next 14 days.
+- Homepage sections render in this order: featured hero, popularity, then all
+  published local events whose date range covers the current China-local date.
+  Today rows use `EventCard variant="row"`, are not capped, and may repeat the
+  featured event to preserve list completeness.
 - Popularity uses one stable three-segment `3 / 7 / 30` control, defaults to
   seven days, preserves the selected city, and updates local and nationwide
   lists together. Each list renders at most five rows; use two equal columns on
@@ -245,7 +248,9 @@ Shared adapters must capture the opening button, pass an explicit transition
 duration to Flowbite, and restore focus only after that duration plus dialog
 cleanup. The timeout and animation frame must be cancelled on reopen or
 unmount, and the final callback must confirm that the surface is still closed
-and the trigger is still connected.
+and the trigger is still connected. `SidePanel` must check its labelled native
+`dialog` rather than assuming two animation frames are sufficient; background
+tab throttling can delay Flowbite cleanup beyond the nominal transition.
 
 ```svelte
 <script lang="ts">
@@ -256,6 +261,22 @@ and the trigger is still connected.
     let triggerElement: HTMLButtonElement | null = null;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let frame: number | undefined;
+
+    function restoreAfterCleanup() {
+        frame = undefined;
+        if (open) return;
+        const dialogIsOpen = [...document.querySelectorAll("dialog[open]")].some(
+            (dialog) => dialog.getAttribute("aria-label") === title
+        );
+        if (dialogIsOpen) {
+            frame = requestAnimationFrame(restoreAfterCleanup);
+            return;
+        }
+        frame = requestAnimationFrame(() => {
+            frame = undefined;
+            if (!open && triggerElement?.isConnected) triggerElement.focus();
+        });
+    }
 
     function cancelRestore() {
         if (timer !== undefined) clearTimeout(timer);
@@ -272,11 +293,7 @@ and the trigger is still connected.
         if (!hasOpened) return;
         hasOpened = false;
         timer = setTimeout(() => {
-            frame = requestAnimationFrame(() => {
-                frame = requestAnimationFrame(() => {
-                    if (!open && triggerElement?.isConnected) triggerElement.focus();
-                });
-            });
+            frame = requestAnimationFrame(restoreAfterCleanup);
         }, TRANSITION_MS);
         return cancelRestore;
     });
