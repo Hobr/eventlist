@@ -53,12 +53,6 @@ export interface DivisionTree {
 
 const SUPPLEMENTAL_PROVINCES = [
     {
-        provinceCode: "71",
-        cityCode: "7100",
-        countyCode: "710000",
-        name: "台湾省"
-    },
-    {
         provinceCode: "81",
         cityCode: "8100",
         countyCode: "810000",
@@ -69,6 +63,12 @@ const SUPPLEMENTAL_PROVINCES = [
         cityCode: "8200",
         countyCode: "820000",
         name: "澳门特别行政区"
+    },
+    {
+        provinceCode: "71",
+        cityCode: "7100",
+        countyCode: "710000",
+        name: "台湾省"
     }
 ] as const;
 
