@@ -8,6 +8,7 @@ import Plus from "@lucide/astro/icons/plus";
 import Tags from "@lucide/astro/icons/tags";
 import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
 import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "../components/admin/navigation";
+import { SITE_NAME } from "../lib/site";
 import "../styles/app.css";
 
 interface Props {
@@ -20,6 +21,8 @@ const currentPath = Astro.url.pathname;
 const adminLabel =
     Astro.locals.admin?.email ??
     (Astro.locals.admin?.mode === "access" ? "Access 管理员" : "Token 管理员");
+const metaDescription = description ?? `${title} · ${SITE_NAME}管理后台`;
+const pageTitle = `${title} - ${SITE_NAME}管理后台`;
 ---
 
 <!doctype html>
@@ -28,10 +31,10 @@ const adminLabel =
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
         <meta name="color-scheme" content="light dark" />
-        <meta name="description" content={description ?? `${title} · 野活网管理后台`} />
+        <meta name="description" content={metaDescription} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
-        <title>{title} - 野活网管理后台</title>
+        <title>{pageTitle}</title>
     </head>
     <body class="min-h-screen bg-background text-foreground">
         <div class="min-h-screen lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
@@ -43,7 +46,7 @@ const adminLabel =
                     class="flex h-16 items-center border-b border-border px-5 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                 >
                     <span>
-                        <strong class="block text-sm text-foreground">野活网</strong>
+                        <strong class="block text-sm text-foreground">{SITE_NAME}</strong>
                         <span class="block text-xs text-muted">管理工作台</span>
                     </span>
                 </a>

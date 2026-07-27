@@ -5,6 +5,7 @@ import ShieldCheck from "@lucide/astro/icons/shield-check";
 import "../../styles/app.css";
 import { verifyTokenValue } from "../../lib/auth/token";
 import { getAuthMode, getRuntimeEnv } from "../../lib/runtime/env";
+import { SITE_NAME } from "../../lib/site";
 
 export const prerender = false;
 
@@ -40,10 +41,10 @@ if (Astro.request.method === "POST") {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
         <meta name="color-scheme" content="light dark" />
-        <meta name="description" content="野活网管理后台登录" />
+        <meta name="description" content={`${SITE_NAME}管理后台登录`} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
-        <title>管理员登录 - 野活网</title>
+        <title>管理员登录 - {SITE_NAME}</title>
     </head>
     <body class="min-h-screen bg-background text-foreground">
         <main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-10">
@@ -70,7 +71,7 @@ if (Astro.request.method === "POST") {
                         }
                     </span>
                     <div>
-                        <p class="text-xs font-semibold text-muted">野活网</p>
+                        <p class="text-xs font-semibold text-muted">{SITE_NAME}</p>
                         <h1 class="text-xl font-black text-foreground">管理后台</h1>
                     </div>
                 </div>
