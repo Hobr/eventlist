@@ -1,6 +1,0 @@
-{"file":".trellis/spec/backend/database-guidelines.md","reason":"Defines D1 ownership, query, mutation, and transaction contracts that fixes must preserve."}
-{"file":".trellis/spec/backend/error-handling.md","reason":"Defines API and page failure semantics for route and validation findings."}
-{"file":".trellis/spec/frontend/design-system.md","reason":"Defines the current Svelte, Bits UI, Tailwind, and component-boundary contract."}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Guides evidence-based duplication fixes and mandatory consumer searches."}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Guides analysis of changes spanning routes, validation, D1 queries, and UI consumers."}
-{"file":".trellis/tasks/archive/2026-07/07-22-brooks-full-sweep/sweep-report.md","reason":"Provides the prior sweep baseline and residuals that must be revalidated rather than copied."}

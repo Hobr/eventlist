@@ -1,6 +1,0 @@
-{"file":".trellis/spec/backend/database-guidelines.md","reason":"Check D1, transaction, and persistence-boundary compliance after fixes."}
-{"file":".trellis/spec/backend/error-handling.md","reason":"Check that route and page error contracts remain intact."}
-{"file":".trellis/spec/frontend/design-system.md","reason":"Check that frontend fixes retain approved components and interaction conventions."}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check duplication claims and consumer coverage before accepting extractions."}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check end-to-end data flow and boundary compatibility for multi-file findings."}
-{"file":".trellis/tasks/archive/2026-07/07-22-brooks-full-sweep/sweep-report.md","reason":"Compare current results with the last full sweep and explain changed or resolved residuals."}
