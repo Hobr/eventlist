@@ -541,3 +541,24 @@ Rebuilt public and admin frontend visual systems with Tailwind v4 and Flowbite S
 ### Status
 
 [OK] **Completed**
+
+
+## Session 17: Streamline homepage local discovery
+
+**Date**: 2026-07-27
+**Task**: Streamline homepage local discovery
+**Branch**: `main`
+
+### Summary
+
+Moved location selection into the homepage navigation, simplified discovery to popular and all-today sections, included today's events in featured recommendations, and preserved location-aware continuation into the event directory.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `942af67` | (see git log) |
+
+### Status
+
+[OK] **Completed**
