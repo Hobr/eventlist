@@ -115,7 +115,7 @@
                     bind:value={rejectReason}
                     required
                     rows="3"
-                    class="mt-1.5 flex w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                    class="mt-1.5 flex w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     placeholder="例如：请补充官方来源链接"></textarea>
             {/snippet}
         </ConfirmDialog>

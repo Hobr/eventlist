@@ -17,7 +17,7 @@ const { headingId, title, scope, events } = Astro.props;
 const numberFormat = new Intl.NumberFormat("zh-CN");
 ---
 
-<section aria-labelledby={headingId} class="min-w-0 border-t border-border pt-4">
+<section aria-labelledby={headingId} class="min-w-0 border-t border-border/80 pt-5">
     <header class="flex items-end justify-between gap-4 pb-3">
         <div class="min-w-0">
             <h3 id={headingId} class="text-lg font-black text-foreground">{title}</h3>
@@ -28,18 +28,18 @@ const numberFormat = new Intl.NumberFormat("zh-CN");
 
     {
         events.length > 0 ? (
-            <ol>
+            <ol class="divide-y divide-border/75">
                 {events.map((event, index) => (
-                    <li class="border-t border-border first:border-t-0">
+                    <li>
                         <a
                             href={`/events/${event.id}`}
-                            class="group grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 py-3 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                            class="group grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 py-3 transition-[transform,background-color] duration-300 ease-motion hover:translate-x-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
                         >
                             <span class="font-mono text-lg font-black text-primary">
                                 {String(index + 1).padStart(2, "0")}
                             </span>
                             <span class="min-w-0">
-                                <strong class="block truncate text-sm text-foreground group-hover:text-primary sm:text-base">
+                                <strong class="block truncate text-sm text-foreground transition-colors duration-300 ease-motion group-hover:text-primary sm:text-base">
                                     {event.title}
                                 </strong>
                                 <span class="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted">
@@ -58,7 +58,7 @@ const numberFormat = new Intl.NumberFormat("zh-CN");
                                     <span class="block text-[0.65rem] text-muted">独立访客</span>
                                 </span>
                                 <ArrowUpRight
-                                    class="size-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                                    class="size-4 text-muted transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
                                     aria-hidden="true"
                                 />
                             </span>

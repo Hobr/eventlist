@@ -23,17 +23,17 @@ try {
     {
         errorMessage ? (
             <div
-                class="rounded-md border border-danger/25 bg-danger-subtle p-6 text-center text-sm font-semibold text-danger"
+                class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15"
                 role="alert"
             >
                 {errorMessage}
             </div>
         ) : (
             <div>
-                <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+                <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
                     <a
                         href="/admin"
-                        class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                     >
                         <ArrowLeft class="size-4" aria-hidden="true" />
                         返回活动队列

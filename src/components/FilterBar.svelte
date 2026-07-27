@@ -192,7 +192,7 @@
                     type="date"
                     name="from"
                     value={filters.from ?? ""}
-                    class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                    class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                 />
             </label>
             {#if filters.scale}<input type="hidden" name="scale" value={filters.scale} />{/if}
@@ -257,7 +257,7 @@
                         type="date"
                         name="to"
                         value={filters.to ?? ""}
-                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     />
                 </label>
                 <label class="flex flex-col gap-1.5">
@@ -268,7 +268,7 @@
                         list="event-tag-suggestions"
                         value={filters.tag ?? ""}
                         oninput={handleTagInput}
-                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     />
                     <datalist id="event-tag-suggestions">
                         {#each suggestions as tag (tag.id)}
@@ -296,7 +296,7 @@
             {#each activeFilters as filter (filter.key)}
                 <a
                     href={hrefWithout(filter.key)}
-                    class="inline-flex items-center gap-1.5 rounded-sm bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                    class="inline-flex items-center gap-1.5 rounded-sm bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-foreground active:scale-[0.98]"
                     aria-label={`移除筛选：${filter.label}`}
                 >
                     {filter.label}

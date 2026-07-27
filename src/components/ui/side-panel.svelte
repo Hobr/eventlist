@@ -9,6 +9,7 @@
         children: import("svelte").Snippet;
         footer?: import("svelte").Snippet;
         triggerClass?: string;
+        triggerAriaLabel?: string;
         contentClass?: string;
     }
 
@@ -19,6 +20,7 @@
         children,
         footer = undefined,
         triggerClass = undefined,
+        triggerAriaLabel = undefined,
         contentClass = undefined
     }: Props = $props();
 
@@ -64,6 +66,12 @@
         triggerElement = event.currentTarget as HTMLButtonElement;
         open = true;
     }
+
+    function handlePanelKeydown(event: KeyboardEvent) {
+        if (event.key !== "Escape" || !open) return;
+        event.preventDefault();
+        open = false;
+    }
 </script>
 
 <Button
@@ -72,8 +80,12 @@
     size="sm"
     aria-haspopup="dialog"
     aria-expanded={open}
+    aria-label={triggerAriaLabel}
     onclick={openPanel}
-    class={cn("h-10 rounded-md px-4 text-sm font-semibold", triggerClass)}
+    class={cn(
+        "group h-10 rounded-md px-4 text-sm font-semibold transition-[transform,background-color,color,border-color] duration-300 ease-motion active:scale-[0.98]",
+        triggerClass
+    )}
 >
     {@render trigger()}
 </Button>
@@ -86,6 +98,7 @@
     dismissable={false}
     outsideclose
     focustrap
+    onkeydown={handlePanelKeydown}
     transitionParams={drawerTransition}
     aria-label={title}
     class={cn(
@@ -98,7 +111,7 @@
         onclick={() => (open = false)}
         class="shrink-0 border-b border-border p-5"
         classes={{
-            button: "size-9 rounded-md text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:hover:bg-surface-subtle dark:hover:text-foreground",
+            button: "size-9 rounded-md text-muted-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:bg-surface-subtle hover:text-foreground active:scale-[0.96] dark:hover:bg-surface-subtle dark:hover:text-foreground",
             svg: "size-4"
         }}
     >

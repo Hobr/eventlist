@@ -32,13 +32,13 @@ const href = `/events/${event.id}`;
     variant === "featured" ? (
         <a
             href={href}
-            class="group grid min-w-0 overflow-hidden rounded-md border border-border bg-surface transition-transform focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.995] md:grid-cols-[minmax(13rem,0.82fr)_minmax(0,1.18fr)]"
+            class="group grid min-w-0 overflow-hidden rounded-md bg-surface shadow-elevated ring-1 ring-border/80 transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.995] md:grid-cols-[minmax(13rem,0.82fr)_minmax(0,1.18fr)]"
         >
             <EventArtwork
                 src={event.cover_url}
                 alt={`${event.title} 封面`}
                 loading={priority ? "eager" : "lazy"}
-                class="aspect-[16/9] h-full min-h-44 w-full rounded-none transition-transform duration-300 group-hover:scale-[1.02] md:aspect-auto md:min-h-56"
+                class="aspect-[16/9] h-full min-h-44 w-full rounded-none transition-transform duration-700 ease-motion group-hover:scale-[1.025] md:aspect-auto md:min-h-56"
             />
             <div class="flex min-w-0 flex-col justify-center p-5 sm:p-6">
                 <p class="text-xs font-bold text-primary sm:text-sm">
@@ -58,19 +58,21 @@ const href = `/events/${event.id}`;
                         <span class="text-muted">{event.venue}</span>
                     </span>
                 </div>
-                <span class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-link">
+                <span class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-link">
                     查看活动
-                    <ArrowUpRight
-                        class="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                        aria-hidden="true"
-                    />
+                    <span class="flex size-8 items-center justify-center rounded-full bg-primary-subtle">
+                        <ArrowUpRight
+                            class="size-4 transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
+                            aria-hidden="true"
+                        />
+                    </span>
                 </span>
             </div>
         </a>
     ) : variant === "compact" ? (
         <a
             href={href}
-            class="group grid grid-cols-[7rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-4 transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            class="group grid grid-cols-[7.5rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-border/75 py-4 transition-[transform,background-color,color] duration-300 ease-motion hover:translate-x-1 hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
         >
             <div class="flex min-w-0 flex-col font-mono">
                 <strong class="text-sm leading-tight font-black whitespace-nowrap text-primary">
@@ -79,7 +81,7 @@ const href = `/events/${event.id}`;
                 <span class="mt-1 text-xs whitespace-nowrap text-muted">至 {endLabel}</span>
             </div>
             <div class="min-w-0">
-                <h3 class="truncate text-sm font-bold text-foreground transition-colors group-hover:text-primary sm:text-base">
+                <h3 class="truncate text-sm font-bold text-foreground transition-colors duration-300 ease-motion group-hover:text-primary sm:text-base">
                     {event.title}
                 </h3>
                 <p class="mt-1 truncate text-xs text-muted-foreground sm:text-sm">
@@ -87,14 +89,14 @@ const href = `/events/${event.id}`;
                 </p>
             </div>
             <ArrowUpRight
-                class="size-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                class="size-4 text-muted transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
                 aria-hidden="true"
             />
         </a>
     ) : variant === "row" ? (
         <a
             href={href}
-            class="group grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-4 border-b border-border py-4 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center"
+            class="group grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-4 border-b border-border/75 py-4 transition-[transform,background-color] duration-300 ease-motion hover:translate-x-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995] sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center"
         >
             <EventArtwork
                 src={event.cover_url}
@@ -131,14 +133,14 @@ const href = `/events/${event.id}`;
                 ) : null}
             </div>
             <ArrowUpRight
-                class="hidden size-5 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:block"
+                class="hidden size-5 text-muted transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105 sm:block"
                 aria-hidden="true"
             />
         </a>
     ) : (
         <a
             href={href}
-            class="group flex flex-col overflow-hidden rounded-md border border-border bg-surface focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            class="group flex flex-col overflow-hidden rounded-md bg-surface shadow-elevated ring-1 ring-border/80 transition-transform duration-300 ease-motion hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
         >
             <EventArtwork
                 src={event.cover_url}

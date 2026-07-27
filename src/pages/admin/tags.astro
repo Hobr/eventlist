@@ -27,14 +27,14 @@ const tagOptions = tags.map((tag) => ({
     {
         errorMessage ? (
             <div
-                class="rounded-md border border-danger/25 bg-danger-subtle p-6 text-center text-sm font-semibold text-danger"
+                class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15"
                 role="alert"
             >
                 {errorMessage}
             </div>
         ) : (
             <div class="flex flex-col gap-8">
-                <section class="border-b border-border pb-8" aria-labelledby="merge-heading">
+                <section class="border-b border-border/80 pb-8" aria-labelledby="merge-heading">
                     <div class="mb-5">
                         <h2 id="merge-heading" class="text-base font-black text-foreground">
                             归并重复标签
@@ -62,7 +62,7 @@ const tagOptions = tags.map((tag) => ({
                     </div>
 
                     {tags.length > 0 ? (
-                        <div class="divide-y divide-border border-y border-border">
+                        <div class="divide-y divide-border/75 border-y border-border/80">
                             {tags.map((tag) => (
                                 <div class="flex items-center justify-between gap-4 py-3">
                                     <div class="min-w-0">
@@ -78,7 +78,7 @@ const tagOptions = tags.map((tag) => ({
                             ))}
                         </div>
                     ) : (
-                        <div class="rounded-md border border-border p-8 text-center text-sm text-muted-foreground">
+                        <div class="rounded-md bg-surface p-8 text-center text-sm text-muted-foreground ring-1 ring-border/80">
                             暂无标签。
                         </div>
                     )}

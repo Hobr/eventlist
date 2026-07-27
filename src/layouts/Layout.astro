@@ -5,6 +5,7 @@ import {
     GlobeOutline as Compass,
     PaperPlaneOutline as Send
 } from "flowbite-svelte-icons";
+import PublicMobileNav from "../components/PublicMobileNav.svelte";
 import { SITE_NAME, SITE_SLOGAN } from "../lib/site";
 import "../styles/app.css";
 
@@ -25,10 +26,10 @@ function isCurrent(href: string) {
 
 function navClasses(href: string) {
     return [
-        "focus-visible:ring-ring/60 relative inline-flex h-12 items-center justify-center gap-2 px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none sm:h-16 sm:px-4",
+        "group inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-[transform,background-color,color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]",
         isCurrent(href)
-            ? "text-primary after:bg-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5"
-            : "text-muted-foreground hover:text-foreground"
+            ? "bg-foreground text-background"
+            : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
     ];
 }
 ---
@@ -40,38 +41,53 @@ function navClasses(href: string) {
         <meta name="viewport" content="width=device-width" />
         <meta name="color-scheme" content="light dark" />
         <meta name="description" content={description} />
+        <meta property="og:title" content={siteTitle} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="website" />
         <meta name="generator" content={Astro.generator} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
         <title>{siteTitle}</title>
         {jsonLd ? <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} /> : null}
+        <script is:inline>
+            document.documentElement.classList.add("reveal-ready");
+        </script>
     </head>
-    <body class="min-h-screen border-t-4 border-primary bg-background text-foreground">
-        <div class="flex min-h-screen flex-col">
-            <header
-                class="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md"
-            >
-                <div
-                    class="mx-auto flex w-full max-w-7xl flex-col px-4 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
-                >
-                    <div class="flex h-14 items-center justify-between sm:h-auto">
-                        <a
-                            href="/"
-                            class="inline-flex items-center font-bold text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                        >
-                            <span class="flex flex-col leading-none">
-                                <span class="text-base">{SITE_NAME}</span>
-                                <span class="mt-1 text-[0.65rem] font-medium text-muted"
-                                    >{SITE_SLOGAN}</span
-                                >
-                            </span>
-                        </a>
-                    </div>
+    <body class="min-h-screen bg-background text-foreground antialiased">
+        <a
+            href="#main-content"
+            class="fixed top-2 left-2 z-50 -translate-y-20 rounded-md bg-foreground px-4 py-2 text-sm font-semibold text-background transition-transform duration-300 ease-motion focus:translate-y-0"
+        >
+            跳至主要内容
+        </a>
 
-                    <nav
-                        class="grid grid-cols-3 border-t border-border sm:flex sm:border-t-0"
-                        aria-label="主导航"
+        <div class="flex min-h-screen flex-col">
+            <header class="sticky top-0 z-40 w-full px-4 pt-4 sm:px-6 lg:px-8">
+                <div
+                    class="mx-auto flex h-14 w-full max-w-5xl items-center justify-between rounded-full border border-border/80 bg-background/88 px-2.5 shadow-elevated backdrop-blur-xl sm:h-16 sm:px-3"
+                >
+                    <a
+                        href="/"
+                        class="flex min-w-0 items-center gap-3 rounded-full px-2 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:px-3"
                     >
+                        <span
+                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-primary-foreground"
+                            aria-hidden="true"
+                        >
+                            同
+                        </span>
+                        <span class="min-w-0 leading-none">
+                            <strong
+                                class="block truncate text-sm font-bold text-foreground sm:text-base"
+                                >{SITE_NAME}</strong
+                            >
+                            <span class="mt-1 hidden text-[0.65rem] font-medium text-muted sm:block"
+                                >{SITE_SLOGAN}</span
+                            >
+                        </span>
+                    </a>
+
+                    <nav class="hidden items-center gap-1 sm:flex" aria-label="主导航">
                         <a
                             href="/"
                             aria-current={isCurrent("/") ? "page" : undefined}
@@ -97,26 +113,38 @@ function navClasses(href: string) {
                             投稿
                         </a>
                     </nav>
+
+                    <div class="sm:hidden">
+                        <PublicMobileNav {currentPath} client:load />
+                    </div>
                 </div>
             </header>
 
-            <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
+            <main
+                id="main-content"
+                class="mx-auto w-full max-w-[90rem] flex-1 px-4 pt-7 pb-16 sm:px-6 sm:pt-10 sm:pb-20 lg:px-8"
+            >
                 <slot />
             </main>
 
-            <footer class="border-t border-border">
+            <footer class="border-t border-border/80 bg-surface/45">
                 <div
-                    class="mx-auto flex min-h-16 w-full max-w-7xl flex-col justify-center gap-1 px-4 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
+                    class="mx-auto flex w-full max-w-[90rem] flex-col gap-5 px-4 py-8 text-xs text-muted sm:flex-row sm:items-end sm:justify-between sm:px-6 lg:px-8"
                 >
-                    <span>{SITE_NAME} · 已审核 ACG 活动目录</span>
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div>
+                        <strong class="block text-sm text-foreground">{SITE_NAME}</strong>
+                        <span class="mt-1 block"
+                            >把分散在各大社交媒体和社交渠道的ACG活动信息聚合起来</span
+                        >
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
                         <span>{SITE_SLOGAN}</span>
                         <a
                             href="https://github.com/Hobr/eventlist"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                            aria-label="在 GitHub 上查看 Hobr/eventlist 项目并参与开发"
+                            class="group inline-flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors duration-300 ease-motion hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                            aria-label="在 GitHub 上查看项目并参与开发"
                         >
                             <GitFork class="size-3.5" aria-hidden="true" />
                             <span>GitHub.com/Hobr/eventlist</span>
@@ -125,5 +153,24 @@ function navClasses(href: string) {
                 </div>
             </footer>
         </div>
+
+        <script>
+            const revealItems = document.querySelectorAll<HTMLElement>("[data-reveal]");
+            if (!("IntersectionObserver" in window)) {
+                revealItems.forEach((item) => item.setAttribute("data-revealed", "true"));
+            } else {
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        for (const entry of entries) {
+                            if (!entry.isIntersecting) continue;
+                            (entry.target as HTMLElement).setAttribute("data-revealed", "true");
+                            observer.unobserve(entry.target);
+                        }
+                    },
+                    { rootMargin: "0px 0px -8%", threshold: 0.12 }
+                );
+                revealItems.forEach((item) => observer.observe(item));
+            }
+        </script>
     </body>
 </html>

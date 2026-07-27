@@ -66,7 +66,7 @@
         aria-label={label}
         class="w-full"
         classes={{
-            select: "h-10 rounded-md border-border-strong bg-surface px-3 py-2 text-foreground focus:border-ring focus:ring-ring/40 dark:border-border-strong dark:bg-surface dark:text-foreground dark:focus:border-ring dark:focus:ring-ring/40"
+            select: "h-10 rounded-md border-border-strong bg-surface px-3 py-2 text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion focus:border-ring focus:ring-ring/40 dark:border-border-strong dark:bg-surface dark:text-foreground dark:focus:border-ring dark:focus:ring-ring/40"
         }}
     />
 </div>

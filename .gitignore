@@ -211,3 +211,4 @@ pnpm-debug.log*
 .idea/
 
 .wrangler/state
+.pnpm-store/

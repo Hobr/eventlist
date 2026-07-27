@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@fontsource-variable/geist/wght.css";
 @import "./tokens.css";
 @plugin "flowbite/plugin";
 @custom-variant dark (@media (prefers-color-scheme: dark));
@@ -41,7 +42,9 @@
     --font-mono: var(--font-mono);
 
     --shadow-popover: var(--shadow-popover);
+    --shadow-elevated: var(--shadow-elevated);
     --shadow-focus: var(--shadow-focus);
+    --ease-motion: var(--ease-standard);
 }
 
 @layer base {
@@ -60,6 +63,7 @@
         min-width: 320px;
         line-height: 1.5;
         text-rendering: optimizeLegibility;
+        font-synthesis: none;
     }
     button,
     input,
@@ -94,6 +98,33 @@
     }
 }
 
+@layer utilities {
+    .text-balance {
+        text-wrap: balance;
+    }
+    .text-pretty {
+        text-wrap: pretty;
+    }
+}
+
+[data-reveal] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+.reveal-ready [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 2.5rem, 0);
+    transition:
+        opacity var(--duration-reveal) var(--ease-standard),
+        transform var(--duration-reveal) var(--ease-standard);
+}
+
+.reveal-ready [data-reveal][data-revealed="true"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -101,5 +132,9 @@
         animation-duration: 1ms !important;
         scroll-behavior: auto !important;
         transition-duration: 1ms !important;
+    }
+    [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
     }
 }

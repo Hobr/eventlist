@@ -12,8 +12,8 @@ const { title, description, optional = false } = Astro.props;
 
 {
     optional ? (
-        <details class="group border-y border-border py-5" data-form-disclosure>
-            <summary class="flex cursor-pointer items-center justify-between gap-4 rounded-sm focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none">
+        <details class="group border-y border-border/80 py-6" data-form-disclosure>
+            <summary class="flex cursor-pointer items-center justify-between gap-4 rounded-sm transition-colors duration-300 ease-motion hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none">
                 <span>
                     <strong class="block text-base font-bold text-foreground">{title}</strong>
                     {description ? (
@@ -23,7 +23,7 @@ const { title, description, optional = false } = Astro.props;
                 <span class="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-muted">
                     选填
                     <ChevronDown
-                        class="size-4 transition-transform group-open:rotate-180"
+                        class="size-4 transition-transform duration-300 ease-motion group-open:rotate-180"
                         aria-hidden="true"
                     />
                 </span>
@@ -33,7 +33,7 @@ const { title, description, optional = false } = Astro.props;
             </div>
         </details>
     ) : (
-        <fieldset class="border-t border-border pt-6">
+        <fieldset class="border-t border-border/80 pt-7">
             <legend class="pr-4 text-base font-bold text-foreground">{title}</legend>
             {description ? <p class="mt-1 text-sm text-muted-foreground">{description}</p> : null}
             <div class="mt-5">

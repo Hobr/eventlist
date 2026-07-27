@@ -48,17 +48,19 @@ if (Astro.request.method === "POST") {
         <link rel="icon" href="/favicon.ico" />
         <title>管理员登录 - {SITE_NAME}</title>
     </head>
-    <body class="min-h-screen bg-background text-foreground">
-        <main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-10">
+    <body class="min-h-[100dvh] bg-background text-foreground antialiased">
+        <main
+            class="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 py-10"
+        >
             <a
                 href="/"
-                class="mb-8 inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                class="mb-8 inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
             >
                 <ArrowLeft class="size-4" aria-hidden="true" />
                 返回公开站点
             </a>
 
-            <div class="border-y border-border py-8">
+            <div class="rounded-md bg-surface p-6 shadow-elevated ring-1 ring-border/80 sm:p-8">
                 <div class="mb-7 flex items-center gap-3">
                     <span
                         class="inline-flex size-10 items-center justify-center rounded-md bg-foreground text-background"
@@ -112,7 +114,7 @@ if (Astro.request.method === "POST") {
                                     autocomplete="current-password"
                                     required
                                     autofocus
-                                    class="mt-1.5 flex h-11 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                                    class="mt-1.5 flex h-11 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                                 />
                                 <p class="mt-1.5 text-xs text-muted">
                                     Token 仅用于建立本机管理会话。
@@ -127,7 +129,7 @@ if (Astro.request.method === "POST") {
                                 </p>
                             ) : null}
                             <button
-                                class="inline-flex h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                class="inline-flex h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
                                 type="submit"
                             >
                                 登录后台

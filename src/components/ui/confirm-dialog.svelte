@@ -37,7 +37,7 @@
 
     let open = $state(false);
     let triggerElement: HTMLButtonElement | null = null;
-    const MODAL_TRANSITION_MS = 100;
+    const MODAL_TRANSITION_MS = 300;
     const modalTransition = { duration: MODAL_TRANSITION_MS };
     let hasOpened = false;
     let focusRestoreTimer: ReturnType<typeof setTimeout> | undefined;
@@ -95,7 +95,10 @@
     aria-haspopup="dialog"
     aria-expanded={open}
     onclick={openDialog}
-    class={cn("h-8 w-full rounded-md px-3 text-xs font-semibold", triggerClass)}
+    class={cn(
+        "h-8 w-full rounded-md px-3 text-xs font-semibold transition-[transform,background-color,color] duration-300 ease-motion active:scale-[0.98]",
+        triggerClass
+    )}
 >
     {@render trigger()}
 </Button>
@@ -129,7 +132,7 @@
             disabled={pending}
             aria-label="关闭"
             onclick={() => (open = false)}
-            class="size-9 rounded-md p-0 text-muted-foreground"
+            class="size-9 rounded-md p-0 text-muted-foreground transition-transform duration-300 ease-motion active:scale-[0.96]"
         >
             <CloseOutline class="size-4" />
         </Button>

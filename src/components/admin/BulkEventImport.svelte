@@ -179,7 +179,7 @@
 </script>
 
 <div class="flex flex-col gap-8">
-    <section class="grid gap-6 border-b border-border pb-8 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <section class="grid gap-6 border-b border-border/80 pb-8 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div class="min-w-0">
             <label class="text-sm font-semibold text-foreground" for="bulk-event-file"
                 >CSV 文件</label
@@ -190,7 +190,7 @@
                     id="bulk-event-file"
                     type="file"
                     accept=".csv,text/csv"
-                    class="min-h-10 min-w-0 flex-1 rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-sm file:border-0 file:bg-surface-subtle file:px-3 file:py-1 file:text-xs file:font-semibold file:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                    class="min-h-10 min-w-0 flex-1 rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion file:mr-3 file:rounded-sm file:border-0 file:bg-surface-subtle file:px-3 file:py-1 file:text-xs file:font-semibold file:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                     onchange={(event) => {
                         const input = event.currentTarget;
                         setFile(input.files?.[0] ?? null);
@@ -198,7 +198,7 @@
                 />
                 <button
                     type="button"
-                    class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                    class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100"
                     disabled={!file || pending}
                     onclick={previewFile}
                 >
@@ -219,7 +219,7 @@
         <div class="border-l-0 border-border xl:border-l xl:pl-6">
             <a
                 href="/api/admin/events/bulk/template"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
             >
                 <Download class="size-4" aria-hidden="true" />
                 下载 CSV 模板
@@ -262,7 +262,7 @@
                 </div>
                 <button
                     type="button"
-                    class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-3 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                    class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-surface-subtle px-3 text-sm font-semibold text-foreground transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
                     onclick={reset}
                 >
                     <RotateCcw class="size-4" aria-hidden="true" />
@@ -310,7 +310,7 @@
                 </div>
                 <button
                     type="button"
-                    class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-3 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                    class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-surface-subtle px-3 text-sm font-semibold text-foreground transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
                     onclick={reset}
                 >
                     <RotateCcw class="size-4" aria-hidden="true" />
@@ -379,7 +379,7 @@
             {/if}
 
             {#if preview?.rows.length}
-                <div class="mt-6 overflow-x-auto border-y border-border">
+                <div class="mt-6 overflow-x-auto rounded-md ring-1 ring-border/80">
                     <table class="w-full min-w-[58rem] border-collapse text-left text-sm">
                         <thead class="bg-surface-subtle text-xs text-muted-foreground">
                             <tr>
@@ -429,7 +429,7 @@
             {/if}
 
             <div
-                class="mt-6 flex flex-col items-stretch justify-between gap-3 border-t border-border pt-5 sm:flex-row sm:items-center"
+                class="mt-6 flex flex-col items-stretch justify-between gap-3 border-t border-border/80 pt-5 sm:flex-row sm:items-center"
             >
                 <p class="text-sm text-muted-foreground" role="status" aria-live="polite">
                     {#if state === "submitting"}
@@ -444,7 +444,7 @@
                 </p>
                 <button
                     type="button"
-                    class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                    class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100"
                     disabled={!canSubmit || pending}
                     onclick={submitEvents}
                 >

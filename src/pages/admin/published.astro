@@ -27,12 +27,14 @@ events = events.slice(0, PAGE_SIZE);
 <AdminLayout title="已发布活动" description="维护正在公开展示的活动信息。">
     {
         errorMessage ? (
-            <div class="rounded-md border border-border bg-surface p-6 text-center text-sm font-semibold text-danger">
+            <div class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15">
                 {errorMessage}
             </div>
         ) : (
             <div class="flex flex-col gap-4">
-                <p class="text-sm text-muted-foreground">本页 {events.length} 条已发布活动</p>
+                <p class="font-mono text-xs text-muted-foreground tabular-nums">
+                    本页 {events.length} 条已发布活动
+                </p>
                 <EventTable events={events} mode="published" />
                 <Pagination page={page} hasNext={hasNext} />
             </div>

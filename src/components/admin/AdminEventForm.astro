@@ -38,7 +38,7 @@ const value = (name: keyof EventRecord) => {
     return typeof current === "string" ? current : "";
 };
 const fieldCls =
-    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
@@ -46,10 +46,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
     id={formId}
     data-event-id={eventRecord?.id}
     data-return-href={cancelHref}
-    class="flex flex-col gap-8"
+    class="flex flex-col gap-9"
 >
     <section
-        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
+        class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
         aria-labelledby={headingId("identity")}
     >
         <div class="sm:col-span-2">
@@ -87,7 +87,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
     </section>
 
     <section
-        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
+        class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
         aria-labelledby={headingId("schedule")}
     >
         <div class="sm:col-span-2">
@@ -170,7 +170,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
     </section>
 
     <section
-        class="grid gap-4 border-b border-border pb-8 sm:grid-cols-2"
+        class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
         aria-labelledby={headingId("links")}
     >
         <div class="sm:col-span-2">
@@ -236,7 +236,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
         </div>
         {
             eventRecord?.tag_suggestions ? (
-                <div class="rounded-md border border-border bg-surface-subtle p-4">
+                <div class="rounded-md bg-surface-subtle p-4 ring-1 ring-border/70">
                     <p class="text-xs font-semibold text-muted">投稿标签建议</p>
                     <p class="mt-1.5 text-sm whitespace-pre-wrap text-foreground">
                         {eventRecord.tag_suggestions}
@@ -255,14 +255,14 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             <textarea
                 id="description"
                 name="description"
-                class="mt-1.5 flex min-h-36 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                class="mt-1.5 flex min-h-36 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                 >{value("description")}</textarea
             >
         </div>
     </section>
 
     <div
-        class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-md border border-border bg-surface-raised p-3 shadow-popover sm:flex-row sm:items-center sm:justify-between"
+        class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-md bg-surface-raised/96 p-3 shadow-popover ring-1 ring-border/80 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between"
     >
         <p
             id={statusId}
@@ -274,14 +274,14 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
         </p>
         <div class="flex gap-2">
             <a
-                class="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:flex-none"
+                class="inline-flex h-10 flex-1 items-center justify-center rounded-md bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] sm:flex-none"
                 href={cancelHref}
             >
                 取消
             </a>
             <button
                 id={submitButtonId}
-                class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 sm:flex-none"
+                class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100 sm:flex-none"
                 type="submit"
             >
                 <Save class="size-4" aria-hidden="true" />

@@ -31,7 +31,7 @@
             <a
                 href={item.href}
                 aria-current={isAdminNavItemActive(currentPath, item.href) ? "page" : undefined}
-                class="flex h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-muted-foreground hover:bg-surface-subtle hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none aria-[current=page]:bg-primary-subtle aria-[current=page]:text-primary-subtle-foreground"
+                class="flex h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-muted-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:bg-surface-subtle hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.99] aria-[current=page]:bg-primary-subtle aria-[current=page]:text-primary-subtle-foreground"
             >
                 {#if item.kind === "pending"}
                     <Inbox class="size-4" aria-hidden="true" />
@@ -51,7 +51,7 @@
         {/each}
     </nav>
 
-    <div class="mt-6 border-t border-border pt-5">
+    <div class="mt-6 border-t border-border/80 pt-5">
         <p class="text-xs font-semibold text-muted">当前管理员</p>
         <p class="mt-1 truncate text-sm font-semibold text-foreground">{adminLabel}</p>
     </div>

@@ -52,11 +52,11 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
 >
     {
         !event ? (
-            <div class="border-y border-border py-14 text-center">
+            <div class="border-y border-border/80 py-16 text-center" data-reveal>
                 <h1 class="text-2xl font-black text-foreground">{errorMessage}</h1>
                 <a
                     href="/events"
-                    class="mt-5 inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-4 text-sm font-bold text-background"
+                    class="mt-6 inline-flex h-10 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-bold text-background transition-transform duration-300 ease-motion active:scale-[0.98]"
                 >
                     <ArrowLeft class="size-4" aria-hidden="true" />
                     返回活动列表
@@ -64,14 +64,15 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
             </div>
         ) : (
             <article
-                class="flex flex-col gap-8"
+                class="flex flex-col gap-10"
+                data-reveal
                 data-event-view-endpoint={
                     event.status === STATUS.PUBLISHED ? `/api/events/${event.id}/view` : undefined
                 }
             >
                 <a
                     href="/events"
-                    class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                    class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                 >
                     <ArrowLeft class="size-4" aria-hidden="true" />
                     活动列表
@@ -83,7 +84,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                     </div>
                 ) : null}
 
-                <header class="relative min-h-[25rem] overflow-hidden rounded-md sm:min-h-[34rem]">
+                <header class="relative min-h-[25rem] overflow-hidden rounded-md shadow-elevated ring-1 ring-black/10 sm:min-h-[34rem]">
                     <EventArtwork
                         src={event.cover_url}
                         alt={`${event.title} 封面`}
@@ -91,8 +92,8 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                         fill
                         class="rounded-none"
                     />
-                    <div class="absolute inset-0 bg-black/35" aria-hidden="true" />
-                    <div class="absolute inset-x-0 bottom-0 bg-black/80 p-5 text-white sm:p-8">
+                    <div class="absolute inset-0 bg-black/55" aria-hidden="true" />
+                    <div class="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8 lg:p-10">
                         <div class="flex flex-wrap gap-1.5">
                             <Badge tone="primary" class="border-white/15 bg-primary text-white">
                                 {getEventTypeLabel(event.type)}
@@ -101,7 +102,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                                 {getEventScaleLabel(event.scale)}
                             </Badge>
                         </div>
-                        <h1 class="mt-4 max-w-4xl text-3xl leading-tight font-black sm:text-5xl">
+                        <h1 class="mt-4 max-w-4xl text-3xl leading-tight font-black text-balance sm:text-5xl">
                             {event.title}
                         </h1>
                         {tags.length > 0 ? (
@@ -109,7 +110,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                                 {tags.map((tag) => (
                                     <a
                                         href={`/events?tag=${encodeURIComponent(tag)}`}
-                                        class="rounded-sm border border-white/25 bg-black/30 px-2.5 py-1 text-xs font-semibold text-white"
+                                        class="rounded-sm bg-black/45 px-2.5 py-1 text-xs font-semibold text-white transition-colors duration-300 ease-motion hover:bg-white/18"
                                     >
                                         # {tag}
                                     </a>
@@ -119,8 +120,11 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                     </div>
                 </header>
 
-                <section class="grid border-y border-border sm:grid-cols-3" aria-label="活动信息">
-                    <div class="flex gap-3 border-b border-border py-5 sm:border-r sm:border-b-0 sm:px-5 sm:first:pl-0">
+                <section
+                    class="grid overflow-hidden rounded-md bg-surface ring-1 ring-border/80 sm:grid-cols-3"
+                    aria-label="活动信息"
+                >
+                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
                         <CalendarDays class="size-5 shrink-0 text-primary" aria-hidden="true" />
                         <div>
                             <p class="text-xs font-semibold text-muted">日期</p>
@@ -129,7 +133,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                             </strong>
                         </div>
                     </div>
-                    <div class="flex gap-3 border-b border-border py-5 sm:border-r sm:border-b-0 sm:px-5">
+                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
                         <MapPin class="size-5 shrink-0 text-accent" aria-hidden="true" />
                         <div>
                             <p class="text-xs font-semibold text-muted">地区</p>
@@ -138,7 +142,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                             </strong>
                         </div>
                     </div>
-                    <div class="flex gap-3 py-5 sm:px-5 sm:last:pr-0">
+                    <div class="flex gap-3 p-5">
                         <Store class="size-5 shrink-0 text-warning" aria-hidden="true" />
                         <div>
                             <p class="text-xs font-semibold text-muted">场地</p>
@@ -149,7 +153,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                     </div>
                 </section>
 
-                <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_21rem]">
                     <section aria-labelledby="event-description-heading">
                         <h2
                             id="event-description-heading"
@@ -158,7 +162,7 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                             活动介绍
                         </h2>
                         {event.description ? (
-                            <p class="mt-4 text-base leading-8 whitespace-pre-line text-foreground">
+                            <p class="mt-5 max-w-[68ch] text-base leading-8 text-pretty whitespace-pre-line text-foreground">
                                 {event.description}
                             </p>
                         ) : (
@@ -166,27 +170,37 @@ const jsonLd = event ? buildEventJsonLd(event, canonicalUrl) : undefined;
                         )}
                     </section>
 
-                    <aside class="flex h-fit flex-col gap-4 border-t border-border pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-7">
+                    <aside class="flex h-fit flex-col gap-4 border-t border-border/80 pt-7 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
                         <h2 class="text-base font-black text-foreground">参加活动</h2>
                         {event.ticket_url ? (
                             <a
                                 href={event.ticket_url}
                                 target="_blank"
                                 rel="nofollow noopener noreferrer"
-                                class="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground"
+                                class="group inline-flex h-12 items-center justify-between gap-3 rounded-full bg-primary py-1 pr-1 pl-5 text-sm font-bold text-primary-foreground transition-transform duration-300 ease-motion active:scale-[0.98]"
                             >
-                                <Ticket class="size-4" aria-hidden="true" />
                                 查看购票页
+                                <span class="flex size-10 items-center justify-center rounded-full bg-white/18">
+                                    <Ticket
+                                        class="size-4 transition-transform duration-300 ease-motion group-hover:scale-105"
+                                        aria-hidden="true"
+                                    />
+                                </span>
                             </a>
                         ) : null}
                         <a
                             href={event.source_url}
                             target="_blank"
                             rel="nofollow noopener noreferrer"
-                            class="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-bold text-foreground"
+                            class="group inline-flex h-12 items-center justify-between gap-3 rounded-full bg-surface-subtle py-1 pr-1 pl-5 text-sm font-bold text-foreground transition-transform duration-300 ease-motion active:scale-[0.98]"
                         >
-                            <ExternalLink class="size-4" aria-hidden="true" />
                             活动来源
+                            <span class="flex size-10 items-center justify-center rounded-full bg-surface">
+                                <ExternalLink
+                                    class="size-4 transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                                    aria-hidden="true"
+                                />
+                            </span>
                         </a>
                         <dl class="mt-2 flex flex-col gap-4 border-t border-border pt-5 text-sm">
                             <div>

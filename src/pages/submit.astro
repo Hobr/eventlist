@@ -26,39 +26,44 @@ const scaleOptions = EVENT_SCALES.map((scale) => ({
 }));
 
 const fieldCls =
-    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-colors placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 const textareaCls =
-    "flex min-h-32 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
+    "flex min-h-32 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
 const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
 <Layout title="提交活动" description="提交 ACG 活动，进入审核队列后再公开展示。">
     {
         sent ? (
-            <section class="mx-auto max-w-2xl border-y border-border py-14 text-center">
+            <section
+                class="mx-auto max-w-2xl border-y border-border/80 py-16 text-center"
+                data-reveal
+            >
                 <CircleCheck class="mx-auto size-10 text-accent" aria-hidden="true" />
                 <h1 class="mt-5 text-3xl font-black text-foreground">活动已进入审核队列</h1>
                 <p class="mt-3 text-sm text-muted-foreground">审核通过后会出现在公开活动列表中。</p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
                     <a
                         href="/events"
-                        class="inline-flex h-10 items-center rounded-md bg-foreground px-4 text-sm font-bold text-background"
+                        class="inline-flex h-10 items-center rounded-full bg-foreground px-5 text-sm font-bold text-background transition-transform duration-300 ease-motion active:scale-[0.98]"
                     >
                         浏览活动
                     </a>
                     <a
                         href="/submit"
-                        class="inline-flex h-10 items-center rounded-md border border-border-strong px-4 text-sm font-bold"
+                        class="inline-flex h-10 items-center rounded-full bg-surface-subtle px-5 text-sm font-bold transition-transform duration-300 ease-motion active:scale-[0.98]"
                     >
                         继续提交
                     </a>
                 </div>
             </section>
         ) : (
-            <div class="mx-auto max-w-4xl">
-                <header class="border-b border-border pb-7">
-                    <p class="text-sm font-bold text-primary">提交至审核队列</p>
-                    <h1 class="mt-2 text-3xl font-black text-foreground sm:text-4xl">提交活动</h1>
+            <div class="mx-auto max-w-4xl" data-reveal>
+                <header class="border-t border-border/80 pt-6">
+                    <p class="font-mono text-xs font-semibold text-primary tabular-nums">
+                        公开投稿
+                    </p>
+                    <h1 class="mt-3 text-4xl font-black text-foreground sm:text-5xl">提交活动</h1>
                     <p class="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
                         必填信息保持可见；封面、描述、交流群和购票信息可按需补充。
                     </p>
@@ -66,7 +71,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
 
                 <form
                     id="submit-form"
-                    class="mt-8 flex flex-col gap-8"
+                    class="mt-10 flex flex-col gap-10"
                     action="/api/submit"
                     method="post"
                 >
@@ -268,17 +273,17 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 role="status"
                                 tabindex="-1"
                             />
-                            <div class="flex flex-wrap gap-3 border-t border-border pt-5 sm:col-span-2">
+                            <div class="flex flex-wrap gap-3 border-t border-border/80 pt-6 sm:col-span-2">
                                 <button
                                     id="submit-button"
-                                    class="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-bold text-primary-foreground disabled:pointer-events-none disabled:opacity-60"
+                                    class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground transition-transform duration-300 ease-motion active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 disabled:active:scale-100"
                                     type="submit"
                                 >
                                     <Send class="size-4" aria-hidden="true" />
                                     提交审核
                                 </button>
                                 <a
-                                    class="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-border-strong px-5 text-sm font-bold text-foreground"
+                                    class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-surface-subtle px-5 text-sm font-bold text-foreground transition-transform duration-300 ease-motion active:scale-[0.98]"
                                     href="/events"
                                 >
                                     <ArrowLeft class="size-4" aria-hidden="true" />

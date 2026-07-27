@@ -6,6 +6,7 @@ import {
     MapPinAltOutline as MapPinned
 } from "flowbite-svelte-icons";
 import CitySelector from "../components/CitySelector.svelte";
+import EventArtwork from "../components/EventArtwork.astro";
 import EventCard from "../components/EventCard.astro";
 import PopularEventList from "../components/PopularEventList.astro";
 import Layout from "../layouts/Layout.astro";
@@ -17,7 +18,7 @@ import {
     type HomepagePopularity
 } from "../lib/db/queries";
 import { FALLBACK_DIVISION_CODE, type RegionOption } from "../lib/divisions";
-import { getChinaLocalDate } from "../lib/events/datetime";
+import { formatEventSchedule, getChinaLocalDate } from "../lib/events/datetime";
 import { getEventScaleLabel } from "../lib/events/options";
 import { POPULARITY_WINDOWS, parsePopularityWindow } from "../lib/events/popularity";
 import { resolveSelectedDivision } from "../lib/geo";
@@ -103,6 +104,7 @@ const dateClusters = nearby.clusters
     .filter((cluster) => cluster.events.length > 0);
 const hasNearbyEvents =
     Boolean(nearby.featured) || nearby.ongoing.length > 0 || dateClusters.length > 0;
+const hasSecondaryNearby = nearby.ongoing.length > 0 || dateClusters.length > 0;
 const featuredReason = nearby.featured
     ? `未来 14 天内，${getEventScaleLabel(nearby.featured.scale)}`
     : "";
@@ -134,64 +136,125 @@ function formatClusterDate(value: string) {
     title="ACG 活动目录"
     description="按地区和自然日期浏览附近 ACG 活动，并查看近 3 日、7 日和 30 日热门活动。"
 >
-    <div class="flex flex-col gap-12 sm:gap-14">
-        <section aria-labelledby="home-heading" class="border-b border-border pb-7">
+    <div class="flex flex-col">
+        <section
+            aria-labelledby="home-heading"
+            data-reveal
+            class="relative isolate overflow-hidden rounded-md bg-foreground text-white shadow-elevated ring-1 ring-black/10"
+        >
+            <EventArtwork
+                src={nearby.featured?.cover_url}
+                alt={nearby.featured ? `${nearby.featured.title} 封面` : "同频点活动封面"}
+                loading="eager"
+                fill
+                class="rounded-none"
+            />
+            <div class="absolute inset-0 bg-black/60"></div>
+
             <div
-                class="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(32rem,1.2fr)] lg:items-end lg:gap-10"
+                class="relative flex min-h-[31rem] flex-col justify-between gap-12 p-6 sm:min-h-[35rem] sm:p-10 lg:min-h-[38rem] lg:p-14"
             >
-                <header class="max-w-xl">
-                    <p class="text-sm font-bold text-primary">
+                <header class="max-w-3xl">
+                    <p class="inline-flex items-center gap-2 text-sm font-semibold text-white/80">
+                        <MapPinned class="size-4" aria-hidden="true" />
                         {selectedDivision?.label ?? "当前地区"}
                     </p>
                     <h1
                         id="home-heading"
-                        class="mt-2 text-3xl leading-tight font-black text-foreground sm:text-4xl"
+                        class="mt-5 text-5xl leading-none font-black text-balance text-white sm:text-6xl lg:text-7xl"
                     >
-                        发现附近的 ACG 活动
+                        同频点
                     </h1>
                     <p
-                        class="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base"
+                        class="mt-5 max-w-xl text-base leading-7 text-pretty text-white/82 sm:text-lg"
                     >
-                        按自然日期快速浏览，也可以查看本地与全国热门活动。
+                        按地区和自然日期，发现附近正在发生的 ACG 活动。
                     </p>
                 </header>
 
-                <div class="rounded-md border border-border bg-surface-subtle p-4 sm:p-5">
+                {
+                    nearby.featured ? (
+                        <div class="max-w-3xl">
+                            <p class="text-xs font-semibold text-white/68">
+                                主推荐 · {featuredReason}
+                            </p>
+                            <h2 class="mt-2 text-2xl leading-tight font-bold text-balance text-white sm:text-3xl">
+                                {nearby.featured.title}
+                            </h2>
+                            <p class="mt-3 font-mono text-sm text-white/78 tabular-nums">
+                                {formatEventSchedule(nearby.featured)}
+                            </p>
+                            <a
+                                href={`/events/${nearby.featured.id}`}
+                                class="group mt-6 inline-flex h-12 items-center gap-3 rounded-full bg-white py-1 pr-1 pl-5 text-sm font-bold text-black transition-[transform,background-color] duration-300 ease-motion hover:bg-white/92 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-[0.98]"
+                            >
+                                查看主推荐
+                                <span class="flex size-10 items-center justify-center rounded-full bg-black text-white transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105">
+                                    <ArrowRight class="size-4" aria-hidden="true" />
+                                </span>
+                            </a>
+                        </div>
+                    ) : (
+                        <div class="max-w-xl">
+                            <h2 class="text-2xl font-bold text-white">这个地区还没有近期活动</h2>
+                            <p class="mt-2 text-sm leading-6 text-white/75">
+                                可以切换地区，或先浏览完整活动目录。
+                            </p>
+                            <a
+                                href="/events"
+                                class="group mt-6 inline-flex h-12 items-center gap-3 rounded-full bg-white py-1 pr-1 pl-5 text-sm font-bold text-black transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-[0.98]"
+                            >
+                                浏览活动目录
+                                <span class="flex size-10 items-center justify-center rounded-full bg-black text-white">
+                                    <ArrowRight class="size-4" aria-hidden="true" />
+                                </span>
+                            </a>
+                        </div>
+                    )
+                }
+            </div>
+        </section>
+
+        <div data-reveal class="mt-4 rounded-md bg-border/55 p-1.5 ring-1 ring-border/70">
+            <div
+                class="grid gap-5 rounded-[5px] bg-surface p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+            >
+                <div class="min-w-0">
                     <CitySelector
                         selectedDivisionCode={selectedDivisionCode}
                         action={`/?trend=${trendWindow}`}
                         label="浏览地区"
                         client:load
                     />
-                    <div class="mt-3 flex items-center gap-2 text-xs text-muted">
+                    <p class="mt-3 flex items-center gap-2 text-xs text-muted">
                         <MapPinned class="size-4" aria-hidden="true" />
                         当前地区来自{sourceLabel}
-                    </div>
+                    </p>
                 </div>
-            </div>
 
-            <nav class="mt-5 grid max-w-md grid-cols-2 gap-2" aria-label="首页活动区域">
-                <a
-                    href="#nearby"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                    <CalendarClock class="size-4" aria-hidden="true" />
-                    附近活动
-                </a>
-                <a
-                    href="#popular"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                    <Flame class="size-4" aria-hidden="true" />
-                    热门活动
-                </a>
-            </nav>
-        </section>
+                <nav class="flex flex-wrap gap-2" aria-label="首页活动区域">
+                    <a
+                        href="#nearby"
+                        class="inline-flex h-10 items-center gap-2 rounded-full bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
+                    >
+                        <CalendarClock class="size-4" aria-hidden="true" />
+                        附近活动
+                    </a>
+                    <a
+                        href="#popular"
+                        class="inline-flex h-10 items-center gap-2 rounded-full bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
+                    >
+                        <Flame class="size-4" aria-hidden="true" />
+                        热门活动
+                    </a>
+                </nav>
+            </div>
+        </div>
 
         {
             regionError ? (
                 <div
-                    class="rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
+                    class="mt-8 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
                     role="alert"
                 >
                     {regionError}
@@ -199,12 +262,23 @@ function formatClusterDate(value: string) {
             ) : null
         }
 
-        <section id="nearby" aria-labelledby="nearby-heading" class="scroll-mt-24">
+        <section
+            id="nearby"
+            aria-labelledby="nearby-heading"
+            data-reveal
+            class="scroll-mt-28 py-20 sm:py-24"
+        >
             <header
-                class="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between"
+                class="flex flex-col gap-5 border-t border-border/80 pt-6 sm:flex-row sm:items-end sm:justify-between"
             >
                 <div>
-                    <h2 id="nearby-heading" class="text-2xl font-black text-foreground sm:text-3xl">
+                    <p class="font-mono text-xs font-semibold text-primary tabular-nums">
+                        01 / 附近
+                    </p>
+                    <h2
+                        id="nearby-heading"
+                        class="mt-3 text-3xl font-black text-foreground sm:text-4xl"
+                    >
                         附近活动
                     </h2>
                     <p class="mt-1 text-sm text-muted-foreground">
@@ -213,10 +287,17 @@ function formatClusterDate(value: string) {
                 </div>
                 <a
                     href={eventsHref()}
-                    class="inline-flex w-fit items-center gap-2 text-sm font-bold text-link"
+                    class="group inline-flex w-fit items-center gap-2 text-sm font-bold text-link transition-colors duration-300 ease-motion hover:text-primary"
                 >
                     查看完整目录
-                    <ArrowRight class="size-4" aria-hidden="true" />
+                    <span
+                        class="flex size-8 items-center justify-center rounded-full bg-primary-subtle"
+                    >
+                        <ArrowRight
+                            class="size-4 transition-transform duration-300 ease-motion group-hover:translate-x-0.5"
+                            aria-hidden="true"
+                        />
+                    </span>
                 </a>
             </header>
 
@@ -229,68 +310,43 @@ function formatClusterDate(value: string) {
                         {nearbyError}
                     </div>
                 ) : hasNearbyEvents ? (
-                    <div class="mt-6 flex flex-col gap-8">
-                        <div
-                            class:list={[
-                                "grid gap-7",
-                                nearby.ongoing.length > 0
-                                    ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.65fr)]"
-                                    : "grid-cols-1"
-                            ]}
-                        >
-                            {nearby.featured ? (
-                                <div class="min-w-0">
-                                    <div class="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                        <h3 class="text-lg font-black text-foreground">主推荐</h3>
-                                        <p class="text-xs font-semibold text-primary">
-                                            {featuredReason}
-                                        </p>
-                                    </div>
-                                    <EventCard
-                                        event={nearby.featured}
-                                        variant="featured"
-                                        priority
-                                    />
-                                </div>
-                            ) : null}
-
-                            {nearby.ongoing.length > 0 ? (
-                                <section
-                                    aria-labelledby="ongoing-heading"
-                                    class="min-w-0 border-t border-border pt-4"
-                                >
-                                    <div class="flex items-end justify-between gap-4 pb-2">
-                                        <div>
-                                            <h3
-                                                id="ongoing-heading"
-                                                class="text-lg font-black text-foreground"
-                                            >
-                                                正在进行
-                                            </h3>
-                                            <p class="mt-1 text-xs text-muted">跨日且尚未结束</p>
-                                        </div>
-                                        <a
-                                            href={eventsHref({ active: today })}
-                                            class="shrink-0 text-xs font-bold text-link"
-                                        >
-                                            查看全部
-                                        </a>
-                                    </div>
+                    <div class="mt-10 flex flex-col gap-12">
+                        {nearby.ongoing.length > 0 ? (
+                            <section aria-labelledby="ongoing-heading" class="min-w-0">
+                                <div class="flex items-end justify-between gap-4 pb-3">
                                     <div>
-                                        {nearby.ongoing.map((event) => (
-                                            <EventCard event={event} variant="compact" />
-                                        ))}
+                                        <h3
+                                            id="ongoing-heading"
+                                            class="text-xl font-black text-foreground"
+                                        >
+                                            正在进行
+                                        </h3>
+                                        <p class="mt-1 text-xs text-muted">跨日且尚未结束</p>
                                     </div>
-                                </section>
-                            ) : null}
-                        </div>
+                                    <a
+                                        href={eventsHref({ active: today })}
+                                        class="shrink-0 text-xs font-bold text-link"
+                                    >
+                                        查看全部
+                                    </a>
+                                </div>
+                                <div class="border-t border-border/80">
+                                    {nearby.ongoing.map((event) => (
+                                        <EventCard event={event} variant="compact" />
+                                    ))}
+                                </div>
+                            </section>
+                        ) : null}
 
                         {dateClusters.length > 0 ? (
-                            <div class="grid gap-x-7 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
-                                {dateClusters.map((cluster) => (
+                            <div class="grid gap-x-12 gap-y-12 md:grid-cols-2">
+                                {dateClusters.map((cluster, index) => (
                                     <section
                                         aria-labelledby={`cluster-${cluster.date}`}
-                                        class="min-w-0 border-t border-border pt-4"
+                                        class:list={[
+                                            "min-w-0 border-t border-border/80 pt-5",
+                                            index % 2 === 1 ? "md:mt-10" : ""
+                                        ]}
                                     >
                                         <div class="flex items-end justify-between gap-4 pb-2">
                                             <div class="min-w-0">
@@ -312,7 +368,7 @@ function formatClusterDate(value: string) {
                                             </a>
                                         </div>
                                         {cluster.events.length > 0 ? (
-                                            <div>
+                                            <div class="mt-1">
                                                 {cluster.events.map((event) => (
                                                     <EventCard event={event} variant="compact" />
                                                 ))}
@@ -325,6 +381,11 @@ function formatClusterDate(value: string) {
                                     </section>
                                 ))}
                             </div>
+                        ) : null}
+                        {!hasSecondaryNearby && nearby.featured ? (
+                            <p class="border-y border-border/80 py-8 text-sm text-muted-foreground">
+                                当前近期活动已作为主推荐展示。
+                            </p>
                         ) : null}
                     </div>
                 ) : (
@@ -352,21 +413,29 @@ function formatClusterDate(value: string) {
             }
         </section>
 
-        <section id="popular" aria-labelledby="popular-heading" class="scroll-mt-24">
+        <section
+            id="popular"
+            aria-labelledby="popular-heading"
+            data-reveal
+            class="scroll-mt-28 pb-20 sm:pb-24"
+        >
             <header
-                class="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between"
+                class="flex flex-col gap-5 border-t border-border/80 pt-6 sm:flex-row sm:items-end sm:justify-between"
             >
                 <div>
+                    <p class="font-mono text-xs font-semibold text-primary tabular-nums">
+                        02 / 热门
+                    </p>
                     <h2
                         id="popular-heading"
-                        class="text-2xl font-black text-foreground sm:text-3xl"
+                        class="mt-3 text-3xl font-black text-foreground sm:text-4xl"
                     >
                         热门活动
                     </h2>
                     <p class="mt-1 text-sm text-muted-foreground">按活动详情独立访客数排序</p>
                 </div>
                 <nav
-                    class="grid h-10 w-full grid-cols-3 overflow-hidden rounded-md border border-border-strong sm:w-60"
+                    class="grid h-10 w-full grid-cols-3 overflow-hidden rounded-full bg-surface-subtle p-1 sm:w-60"
                     aria-label="热度统计时间范围"
                 >
                     {
@@ -375,10 +444,10 @@ function formatClusterDate(value: string) {
                                 href={trendHref(window)}
                                 aria-current={trendWindow === window ? "page" : undefined}
                                 class:list={[
-                                    "inline-flex items-center justify-center border-l border-border-strong px-3 text-sm font-bold first:border-l-0",
+                                    "inline-flex items-center justify-center rounded-full px-3 text-sm font-bold transition-[transform,background-color,color] duration-300 ease-motion active:scale-[0.98]",
                                     trendWindow === window
                                         ? "bg-primary text-primary-foreground"
-                                        : "bg-surface text-muted-foreground hover:text-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
                                 ]}
                             >
                                 {window} 日
@@ -397,7 +466,7 @@ function formatClusterDate(value: string) {
                         {popularityError}
                     </div>
                 ) : (
-                    <div class="mt-6 grid gap-8 lg:grid-cols-2">
+                    <div class="mt-10 grid gap-12 lg:grid-cols-2">
                         <PopularEventList
                             headingId="local-popular-heading"
                             title="本地热门"

@@ -40,13 +40,18 @@
 
 ## Token Contract
 
+- The self-hosted primary font is `@fontsource-variable/geist` via
+  `@fontsource-variable/geist/wght.css`. `--font-sans` starts with
+  `"Geist Variable"`, then falls back through the project's Chinese system-font
+  stack. Do not restore `Inter` as the preferred font or fetch runtime webfonts.
 - Use semantic custom properties in `src/styles/tokens.css`:
     - colors: `--color-background`, `--color-foreground`, `--color-surface`,
       `--color-surface-subtle`, `--color-surface-raised`, `--color-border`,
       `--color-border-strong`, `--color-primary`, `--color-primary-foreground`,
       `--color-primary-subtle`, `--color-accent`, `--color-danger`, etc.
     - shape: `--radius-xs`, `--radius-sm`, `--radius-md`, `--radius-full`.
-    - motion: `--duration-fast`, `--duration-medium`, `--ease-standard`.
+    - motion: `--duration-fast`, `--duration-medium`, `--duration-reveal`,
+      `--ease-standard`.
     - focus/shadow: `--shadow-focus`, `--shadow-popover`.
 - `@theme inline` exposes them as Tailwind tokens, so prefer
   `bg-surface`, `text-muted-foreground`, `border-border-strong`,
@@ -62,8 +67,10 @@
 
 ## Layout And Density
 
-- Public pages should feel like a browsing tool: practical, scannable, and
-  information-dense.
+- Public pages use the shared cool-neutral surfaces, graphite foreground,
+  raspberry brand signal, and real event media. Homepage and detail layouts may
+  use generous editorial spacing and asymmetric composition, while catalogue
+  and form pages remain scan-oriented.
 - Admin pages should feel operational: compact navigation, crisp tables,
   predictable controls, and no marketing-style composition.
 - Use cards (`ui/card`) and repeated items at `rounded-md` (8px) or less.
@@ -116,6 +123,12 @@
   (Flowbite Svelte Icons).
 
 ## Interaction And Form Contracts
+
+- Public `data-reveal` motion is progressively enhanced by `Layout.astro`.
+  Content is visible by default; the inline head script adds `reveal-ready`, and
+  the body script reveals each item once through `IntersectionObserver` before
+  unobserving it. Only `opacity` and `transform` may animate. The global
+  `prefers-reduced-motion` rule must force reveal content visible.
 
 - Catalogue URLs own filter state. Preserve `city`, `type`, `scale`, `tag`,
   `from`, `to`, `starts`, `active`, `page`, and `sort` whenever either the quick
@@ -274,6 +287,24 @@ and the trigger is still connected.
 
 Use this behavior through `ui/side-panel.svelte` and
 `ui/confirm-dialog.svelte`; do not duplicate timers in business components.
+
+> **Warning**: Flowbite Drawer renders its internal `Dialog` with
+> `modal={false}`, even when the Drawer receives the visual `modal` prop. Native
+> `<dialog>` therefore does not emit a cancel event for `Escape`. The shared
+> `ui/side-panel.svelte` adapter must handle `Escape` on the Drawer, set its
+> bound `open` state to `false`, and let the existing delayed focus restoration
+> return focus to the opening button. Test `aria-expanded=false`, no open
+> dialog, and `document.activeElement === trigger` after the 300ms outro.
+
+```svelte
+function handlePanelKeydown(event: KeyboardEvent) {
+    if (event.key !== "Escape" || !open) return;
+    event.preventDefault();
+    open = false;
+}
+
+<Drawer bind:open onkeydown={handlePanelKeydown} />
+```
 
 ## Forbidden Patterns
 

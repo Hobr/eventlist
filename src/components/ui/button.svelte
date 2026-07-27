@@ -65,7 +65,7 @@
 
     let classes = $derived(
         cn(
-            "shrink-0 rounded-md font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+            "shrink-0 rounded-md font-semibold whitespace-nowrap transition-[transform,background-color,color,border-color,box-shadow] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100",
             variants[variant],
             sizes[size],
             className
