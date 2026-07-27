@@ -1,0 +1,3 @@
+{"file":".trellis/spec/frontend/design-system.md","reason":"复核导航对齐、首页信息架构、必填标注范围、无障碍、响应式与禁用依赖要求。"}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"复核 today 查询最多 10 条且不改变 featured、日期覆盖、排序、热门与目录 CTA 合同。"}
+{"file":".trellis/tasks/07-27-homepage-nav-event-limit-required-fields/research/current-contract.md","reason":"逐项对照当前缺陷来源和两个表单的真实服务端必填字段。"}
