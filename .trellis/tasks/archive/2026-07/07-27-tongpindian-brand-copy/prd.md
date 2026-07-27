@@ -28,16 +28,15 @@
 - [x] 公共页面 `<title>` 使用“同频点”作为站点品牌后缀，默认 description 使用新 Slogan。
 - [x] 管理后台及管理员登录页的可见品牌、`<title>` 和 description 均使用“同频点”。
 - [x] 产品代码中不再出现“野活网”或旧 Slogan“按城市发现，按兴趣出发”。
-- [ ] 项目 lint 与 build 检查通过。
+- [x] 项目 lint 与 build 检查通过。
 
 ## Validation
 
 - `corepack pnpm exec prettier --check ...`：通过。
-- `corepack pnpm test`：通过，4 个测试全部成功。
+- `corepack pnpm test`：通过，14 个测试全部成功。
 - `corepack pnpm build`：通过。
 - HTTP 验证：首页和管理登录页正确输出新品牌与元数据，旧文案为 0。
-- `corepack pnpm lint`：Prettier 通过；ESLint 在加载项目配置前失败。当前 TypeScript
-  7.0.2 不受 `typescript-eslint` 8.65.0 支持，Node 22.23.1 与 Node 24.18.0 下均可复现。
+- `corepack pnpm lint`：通过。
 
 ## Out of Scope
 
