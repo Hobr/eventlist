@@ -562,3 +562,24 @@ Moved location selection into the homepage navigation, simplified discovery to p
 ### Status
 
 [OK] **Completed**
+
+
+## Session 18: Refine homepage navigation and event forms
+
+**Date**: 2026-07-27
+**Task**: Refine homepage navigation and event forms
+**Branch**: `main`
+
+### Summary
+
+Centered the public navigation with the location selector on the right, removed redundant homepage shortcuts and duplicate divider, capped today's local events at ten, and added opt-in required-field markers to public submission and admin event creation.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5e0ad08` | (see git log) |
+
+### Status
+
+[OK] **Completed**
