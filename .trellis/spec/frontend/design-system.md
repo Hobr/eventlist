@@ -104,22 +104,28 @@
 - `SelectField.svelte` is the shared Flowbite native `Select` wrapper. Preserve
   its real `<select>` form behavior and prop contract when restyling:
     - `name`, `label`, `value`, `options`, `placeholder`, `required`,
-      `disabled`, `wide`, `onchange`.
+      `showRequiredIndicator`, `disabled`, `wide`, `onchange`.
+  `showRequiredIndicator` is opt-in and only adds visible `必填` copy; callers
+  must pair it with an actually required field instead of changing validation.
 - `DivisionPicker.svelte`, `CitySelector.svelte`, and `FilterBar.svelte`
   depend on `SelectField.svelte`; visual changes must keep URL query names
   and hidden form field behavior intact. `NavLocationPicker.svelte` reuses
   `CitySelector` inside `SidePanel` and restores `eventlist.divisionCode` from
   its own always-mounted island, because Flowbite may not mount drawer content
-  until the panel opens.
+  until the panel opens. `DivisionPicker.showRequiredIndicator` marks the
+  composed region label once; do not repeat `必填` on province, city, and county.
 - `DivisionPicker.svelte` labels its levels `省`, `市`, `区/县`. The four
   municipalities expose one auto-selected city node; Chongqing must merge
   counties from both upstream city groups.
 - `TagInput.svelte` is the admin canonical-tag editor. It keeps hidden
   `name="tags"` data joined by `、` and serializes the current draft too, so
-  clicking Save directly after typing does not lose the new tag.
+  clicking Save directly after typing does not lose the new tag. Its opt-in
+  `showRequiredIndicator` is presentation only because hidden inputs do not
+  provide usable native required validation; the admin API remains authoritative.
 - `admin/AdminEventForm.astro` owns the shared create/edit field composition.
   New and edit pages provide page-specific submit methods, busy/error copy,
-  and redirects instead of duplicating event fields.
+  and redirects instead of duplicating event fields. Only the new page enables
+  its `showRequiredIndicators` prop; the default remains `false` for edit.
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
 - Keep action buttons icon+text where the icon clarifies the command
@@ -144,6 +150,8 @@
   visible: `title`, `type`, `scale`, `division_code`, `venue`, `start_date`,
   `end_date`, `source_url`, and `submitter_contact`. Optional `start_time` and
   `end_time` remain visible beside their dates and may be filled independently.
+  Every required control has a visible Chinese `必填` label marker; do not rely
+  only on color, an asterisk, placeholder text, or post-submit browser errors.
   Optional controls inside native `<details>` include `tag_suggestions`,
   `address`, `cover_url`, `description`, `qq_group`, and `ticket_url`. Visitor
   submissions never send canonical `tags`. Keep
@@ -160,21 +168,29 @@
 - Admin creation submits POST `/api/admin/events`, requires at least one
   canonical or newly entered tag, and redirects a successful 201 response to
   `/admin/events/:id/edit`. It does not include Turnstile and publishes
-  immediately because the route is protected by admin middleware.
+  immediately because the route is protected by admin middleware. The new-event
+  page visibly marks its nine base required fields plus canonical tags with
+  Chinese `必填`; the shared edit form does not enable these page-level markers.
 
 ## Public Page Structure
 
 - Homepage first viewport is discovery-first: one featured local event, a
-  compact homepage-only location trigger in the public navigation, direct
-  popular/today anchors, and a catalogue action. Do not restore the large
-  in-page location block or a separate nearby section.
+  compact homepage-only location trigger in the public navigation, and a
+  catalogue action. Do not restore the large in-page location block, a separate
+  nearby section, or redundant popular/today anchor buttons below the hero.
+- At `sm` and wider, the public navigation capsule uses three balanced columns:
+  brand at the left, `首页 / 活动 / 投稿` geometrically centered, and the
+  homepage-only location trigger at the right. Mobile keeps brand plus the
+  location trigger and menu without overlap or page-level horizontal scroll.
 - Featured selection is compact and explainable. It may use one controlled
   bitmap cover and may select a not-ended activity starting today or within the
   next 14 days.
-- Homepage sections render in this order: featured hero, popularity, then all
-  published local events whose date range covers the current China-local date.
-  Today rows use `EventCard variant="row"`, are not capped, and may repeat the
-  featured event to preserve list completeness.
+- Homepage sections render in this order: featured hero, popularity, then at
+  most ten published local events whose date range covers the current
+  China-local date. Today rows use `EventCard variant="row"`, preserve stable
+  query order, and may repeat the featured event. The list or empty-state bottom
+  border is the only separator before the catalogue CTA; do not add a second
+  CTA top border.
 - Popularity uses one stable three-segment `3 / 7 / 30` control, defaults to
   seven days, preserves the selected city, and updates local and nationwide
   lists together. Each list renders at most five rows; use two equal columns on

@@ -66,7 +66,7 @@ function event(id: number): EventRecord {
     };
 }
 
-test("首页发现查询允许今日主推荐并完整返回今日活动", async () => {
+test("首页发现查询允许今日主推荐并将今日活动限制为 10 条", async () => {
     const db = new FakeDatabase();
     const featured = event(1);
     const today = [featured, event(2)];
@@ -80,10 +80,17 @@ test("首页发现查询允许今日主推荐并完整返回今日活动", async
         /date\(events\.start_date\) BETWEEN date\('now', '\+8 hours'\)/
     );
     assert.match(db.prepared[0]?.sql ?? "", /AND NOT \(/);
-    assert.match(db.prepared[1]?.sql ?? "", /date\(events\.start_date\) <=/);
-    assert.match(db.prepared[1]?.sql ?? "", /date\(events\.end_date\) >=/);
-    assert.doesNotMatch(db.prepared[1]?.sql ?? "", /events\.end_time IS NOT NULL/);
-    assert.doesNotMatch(db.prepared[1]?.sql ?? "", /LIMIT/);
+    const todaySql = db.prepared[1]?.sql ?? "";
+    assert.match(todaySql, /events\.division_code LIKE \?/);
+    assert.match(todaySql, /date\(events\.start_date\) <=/);
+    assert.match(todaySql, /date\(events\.end_date\) >=/);
+    assert.match(todaySql, /ORDER BY CASE/);
+    assert.match(todaySql, /WHEN date\(events\.start_date\) < date\('now', '\+8 hours'\) THEN 0/);
+    assert.match(todaySql, /WHEN date\(events\.start_date\) = date\('now', '\+8 hours'\)/);
+    assert.match(todaySql, /CASE events\.scale/);
+    assert.match(todaySql, /events\.id ASC\s+LIMIT 10\s*$/);
+    assert.equal(todaySql.match(/\bLIMIT\b/g)?.length, 1);
+    assert.doesNotMatch(todaySql, /events\.end_time IS NOT NULL/);
     assert.deepEqual(db.prepared[0]?.values, ["published", "11%"]);
     assert.deepEqual(db.prepared[1]?.values, ["published", "11%"]);
     assert.equal(result.featured?.id, featured.id);

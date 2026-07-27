@@ -65,7 +65,7 @@ function navClasses(href: string) {
         <div class="flex min-h-screen flex-col">
             <header class="sticky top-0 z-40 w-full px-4 pt-4 sm:px-6 lg:px-8">
                 <div
-                    class="mx-auto flex h-14 w-full max-w-5xl items-center justify-between rounded-full border border-border/80 bg-background/88 px-2.5 shadow-elevated backdrop-blur-xl sm:h-16 sm:px-3"
+                    class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center rounded-full border border-border/80 bg-background/88 px-2.5 shadow-elevated backdrop-blur-xl sm:h-16 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3"
                 >
                     <a
                         href="/"
@@ -76,13 +76,41 @@ function navClasses(href: string) {
                                 class="block truncate text-sm font-bold text-foreground sm:text-base"
                                 >{SITE_NAME}</strong
                             >
-                            <span class="mt-1 hidden text-[0.65rem] font-medium text-muted sm:block"
+                            <span
+                                class="mt-1 hidden truncate text-[0.65rem] font-medium text-muted sm:block"
                                 >{SITE_SLOGAN}</span
                             >
                         </span>
                     </a>
 
-                    <div class="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                    <nav class="hidden items-center gap-1 sm:flex" aria-label="主导航">
+                        <a
+                            href="/"
+                            aria-current={isCurrent("/") ? "page" : undefined}
+                            class:list={navClasses("/")}
+                        >
+                            <Compass class="size-4" aria-hidden="true" />
+                            首页
+                        </a>
+                        <a
+                            href="/events"
+                            aria-current={isCurrent("/events") ? "page" : undefined}
+                            class:list={navClasses("/events")}
+                        >
+                            <CalendarDays class="size-4" aria-hidden="true" />
+                            活动
+                        </a>
+                        <a
+                            href="/submit"
+                            aria-current={isCurrent("/submit") ? "page" : undefined}
+                            class:list={navClasses("/submit")}
+                        >
+                            <Send class="size-4" aria-hidden="true" />
+                            投稿
+                        </a>
+                    </nav>
+
+                    <div class="flex min-w-0 items-center gap-1.5 justify-self-end sm:gap-2">
                         {
                             hasNavControl ? (
                                 <div class="min-w-0">
@@ -90,33 +118,6 @@ function navClasses(href: string) {
                                 </div>
                             ) : null
                         }
-
-                        <nav class="hidden items-center gap-1 sm:flex" aria-label="主导航">
-                            <a
-                                href="/"
-                                aria-current={isCurrent("/") ? "page" : undefined}
-                                class:list={navClasses("/")}
-                            >
-                                <Compass class="size-4" aria-hidden="true" />
-                                首页
-                            </a>
-                            <a
-                                href="/events"
-                                aria-current={isCurrent("/events") ? "page" : undefined}
-                                class:list={navClasses("/events")}
-                            >
-                                <CalendarDays class="size-4" aria-hidden="true" />
-                                活动
-                            </a>
-                            <a
-                                href="/submit"
-                                aria-current={isCurrent("/submit") ? "page" : undefined}
-                                class:list={navClasses("/submit")}
-                            >
-                                <Send class="size-4" aria-hidden="true" />
-                                投稿
-                            </a>
-                        </nav>
 
                         <div class="shrink-0 sm:hidden">
                             <PublicMobileNav {currentPath} client:load />

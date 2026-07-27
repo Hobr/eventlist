@@ -19,6 +19,7 @@
         allowEmpty?: boolean;
         emptyLabel?: string;
         required?: boolean;
+        showRequiredIndicator?: boolean;
         wide?: boolean;
         onchange?: (value: string) => void;
     }
@@ -32,6 +33,7 @@
         allowEmpty = false,
         emptyLabel = "全部地区",
         required = false,
+        showRequiredIndicator = false,
         wide = false,
         onchange
     }: Props = $props();
@@ -134,7 +136,12 @@
 </script>
 
 <div class="flex min-w-0 flex-col gap-1.5">
-    <span class="text-sm font-semibold text-muted-foreground">{label}</span>
+    <span class="text-sm font-semibold text-muted-foreground">
+        {label}
+        {#if showRequiredIndicator}
+            <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+        {/if}
+    </span>
     <input type="hidden" {name} value={selectedValue} {required} />
     <div class={wide ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}>
         <SelectField

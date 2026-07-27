@@ -303,7 +303,7 @@ await db
 
 ### 2. Signatures
 
-- `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns one optional featured event and every published local event whose date range covers the current China-local date.
+- `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns one optional featured event and at most ten published local events whose date range covers the current China-local date.
 - `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns local and nationwide rankings from one `db.batch()` call.
 - `recordEventView(db, eventId, visitorKey) -> Promise<void>` purges expired rows and inserts or refreshes one event-scoped visitor row in one D1 batch.
 - `hashEventVisitor(eventId, ip, secret) -> Promise<string>` returns a 64-character lowercase HMAC-SHA-256 key.
@@ -319,7 +319,7 @@ await db
 - Repeated views update only `last_seen_date`; the primary key guarantees one contribution per event visitor in every selected window.
 - Featured ranking is deterministic: scale descending, start date ascending, cover presence descending, then event ID ascending. The featured window is today through 14 days ahead.
 - Featured candidates use `NOT EVENT_ENDED_CLAUSE`, so an activity starting today remains eligible only while it has not ended.
-- `HomepageDiscovery.today` requires `start_date <= today <= end_date`, does not use `EVENT_ENDED_CLAUSE`, and has no homepage `LIMIT`. An activity that ended earlier today remains in the complete daily list.
+- `HomepageDiscovery.today` requires `start_date <= today <= end_date`, does not use `EVENT_ENDED_CLAUSE`, and applies `LIMIT 10` after the stable homepage ordering. An activity that ended earlier today remains eligible for the capped daily list.
 - Today ordering places cross-day activities first, then same-day activities with known start times, followed by scale and event ID. A featured activity starting today also remains in `today`; do not deduplicate across these two presentation roles.
 - Popularity counts visitor rows whose `last_seen_date` is within the selected inclusive window. Local and nationwide lists each return at most five published, not-ended events.
 - The homepage catalogue CTA carries only `city`. Catalogue support for `starts=date` and `active=date` remains unchanged, but the homepage does not preselect either filter.
@@ -348,7 +348,7 @@ await db
 - Apply `0001_init.sql` to a fresh `--persist-to` directory; assert the visitor table, recent-date index, strict key/date constraints, foreign key, and one migration record.
 - Apply `docs/dev/seed-public-site.sql`; assert 120 same-date events, six ongoing events, 90 visitor rows, 64-character keys, and aggregate 3/7/30-day counts of 15/35/90.
 - Assert featured selection includes today through 14 days ahead and still excludes activities that have already ended.
-- Assert the today SQL has no `LIMIT` or `EVENT_ENDED_CLAUSE`, returns every date-covering published local event, and keeps a featured-today event in the result.
+- Assert the today SQL uses `LIMIT 10` after its stable ordering, has no `EVENT_ENDED_CLAUSE`, returns only date-covering published local events, and does not explicitly remove a featured-today event from the result.
 - Assert one event-scoped key for repeated views, separate keys for different IPs or events, 30-day purge behavior, and no raw-IP column or value.
 - Assert `starts` and `active` catalogue URLs produce removable conditions and exact matching results.
 - Run Prettier, TypeScript, Wrangler type sync, and the production build; run ESLint when its installed parser supports TypeScript 7.

@@ -1,8 +1,6 @@
 ---
 import {
     ArrowRightOutline as ArrowRight,
-    CalendarMonthOutline as CalendarClock,
-    FireOutline as Flame,
     MapPinAltOutline as MapPinned
 } from "flowbite-svelte-icons";
 import EventArtwork from "../components/EventArtwork.astro";
@@ -205,23 +203,6 @@ function trendHref(window: 3 | 7 | 30) {
             </div>
         </section>
 
-        <nav data-reveal class="mt-4 flex flex-wrap justify-end gap-2" aria-label="首页活动区域">
-            <a
-                href="#popular"
-                class="inline-flex h-10 items-center gap-2 rounded-full bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-            >
-                <Flame class="size-4" aria-hidden="true" />
-                热门活动
-            </a>
-            <a
-                href="#today"
-                class="inline-flex h-10 items-center gap-2 rounded-full bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-            >
-                <CalendarClock class="size-4" aria-hidden="true" />
-                今日活动
-            </a>
-        </nav>
-
         {
             regionError ? (
                 <div
@@ -316,7 +297,7 @@ function trendHref(window: 3 | 7 | 30) {
                     今天的本地活动
                 </h2>
                 <p class="mt-1 text-sm text-muted-foreground">
-                    {selectedDivision?.label ?? "当前地区"}，今天覆盖日期范围的全部活动
+                    {selectedDivision?.label ?? "当前地区"}，今天覆盖日期范围的活动最多展示 10 场
                 </p>
             </header>
 
@@ -344,7 +325,7 @@ function trendHref(window: 3 | 7 | 30) {
                 )
             }
 
-            <div class="mt-8 flex justify-end border-t border-border/80 pt-6">
+            <div class="mt-8 flex justify-end pt-6">
                 <a
                     href={eventsHref()}
                     class="group inline-flex h-12 items-center gap-3 rounded-full bg-foreground py-1 pr-1 pl-5 text-sm font-bold text-background transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.98]"

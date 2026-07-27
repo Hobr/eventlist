@@ -8,9 +8,16 @@
         initial?: string;
         label?: string;
         available?: TagSummary[];
+        showRequiredIndicator?: boolean;
     }
 
-    let { name = "tags", initial = "", label = "标签", available = [] }: Props = $props();
+    let {
+        name = "tags",
+        initial = "",
+        label = "标签",
+        available = [],
+        showRequiredIndicator = false
+    }: Props = $props();
     let tags = $state(
         untrack(() => initial)
             .split(/[,\n，、]/)
@@ -89,7 +96,12 @@
 </script>
 
 <div class="flex flex-col gap-1.5">
-    <label for="tag-input" class="text-sm font-semibold text-muted-foreground">{label}</label>
+    <label for="tag-input" class="text-sm font-semibold text-muted-foreground">
+        {label}
+        {#if showRequiredIndicator}
+            <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+        {/if}
+    </label>
     <input type="hidden" {name} value={serializedTags} />
     <div
         class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-strong bg-surface p-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40"

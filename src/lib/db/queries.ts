@@ -480,7 +480,8 @@ export async function listHomepageDiscovery(
                               THEN time(events.start_time)
                           END ASC,
                           ${EVENT_SCALE_ORDER} DESC,
-                          events.id ASC`
+                          events.id ASC
+                 LIMIT 10`
             )
             .bind(STATUS.PUBLISHED, division.value)
     ]);

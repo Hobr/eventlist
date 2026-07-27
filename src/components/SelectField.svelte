@@ -15,6 +15,7 @@
         options: SelectOption[];
         placeholder?: string;
         required?: boolean;
+        showRequiredIndicator?: boolean;
         disabled?: boolean;
         wide?: boolean;
         onchange?: (value: string) => void;
@@ -27,6 +28,7 @@
         options,
         placeholder = "请选择",
         required = false,
+        showRequiredIndicator = false,
         disabled = false,
         wide = false,
         onchange
@@ -54,7 +56,12 @@
 </script>
 
 <div class={wide ? "flex w-full min-w-0 flex-col gap-1.5" : "flex min-w-0 flex-col gap-1.5"}>
-    <span class="text-sm font-semibold text-muted-foreground">{label}</span>
+    <span class="text-sm font-semibold text-muted-foreground">
+        {label}
+        {#if showRequiredIndicator}
+            <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+        {/if}
+    </span>
     <Select
         {name}
         {items}

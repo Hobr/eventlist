@@ -78,7 +78,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                     <SubmissionSection title="活动基本信息">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label for="title" class="flex flex-col gap-1.5 sm:col-span-2">
-                                <span class={labelCls}>标题</span>
+                                <span class={labelCls}>
+                                    标题
+                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                </span>
                                 <input
                                     id="title"
                                     name="title"
@@ -93,6 +96,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 options={typeOptions}
                                 placeholder="选择类型"
                                 required
+                                showRequiredIndicator
                                 client:load
                             />
                             <SelectField
@@ -101,6 +105,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 options={scaleOptions}
                                 placeholder="选择规模"
                                 required
+                                showRequiredIndicator
                                 client:load
                             />
                         </div>
@@ -114,11 +119,15 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     label="地区"
                                     mode="county"
                                     required
+                                    showRequiredIndicator
                                     client:load
                                 />
                             </div>
                             <label for="venue" class="flex flex-col gap-1.5 sm:col-span-2">
-                                <span class={labelCls}>地点</span>
+                                <span class={labelCls}>
+                                    地点
+                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                </span>
                                 <input
                                     id="venue"
                                     name="venue"
@@ -128,7 +137,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                             <label for="start-date" class="flex flex-col gap-1.5">
-                                <span class={labelCls}>开始日期</span>
+                                <span class={labelCls}>
+                                    开始日期
+                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                </span>
                                 <input
                                     id="start-date"
                                     type="date"
@@ -138,7 +150,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                             <label for="end-date" class="flex flex-col gap-1.5">
-                                <span class={labelCls}>结束日期</span>
+                                <span class={labelCls}>
+                                    结束日期
+                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                </span>
                                 <input
                                     id="end-date"
                                     type="date"
@@ -241,7 +256,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label for="source-url" class="flex flex-col gap-1.5 sm:col-span-2">
-                                <span class={labelCls}>活动来源链接</span>
+                                <span class={labelCls}>
+                                    活动来源链接
+                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                </span>
                                 <input
                                     id="source-url"
                                     type="url"
@@ -255,7 +273,10 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 for="submitter-contact"
                                 class="flex flex-col gap-1.5 sm:col-span-2"
                             >
-                                <span class={labelCls}>投稿联系方式</span>
+                                <span class={labelCls}>
+                                    投稿联系方式
+                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                </span>
                                 <input
                                     id="submitter-contact"
                                     name="submitter_contact"
