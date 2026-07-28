@@ -583,3 +583,24 @@ Centered the public navigation with the location selector on the right, removed 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 19: 首页主推荐轮播与热门榜无刷新切换
+
+**Date**: 2026-07-28
+**Task**: 首页主推荐轮播与热门榜无刷新切换
+**Branch**: `main`
+
+### Summary
+
+扩展仍未结束活动为最多五条主推荐候选并加入可暂停轮播；热门榜支持 3/7/30 日无刷新切换、缓存、防竞态、公开 DTO 与最小字段 API，并补齐测试和代码规范。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `340806d` | (see git log) |
+
+### Status
+
+[OK] **Completed**
