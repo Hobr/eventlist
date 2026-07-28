@@ -3,13 +3,16 @@
     "compatibility_date": "2026-06-29",
     "compatibility_flags": ["nodejs_compat"],
     "name": "eventlist",
-    "main": "@astrojs/cloudflare/entrypoints/server",
+    "main": "./src/worker.ts",
     "assets": {
         "directory": "./dist",
         "binding": "ASSETS",
     },
     "observability": {
         "enabled": true,
+    },
+    "triggers": {
+        "crons": ["5 16 * * *"],
     },
     "vars": {
         "DEFAULT_DIVISION_CODE": "110101",
