@@ -1,0 +1,29 @@
+{
+  "id": "d1-cache-strategy",
+  "name": "d1-cache-strategy",
+  "title": "Design D1 cache strategy",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "hobr",
+  "assignee": "hobr",
+  "createdAt": "2026-07-28",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "07-28-d1-query-write-optimization",
+    "07-28-public-dto-cache-layer"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

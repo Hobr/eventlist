@@ -1,0 +1,4 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"D1 唯一事实来源、公开发现、匿名热门和访问统计的可执行合同"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"公共与管理 API 的稳定错误包络、详情访问 beacon 和失败降级要求"}
+{"file":".trellis/tasks/07-28-d1-cache-strategy/research/current-d1-cache-evidence.md","reason":"本地表结构、读取写入链路、查询计划、额度和缓存方案证据"}
+{"file":".trellis/tasks/archive/2026-07/07-28-homepage-location-switch/research/current-homepage-location-flow.md","reason":"首页地区解析、无刷新快照、客户端缓存键和失败保持旧内容的现有合同"}
