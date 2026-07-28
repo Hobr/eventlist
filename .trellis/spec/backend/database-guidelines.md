@@ -303,7 +303,7 @@ await db
 
 ### 2. Signatures
 
-- `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns one optional featured event and at most ten published local events whose date range covers the current China-local date.
+- `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns `featuredEvents` with at most five ranked candidates and at most ten published local events whose date range covers the current China-local date.
 - `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns local and nationwide rankings from one `db.batch()` call.
 - `recordEventView(db, eventId, visitorKey) -> Promise<void>` purges expired rows and inserts or refreshes one event-scoped visitor row in one D1 batch.
 - `hashEventVisitor(eventId, ip, secret) -> Promise<string>` returns a 64-character lowercase HMAC-SHA-256 key.
@@ -317,8 +317,9 @@ await db
 - The HMAC input includes `eventId`, so one address cannot be correlated across different events from stored keys.
 - `recordEventView` deletes rows older than the current China-local day minus 29 days before recording a published, not-ended event.
 - Repeated views update only `last_seen_date`; the primary key guarantees one contribution per event visitor in every selected window.
-- Featured ranking is deterministic: scale descending, start date ascending, cover presence descending, then event ID ascending. The featured window is today through 14 days ahead.
-- Featured candidates use `NOT EVENT_ENDED_CLAUSE`, so an activity starting today remains eligible only while it has not ended.
+- Featured candidates use `NOT EVENT_ENDED_CLAUSE`, match the selected division, and have `start_date <= China-local today + 14 days`; there is no start-date lower bound, so an earlier-started activity remains eligible while it has not ended.
+- Featured ranking is deterministic: already-started events first, then scale descending, start date ascending, cover presence descending, and event ID ascending. “Already started” means a date before today, or today with no `start_time` / a `start_time` that has arrived in China local time.
+- `HomepageDiscovery.featuredEvents` applies `LIMIT 5` and returns the successful result array without collapsing it to one record.
 - `HomepageDiscovery.today` requires `start_date <= today <= end_date`, does not use `EVENT_ENDED_CLAUSE`, and applies `LIMIT 10` after the stable homepage ordering. An activity that ended earlier today remains eligible for the capped daily list.
 - Today ordering places cross-day activities first, then same-day activities with known start times, followed by scale and event ID. A featured activity starting today also remains in `today`; do not deduplicate across these two presentation roles.
 - Popularity counts visitor rows whose `last_seen_date` is within the selected inclusive window. Local and nationwide lists each return at most five published, not-ended events.
@@ -338,7 +339,7 @@ await db
 - Good: two requests for one event and one address store one row; the same address visiting another event stores an unrelated key.
 - Good: a date-only event remains eligible through its end date and never receives an invented time-based order.
 - Base: an empty `event_visitors` table returns two empty popularity lists while featured/today discovery still renders.
-- Good: an activity that ended earlier today is absent from `featured` but remains in `today`.
+- Good: an activity that started yesterday and is still active can appear in `featuredEvents`; an activity that ended earlier today is absent from `featuredEvents` but remains in `today`.
 - Bad: reusing `listPublishedEvents()` for the complete today list; its page size is capped at 50.
 - Bad: `COUNT(*)` over raw request logs or a cross-event IP hash; both violate the event-scoped privacy boundary.
 - Bad: excluding the featured ID from `today`; that makes the daily list incomplete.
@@ -347,7 +348,8 @@ await db
 
 - Apply `0001_init.sql` to a fresh `--persist-to` directory; assert the visitor table, recent-date index, strict key/date constraints, foreign key, and one migration record.
 - Apply `docs/dev/seed-public-site.sql`; assert 120 same-date events, six ongoing events, 90 visitor rows, 64-character keys, and aggregate 3/7/30-day counts of 15/35/90.
-- Assert featured selection includes today through 14 days ahead and still excludes activities that have already ended.
+- Assert featured selection has no start-date lower bound, limits future starts to China-local today + 14 days, still excludes ended activities, ranks already-started candidates first, and uses `LIMIT 5`.
+- Assert `HomepageDiscovery.featuredEvents` returns the complete candidate array in stable query order.
 - Assert the today SQL uses `LIMIT 10` after its stable ordering, has no `EVENT_ENDED_CLAUSE`, returns only date-covering published local events, and does not explicitly remove a featured-today event from the result.
 - Assert one event-scoped key for repeated views, separate keys for different IPs or events, 30-day purge behavior, and no raw-IP column or value.
 - Assert `starts` and `active` catalogue URLs produce removable conditions and exact matching results.

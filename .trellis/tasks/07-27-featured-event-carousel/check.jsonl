@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"检查主推荐候选只包含已发布、本地、未结束且开始日期不晚于未来 14 天的活动，并按进行中、规模、日期、封面、ID 稳定排序且最多五条。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"检查热门榜 GET 接口使用稳定 JSON envelope、拒绝无效参数、隐藏内部错误并只暴露公开展示字段。"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"检查 Hero 无嵌套卡片、轮播暂停、热门榜渐进增强/缓存/竞态、焦点状态和移动端布局。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 HomepageDiscovery、公开 DTO、初始 props、JSON API、客户端缓存和测试之间的字段与失败状态一致。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查两个 hydrated 岛共享公开投影且没有复制格式化逻辑、封面常量或绕过 Flowbite/Tailwind 约定。"}

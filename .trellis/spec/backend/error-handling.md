@@ -86,12 +86,15 @@ return jsonError("Unauthorized", 401);
 ### 2. Signatures
 
 - `GET /api/tags?q=<query>` -> `{ ok: true, data: { tags } }`.
+- `GET /api/popularity?city=<region>&trend=<3|7|30>` -> `{ ok: true, data: { popularity } }` with one local and one nationwide public ranking.
 - `POST /api/submit` accepts `FormData` and returns `201 { ok: true, data: { id } }` after a pending insert.
 - Turnstile wrapper: `verifyTurnstile(token, secret, remoteIp?)` returns `{ success, errors }` or throws a setup/upstream error.
 
 ### 3. Contracts
 
 - Public APIs never redirect. They return JSON via `jsonOk` / `jsonError`.
+- The popularity API validates `city` with the shared region catalogue and accepts only the exact windows `3`, `7`, and `30`.
+- Popularity responses use the shared homepage public projection and expose only `id`, `title`, `division_code`, `start_date`, and `unique_visitors` for each event. They must never serialize `submitter_contact`, `source_url`, `tag_suggestions`, moderation fields, or an expanded `EventRecord` / `PopularEvent`.
 - `TURNSTILE_SECRET_KEY` is required for `POST /api/submit` but must not be committed to `wrangler.jsonc`; use `wrangler secret put` for deployed envs and `.dev.vars` for local dev.
 - `TURNSTILE_SITE_KEY` may be public and is declared in `wrangler.jsonc` vars.
 - Cloudflare Turnstile test secret belongs in `.dev.vars.example` only.
@@ -106,12 +109,16 @@ return jsonError("Unauthorized", 401);
 - Turnstile siteverify network/TLS failure -> 502 JSON with `Turnstile verification request failed`.
 - Turnstile verification returns `success: false` -> 400 JSON.
 - Successful submission -> 201 JSON and a new `pending` event.
+- Invalid or missing popularity `city` / `trend` -> 400 JSON.
+- Popularity D1/setup failure -> 500 JSON with a stable Chinese message; do not return the internal exception string.
 
 ### 5. Good/Base/Bad Cases
 
 - Good: browser `fetch()` posts same-origin `FormData` from `/submit` and handles `response.ok`.
 - Good: local tests copy `.dev.vars.example` to `.dev.vars` rather than committing a real secret.
 - Base: Astro dev may block curl form posts without an `Origin` header; include same-origin `Origin` when testing with curl.
+- Good: the homepage initial popularity props and `/api/popularity` response are produced by the same explicit field projection.
+- Bad: returning `{ ...event }` or a raw `PopularEvent[]` from the popularity API; inherited event fields include non-public submission data.
 - Bad: letting workerd internal Turnstile/TLS references escape to users as 400 validation errors.
 - Bad: adding a development bypass that accepts fake Turnstile tokens in application code.
 
@@ -120,6 +127,8 @@ return jsonError("Unauthorized", 401);
 - Missing source link/contact/Turnstile token returns JSON failure.
 - With a valid local Turnstile secret and network trust chain, a test submission writes `pending`.
 - If local workerd rejects the Turnstile TLS certificate chain, verify the route returns a clear 502 and document the environment limit.
+- Popularity invalid region/window checks return 400 JSON; valid requests return both lists and no non-display event fields.
+- Popularity D1 failure returns the stable 500 envelope without leaking binding or SQL details.
 - `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, and production build must pass.
 
 ### 7. Wrong vs Correct

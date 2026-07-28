@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"定义首页发现和热门排行的 D1 中国本地时间语义、地区匹配、稳定排序、返回契约和聚焦测试要求。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"定义公开 JSON API envelope、参数验证、稳定状态码和不泄漏内部失败信息的合同。"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"定义 Flowbite Svelte + Tailwind v4 组件边界、首页首屏/热门控件、媒体回退、响应式、可访问性与渐进增强合同。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"约束 D1 完整记录经公开 DTO 进入两个 hydrated Svelte 岛及 JSON API 的类型、安全和失败边界。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"要求共享首页公开投影并复用时间/规模格式化、位图回退和 Flowbite 原语，避免重复合同或新增 UI 运行时。"}

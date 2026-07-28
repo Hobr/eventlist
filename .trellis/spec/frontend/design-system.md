@@ -128,6 +128,10 @@
   its `showRequiredIndicators` prop; the default remains `false` for edit.
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
+- `FeaturedEventCarousel.svelte` and `HomepagePopularity.svelte` receive only explicit homepage public DTOs from `src/lib/public/homepage.ts`; never pass hydrated components a full `EventRecord` or `PopularEvent` because Astro serializes client-island props.
+- `FeaturedEventCarousel.svelte` owns the whole Hero surface. Multiple candidates use Flowbite Svelte Carousel/Controls/Indicators; one or zero candidates stay server-only and render no carousel runtime or controls.
+- Flowbite Carousel ships its own `xl` / `2xl` height utilities, so the homepage Hero must explicitly override both breakpoints instead of relying only on an `lg` height. A native shell owns hover/focus/keyboard listeners, and each autoplay tick also checks `:hover` plus `document.activeElement` so component prop forwarding or programmatic focus cannot bypass the pause contract.
+- `HomepagePopularity.svelte` progressively enhances real `3 / 7 / 30` links. It may import Flowbite `Spinner` as a stateless leaf, while project Tailwind tokens own the three-segment layout.
 - Keep action buttons icon+text where the icon clarifies the command
   (Flowbite Svelte Icons).
 
@@ -174,7 +178,7 @@
 
 ## Public Page Structure
 
-- Homepage first viewport is discovery-first: one featured local event, a
+- Homepage first viewport is discovery-first: up to five ranked local recommendations, a
   compact homepage-only location trigger in the public navigation, and a
   catalogue action. Do not restore the large in-page location block, a separate
   nearby section, or redundant popular/today anchor buttons below the hero.
@@ -182,9 +186,15 @@
   brand at the left, `首页 / 活动 / 投稿` geometrically centered, and the
   homepage-only location trigger at the right. Mobile keeps brand plus the
   location trigger and menu without overlap or page-level horizontal scroll.
-- Featured selection is compact and explainable. It may use one controlled
-  bitmap cover and may select a not-ended activity starting today or within the
-  next 14 days.
+- Featured selection is compact and explainable. The whole rounded Hero is the
+  card/slide surface; do not nest a recommendation card inside it. Candidates
+  include already-started, not-ended activities plus future starts through the
+  next 14 days, rank active candidates first, and display at most five.
+- Multiple recommendations autoplay every six seconds and expose previous,
+  next, indicators, and play/pause. Autoplay pauses for hover, focus, explicit
+  user pause, or `prefers-reduced-motion`; one candidate has no timer or carousel
+  controls. Cover failure falls back to `/images/event-fallback.webp` without
+  changing Hero dimensions.
 - Homepage sections render in this order: featured hero, popularity, then at
   most ten published local events whose date range covers the current
   China-local date. Today rows use `EventCard variant="row"`, preserve stable
@@ -193,8 +203,14 @@
   CTA top border.
 - Popularity uses one stable three-segment `3 / 7 / 30` control, defaults to
   seven days, preserves the selected city, and updates local and nationwide
-  lists together. Each list renders at most five rows; use two equal columns on
-  wide screens and a vertical flow on narrow screens.
+  lists together. The initial window is server-rendered. Hydrated clicks fetch
+  uncached windows from `/api/popularity`, cache successful snapshots for the
+  page lifetime, retain the current list while loading/failing, and update
+  `city`, `trend`, and `#popular` with `history.replaceState` only after success.
+  Real hrefs preserve full-navigation behavior without JavaScript. Abort or
+  ignore stale requests so rapid selection cannot commit an older response.
+  Each list renders at most five rows; use two equal columns on wide screens and
+  a vertical flow on narrow screens.
 - Do not lead with statistics, feature marketing, or narrative copy
   ("command / dossier / radar / LIVE PREVIEW").
 - Event browsing uses compact cover-led rows. Keep common filters directly
@@ -250,6 +266,9 @@
 - Keep visible focus states (Tailwind `focus-visible:ring-*`, mapped to
   `--shadow-focus` via the `ring-ring` token).
 - Respect `prefers-reduced-motion` (handled globally in `app.css`).
+- Auto-advancing content must also expose an explicit pause control and stop
+  while focus is inside it; reduced-motion users must never receive an autoplay
+  interval.
 - Ensure Chinese labels fit in controls on mobile and desktop; wrap layout
   before shrinking text.
 

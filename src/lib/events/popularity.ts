@@ -2,9 +2,13 @@ export const POPULARITY_WINDOWS = [3, 7, 30] as const;
 
 export type PopularityWindow = (typeof POPULARITY_WINDOWS)[number];
 
+export function isPopularityWindow(value: unknown): value is PopularityWindow {
+    return typeof value === "number" && (value === 3 || value === 7 || value === 30);
+}
+
 export function parsePopularityWindow(value: string | null | undefined): PopularityWindow {
     const parsed = Number(value);
-    return parsed === 3 || parsed === 7 || parsed === 30 ? parsed : 7;
+    return isPopularityWindow(parsed) ? parsed : 7;
 }
 
 export async function hashEventVisitor(eventId: number, ip: string, secret: string) {

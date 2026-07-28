@@ -66,20 +66,34 @@ function event(id: number): EventRecord {
     };
 }
 
-test("首页发现查询允许今日主推荐并将今日活动限制为 10 条", async () => {
+test("首页发现查询返回最多五条进行中优先候选，并将今日活动限制为 10 条", async () => {
     const db = new FakeDatabase();
-    const featured = event(1);
-    const today = [featured, event(2)];
-    db.batchResults = [[featured], today];
+    const featuredEvents = [event(1), event(2), event(3)];
+    const today = [featuredEvents[0], event(4)];
+    db.batchResults = [featuredEvents, today];
 
     const result = await listHomepageDiscovery(asD1(db), "11");
 
     assert.equal(db.prepared.length, 2);
+    const featuredSql = db.prepared[0]?.sql ?? "";
+    assert.match(featuredSql, /AND NOT \(/);
     assert.match(
-        db.prepared[0]?.sql ?? "",
-        /date\(events\.start_date\) BETWEEN date\('now', '\+8 hours'\)/
+        featuredSql,
+        /date\(events\.start_date\) <= date\('now', '\+8 hours', '\+14 days'\)/
     );
-    assert.match(db.prepared[0]?.sql ?? "", /AND NOT \(/);
+    assert.doesNotMatch(featuredSql, /date\(events\.start_date\) >=/);
+    assert.doesNotMatch(featuredSql, /\bBETWEEN\b/);
+    assert.match(
+        featuredSql,
+        /WHEN date\(events\.start_date\) < date\('now', '\+8 hours'\) THEN 0/
+    );
+    assert.match(featuredSql, /events\.start_time IS NULL/);
+    assert.match(featuredSql, /time\(events\.start_time\) <= time\('now', '\+8 hours'\)/);
+    assert.match(
+        featuredSql,
+        /CASE events\.scale[\s\S]*END DESC,[\s\S]*date\(events\.start_date\) ASC/
+    );
+    assert.match(featuredSql, /cover_url[\s\S]*DESC,[\s\S]*events\.id ASC\s+LIMIT 5\s*$/);
     const todaySql = db.prepared[1]?.sql ?? "";
     assert.match(todaySql, /events\.division_code LIKE \?/);
     assert.match(todaySql, /date\(events\.start_date\) <=/);
@@ -93,9 +107,12 @@ test("首页发现查询允许今日主推荐并将今日活动限制为 10 条"
     assert.doesNotMatch(todaySql, /events\.end_time IS NOT NULL/);
     assert.deepEqual(db.prepared[0]?.values, ["published", "11%"]);
     assert.deepEqual(db.prepared[1]?.values, ["published", "11%"]);
-    assert.equal(result.featured?.id, featured.id);
+    assert.deepEqual(
+        result.featuredEvents.map((item) => item.id),
+        [1, 2, 3]
+    );
     assert.deepEqual(
         result.today.map((item) => item.id),
-        [featured.id, 2]
+        [1, 4]
     );
 });

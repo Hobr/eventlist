@@ -93,7 +93,7 @@ export interface TagSummary {
 }
 
 export interface HomepageDiscovery {
-    featured: EventRecord | null;
+    featuredEvents: EventRecord[];
     today: EventRecord[];
 }
 
@@ -448,14 +448,22 @@ export async function listHomepageDiscovery(
                  WHERE events.status = ?
                    AND NOT ${EVENT_ENDED_CLAUSE}
                    AND ${division.clause}
-                   AND date(events.start_date) BETWEEN date('now', '+8 hours')
-                       AND date('now', '+8 hours', '+14 days')
+                   AND date(events.start_date) <= date('now', '+8 hours', '+14 days')
                  GROUP BY events.id
-                 ORDER BY ${EVENT_SCALE_ORDER} DESC,
+                 ORDER BY CASE
+                              WHEN date(events.start_date) < date('now', '+8 hours') THEN 0
+                              WHEN date(events.start_date) = date('now', '+8 hours')
+                               AND (
+                                   events.start_time IS NULL
+                                   OR time(events.start_time) <= time('now', '+8 hours')
+                               ) THEN 0
+                              ELSE 1
+                          END ASC,
+                          ${EVENT_SCALE_ORDER} DESC,
                           date(events.start_date) ASC,
                           CASE WHEN events.cover_url IS NULL OR trim(events.cover_url) = '' THEN 0 ELSE 1 END DESC,
                           events.id ASC
-                 LIMIT 1`
+                 LIMIT 5`
             )
             .bind(STATUS.PUBLISHED, division.value),
         db
@@ -486,15 +494,13 @@ export async function listHomepageDiscovery(
             .bind(STATUS.PUBLISHED, division.value)
     ]);
 
-    const featuredRows = requireSuccess(
-        featuredResult,
-        "Failed to load homepage featured event"
-    ).results;
+    const featuredEvents =
+        requireSuccess(featuredResult, "Failed to load homepage featured events").results ?? [];
     const today =
         requireSuccess(todayResult, "Failed to load today's homepage events").results ?? [];
 
     return {
-        featured: featuredRows?.[0] ?? null,
+        featuredEvents,
         today
     };
 }
