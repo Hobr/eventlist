@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 19
+- **Total Sessions**: 20
 - **Last Active**: 2026-07-28
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~606 | Active |
+| `journal-1.md` | ~628 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -30,6 +30,7 @@
 
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 20 | 2026-07-28 | Homepage location switching | `d780f3c`, `d9c5bab` | `main` |
 | 19 | 2026-07-28 | 首页主推荐轮播与热门榜无刷新切换 | `340806d` | `main` |
 | 18 | 2026-07-27 | Refine homepage navigation and event forms | `5e0ad08` | `main` |
 | 17 | 2026-07-27 | Streamline homepage local discovery | `942af67` | `main` |

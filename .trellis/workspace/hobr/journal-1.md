@@ -604,3 +604,25 @@ Centered the public navigation with the location selector on the right, removed 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 20: Homepage location switching
+
+**Date**: 2026-07-28
+**Task**: Homepage location switching
+**Branch**: `main`
+
+### Summary
+
+Implemented no-refresh homepage location switching with unified public snapshots, history and preference synchronization, localized popularity caching, and shared today rows; fixed the dynamic reveal lifecycle that left the featured carousel invisible after location changes.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d780f3c` | (see git log) |
+| `d9c5bab` | (see git log) |
+
+### Status
+
+[OK] **Completed**
