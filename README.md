@@ -23,15 +23,43 @@ corepack pnpm format
 ### 上线前
 
 - 使用 Node.js 22.12+
+- 登录正确的 Cloudflare 账号, 并确认账号中已启用 Workers、D1、Turnstile 和 Access
 - 确认 `wrangler.jsonc` 中的 D1 `database_id` 指向生产数据库
-- 将 `TURNSTILE_SITE_KEY` 换成正式 Site Key, 并为正式域名创建 Turnstile Widget
-- 在 `routes` 中配置 Custom Domain, 例如 `{"pattern":"events.example.com","custom_domain":true}`
-- 默认后台鉴权是 Cloudflare Access. 设置 `ACCESS_TEAM` 和 `ACCESS_AUD`
-- 使用 `corepack pnpm exec wrangler secret put VIEW_HASH_SECRET` 交互式设置活动访问去重密钥
+- 将当前测试用的 `TURNSTILE_SITE_KEY` 换成正式 Site Key, 并为正式域名创建
+  Turnstile Widget
+- 通过 Cloudflare Dashboard 绑定 Custom Domain, 或在 `wrangler.jsonc` 的 `routes` 中配置,
+  例如 `{"pattern":"events.example.com","custom_domain":true}`. 未绑定时使用
+  `workers.dev` 地址
+- 默认后台鉴权是 Cloudflare Access. 将 `ACCESS_TEAM` 和 `ACCESS_AUD` 写入
+  `wrangler.jsonc` 的 `vars`
 
 在 Cloudflare Access 中保护 `/admin`, `/admin/*`, `/api/admin`, `/api/admin/*`
 
-普通变量应写在 `wrangler.jsonc` 中. 如需 Token 登录, 再设置 `AUTH_MODE=token` 和 `ADMIN_TOKEN` Secret
+运行时配置如下:
+
+| 配置                    | 存放位置                   | 用途                                   |
+| ----------------------- | -------------------------- | -------------------------------------- |
+| `DEFAULT_DIVISION_CODE` | `wrangler.jsonc` 的 `vars` | 默认地区代码                           |
+| `TURNSTILE_SITE_KEY`    | `wrangler.jsonc` 的 `vars` | 浏览器端 Turnstile Site Key            |
+| `TURNSTILE_SECRET_KEY`  | Wrangler Secret            | 服务端校验 Turnstile Token             |
+| `VIEW_HASH_SECRET`      | Wrangler Secret            | 生成活动级 HMAC 访客键                 |
+| `ACCESS_TEAM`           | `wrangler.jsonc` 的 `vars` | Cloudflare Access Team Domain          |
+| `ACCESS_AUD`            | `wrangler.jsonc` 的 `vars` | Cloudflare Access Application Audience |
+| `AUTH_MODE`             | `wrangler.jsonc` 的 `vars` | 可选. 默认为 `access`, 可改为 `token`  |
+| `ADMIN_TOKEN`           | Wrangler Secret            | 仅在 `AUTH_MODE=token` 时使用          |
+
+设置生产 Secret:
+
+```bash
+corepack pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
+corepack pnpm exec wrangler secret put VIEW_HASH_SECRET
+```
+
+如需 Token 登录, 将 `AUTH_MODE=token` 写入 `vars`, 再执行:
+
+```bash
+corepack pnpm exec wrangler secret put ADMIN_TOKEN
+```
 
 如果生产 D1 不存在, 执行 `corepack pnpm exec wrangler d1 create eventlist-db`, 再更新 `database_id`
 不要提交或打印 Secret
@@ -58,16 +86,16 @@ corepack pnpm exec wrangler deploy --dry-run
 corepack pnpm exec wrangler deploy
 ```
 
-D1 生产命令必须带 `--remote`. 任一检查失败时不要继续部署
-
 ### 部署后
 
 ```bash
 corepack pnpm exec wrangler secret list
 corepack pnpm exec wrangler d1 migrations list DB --remote
+corepack pnpm exec wrangler versions list
 ```
 
 确认 Secret 列表中包含 `TURNSTILE_SECRET_KEY` 和 `VIEW_HASH_SECRET`.
+访问公开页面、投稿接口和后台入口, 并使用 `corepack pnpm exec wrangler tail` 检查运行日志.
 
 ## 维护
 
