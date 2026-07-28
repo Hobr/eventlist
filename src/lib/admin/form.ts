@@ -1,6 +1,6 @@
-import type { AdminEventInput } from "../db/queries";
+import type { AdminEventInput } from "../db/admin-events";
 import { isCountyDivisionCode } from "../divisions";
-import { normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
+import { isCanonicalDate, normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
 import { isEventScale, isEventType, type EventScale, type EventType } from "../events/options";
 
 export const ADMIN_EVENT_FIELDS = [
@@ -99,12 +99,7 @@ function readEventScale(input: AdminEventRawInput): EventScale {
 
 function readDate(input: AdminEventRawInput, field: "start_date" | "end_date") {
     const value = readRequired(input, field);
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-    if (!match) invalid(field, `${ADMIN_EVENT_FIELD_LABELS[field]}格式无效`);
-
-    const [, year, month, day] = match;
-    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
-    if (date.toISOString().slice(0, 10) !== value) {
+    if (!isCanonicalDate(value)) {
         invalid(field, `${ADMIN_EVENT_FIELD_LABELS[field]}格式无效`);
     }
     return value;

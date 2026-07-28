@@ -1,5 +1,5 @@
-import type { SubmissionInput } from "../db/queries";
-import { normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
+import type { SubmissionInput } from "../db/submissions";
+import { isCanonicalDate, normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
 import { isEventScale, isEventType } from "../events/options";
 
 export interface ParsedSubmissionForm {
@@ -48,17 +48,9 @@ function readEventScale(formData: FormData) {
 
 function readDate(formData: FormData, name: string, label: string) {
     const value = readRequired(formData, name, label);
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-    if (!match) {
+    if (!isCanonicalDate(value)) {
         throw new Error(`${label}格式无效`);
     }
-
-    const [, year, month, day] = match;
-    const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
-    if (date.toISOString().slice(0, 10) !== value) {
-        throw new Error(`${label}格式无效`);
-    }
-
     return value;
 }
 

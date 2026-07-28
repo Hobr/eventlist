@@ -9,12 +9,13 @@ import Layout from "../../layouts/Layout.astro";
 import { getDB } from "../../lib/db";
 import {
     listPublishedEvents,
-    topTags,
     type EventSort,
     type EventTiming,
     type PublishedEventFilters
-} from "../../lib/db/queries";
+} from "../../lib/db/public-events";
+import { topTags } from "../../lib/db/tags";
 import { isRegionCode } from "../../lib/divisions";
+import { isCanonicalDate } from "../../lib/events/datetime";
 import { EVENT_SCALES, EVENT_TYPES } from "../../lib/events/options";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 
@@ -30,7 +31,7 @@ function parseDivisionCode(value: string | null) {
 }
 
 function parseDate(value: string | null) {
-    return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+    return value && isCanonicalDate(value) ? value : undefined;
 }
 
 function parseTiming(value: string | null): EventTiming {
