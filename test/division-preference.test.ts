@@ -3,6 +3,8 @@ import test from "node:test";
 import {
     DIVISION_STORAGE_KEY,
     navigateToDivision,
+    readDivisionPreference,
+    writeDivisionPreference,
     restoreStoredDivision
 } from "../src/lib/division-preference";
 
@@ -45,6 +47,19 @@ test("地区选择保存原存储键并保留 action 查询参数", () => {
 
     assert.equal(storage.getItem(DIVISION_STORAGE_KEY), "31");
     assert.equal(navigation.assigned, "/?trend=7&city=31");
+});
+
+test("地区偏好读写 helper 只接受有效地区且不会触发导航", () => {
+    const { navigation, storage } = fakeBrowser();
+
+    assert.equal(writeDivisionPreference("31", storage), true);
+    assert.equal(readDivisionPreference(storage), "31");
+    assert.equal(navigation.assigned, "");
+    assert.equal(navigation.replaced, "");
+
+    storage.setItem(DIVISION_STORAGE_KEY, "invalid");
+    assert.equal(readDivisionPreference(storage), null);
+    assert.equal(writeDivisionPreference("invalid", storage), false);
 });
 
 test("导航地区入口在 URL 未指定 city 时恢复已保存地区", () => {

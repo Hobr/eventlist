@@ -67,6 +67,17 @@
         untrack(() => findCounty(findCity(findProvince(value), value), value)?.code ?? "")
     );
 
+    $effect(() => {
+        const nextValue = value;
+        untrack(() => {
+            const nextProvince = findProvince(nextValue);
+            const nextCity = findCity(nextProvince, nextValue);
+            selectedProvinceCode = nextProvince?.code ?? "";
+            selectedCityCode = nextCity?.code ?? "";
+            selectedCountyCode = findCounty(nextCity, nextValue)?.code ?? "";
+        });
+    });
+
     let selectedProvince = $derived(
         provinces.find((province) => province.code === selectedProvinceCode) ?? null
     );

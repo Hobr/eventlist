@@ -1,8 +1,5 @@
 ---
-import { ArrowRightOutline as ArrowRight } from "flowbite-svelte-icons";
-import EventCard from "../components/EventCard.astro";
-import FeaturedEventCarousel from "../components/FeaturedEventCarousel.svelte";
-import HomepagePopularity from "../components/HomepagePopularity.svelte";
+import HomepageContent from "../components/HomepageContent.svelte";
 import NavLocationPicker from "../components/NavLocationPicker.svelte";
 import Layout from "../layouts/Layout.astro";
 import { getDB } from "../lib/db";
@@ -12,10 +9,10 @@ import {
     type HomepageDiscovery,
     type HomepagePopularity as HomepagePopularityData
 } from "../lib/db/queries";
-import { FALLBACK_DIVISION_CODE, type RegionOption } from "../lib/divisions";
+import { FALLBACK_DIVISION_CODE, getRegionOptionByCode, type RegionOption } from "../lib/divisions";
 import { parsePopularityWindow } from "../lib/events/popularity";
 import { resolveSelectedDivision } from "../lib/geo";
-import { toPublicFeaturedEvents, toPublicHomepagePopularity } from "../lib/public/homepage";
+import { toPublicHomepageData } from "../lib/public/homepage";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;
@@ -54,7 +51,14 @@ try {
     popularityError = "无法确定地区，暂时不能加载本地热门活动";
 }
 
-const selectedDivisionCode = selectedDivision?.code ?? defaultDivisionCode;
+const homepageDivision =
+    selectedDivision ??
+    getRegionOptionByCode(defaultDivisionCode) ??
+    getRegionOptionByCode(FALLBACK_DIVISION_CODE);
+if (!homepageDivision) {
+    throw new Error("Homepage fallback division is invalid");
+}
+const selectedDivisionCode = homepageDivision.code;
 
 if (selectedDivision) {
     try {
@@ -88,13 +92,7 @@ if (selectedDivision) {
     }
 }
 
-const publicFeaturedEvents = toPublicFeaturedEvents(discovery.featuredEvents);
-const publicPopularity = toPublicHomepagePopularity(popularity);
-
-function eventsHref(params: Record<string, string> = {}) {
-    const searchParams = new URLSearchParams({ city: selectedDivisionCode, ...params });
-    return `/events?${searchParams.toString()}`;
-}
+const initialHomepage = toPublicHomepageData(homepageDivision, discovery, popularity);
 ---
 
 <Layout
@@ -104,99 +102,18 @@ function eventsHref(params: Record<string, string> = {}) {
     <NavLocationPicker
         slot="nav-control"
         selectedDivisionCode={selectedDivisionCode}
-        shortLabel={selectedDivision?.name ?? "选择地区"}
-        fullLabel={selectedDivision?.label ?? "尚未选择地区"}
+        initialTrend={trendWindow}
+        shortLabel={homepageDivision.name}
+        fullLabel={homepageDivision.label}
         {sourceLabel}
-        action={`/?trend=${trendWindow}`}
         client:load
     />
 
-    <div class="flex flex-col">
-        {
-            publicFeaturedEvents.length > 1 ? (
-                <FeaturedEventCarousel
-                    events={publicFeaturedEvents}
-                    divisionLabel={selectedDivision?.label ?? "当前地区"}
-                    catalogueHref={eventsHref()}
-                    client:load
-                />
-            ) : (
-                <FeaturedEventCarousel
-                    events={publicFeaturedEvents}
-                    divisionLabel={selectedDivision?.label ?? "当前地区"}
-                    catalogueHref={eventsHref()}
-                />
-            )
-        }
-
-        {
-            regionError ? (
-                <div
-                    class="mt-8 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
-                    role="alert"
-                >
-                    {regionError}
-                </div>
-            ) : null
-        }
-
-        <HomepagePopularity
-            initialPopularity={publicPopularity}
-            divisionCode={selectedDivisionCode}
-            divisionLabel={selectedDivision?.label ?? "当前地区"}
-            initialError={popularityError}
-            client:load
-        />
-
-        <section
-            id="today"
-            aria-labelledby="today-heading"
-            data-reveal
-            class="scroll-mt-28 pb-20 sm:pb-24"
-        >
-            <header class="border-t border-border/80 pt-6">
-                <h2 id="today-heading" class="mt-3 text-3xl font-black text-foreground sm:text-4xl">
-                    今日{selectedDivision?.label ?? "当前地区"}的活动
-                </h2>
-            </header>
-
-            {
-                discoveryError ? (
-                    <div
-                        class="mt-5 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
-                        role="alert"
-                    >
-                        {discoveryError}
-                    </div>
-                ) : discovery.today.length > 0 ? (
-                    <div class="mt-10 border-t border-border/80">
-                        {discovery.today.map((event) => (
-                            <EventCard event={event} variant="row" />
-                        ))}
-                    </div>
-                ) : (
-                    <div class="mt-8 border-y border-border/80 py-10">
-                        <h3 class="text-xl font-black text-foreground">今天暂无本地活动</h3>
-                        <p class="mt-2 text-sm text-muted-foreground">
-                            可以进入活动目录查看这个地区接下来举办的活动。
-                        </p>
-                    </div>
-                )
-            }
-
-            <div class="mt-8 flex justify-end pt-6">
-                <a
-                    href={eventsHref()}
-                    class="group inline-flex h-12 items-center gap-3 rounded-full bg-foreground py-1 pr-1 pl-5 text-sm font-bold text-background transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.98]"
-                >
-                    浏览更多本地活动
-                    <span
-                        class="flex size-10 items-center justify-center rounded-full bg-background text-foreground transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
-                    >
-                        <ArrowRight class="size-4" aria-hidden="true" />
-                    </span>
-                </a>
-            </div>
-        </section>
-    </div>
+    <HomepageContent
+        {initialHomepage}
+        {regionError}
+        {discoveryError}
+        {popularityError}
+        client:load
+    />
 </Layout>

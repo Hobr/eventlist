@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/design-system.md","reason":"实现导航地区侧栏、首页 Svelte 岛、Flowbite/Tailwind、共享 EventRow、响应式和可访问性交互时遵循现有前端合同。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"实现公开首页 JSON API 时遵循参数验证、稳定 envelope、状态码和内部错误隐藏合同。"}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"复用首页发现和热门榜查询时保持地区匹配、中国本地时间、排序、上限和错误边界不变。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 D1 完整记录到公开 DTO、API、导航岛、首页内容岛和 history 状态的端到端一致性。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用现有公开投影、热门请求模式和行卡片，避免重复字段解析、缓存键和视觉实现。"}
+{"file":".trellis/tasks/07-28-homepage-location-switch/research/current-homepage-location-flow.md","reason":"提供当前完整导航原因、首页 SSR/岛边界、无 JavaScript限制和推荐跨岛状态方案。"}

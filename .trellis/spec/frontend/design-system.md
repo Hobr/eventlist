@@ -109,11 +109,14 @@
   must pair it with an actually required field instead of changing validation.
 - `DivisionPicker.svelte`, `CitySelector.svelte`, and `FilterBar.svelte`
   depend on `SelectField.svelte`; visual changes must keep URL query names
-  and hidden form field behavior intact. `NavLocationPicker.svelte` reuses
-  `CitySelector` inside `SidePanel` and restores `eventlist.divisionCode` from
-  its own always-mounted island, because Flowbite may not mount drawer content
-  until the panel opens. `DivisionPicker.showRequiredIndicator` marks the
-  composed region label once; do not repeat `必填` on province, city, and county.
+  and hidden form field behavior intact. `CitySelector.navigateOnChange=false`
+  is the homepage-only controlled mode: province/city/county changes report a
+  draft value without navigation or preference writes. `NavLocationPicker.svelte`
+  owns the explicit “应用地区” request, and writes `eventlist.divisionCode` only
+  after a complete homepage snapshot succeeds. The default `CitySelector`
+  behavior remains full navigation for other callers. `DivisionPicker.showRequiredIndicator`
+  marks the composed region label once; do not repeat `必填` on province, city,
+  and county.
 - `DivisionPicker.svelte` labels its levels `省`, `市`, `区/县`. The four
   municipalities expose one auto-selected city node; Chongqing must merge
   counties from both upstream city groups.
@@ -128,10 +131,13 @@
   its `showRequiredIndicators` prop; the default remains `false` for edit.
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
+- `HomepageContent.svelte` is the single hydrated owner of the featured, popularity, and today snapshot. `NavLocationPicker.svelte` may commit only one validated `HOMEPAGE_DATA_EVENT`; do not add independent per-section requests or an SSR-visible module-level store.
+- `HomepageContent.svelte` and `NavLocationPicker.svelte` treat Astro props as one-time initial state. Wrap those `$state` initializers in `untrack(() => initialProp)` so the intent is explicit and the Svelte dev compiler does not emit `state_referenced_locally`; components that receive live parent updates, such as `HomepagePopularity.svelte`, must keep their prop-sync effect instead.
 - `FeaturedEventCarousel.svelte` and `HomepagePopularity.svelte` receive only explicit homepage public DTOs from `src/lib/public/homepage.ts`; never pass hydrated components a full `EventRecord` or `PopularEvent` because Astro serializes client-island props.
-- `FeaturedEventCarousel.svelte` owns the whole Hero surface. Multiple candidates use Flowbite Svelte Carousel/Controls/Indicators; one or zero candidates stay server-only and render no carousel runtime or controls.
+- `FeaturedEventCarousel.svelte` owns the whole Hero surface. Multiple candidates use Flowbite Svelte Carousel/Controls/Indicators; one or zero candidates render no carousel controls. A changed division/candidate snapshot resets index, pause state, and the previous autoplay lifecycle.
 - Flowbite Carousel ships its own `xl` / `2xl` height utilities, so the homepage Hero must explicitly override both breakpoints instead of relying only on an `lg` height. A native shell owns hover/focus/keyboard listeners, and each autoplay tick also checks `:hover` plus `document.activeElement` so component prop forwarding or programmatic focus cannot bypass the pause contract.
-- `HomepagePopularity.svelte` progressively enhances real `3 / 7 / 30` links. It may import Flowbite `Spinner` as a stateless leaf, while project Tailwind tokens own the three-segment layout.
+- `HomepagePopularity.svelte` progressively enhances real `3 / 7 / 30` links. It may import Flowbite `Spinner` as a stateless leaf, while project Tailwind tokens own the three-segment layout. Successful snapshots are cached only by `city:window`; a division prop change aborts/invalidates the previous request before committing the new snapshot.
+- `EventRow.svelte` is the shared public row contract. `EventCard.astro variant="row"` projects through `toPublicEventRow()` and renders it for the catalogue, while `HomepageToday.svelte` renders the same component from the public homepage snapshot.
 - Keep action buttons icon+text where the icon clarifies the command
   (Flowbite Svelte Icons).
 
@@ -182,6 +188,8 @@
   compact homepage-only location trigger in the public navigation, and a
   catalogue action. Do not restore the large in-page location block, a separate
   nearby section, or redundant popular/today anchor buttons below the hero.
+- 首页地区侧栏中的省、市、区县只修改待应用值。有效“应用地区”成功后，导航标签、Hero、热门、今日、URL、history 元数据和地区偏好才一起提交；加载/失败期间继续显示旧快照，并提供目标 URL 的普通导航回退。
+- 主动地区切换使用 `history.pushState`，已保存地区恢复和热门窗口切换使用 `replaceState`，且必须合并保留已有 `history.state` 字段。`popstate` 无刷新请求对应完整快照；恢复失败时使用普通导航重新建立 URL 与内容一致性。
 - At `sm` and wider, the public navigation capsule uses three balanced columns:
   brand at the left, `首页 / 活动 / 投稿` geometrically centered, and the
   homepage-only location trigger at the right. Mobile keeps brand plus the
@@ -204,8 +212,8 @@
 - Popularity uses one stable three-segment `3 / 7 / 30` control, defaults to
   seven days, preserves the selected city, and updates local and nationwide
   lists together. The initial window is server-rendered. Hydrated clicks fetch
-  uncached windows from `/api/popularity`, cache successful snapshots for the
-  page lifetime, retain the current list while loading/failing, and update
+  uncached `city:window` combinations from `/api/popularity`, cache successful snapshots for the
+  page lifetime without crossing division boundaries, retain the current list while loading/failing, and update
   `city`, `trend`, and `#popular` with `history.replaceState` only after success.
   Real hrefs preserve full-navigation behavior without JavaScript. Abort or
   ignore stale requests so rapid selection cannot commit an older response.

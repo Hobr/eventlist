@@ -10,6 +10,8 @@
         action?: string;
         name?: string;
         label?: string;
+        navigateOnChange?: boolean;
+        onchange?: (value: string) => void;
     }
 
     let {
@@ -17,15 +19,18 @@
         selectedDivisionCode = null,
         action = "/",
         name = "city",
-        label = "所在地区"
+        label = "所在地区",
+        navigateOnChange = true,
+        onchange
     }: Props = $props();
 
     function handleChange(value: string) {
-        navigateToDivision({ value, action, name });
+        onchange?.(value);
+        if (navigateOnChange) navigateToDivision({ value, action, name });
     }
 
     onMount(() => {
-        restoreStoredDivision({ selectedDivisionCode, action, name });
+        if (navigateOnChange) restoreStoredDivision({ selectedDivisionCode, action, name });
     });
 </script>
 

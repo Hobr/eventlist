@@ -4,6 +4,7 @@
 
     interface Props {
         title: string;
+        open?: boolean;
         description?: string;
         trigger: import("svelte").Snippet;
         children: import("svelte").Snippet;
@@ -15,6 +16,7 @@
 
     let {
         title,
+        open = $bindable(false),
         description = undefined,
         trigger,
         children,
@@ -24,7 +26,6 @@
         contentClass = undefined
     }: Props = $props();
 
-    let open = $state(false);
     let triggerElement: HTMLButtonElement | null = null;
     const DRAWER_TRANSITION_MS = 300;
     const drawerTransition = { duration: DRAWER_TRANSITION_MS };

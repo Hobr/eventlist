@@ -8,8 +8,9 @@
         PauseOutline as Pause,
         PlayOutline as Play
     } from "flowbite-svelte-icons";
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import { fade } from "svelte/transition";
+    import { SITE_NAME, SITE_SLOGAN } from "../lib/site";
     import { formatEventSchedule } from "../lib/events/datetime";
     import { getEventScaleLabel } from "../lib/events/options";
     import type { PublicFeaturedEvent } from "../lib/public/homepage";
@@ -39,6 +40,22 @@
             onerror: handleCoverError
         }))
     );
+    const snapshotKey = $derived(
+        `${divisionLabel}:${events
+            .map((event) => `${event.id}:${event.cover_url ?? ""}`)
+            .join(",")}`
+    );
+
+    $effect(() => {
+        const nextSnapshotKey = snapshotKey;
+        untrack(() => {
+            void nextSnapshotKey;
+            index = 0;
+            hovered = false;
+            focusWithin = false;
+            userPaused = false;
+        });
+    });
 
     onMount(() => {
         const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -132,34 +149,22 @@
             <MapPinned class="size-4 shrink-0" aria-hidden="true" />
             <span class="truncate">{divisionLabel}</span>
         </p>
-        <h1
-            id="home-heading"
-            class="mt-5 text-5xl leading-none font-black text-balance text-white sm:text-6xl lg:text-7xl"
-        >
-            同频点网
-        </h1>
-        <p class="mt-5 max-w-xl text-base leading-7 text-pretty text-white/82 sm:text-lg">
-            把分散在各大社交媒体和社交渠道的ACG活动信息聚合起来
-        </p>
     </header>
 {/snippet}
 
 {#snippet recommendation(event: PublicFeaturedEvent)}
     <div class="pointer-events-auto max-w-3xl pb-10 sm:pb-8">
-        <p class="text-xs font-semibold text-white/68">
-            重要活动 · {getEventScaleLabel(event.scale)}
-        </p>
-        <h2 class="mt-2 text-2xl leading-tight font-bold text-balance text-white sm:text-3xl">
+        <h1 class="mt-2 text-2xl leading-tight font-bold text-balance text-white sm:text-3xl">
             {event.title}
-        </h2>
+        </h1>
         <p class="mt-3 font-mono text-sm text-white/78 tabular-nums">
-            {formatEventSchedule(event)}
+            {getEventScaleLabel(event.scale)} · {formatEventSchedule(event)}
         </p>
         <a
             href={`/events/${event.id}`}
             class="group mt-6 inline-flex h-12 items-center gap-3 rounded-full bg-white py-1 pr-1 pl-5 text-sm font-bold text-black transition-[transform,background-color] duration-300 ease-motion hover:bg-white/92 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-[0.98]"
         >
-            查看推荐
+            查看
             <span
                 class="flex size-10 items-center justify-center rounded-full bg-black text-white transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
             >

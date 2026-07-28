@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/design-system.md","reason":"检查地区应用状态、原子内容切换、轮播/热门状态重置、共享行卡片、焦点和响应式表现。"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"检查首页 API 的参数矩阵、全有或全无响应、稳定错误和公开字段白名单。"}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"确认地区切换只复用查询，不改变主推荐、热门榜和今日列表的既有 SQL 合同。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查导航已生效地区、URL/history、localStorage、API 快照和三个首页区块始终一致。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查 EventRow、响应解析、history helper 和缓存键没有出现并行重复实现。"}
+{"file":".trellis/tasks/07-28-homepage-location-switch/research/current-homepage-location-flow.md","reason":"对照当前行为验证未遗漏保存偏好恢复、popstate、竞态和普通导航回退。"}

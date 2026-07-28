@@ -6,12 +6,15 @@
     } from "flowbite-svelte-icons";
     import { onDestroy, onMount, untrack } from "svelte";
     import { getDivisionLabel } from "../lib/divisions";
-    import {
-        POPULARITY_WINDOWS,
-        isPopularityWindow,
-        type PopularityWindow
-    } from "../lib/events/popularity";
+    import { POPULARITY_WINDOWS, type PopularityWindow } from "../lib/events/popularity";
     import type { PublicHomepagePopularity, PublicPopularEvent } from "../lib/public/homepage";
+    import {
+        buildHomepageUrl,
+        homepagePopularityCacheKey,
+        mergeHomepageHistoryState,
+        readHomepageHistoryState,
+        readPopularityResponse
+    } from "../lib/public/homepage-client";
 
     interface Props {
         initialPopularity: PublicHomepagePopularity;
@@ -25,8 +28,14 @@
     const numberFormat = new Intl.NumberFormat("zh-CN");
     const initialSnapshot = untrack(() => initialPopularity);
     const initialErrorMessage = untrack(() => initialError);
-    const cache = new Map<PopularityWindow, PublicHomepagePopularity>();
-    if (!initialErrorMessage) cache.set(initialSnapshot.window, initialSnapshot);
+    const initialDivisionCode = untrack(() => divisionCode);
+    const cache = new Map<string, PublicHomepagePopularity>();
+    if (!initialErrorMessage) {
+        cache.set(
+            homepagePopularityCacheKey(initialDivisionCode, initialSnapshot.window),
+            initialSnapshot
+        );
+    }
 
     let popularity = $state(initialSnapshot);
     let pendingWindow = $state<PopularityWindow | null>(null);
@@ -34,11 +43,61 @@
     let hydrated = $state(false);
     let requestController: AbortController | null = null;
     let requestSequence = 0;
+    let lastPropSignature = snapshotSignature(
+        initialDivisionCode,
+        initialSnapshot,
+        initialErrorMessage
+    );
 
     onMount(() => {
         hydrated = true;
     });
-    onDestroy(() => requestController?.abort());
+    onDestroy(() => {
+        requestController?.abort();
+        requestSequence += 1;
+    });
+
+    $effect(() => {
+        const nextPopularity = initialPopularity;
+        const nextDivisionCode = divisionCode;
+        const nextError = initialError;
+        const nextSignature = snapshotSignature(nextDivisionCode, nextPopularity, nextError);
+        if (nextSignature === lastPropSignature) return;
+        lastPropSignature = nextSignature;
+
+        untrack(() => {
+            requestController?.abort();
+            requestController = null;
+            requestSequence += 1;
+            popularity = nextPopularity;
+            pendingWindow = null;
+            errorMessage = nextError;
+            if (!nextError) {
+                cache.set(
+                    homepagePopularityCacheKey(nextDivisionCode, nextPopularity.window),
+                    nextPopularity
+                );
+            }
+        });
+    });
+
+    function snapshotSignature(
+        city: string,
+        snapshot: PublicHomepagePopularity,
+        snapshotError: string
+    ) {
+        const eventSignature = [snapshot.local, snapshot.nationwide]
+            .map((events) =>
+                events
+                    .map(
+                        (event) =>
+                            `${event.id}:${event.title}:${event.division_code}:${event.start_date}:${event.unique_visitors}`
+                    )
+                    .join(",")
+            )
+            .join("|");
+        return `${city}:${snapshot.window}:${snapshotError}:${eventSignature}`;
+    }
 
     function trendHref(trend: PopularityWindow) {
         const searchParams = new URLSearchParams({
@@ -48,55 +107,16 @@
         return `/?${searchParams.toString()}#popular`;
     }
 
-    function isPublicPopularEvent(value: unknown): value is PublicPopularEvent {
-        if (!value || typeof value !== "object") return false;
-        const event = value as Record<string, unknown>;
-        return (
-            Number.isSafeInteger(event.id) &&
-            typeof event.title === "string" &&
-            typeof event.division_code === "string" &&
-            typeof event.start_date === "string" &&
-            typeof event.unique_visitors === "number" &&
-            Number.isFinite(event.unique_visitors)
-        );
-    }
-
-    function readPopularityResponse(
-        body: unknown,
-        expectedWindow: PopularityWindow
-    ): PublicHomepagePopularity | null {
-        if (!body || typeof body !== "object") return null;
-        const envelope = body as {
-            ok?: unknown;
-            data?: { popularity?: unknown };
-        };
-        if (envelope.ok !== true || !envelope.data?.popularity) return null;
-
-        const snapshot = envelope.data.popularity as Partial<PublicHomepagePopularity>;
-        if (
-            !isPopularityWindow(snapshot.window) ||
-            snapshot.window !== expectedWindow ||
-            !Array.isArray(snapshot.local) ||
-            !snapshot.local.every(isPublicPopularEvent) ||
-            !Array.isArray(snapshot.nationwide) ||
-            !snapshot.nationwide.every(isPublicPopularEvent)
-        ) {
-            return null;
-        }
-
-        return {
-            window: snapshot.window,
-            local: snapshot.local,
-            nationwide: snapshot.nationwide
-        };
-    }
-
-    function updateUrl(trend: PopularityWindow) {
-        const url = new URL(window.location.href);
-        url.searchParams.set("city", divisionCode);
-        url.searchParams.set("trend", String(trend));
+    function updateUrl(city: string, trend: PopularityWindow) {
+        const url = buildHomepageUrl(new URL(window.location.href), city, trend);
         url.hash = "popular";
-        history.replaceState(history.state, "", url);
+        const currentState = readHomepageHistoryState(history.state);
+        const nextState = mergeHomepageHistoryState(history.state, {
+            city,
+            trend,
+            sourceLabel: currentState?.sourceLabel ?? "手动选择"
+        });
+        history.replaceState(nextState, "", url);
     }
 
     async function selectWindow(event: MouseEvent, trend: PopularityWindow) {
@@ -119,12 +139,14 @@
         requestController?.abort();
         requestController = null;
         const requestId = ++requestSequence;
-        const cached = cache.get(trend);
+        const requestCity = divisionCode;
+        const cacheKey = homepagePopularityCacheKey(requestCity, trend);
+        const cached = cache.get(cacheKey);
         if (cached) {
             popularity = cached;
             pendingWindow = null;
             errorMessage = "";
-            updateUrl(trend);
+            updateUrl(requestCity, trend);
             return;
         }
 
@@ -135,7 +157,7 @@
 
         try {
             const searchParams = new URLSearchParams({
-                city: divisionCode,
+                city: requestCity,
                 trend: String(trend)
             });
             const response = await fetch(`/api/popularity?${searchParams.toString()}`, {
@@ -153,13 +175,13 @@
 
             const nextPopularity = readPopularityResponse(body, trend);
             if (!nextPopularity) throw new Error("热门活动返回内容无效，请稍后重试");
-            if (requestId !== requestSequence) return;
+            if (requestId !== requestSequence || requestCity !== divisionCode) return;
 
-            cache.set(trend, nextPopularity);
+            cache.set(cacheKey, nextPopularity);
             popularity = nextPopularity;
             pendingWindow = null;
             errorMessage = "";
-            updateUrl(trend);
+            updateUrl(requestCity, trend);
         } catch (error) {
             if (controller.signal.aborted || requestId !== requestSequence) return;
             pendingWindow = null;
