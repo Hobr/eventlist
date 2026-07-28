@@ -308,3 +308,27 @@ test("首页客户端由单一快照事件提交，并保持地区化缓存、�
     assert.match(citySelector, /navigateOnChange = true/);
     assert.match(citySelector, /if \(navigateOnChange\) navigateToDivision/);
 });
+
+test("地区切换后的新 Hero 复用稳定 reveal 容器，动态 reveal 节点也会被注册", async () => {
+    const [layout, content, carousel] = await Promise.all(
+        [
+            "../src/layouts/Layout.astro",
+            "../src/components/HomepageContent.svelte",
+            "../src/components/FeaturedEventCarousel.svelte"
+        ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))
+    );
+
+    assert.match(layout, /const intersectionObserver =/);
+    assert.match(layout, /function registerRevealTree\(root: ParentNode\)/);
+    assert.match(layout, /new MutationObserver/);
+    assert.match(layout, /record\.addedNodes/);
+    assert.match(layout, /registerRevealTree\(node\)/);
+    assert.match(
+        layout,
+        /mutationObserver\.observe\(document\.body, \{ childList: true, subtree: true \}\)/
+    );
+
+    assert.match(content, /<div data-reveal>\s*\{#key carouselKey\}/);
+    assert.doesNotMatch(carousel, /data-reveal/);
+    assert.doesNotMatch(carousel, /out:fade/);
+});

@@ -201,7 +201,6 @@
             aria-roledescription="carousel"
             role="region"
             tabindex={0}
-            data-reveal
             class="h-[31rem] rounded-md bg-foreground bg-cover bg-center text-white shadow-elevated ring-1 ring-black/10 sm:h-[35rem] lg:h-[38rem] xl:!h-[38rem] 2xl:!h-[38rem]"
             style={`background-image: url('${fallbackCover}')`}
             classes={{ slide: "size-full object-cover" }}
@@ -215,10 +214,7 @@
                     {@render brandHeader(true)}
                     {#if event}
                         {#key event.id}
-                            <div
-                                in:fade={{ duration: reducedMotion ? 0 : 220 }}
-                                out:fade={{ duration: reducedMotion ? 0 : 160 }}
-                            >
+                            <div in:fade={{ duration: reducedMotion ? 0 : 220 }}>
                                 {@render recommendation(event)}
                             </div>
                         {/key}
@@ -277,7 +273,6 @@
     {@const event = events[0] ?? null}
     <section
         aria-labelledby="home-heading"
-        data-reveal
         class="relative isolate overflow-hidden rounded-md bg-foreground text-white shadow-elevated ring-1 ring-black/10"
     >
         <img

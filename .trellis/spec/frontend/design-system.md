@@ -148,6 +148,14 @@
   the body script reveals each item once through `IntersectionObserver` before
   unobserving it. Only `opacity` and `transform` may animate. The global
   `prefers-reduced-motion` rule must force reveal content visible.
+- `Layout.astro` must also register dynamically inserted `[data-reveal]` nodes
+  through its shared `MutationObserver`; an initial `querySelectorAll()` alone
+  leaves Svelte-created content permanently at `opacity: 0`. For keyed or
+  conditional homepage surfaces such as `FeaturedEventCarousel`, place
+  `data-reveal` on a stable parent that survives snapshot replacement instead
+  of on the zero/single/multiple candidate roots. Do not add an `out:`
+  transition that keeps an obsolete keyed Hero in layout after the new
+  snapshot is ready.
 
 - Catalogue URLs own filter state. Preserve `city`, `type`, `scale`, `tag`,
   `from`, `to`, `starts`, `active`, `page`, and `sort` whenever either the quick

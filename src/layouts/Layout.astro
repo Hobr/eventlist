@@ -157,21 +157,49 @@ function navClasses(href: string) {
         </div>
 
         <script>
-            const revealItems = document.querySelectorAll<HTMLElement>("[data-reveal]");
-            if (!("IntersectionObserver" in window)) {
-                revealItems.forEach((item) => item.setAttribute("data-revealed", "true"));
-            } else {
-                const observer = new IntersectionObserver(
-                    (entries) => {
-                        for (const entry of entries) {
-                            if (!entry.isIntersecting) continue;
-                            (entry.target as HTMLElement).setAttribute("data-revealed", "true");
-                            observer.unobserve(entry.target);
+            const revealSelector = "[data-reveal]";
+            const revealItem = (item: Element) => item.setAttribute("data-revealed", "true");
+            const intersectionObserver =
+                "IntersectionObserver" in window
+                    ? new IntersectionObserver(
+                          (entries) => {
+                              for (const entry of entries) {
+                                  if (!entry.isIntersecting) continue;
+                                  revealItem(entry.target);
+                                  intersectionObserver?.unobserve(entry.target);
+                              }
+                          },
+                          { rootMargin: "0px 0px -8%", threshold: 0.12 }
+                      )
+                    : null;
+
+            function registerRevealItem(item: Element) {
+                if (!item.isConnected || item.getAttribute("data-revealed") === "true") return;
+                if (intersectionObserver) {
+                    intersectionObserver.observe(item);
+                } else {
+                    revealItem(item);
+                }
+            }
+
+            function registerRevealTree(root: ParentNode) {
+                if (root instanceof Element && root.matches(revealSelector)) {
+                    registerRevealItem(root);
+                }
+                root.querySelectorAll<Element>(revealSelector).forEach(registerRevealItem);
+            }
+
+            registerRevealTree(document);
+
+            if ("MutationObserver" in window) {
+                const mutationObserver = new MutationObserver((records) => {
+                    for (const record of records) {
+                        for (const node of record.addedNodes) {
+                            if (node instanceof Element) registerRevealTree(node);
                         }
-                    },
-                    { rootMargin: "0px 0px -8%", threshold: 0.12 }
-                );
-                revealItems.forEach((item) => observer.observe(item));
+                    }
+                });
+                mutationObserver.observe(document.body, { childList: true, subtree: true });
             }
         </script>
     </body>

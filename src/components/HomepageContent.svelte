@@ -51,13 +51,15 @@
 </script>
 
 <div class="flex flex-col">
-    {#key carouselKey}
-        <FeaturedEventCarousel
-            events={homepage.featuredEvents}
-            divisionLabel={homepage.division.label}
-            {catalogueHref}
-        />
-    {/key}
+    <div data-reveal>
+        {#key carouselKey}
+            <FeaturedEventCarousel
+                events={homepage.featuredEvents}
+                divisionLabel={homepage.division.label}
+                {catalogueHref}
+            />
+        {/key}
+    </div>
 
     {#if regionError}
         <div
