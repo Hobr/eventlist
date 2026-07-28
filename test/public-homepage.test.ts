@@ -1,12 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import type {
-    EventRecord,
-    HomepageDiscovery,
-    HomepagePopularity,
-    PopularEvent
-} from "../src/lib/db/queries";
+import type { HomepageDiscovery, HomepagePopularity, PopularEvent } from "../src/lib/db/homepage";
+import type { PublicEventRow } from "../src/lib/db/public-events";
 import type { RegionOption } from "../src/lib/divisions";
 import { isPopularityWindow, parsePopularityWindow } from "../src/lib/events/popularity";
 import {
@@ -24,20 +20,25 @@ import {
     readPopularityResponse
 } from "../src/lib/public/homepage-client";
 
-function event(id: number): EventRecord {
-    return {
+function event(id: number) {
+    const publicRow: PublicEventRow = {
         id,
         title: `活动 ${id}`,
         type: "comic",
         scale: "large",
         division_code: "110101",
         venue: "测试场馆",
-        address: "测试地址",
         start_date: "2026-07-27",
         end_date: "2026-07-28",
         start_time: "09:00",
         end_time: "18:00",
         cover_url: "https://example.com/cover.webp",
+        tags: "同人展"
+    };
+
+    return {
+        ...publicRow,
+        address: "测试地址",
         description: "内部描述",
         qq_group: "123456",
         ticket_url: "https://example.com/ticket",
@@ -48,8 +49,7 @@ function event(id: number): EventRecord {
         created_at: "2026-07-01 00:00:00",
         updated_at: "2026-07-01 00:00:00",
         published_at: "2026-07-01 00:00:00",
-        tag_suggestions: "内部标签建议",
-        tags: "同人展"
+        tag_suggestions: "内部标签建议"
     };
 }
 

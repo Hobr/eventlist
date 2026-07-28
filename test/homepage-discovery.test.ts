@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { D1Database } from "../src/types/cloudflare";
-import { listHomepageDiscovery, type EventRecord } from "../src/lib/db/queries";
+import { listHomepageDiscovery } from "../src/lib/db/homepage";
+import type { PublicEventDatabaseRow } from "../src/lib/db/public-events";
 
 class FakeStatement {
     values: unknown[] = [];
@@ -16,7 +17,7 @@ class FakeStatement {
 
 class FakeDatabase {
     prepared: FakeStatement[] = [];
-    batchResults: EventRecord[][] = [];
+    batchResults: PublicEventDatabaseRow[][] = [];
 
     prepare(sql: string) {
         const statement = new FakeStatement(sql);
@@ -37,7 +38,7 @@ function asD1(db: FakeDatabase) {
     return db as unknown as D1Database;
 }
 
-function event(id: number): EventRecord {
+function event(id: number): PublicEventDatabaseRow {
     return {
         id,
         title: `活动 ${id}`,
@@ -55,13 +56,8 @@ function event(id: number): EventRecord {
         qq_group: null,
         ticket_url: null,
         source_url: "https://example.com/source",
-        submitter_contact: "test@example.com",
         status: "published",
-        reject_reason: null,
-        created_at: "2026-07-01 00:00:00",
         updated_at: "2026-07-01 00:00:00",
-        published_at: "2026-07-01 00:00:00",
-        tag_suggestions: null,
         tags: null
     };
 }
@@ -77,30 +73,21 @@ test("首页发现查询返回最多五条进行中优先候选，并将今日�
     assert.equal(db.prepared.length, 2);
     const featuredSql = db.prepared[0]?.sql ?? "";
     assert.match(featuredSql, /AND NOT \(/);
-    assert.match(
-        featuredSql,
-        /date\(events\.start_date\) <= date\('now', '\+8 hours', '\+14 days'\)/
-    );
-    assert.doesNotMatch(featuredSql, /date\(events\.start_date\) >=/);
+    assert.match(featuredSql, /events\.start_date <= date\('now', '\+8 hours', '\+14 days'\)/);
+    assert.doesNotMatch(featuredSql, /events\.start_date >=/);
     assert.doesNotMatch(featuredSql, /\bBETWEEN\b/);
-    assert.match(
-        featuredSql,
-        /WHEN date\(events\.start_date\) < date\('now', '\+8 hours'\) THEN 0/
-    );
+    assert.match(featuredSql, /WHEN events\.start_date < date\('now', '\+8 hours'\) THEN 0/);
     assert.match(featuredSql, /events\.start_time IS NULL/);
-    assert.match(featuredSql, /time\(events\.start_time\) <= time\('now', '\+8 hours'\)/);
-    assert.match(
-        featuredSql,
-        /CASE events\.scale[\s\S]*END DESC,[\s\S]*date\(events\.start_date\) ASC/
-    );
+    assert.match(featuredSql, /events\.start_time <= time\('now', '\+8 hours'\)/);
+    assert.match(featuredSql, /CASE events\.scale[\s\S]*END DESC,[\s\S]*events\.start_date ASC/);
     assert.match(featuredSql, /cover_url[\s\S]*DESC,[\s\S]*events\.id ASC\s+LIMIT 5\s*$/);
     const todaySql = db.prepared[1]?.sql ?? "";
     assert.match(todaySql, /events\.division_code LIKE \?/);
-    assert.match(todaySql, /date\(events\.start_date\) <=/);
-    assert.match(todaySql, /date\(events\.end_date\) >=/);
+    assert.match(todaySql, /events\.start_date <=/);
+    assert.match(todaySql, /events\.end_date >=/);
     assert.match(todaySql, /ORDER BY CASE/);
-    assert.match(todaySql, /WHEN date\(events\.start_date\) < date\('now', '\+8 hours'\) THEN 0/);
-    assert.match(todaySql, /WHEN date\(events\.start_date\) = date\('now', '\+8 hours'\)/);
+    assert.match(todaySql, /WHEN events\.start_date < date\('now', '\+8 hours'\) THEN 0/);
+    assert.match(todaySql, /WHEN events\.start_date = date\('now', '\+8 hours'\)/);
     assert.match(todaySql, /CASE events\.scale/);
     assert.match(todaySql, /events\.id ASC\s+LIMIT 10\s*$/);
     assert.equal(todaySql.match(/\bLIMIT\b/g)?.length, 1);
