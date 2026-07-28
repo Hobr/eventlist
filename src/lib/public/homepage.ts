@@ -1,11 +1,7 @@
-import type {
-    EventRecord,
-    HomepageDiscovery,
-    HomepagePopularity,
-    PopularEvent
-} from "../db/queries";
+import type { HomepageDiscovery, HomepagePopularity, PopularEvent } from "../db/homepage";
+import type { PublicEventRow as DatabasePublicEventRow } from "../db/public-events";
 import type { RegionOption } from "../divisions";
-import type { EventScale, EventType } from "../events/options";
+import type { EventScale } from "../events/options";
 import type { PopularityWindow } from "../events/popularity";
 
 export interface PublicHomepageDivision {
@@ -39,20 +35,7 @@ export interface PublicHomepagePopularity {
     nationwide: PublicPopularEvent[];
 }
 
-export interface PublicEventRow {
-    id: number;
-    title: string;
-    type: EventType;
-    scale: EventScale;
-    division_code: string;
-    venue: string;
-    start_date: string;
-    end_date: string;
-    start_time: string | null;
-    end_time: string | null;
-    cover_url: string | null;
-    tags: string | null;
-}
+export type PublicEventRow = DatabasePublicEventRow;
 
 export interface PublicHomepageData {
     division: PublicHomepageDivision;
@@ -61,7 +44,7 @@ export interface PublicHomepageData {
     popularity: PublicHomepagePopularity;
 }
 
-function toPublicFeaturedEvent(event: EventRecord): PublicFeaturedEvent {
+function toPublicFeaturedEvent(event: DatabasePublicEventRow): PublicFeaturedEvent {
     return {
         id: event.id,
         title: event.title,
@@ -84,7 +67,7 @@ function toPublicPopularEvent(event: PopularEvent): PublicPopularEvent {
     };
 }
 
-export function toPublicEventRow(event: EventRecord): PublicEventRow {
+export function toPublicEventRow(event: DatabasePublicEventRow): PublicEventRow {
     return {
         id: event.id,
         title: event.title,
@@ -101,7 +84,9 @@ export function toPublicEventRow(event: EventRecord): PublicEventRow {
     };
 }
 
-export function toPublicFeaturedEvents(events: readonly EventRecord[]): PublicFeaturedEvent[] {
+export function toPublicFeaturedEvents(
+    events: readonly DatabasePublicEventRow[]
+): PublicFeaturedEvent[] {
     return events.map(toPublicFeaturedEvent);
 }
 

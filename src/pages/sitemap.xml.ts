@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../lib/db";
-import { listPublishedEventSitemapRows } from "../lib/db/queries";
+import { listPublishedEventSitemapRows } from "../lib/db/public-events";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;

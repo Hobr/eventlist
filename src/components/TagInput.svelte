@@ -1,6 +1,6 @@
 <script lang="ts">
     import { untrack } from "svelte";
-    import type { TagSummary } from "../lib/db/queries";
+    import type { TagSummary } from "../lib/db/tags";
     import { CloseOutline as X } from "flowbite-svelte-icons";
 
     interface Props {

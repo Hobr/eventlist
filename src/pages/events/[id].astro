@@ -11,7 +11,7 @@ import EventArtwork from "../../components/EventArtwork.astro";
 import Badge from "../../components/ui/badge.svelte";
 import Layout from "../../layouts/Layout.astro";
 import { getDB, STATUS } from "../../lib/db";
-import { getPublicEvent } from "../../lib/db/queries";
+import { getPublicEvent } from "../../lib/db/public-events";
 import { getDivisionLabel } from "../../lib/divisions";
 import { formatEventSchedule } from "../../lib/events/datetime";
 import { getEventScaleLabel, getEventTypeLabel } from "../../lib/events/options";

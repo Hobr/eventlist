@@ -1,8 +1,8 @@
-import type { EventRecord } from "./db/queries";
+import type { PublicEventDetail } from "./db/public-events";
 import { getDivisionLabel } from "./divisions";
 import { toEventIsoDateTime } from "./events/datetime";
 
-export function buildEventJsonLd(event: EventRecord, canonicalUrl: string) {
+export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string) {
     const divisionLabel = getDivisionLabel(event.division_code);
     const jsonLd: Record<string, unknown> = {
         "@context": "https://schema.org",

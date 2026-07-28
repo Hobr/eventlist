@@ -5,12 +5,8 @@
         FilterOutline as Filter,
         RefreshOutline as RotateCcw
     } from "flowbite-svelte-icons";
-    import type {
-        EventSort,
-        EventTiming,
-        PublishedEventFilters,
-        TagSummary
-    } from "../lib/db/queries";
+    import type { EventSort, EventTiming, PublishedEventFilters } from "../lib/db/public-events";
+    import type { TagSummary } from "../lib/db/tags";
     import { getDivisionLabel } from "../lib/divisions";
     import type { EventOption } from "../lib/events/options";
     import DivisionPicker from "./DivisionPicker.svelte";

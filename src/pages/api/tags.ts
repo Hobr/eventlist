@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../../lib/db";
-import { searchTags } from "../../lib/db/queries";
+import { searchTags } from "../../lib/db/tags";
 import { jsonError, jsonOk } from "../../lib/http/json";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../../lib/db";
-import { listHomepagePopularity } from "../../lib/db/queries";
+import { listHomepagePopularity } from "../../lib/db/homepage";
 import { isRegionCode } from "../../lib/divisions";
 import { isPopularityWindow } from "../../lib/events/popularity";
 import { jsonError, jsonOk } from "../../lib/http/json";

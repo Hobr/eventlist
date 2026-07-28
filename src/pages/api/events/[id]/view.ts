@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDB } from "../../../../lib/db";
-import { recordEventView } from "../../../../lib/db/queries";
+import { recordEventView } from "../../../../lib/db/views";
 import { hashEventVisitor } from "../../../../lib/events/popularity";
 import { jsonError } from "../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";

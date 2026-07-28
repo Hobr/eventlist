@@ -4,7 +4,7 @@ import {
     CalendarMonthOutline as CalendarDays,
     MapPinOutline as MapPin
 } from "flowbite-svelte-icons";
-import type { EventRecord } from "../lib/db/queries";
+import type { PublicEventRow } from "../lib/db/public-events";
 import { getDivisionLabel } from "../lib/divisions";
 import { formatEventSchedule } from "../lib/events/datetime";
 import { getEventScaleLabel, getEventTypeLabel } from "../lib/events/options";
@@ -14,7 +14,7 @@ import EventArtwork from "./EventArtwork.astro";
 import EventRow from "./EventRow.svelte";
 
 interface Props {
-    event: EventRecord;
+    event: PublicEventRow;
     variant?: "card" | "row" | "featured" | "compact";
     priority?: boolean;
 }
