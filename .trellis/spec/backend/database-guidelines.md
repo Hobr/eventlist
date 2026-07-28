@@ -20,7 +20,7 @@
     - `migrations_dir = "migrations"`
 - Baseline file: `migrations/0001_init.sql` creates all application tables, constraints, and indexes without mutable type/scale dimension tables.
 - Shared option module: `src/lib/events/options.ts` exports `EVENT_TYPES`, `EVENT_SCALES`, `EventType`, `EventScale`, membership guards, and label helpers.
-- Access helper: `await getDB(runtimeEnv): Promise<D1Database>`.
+- Access helper: `getDB(runtimeEnv): D1Database`; it returns the configured binding synchronously and never probes D1.
 - Generated binding: `worker-configuration.d.ts` contains `DB: D1Database`.
 - Application tables: `tags`, `events`, `event_visitors`, `event_tags`, `audit_logs`.
 
@@ -122,12 +122,11 @@ migrations/0001_init.sql
 
 ### 2. Signatures
 
-- `updateEventStatus(db, id, fromStatus, toStatus, extra)` -> `"changed" | "already-target" | "conflict"`.
-- `editEvent(db, id, input: AdminEventInput)` batches the event update and complete `event_tags` replacement.
+- `transitionEventStatus(db, id, fromStatus, toStatus, extra) -> Promise<StatusTransitionResult>` returns an outcome, an optional conflict reason, and mutation impact.
+- `editEvent(db, id, input: AdminEventInput) -> Promise<EditEventResult>` returns `changed`, `conflict`, or `not-found` plus mutation impact.
 - `createPublishedEvent(db, input: AdminEventInput, auditMeta)` creates a published event, canonical tags, relationships, and a `create` audit row in one D1 batch.
-- `hasCanonicalEventTag(db, eventId)` -> `boolean`.
-- `insertAudit(db, action, targetId, meta)` writes JSON metadata.
-- `mergeTags(db, from, to)` -> `"changed" | "already-target" | "conflict"`.
+- `mergeTags(db, from, to) -> Promise<TagMergeResult>` returns `changed`, `already-target`, or `conflict` plus mutation impact.
+- `AdminEventMutationValidationError` marks domain validation failures that mutation routes map to HTTP 400; unexpected binding/D1 failures remain HTTP 500.
 - `AdminEventInput` includes `type: EventType`, `scale: EventScale`, nullable `start_time`, nullable `end_time`, and `tags: string[]`.
 - `AdminCreateAuditMeta` includes `authMode: "access" | "token"` and an optional authenticated email.
 
@@ -141,16 +140,18 @@ migrations/0001_init.sql
 - The create batch uses one explicit `MAX(events.id) + 1` candidate for the event, relationships, and audit row. A concurrent ID conflict rolls back and retries the whole batch up to three times.
 - `audit_logs.action` includes `create`; its metadata records `source = admin-create`, normalized tag names, auth mode, and authenticated email when available.
 - Tag merge removes duplicate event relationships before replacing source IDs and marking the source as an alias.
+- Status transitions, edits, and tag merges keep facts, relationship changes, conditional audit insertion, and their post-write probe in one `db.batch()` rollback boundary.
+- Conditional audit statements use `WHERE changes() > 0`, so idempotent retries do not create duplicate audit rows.
 - Multi-statement application writes use `db.batch()`, not SQL transaction strings.
 
 ### 4. Validation & Error Matrix
 
 - Zero canonical tags on approve/republish -> HTTP 409 with a user-facing Chinese message; no state/audit change.
-- Published/offline edit with zero tags -> HTTP 400 from the edit route.
+- Published/offline edit with zero tags -> HTTP 400 from the edit route; unexpected binding/D1 failures -> HTTP 500.
 - Wrong source status or missing event -> HTTP 409.
 - Already-target transition -> HTTP 200 without duplicate audit.
 - Same-day end time earlier than start -> HTTP 400.
-- Merge source equals target or uses unexpected aliases -> error/conflict.
+- Merge source equals target -> HTTP 400; non-canonical source/target state -> HTTP 409; unexpected binding/D1 failures -> HTTP 500.
 - Admin create with zero tags, more than 12 tags, or a tag over 24 characters -> HTTP 400 before D1 writes.
 - Concurrent candidate-ID collision -> full batch rollback and retry; other D1 failures -> HTTP 500 with no event/tag/audit partial state.
 
@@ -267,13 +268,18 @@ This uses UTC and cannot classify an event that already ended earlier today.
 #### Correct
 
 ```sql
-date(events.end_date) < date('now', '+8 hours')
+events.end_date < date('now', '+8 hours')
 OR (
-    date(events.end_date) = date('now', '+8 hours')
+    events.end_date = date('now', '+8 hours')
     AND events.end_time IS NOT NULL
-    AND time(events.end_time) <= time('now', '+8 hours')
+    AND events.end_time <= time('now', '+8 hours')
 )
 ```
+
+The schema and form/query parsers enforce canonical `YYYY-MM-DD` / `HH:MM`
+values, so direct column comparisons preserve semantics and allow D1 to use the
+date/order indexes. Never remove canonical validation when removing SQL column
+wrappers.
 
 #### Wrong
 
@@ -305,7 +311,8 @@ await db
 
 - `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns `featuredEvents` with at most five ranked candidates and at most ten published local events whose date range covers the current China-local date.
 - `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns local and nationwide rankings from one `db.batch()` call.
-- `recordEventView(db, eventId, visitorKey) -> Promise<void>` purges expired rows and inserts or refreshes one event-scoped visitor row in one D1 batch.
+- `recordEventView(db, eventId, visitorKey) -> Promise<"changed" | "already-current" | "ignored">` inserts or refreshes one event-scoped visitor row and probes the final state in one D1 batch.
+- `deleteExpiredEventVisitors(db) -> Promise<number>` deletes rows older than the retained 30-day window and returns the number removed; the Worker scheduled handler owns this cleanup.
 - `hashEventVisitor(eventId, ip, secret) -> Promise<string>` returns a 64-character lowercase HMAC-SHA-256 key.
 - `PublishedEventFilters.starts` and `.active` are optional canonical `YYYY-MM-DD` strings.
 - `event_visitors(event_id, visitor_key, last_seen_date)` has primary key `(event_id, visitor_key)` and `ON DELETE CASCADE` to `events`.
@@ -315,7 +322,8 @@ await db
 - `event_visitors` is `STRICT`; `visitor_key` is exactly 64 lowercase hexadecimal characters and `last_seen_date` is a canonical China-local date.
 - The raw `CF-Connecting-IP` value is hashed at the API boundary and must never reach D1, logs, responses, page props, or popularity result types.
 - The HMAC input includes `eventId`, so one address cannot be correlated across different events from stored keys.
-- `recordEventView` deletes rows older than the current China-local day minus 29 days before recording a published, not-ended event.
+- `recordEventView` performs no cleanup on the request path. It records only a published, not-ended event and distinguishes a new/refresh write, an already-current row, and an ignored event state.
+- The custom Worker entrypoint delegates normal fetches to Astro and runs `deleteExpiredEventVisitors()` from the daily `5 16 * * *` Cron trigger (00:05 China time).
 - Repeated views update only `last_seen_date`; the primary key guarantees one contribution per event visitor in every selected window.
 - Featured candidates use `NOT EVENT_ENDED_CLAUSE`, match the selected division, and have `start_date <= China-local today + 14 days`; there is no start-date lower bound, so an earlier-started activity remains eligible while it has not ended.
 - Featured ranking is deterministic: already-started events first, then scale descending, start date ascending, cover presence descending, and event ID ascending. “Already started” means a date before today, or today with no `start_time` / a `start_time` that has arrived in China local time.
@@ -332,7 +340,7 @@ await db
 - Invalid popularity URL value -> parse to the default 7-day window.
 - Invalid `starts` / `active` URL value -> ignore it through the shared date parser.
 - Invalid visitor key length or characters -> SQL CHECK failure.
-- Missing, unpublished, offline, or ended event during `recordEventView` -> successful no-op insert; do not reveal public-event state through the beacon.
+- Missing, unpublished, offline, or ended event during `recordEventView` -> `ignored`; the beacon route still returns the same successful 204 and does not reveal public-event state.
 
 ### 5. Good/Base/Bad Cases
 
@@ -352,6 +360,8 @@ await db
 - Assert `HomepageDiscovery.featuredEvents` returns the complete candidate array in stable query order.
 - Assert the today SQL uses `LIMIT 10` after its stable ordering, has no `EVENT_ENDED_CLAUSE`, returns only date-covering published local events, and does not explicitly remove a featured-today event from the result.
 - Assert one event-scoped key for repeated views, separate keys for different IPs or events, 30-day purge behavior, and no raw-IP column or value.
+- Assert the request path contains no visitor cleanup, the daily scheduled handler invokes cleanup, and popularity/cleanup query plans use `idx_event_visitors_recent`.
+- Compare direct indexed date/order queries with the legacy `date(...)`/`time(...)` expressions on the seeded catalogue for listing order, pagination, and 3/7/30-day popularity.
 - Assert `starts` and `active` catalogue URLs produce removable conditions and exact matching results.
 - Run Prettier, TypeScript, Wrangler type sync, and the production build; run ESLint when its installed parser supports TypeScript 7.
 

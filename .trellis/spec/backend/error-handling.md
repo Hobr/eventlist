@@ -36,6 +36,8 @@
 - Wrong source status -> 409.
 - Already-merged tag mutation -> 200 `{ ok: true }` and no new audit row.
 - Missing or non-canonical tag merge endpoint -> 409.
+- Invalid edit data or a published/offline edit without canonical tags -> 400; an edit state race remains 409 and a missing event remains 404.
+- Unexpected edit or tag-merge binding/D1 failure -> 500, not a validation 400.
 - Approve/republish without a canonical event tag -> 409 with an instruction to organize tags first.
 - Admin create validation failure, including zero canonical tags -> 400 with a user-facing Chinese message.
 - Unexpected admin create D1/binding failure -> 500; the D1 batch leaves no partial event, tag relationship, or audit row.
@@ -57,6 +59,7 @@
     - wrong transition returns 409 JSON.
     - duplicate target transition returns 200 JSON without duplicate audit.
     - duplicate tag merge returns 200 JSON without duplicate audit.
+    - invalid edit/tag-merge input returns 400, state conflicts return 404/409, and injected D1 failures return 500.
     - valid admin create returns 201, a published event ID, canonical tags, and one audit row.
     - invalid/no-tag admin create returns 400 and writes no event.
 
