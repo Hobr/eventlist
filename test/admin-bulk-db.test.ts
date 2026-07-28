@@ -6,7 +6,7 @@ import {
     createBulkPublishedEvents,
     findBulkEventDuplicateCandidates,
     type AdminEventInput
-} from "../src/lib/db/queries";
+} from "../src/lib/db/admin-events";
 
 const VALID_EVENT: AdminEventInput = {
     title: "测试活动",
@@ -42,10 +42,12 @@ class FakeStatement {
     }
 
     async first<T>() {
+        this.db.bindingCalls += 1;
         return this.db.firstResult as T | null;
     }
 
     async all<T>() {
+        this.db.bindingCalls += 1;
         return {
             success: true,
             results: this.db.allResults as T[],
@@ -60,6 +62,7 @@ class FakeDatabase {
     firstResult: unknown = { id: 100 };
     allResults: unknown[] = [];
     batchError: Error | null = null;
+    bindingCalls = 0;
 
     prepare(sql: string) {
         const statement = new FakeStatement(this, sql);
@@ -68,6 +71,7 @@ class FakeDatabase {
     }
 
     async batch(statements: FakeStatement[]) {
+        this.bindingCalls += 1;
         this.batches.push(statements);
         if (this.batchError) throw this.batchError;
         return statements.map(() => ({ success: true, meta: { changes: 1 } }));
@@ -89,6 +93,7 @@ test("重复候选仅用一条查询并去重开始日期", async () => {
     ]);
 
     assert.equal(db.prepared.length, 1);
+    assert.equal(db.bindingCalls, 1);
     assert.deepEqual(JSON.parse(String(db.prepared[0]?.values[0])), ["2026-08-01", "2026-08-02"]);
     assert.equal(result[0]?.id, 8);
 });
@@ -107,6 +112,7 @@ test("20 条活动只执行一次含 42 条语句的原子 batch", async () => {
 
     assert.equal(db.batches.length, 1);
     assert.equal(db.batches[0]?.length, 42);
+    assert.equal(db.bindingCalls, 2);
     assert.deepEqual(created.at(0), { id: 100, title: "测试活动 1" });
     assert.deepEqual(created.at(-1), { id: 119, title: "测试活动 20" });
 
@@ -126,6 +132,11 @@ test("20 条活动只执行一次含 42 条语句的原子 batch", async () => {
             email: "admin@example.com"
         }
     });
+
+    for (const relationship of db.batches[0]?.slice(21, 41) ?? []) {
+        assert.match(relationship.sql, /json_each\(\?\)/);
+        assert.match(relationship.sql, /COALESCE\(tags\.alias_of_id, tags\.id\)/);
+    }
 });
 
 test("候选 ID 冲突转换为可识别的 409 冲突错误", async () => {
@@ -139,5 +150,22 @@ test("候选 ID 冲突转换为可识别的 409 冲突错误", async () => {
             }),
         BulkEventIdConflictError
     );
+    assert.equal(db.bindingCalls, 2);
     assert.equal(db.batches.length, 1);
+});
+
+test("普通 batch 失败保持原子边界且不重试", async () => {
+    const db = new FakeDatabase();
+    db.batchError = new Error("D1_ERROR: audit trigger failed");
+
+    await assert.rejects(
+        () =>
+            createBulkPublishedEvents(asD1(db), [{ row: 2, event: VALID_EVENT }], {
+                authMode: "token"
+            }),
+        /audit trigger failed/
+    );
+    assert.equal(db.bindingCalls, 2);
+    assert.equal(db.batches.length, 1);
+    assert.equal(db.batches[0]?.length, 4);
 });

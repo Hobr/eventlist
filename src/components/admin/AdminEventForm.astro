@@ -3,7 +3,8 @@ import { FloppyDiskOutline as Save } from "flowbite-svelte-icons";
 import DivisionPicker from "../DivisionPicker.svelte";
 import SelectField from "../SelectField.svelte";
 import TagInput from "../TagInput.svelte";
-import type { EventRecord, TagSummary } from "../../lib/db/queries";
+import type { EventRecord } from "../../lib/db/admin-events";
+import type { TagSummary } from "../../lib/db/tags";
 import { EVENT_SCALES, EVENT_TYPES } from "../../lib/events/options";
 
 interface Props {

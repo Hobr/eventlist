@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { parseEventForm } from "../../../../lib/admin/form";
 import { getDB } from "../../../../lib/db";
-import { createPublishedEvent } from "../../../../lib/db/queries";
+import { createPublishedEvent } from "../../../../lib/db/admin-events";
 import { jsonError, jsonOk } from "../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 

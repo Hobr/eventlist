@@ -4,7 +4,7 @@ import {
     findBulkEventDuplicateCandidates,
     type AdminEventInput,
     type BulkEventDuplicateCandidate
-} from "../db/queries";
+} from "../db/admin-events";
 import { EVENT_SCALES, EVENT_TYPES, type EventOption } from "../events/options";
 import {
     ADMIN_EVENT_FIELD_LABELS,

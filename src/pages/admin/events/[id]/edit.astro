@@ -4,7 +4,8 @@ import AdminEventForm from "../../../../components/admin/AdminEventForm.astro";
 import Badge from "../../../../components/ui/badge.svelte";
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import { getDB } from "../../../../lib/db";
-import { getEvent, listTags } from "../../../../lib/db/queries";
+import { getEvent } from "../../../../lib/db/admin-events";
+import { listTags } from "../../../../lib/db/tags";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;

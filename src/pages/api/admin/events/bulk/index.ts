@@ -5,7 +5,10 @@ import {
     createBulkEventErrorPreview
 } from "../../../../../lib/admin/bulk-events";
 import { getDB } from "../../../../../lib/db";
-import { BulkEventIdConflictError, createBulkPublishedEvents } from "../../../../../lib/db/queries";
+import {
+    BulkEventIdConflictError,
+    createBulkPublishedEvents
+} from "../../../../../lib/db/admin-events";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
 

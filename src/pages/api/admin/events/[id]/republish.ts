@@ -1,9 +1,5 @@
 import type { APIRoute } from "astro";
-import {
-    hasCanonicalEventTag,
-    insertAudit,
-    updateEventStatus
-} from "../../../../../lib/db/queries";
+import { transitionEventStatus } from "../../../../../lib/db/admin-events";
 import { getDB, STATUS } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
@@ -17,14 +13,12 @@ export const POST: APIRoute = async ({ params }) => {
 
     try {
         const db = await getDB(getRuntimeEnv());
-        if (!(await hasCanonicalEventTag(db, id))) {
+        const result = await transitionEventStatus(db, id, STATUS.OFFLINE, STATUS.PUBLISHED);
+        if (result.conflict === "missing-canonical-tag") {
             return jsonError("请先整理至少一个规范标签，再重新发布活动", 409);
         }
-        const outcome = await updateEventStatus(db, id, STATUS.OFFLINE, STATUS.PUBLISHED);
-        if (outcome === "conflict") return jsonError("Event is not offline", 409);
-        if (outcome === "already-target") return jsonOk();
+        if (result.outcome === "conflict") return jsonError("Event is not offline", 409);
 
-        await insertAudit(db, "republish", id, {});
         return jsonOk();
     } catch (error) {
         return jsonError(error instanceof Error ? error.message : "Failed to republish event", 500);

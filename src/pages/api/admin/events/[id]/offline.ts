@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { insertAudit, updateEventStatus } from "../../../../../lib/db/queries";
+import { transitionEventStatus } from "../../../../../lib/db/admin-events";
 import { getDB, STATUS } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
@@ -13,11 +13,9 @@ export const POST: APIRoute = async ({ params }) => {
 
     try {
         const db = await getDB(getRuntimeEnv());
-        const outcome = await updateEventStatus(db, id, STATUS.PUBLISHED, STATUS.OFFLINE);
-        if (outcome === "conflict") return jsonError("Event is not published", 409);
-        if (outcome === "already-target") return jsonOk();
+        const result = await transitionEventStatus(db, id, STATUS.PUBLISHED, STATUS.OFFLINE);
+        if (result.outcome === "conflict") return jsonError("Event is not published", 409);
 
-        await insertAudit(db, "offline", id, {});
         return jsonOk();
     } catch (error) {
         return jsonError(error instanceof Error ? error.message : "Failed to offline event", 500);

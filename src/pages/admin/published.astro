@@ -2,7 +2,7 @@
 import EventTable from "../../components/admin/EventTable.astro";
 import Pagination from "../../components/admin/Pagination.astro";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { listEventsByStatus } from "../../lib/db/queries";
+import { listEventsByStatus } from "../../lib/db/admin-events";
 import { getDB, STATUS } from "../../lib/db";
 import { getRuntimeEnv } from "../../lib/runtime/env";
 

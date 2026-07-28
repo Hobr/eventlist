@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { insertAudit, mergeTags } from "../../../../lib/db/queries";
+import { mergeTags } from "../../../../lib/db/admin-events";
 import { getDB } from "../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
@@ -12,21 +12,29 @@ function readId(value: FormDataEntryValue | null) {
 }
 
 export const POST: APIRoute = async ({ request }) => {
+    let from: number;
+    let to: number;
     try {
         const formData = await request.formData();
-        const from = readId(formData.get("from"));
-        const to = readId(formData.get("to"));
-        if (!from || !to) return jsonError("from and to are required", 400);
-
-        const db = await getDB(getRuntimeEnv());
-        const outcome = await mergeTags(db, from, to);
-        if (outcome === "conflict")
-            return jsonError("Source and target tags must be canonical", 409);
-        if (outcome === "changed") {
-            await insertAudit(db, "merge", to, { from, to });
+        const parsedFrom = readId(formData.get("from"));
+        const parsedTo = readId(formData.get("to"));
+        if (!parsedFrom || !parsedTo) return jsonError("from and to are required", 400);
+        if (parsedFrom === parsedTo) {
+            return jsonError("Source and target tags must be different", 400);
         }
+        from = parsedFrom;
+        to = parsedTo;
+    } catch {
+        return jsonError("Invalid form data", 400);
+    }
+
+    try {
+        const db = await getDB(getRuntimeEnv());
+        const result = await mergeTags(db, from, to);
+        if (result.outcome === "conflict")
+            return jsonError("Source and target tags must be canonical", 409);
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to merge tags", 400);
+        return jsonError(error instanceof Error ? error.message : "Failed to merge tags", 500);
     }
 };

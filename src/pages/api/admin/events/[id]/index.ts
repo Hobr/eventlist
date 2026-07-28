@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { parseEventForm } from "../../../../../lib/admin/form";
-import { editEvent, insertAudit } from "../../../../../lib/db/queries";
+import { AdminEventMutationValidationError, editEvent } from "../../../../../lib/db/admin-events";
 import { getDB } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../../lib/runtime/env";
@@ -12,16 +12,26 @@ export const PATCH: APIRoute = async ({ request, params }) => {
     const id = parseId(params.id);
     if (!id) return jsonError("Invalid event id", 400);
 
+    let input;
     try {
-        const formData = await request.formData();
-        const input = parseEventForm(formData);
-        const db = await getDB(getRuntimeEnv());
-        const changes = await editEvent(db, id, input);
-        if (changes === 0) return jsonError("Event not found", 404);
+        input = parseEventForm(await request.formData());
+    } catch (error) {
+        return jsonError(error instanceof Error ? error.message : "活动信息无效", 400);
+    }
 
-        await insertAudit(db, "edit", id, { fields: Object.keys(input) });
+    try {
+        const db = await getDB(getRuntimeEnv());
+        const result = await editEvent(db, id, input);
+        if (result.outcome === "not-found") return jsonError("Event not found", 404);
+        if (result.outcome === "conflict") {
+            return jsonError("Event status changed; reload and try again", 409);
+        }
+
         return jsonOk();
     } catch (error) {
-        return jsonError(error instanceof Error ? error.message : "Failed to update event", 400);
+        if (error instanceof AdminEventMutationValidationError) {
+            return jsonError(error.message, 400);
+        }
+        return jsonError(error instanceof Error ? error.message : "Failed to update event", 500);
     }
 };
