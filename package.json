@@ -16,17 +16,17 @@
         "format": "prettier --write ."
     },
     "dependencies": {
-        "@astrojs/cloudflare": "^14.1.5",
+        "@astrojs/cloudflare": "^14.1.6",
         "@astrojs/sitemap": "^3.7.3",
         "@astrojs/svelte": "^9.0.1",
         "@fontsource-variable/geist": "^5.3.0",
-        "astro": "^7.1.4",
+        "astro": "^7.1.5",
         "clsx": "^2.1.1",
         "cn-division": "^2026.0.0",
         "csv-parse": "^7.0.1",
         "svelte": "^5.56.8",
         "tailwind-merge": "^3.6.0",
-        "wrangler": "^4.114.0"
+        "wrangler": "^4.115.0"
     },
     "devDependencies": {
         "@eslint/css": "^1.4.0",
