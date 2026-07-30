@@ -56,5 +56,5 @@
 - [x] 运行 `trellis-check` 覆盖 spec 一致性、类型、lint、测试、构建与跨层数据流。
 - [x] 更新 `.trellis/spec/backend/error-handling.md`，把公开投稿环境变量合同统一为 `TURNSTILE_SECRET`，记录 canonical 编码与 reset 要求。
 - [x] 审查最终 diff，确认没有 Cloudflare API 调用、widget 创建、真实 secret、无关重构或用户改动回滚。
-- [ ] 仅暂存本任务拥有的改动；`README.md` 若仍混有用户既有行，使用精确暂存补丁避免误提交。
-- [ ] 创建任务提交，记录验证结果；外部 secret 验证未通过时不得把任务标记完成或归档。
+- [x] 仅暂存本任务拥有的改动；`README.md` 若仍混有用户既有行，使用精确暂存补丁避免误提交。
+- [x] 创建任务提交，记录验证结果；外部 secret 验证未通过时不得把任务标记完成或归档。
