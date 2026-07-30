@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "复核失败关闭、状态码和 secret 处理"}
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "复核投稿表单、widget 标记和重试交互"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "复核 token 数据流和数据库写入门禁"}
+{"file": ".trellis/tasks/07-30-turnstile-integration/research/codebase-scan.md", "reason": "对照用户硬约束和扫描证据检查范围"}

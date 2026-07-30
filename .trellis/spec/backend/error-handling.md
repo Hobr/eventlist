@@ -93,6 +93,7 @@ return jsonError("Unauthorized", 401);
 - `GET /api/homepage?city=<region>&trend=<3|7|30>` -> `{ ok: true, data: { homepage } }` with one division, featured candidate list, today list, and popularity snapshot.
 - `POST /api/submit` accepts `FormData` and returns `201 { ok: true, data: { id } }` after a pending insert.
 - Turnstile wrapper: `verifyTurnstile(token, secret, remoteIp?)` returns `{ success, errors }` or throws a setup/upstream error.
+- Turnstile reset event: unsuccessful AJAX submissions dispatch `turnstile-reset` on `#submit-form`; `Turnstile.svelte` clears its hidden token and calls `turnstile.reset(widgetId)`.
 
 ### 3. Contracts
 
@@ -101,9 +102,12 @@ return jsonError("Unauthorized", 401);
 - Popularity responses use the shared homepage public projection and expose only `id`, `title`, `division_code`, `start_date`, and `unique_visitors` for each event. They must never serialize `submitter_contact`, `source_url`, `tag_suggestions`, moderation fields, or an expanded `EventRecord` / `PopularEvent`.
 - The homepage API applies the same strict `city` / `trend` validation, then runs `listHomepageDiscovery()` and `listHomepagePopularity()` as one all-or-nothing request. It never returns a partial new division snapshot.
 - Homepage responses use `toPublicHomepageData()` and explicit field projections. They expose only division labels, featured display fields, today row fields, and the public popularity DTO; they never serialize contact, source, suggestion, moderation, status, description, or complete D1 records.
-- `TURNSTILE_SECRET_KEY` is required for `POST /api/submit` but must not be committed to `wrangler.jsonc`; use `wrangler secret put` for deployed envs and `.dev.vars` for local dev.
+- `TURNSTILE_SECRET` is required for `POST /api/submit` but must not be committed to `wrangler.jsonc`; use `wrangler secret put TURNSTILE_SECRET` for deployed envs and `.dev.vars` for local dev.
 - `TURNSTILE_SITE_KEY` may be public and is declared in `wrangler.jsonc` vars.
-- Cloudflare Turnstile test secret belongs in `.dev.vars.example` only.
+- `verifyTurnstile()` posts only to `https://challenges.cloudflare.com/turnstile/v0/siteverify` with `Content-Type: application/x-www-form-urlencoded`; the body contains `secret`, `response`, and optional `remoteip` from `CF-Connecting-IP`.
+- Only `success === true` opens the D1 gate. Missing/invalid tokens and upstream failures return before `getDB()` or `insertSubmission()`.
+- The widget uses `action: "turnstile-spin-v2"`, owns exactly one `cf-turnstile-response` hidden field, and disables Turnstile's automatic response field.
+- Every non-navigation result clears the token and resets the rendered widget ID so a retry cannot reuse a redeemed token.
 
 ### 4. Validation & Error Matrix
 
@@ -111,7 +115,7 @@ return jsonError("Unauthorized", 401);
 - Invalid URL/date/time/type/scale/division code -> 400 JSON.
 - Same-day end time earlier than start time -> 400 JSON.
 - Tag suggestions longer than 240 characters -> 400 JSON.
-- Missing `TURNSTILE_SECRET_KEY` -> 500 JSON.
+- Missing `TURNSTILE_SECRET` -> 500 JSON.
 - Turnstile siteverify network/TLS failure -> 502 JSON with `Turnstile verification request failed`.
 - Turnstile verification returns `success: false` -> 400 JSON.
 - Successful submission -> 201 JSON and a new `pending` event.
@@ -123,16 +127,20 @@ return jsonError("Unauthorized", 401);
 ### 5. Good/Base/Bad Cases
 
 - Good: browser `fetch()` posts same-origin `FormData` from `/submit` and handles `response.ok`.
-- Good: local tests copy `.dev.vars.example` to `.dev.vars` rather than committing a real secret.
+- Good: `.dev.vars.example` declares `TURNSTILE_SECRET=` without a value; real local and deployed secrets remain outside version control.
+- Good: a failed AJAX response dispatches `turnstile-reset`, which clears the owned hidden field before resetting the widget ID.
 - Base: Astro dev may block curl form posts without an `Origin` header; include same-origin `Origin` when testing with curl.
 - Good: the homepage initial popularity props and `/api/popularity` response are produced by the same explicit field projection.
 - Bad: returning `{ ...event }` or a raw `PopularEvent[]` from the popularity API; inherited event fields include non-public submission data.
 - Bad: letting workerd internal Turnstile/TLS references escape to users as 400 validation errors.
 - Bad: adding a development bypass that accepts fake Turnstile tokens in application code.
+- Bad: enabling Turnstile's automatic response field while also rendering an application-owned hidden field; duplicate form keys make token ownership ambiguous.
 
 ### 6. Tests Required
 
-- Missing source link/contact/Turnstile token returns JSON failure.
+- Assert the siteverify URL, POST method, form content type, `secret` / `response` / optional `remoteip`, strict `success === true`, and preserved string error codes.
+- Missing source link/contact/Turnstile token returns JSON failure; a rejected token must not access or write D1.
+- Assert the widget DOM action, explicit render action, disabled automatic response field, and failure reset event contract.
 - With a valid local Turnstile secret and network trust chain, a test submission writes `pending`.
 - If local workerd rejects the Turnstile TLS certificate chain, verify the route returns a clear 502 and document the environment limit.
 - Popularity invalid region/window checks return 400 JSON; valid requests return both lists and no non-display event fields.

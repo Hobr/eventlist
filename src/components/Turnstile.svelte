@@ -1,12 +1,17 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
+    const TURNSTILE_ACTION = "turnstile-spin-v2";
+    const TURNSTILE_RESET_EVENT = "turnstile-reset";
+
     interface Props {
         siteKey?: string | null;
     }
 
     interface TurnstileApi {
         render: (container: HTMLElement, options: Record<string, unknown>) => string;
+        remove: (widgetId: string) => void;
+        reset: (widgetId: string) => void;
     }
 
     declare global {
@@ -19,6 +24,12 @@
     let token = $state("");
     let container = $state<HTMLDivElement>();
     let errorMessage = $state("");
+    let widgetId: string | null = null;
+
+    function resetWidget() {
+        token = "";
+        if (widgetId && window.turnstile) window.turnstile.reset(widgetId);
+    }
 
     function loadScript() {
         if (window.turnstile) return Promise.resolve();
@@ -47,11 +58,17 @@
     onMount(() => {
         if (!siteKey || !container) return;
 
+        let disposed = false;
+        const form = container.closest("form");
+        form?.addEventListener(TURNSTILE_RESET_EVENT, resetWidget);
+
         loadScript()
             .then(() => {
-                if (!window.turnstile || !container) return;
-                window.turnstile.render(container, {
+                if (disposed || !window.turnstile || !container) return;
+                widgetId = window.turnstile.render(container, {
                     sitekey: siteKey,
+                    action: TURNSTILE_ACTION,
+                    "response-field": false,
                     callback: (value: string) => {
                         token = value;
                     },
@@ -64,15 +81,29 @@
                 });
             })
             .catch(() => {
+                if (disposed) return;
                 errorMessage = "人机校验加载失败，请刷新后重试";
             });
+
+        return () => {
+            disposed = true;
+            form?.removeEventListener(TURNSTILE_RESET_EVENT, resetWidget);
+            if (widgetId && window.turnstile) window.turnstile.remove(widgetId);
+            widgetId = null;
+            token = "";
+        };
     });
 </script>
 
 <div class="flex flex-col gap-1.5">
     <input type="hidden" name="cf-turnstile-response" value={token} />
     {#if siteKey}
-        <div bind:this={container}></div>
+        <div
+            class="cf-turnstile"
+            data-sitekey={siteKey}
+            data-action="turnstile-spin-v2"
+            bind:this={container}
+        ></div>
     {:else}
         <p class="text-sm font-semibold text-danger">投稿保护未配置</p>
     {/if}

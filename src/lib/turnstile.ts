@@ -33,6 +33,9 @@ export async function verifyTurnstile(
     try {
         response = await fetch(TURNSTILE_VERIFY_URL, {
             method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
             body
         });
     } catch {

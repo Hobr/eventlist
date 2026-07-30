@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "定位后端规范并保持公开 API 结构一致"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Turnstile 配置、失败状态码与公开 API JSON 合同"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "定位前端规范并保持 Astro/Svelte 分层"}
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "公开投稿单表单与 Svelte 组件合同"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核对浏览器 token 到 Workers/D1 的跨层门禁"}
+{"file": ".trellis/tasks/07-30-turnstile-integration/research/codebase-scan.md", "reason": "Spin 扫描结果、插入点决策与工作区边界"}
