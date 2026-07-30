@@ -11,7 +11,13 @@
 		"binding": "ASSETS",
 	},
 	"observability": {
-		"enabled": true,
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true
+		}
+	},
+	"traces": {
+		"enabled": false
 	},
 	"triggers": {
 		"crons": [
@@ -19,8 +25,10 @@
 		],
 	},
 	"vars": {
-		"DEFAULT_DIVISION_CODE": "110101",
-		"TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+		"DEFAULT_DIVISION_CODE": "31",
+		"TURNSTILE_SITE_KEY": "0x4AAAAAAECBuh-0cHETrayP",
+		"ACCESS_TEAM": "hobr",
+		"ACCESS_AUD": "33d445ebdc02a8a168aed7093fe7cd6d813afb7dbec7af2bef55dce33da34f8c"
 	},
 	"d1_databases": [
 		{
