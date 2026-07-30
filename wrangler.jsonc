@@ -1,29 +1,33 @@
 {
-    "$schema": "./node_modules/wrangler/config-schema.json",
-    "compatibility_date": "2026-06-29",
-    "compatibility_flags": ["nodejs_compat"],
-    "name": "eventlist",
-    "main": "./src/worker.ts",
-    "assets": {
-        "directory": "./dist",
-        "binding": "ASSETS",
-    },
-    "observability": {
-        "enabled": true,
-    },
-    "triggers": {
-        "crons": ["5 16 * * *"],
-    },
-    "vars": {
-        "DEFAULT_DIVISION_CODE": "110101",
-        "TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
-    },
-    "d1_databases": [
-        {
-            "binding": "DB",
-            "database_name": "eventlist-db",
-            "database_id": "b11ea70c-4597-4049-a650-718cfbc5b04f",
-            "migrations_dir": "migrations",
-        },
-    ],
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2026-06-29",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"name": "eventlist",
+	"main": "./src/worker.ts",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+	},
+	"observability": {
+		"enabled": true,
+	},
+	"triggers": {
+		"crons": [
+			"5 16 * * *"
+		],
+	},
+	"vars": {
+		"DEFAULT_DIVISION_CODE": "110101",
+		"TURNSTILE_SITE_KEY": "1x00000000000000000000AA",
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "eventlist-db",
+			"database_id": "0a13eb44-0eb6-4513-9b91-5a02eaac570f",
+			"migrations_dir": "../../migrations",
+		},
+	],
 }
