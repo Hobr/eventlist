@@ -626,3 +626,24 @@ Implemented no-refresh homepage location switching with unified public snapshots
 ### Status
 
 [OK] **Completed**
+
+
+## Session 21: Integrate Cloudflare Turnstile
+
+**Date**: 2026-07-31
+**Task**: Integrate Cloudflare Turnstile
+**Branch**: `dev`
+
+### Summary
+
+Unified the TURNSTILE_SECRET contract, added strict server-side siteverify gating and widget reset lifecycle, covered failure paths with tests, and verified no D1 write on rejected submissions.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e2a6f23` | (see git log) |
+
+### Status
+
+[OK] **Completed**
