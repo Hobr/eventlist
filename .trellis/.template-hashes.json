@@ -40,7 +40,7 @@
     ".claude/skills/trellis-meta/references/local-architecture/workflow.md": "cfcdc6e4468a5d9c816e929fcca01640cd41cfdaaa4824118b40a8e460c927b6",
     ".claude/skills/trellis-meta/references/local-architecture/workspace-memory.md": "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
     ".claude/skills/trellis-meta/references/platform-files/agents.md": "9f41349b78f7ae64698a38490a317882561f3805b26a79bda587a13d03fda245",
-    ".claude/skills/trellis-meta/references/platform-files/hooks-and-settings.md": "154af08f7ee8afe7a704968ec0b9fc21e905b7cfb03871c9dbafcdd6cc654319",
+    ".claude/skills/trellis-meta/references/platform-files/hooks-and-settings.md": "cb7c1c7dd976004e4981181ab9462f8eedc4e9c014721419bd666d6608f4dd72",
     ".claude/skills/trellis-meta/references/platform-files/overview.md": "1aec9087ccedd56a213af877b5db474131aa4b4789b6ac0e8da73b058aa43bd4",
     ".claude/skills/trellis-meta/references/platform-files/platform-map.md": "9e476e500f10b2a1a05278dd700837deb731a77e3f3993e90f8102528a9bdcca",
     ".claude/skills/trellis-meta/references/platform-files/skills-and-commands.md": "e39831d860bd27a04e7757f7bd941ab83b3c5b11ad4460cec03975b655f26cc3",
@@ -95,7 +95,7 @@
     ".opencode/skills/trellis-meta/references/local-architecture/workflow.md": "cfcdc6e4468a5d9c816e929fcca01640cd41cfdaaa4824118b40a8e460c927b6",
     ".opencode/skills/trellis-meta/references/local-architecture/workspace-memory.md": "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
     ".opencode/skills/trellis-meta/references/platform-files/agents.md": "9f41349b78f7ae64698a38490a317882561f3805b26a79bda587a13d03fda245",
-    ".opencode/skills/trellis-meta/references/platform-files/hooks-and-settings.md": "154af08f7ee8afe7a704968ec0b9fc21e905b7cfb03871c9dbafcdd6cc654319",
+    ".opencode/skills/trellis-meta/references/platform-files/hooks-and-settings.md": "cb7c1c7dd976004e4981181ab9462f8eedc4e9c014721419bd666d6608f4dd72",
     ".opencode/skills/trellis-meta/references/platform-files/overview.md": "1aec9087ccedd56a213af877b5db474131aa4b4789b6ac0e8da73b058aa43bd4",
     ".opencode/skills/trellis-meta/references/platform-files/platform-map.md": "9e476e500f10b2a1a05278dd700837deb731a77e3f3993e90f8102528a9bdcca",
     ".opencode/skills/trellis-meta/references/platform-files/skills-and-commands.md": "e39831d860bd27a04e7757f7bd941ab83b3c5b11ad4460cec03975b655f26cc3",
@@ -141,7 +141,7 @@
     ".agents/skills/trellis-meta/references/local-architecture/workflow.md": "cfcdc6e4468a5d9c816e929fcca01640cd41cfdaaa4824118b40a8e460c927b6",
     ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md": "e6427b46aba744563c2444b30df4043cd856561b7709ec2dece26095416421fd",
     ".agents/skills/trellis-meta/references/platform-files/agents.md": "9f41349b78f7ae64698a38490a317882561f3805b26a79bda587a13d03fda245",
-    ".agents/skills/trellis-meta/references/platform-files/hooks-and-settings.md": "154af08f7ee8afe7a704968ec0b9fc21e905b7cfb03871c9dbafcdd6cc654319",
+    ".agents/skills/trellis-meta/references/platform-files/hooks-and-settings.md": "cb7c1c7dd976004e4981181ab9462f8eedc4e9c014721419bd666d6608f4dd72",
     ".agents/skills/trellis-meta/references/platform-files/overview.md": "1aec9087ccedd56a213af877b5db474131aa4b4789b6ac0e8da73b058aa43bd4",
     ".agents/skills/trellis-meta/references/platform-files/platform-map.md": "9e476e500f10b2a1a05278dd700837deb731a77e3f3993e90f8102528a9bdcca",
     ".agents/skills/trellis-meta/references/platform-files/skills-and-commands.md": "e39831d860bd27a04e7757f7bd941ab83b3c5b11ad4460cec03975b655f26cc3",
@@ -198,7 +198,9 @@
     ".trellis/scripts/common/workflow_selection.py": "b136d6ae41aac95f4d5f425b641b62b7002f7cff2d26aa44b056cef9a2242753",
     ".trellis/scripts/common/spec_match.py": "baf3b17b15c279475f99699ac6e039bc68285d5dbfbda28f279aa8346cb0c59a",
     ".trellis/scripts/common/spec_inject.py": "9987d213eed3d2ec1b2c16adcad8b10a21d3b68dcce838f85c42d83c56e69e0b",
-    ".claude/hooks/inject-spec-context.py": "af2efd0e58277d8c6ec233507dfdf63082871fc04520ecb3d9d0003d0d55cba2",
-    ".codex/hooks/inject-spec-context.py": "af2efd0e58277d8c6ec233507dfdf63082871fc04520ecb3d9d0003d0d55cba2"
+    ".claude/hooks/inject-spec-context.py": "4df3945be18163afe066ec3061d8b95a687f676e3a80dbf0aada4dec8c339f90",
+    ".codex/hooks/inject-spec-context.py": "4df3945be18163afe066ec3061d8b95a687f676e3a80dbf0aada4dec8c339f90",
+    ".opencode/plugins/inject-spec-context.js": "732362570c5a4bf9c21f45082551257c890bc95770e1aa045f232ed21fcdf140",
+    ".opencode/hooks/inject-spec-context.py": "4df3945be18163afe066ec3061d8b95a687f676e3a80dbf0aada4dec8c339f90"
   }
 }
