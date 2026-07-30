@@ -320,6 +320,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
 </Layout>
 
 <script>
+    const TURNSTILE_RESET_EVENT = "turnstile-reset";
     const form = document.querySelector("#submit-form");
     const result = document.querySelector("#submit-result");
     const submitButton = document.querySelector("#submit-button");
@@ -339,6 +340,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             result.classList.add("hidden");
+            let shouldResetTurnstile = true;
 
             if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
 
@@ -350,6 +352,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
 
                 if (response.ok) {
                     window.location.assign("/submit?sent=1");
+                    shouldResetTurnstile = false;
                     return;
                 }
 
@@ -364,6 +367,9 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                 result.classList.remove("hidden");
                 result.focus();
             } finally {
+                if (shouldResetTurnstile) {
+                    form.dispatchEvent(new Event(TURNSTILE_RESET_EVENT));
+                }
                 if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
             }
         });
