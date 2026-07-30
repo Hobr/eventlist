@@ -415,5 +415,5 @@ test("custom Worker entrypoint delegates fetch and schedules one daily cleanup",
     assert.match(workerSource, /event_visitors_cleanup/);
     assert.doesNotMatch(workerSource, /visitorKey|CF-Connecting-IP|VIEW_HASH_SECRET/);
     assert.match(wranglerSource, /"main": "\.\/src\/worker\.ts"/);
-    assert.match(wranglerSource, /"crons": \["5 16 \* \* \*"\]/);
+    assert.match(wranglerSource, /"crons"\s*:\s*\[\s*"5 16 \* \* \*"\s*\]/);
 });
