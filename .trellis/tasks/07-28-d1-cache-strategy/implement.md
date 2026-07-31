@@ -245,6 +245,13 @@ git diff --check
 - 第一项控制面门禁 `wrangler deployments status --json` 仍失败，Cloudflare API 返回 HTTP `525`，Ray ID `a23c95f39a5cdaa5-SIN`。因此无法确认当前是否仍为唯一稳定版本 100% 流量、是否存在并行 rollout，以及可用回滚版本；本轮按 fail-closed 停止。
 - 未继续运行候选质量/HTTP/CPU 证据采集，未上传或部署候选，未改变 Worker 流量或 scope，未执行 rollback。稳定基线仍只沿用最后一次成功确认的 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` / `tags,sitemap` 作为待重新核验事实，不能视为本轮已确认状态。
 
+### 2026-07-31 20:38 CST 自动晋级重试与回滚
+
+- 重试开始时 `wrangler deployments status --json` 恢复成功，但发现一个此前未记录的版本 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 于 `2026-07-31T12:35:06Z` 上传并已获得 100% 流量；其来源为 `version_upload`、没有 message，版本详情只显示 `PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，没有本任务要求的候选健康证据。因此不能把它视为稳定版本或已审计候选。
+- 由于该版本已经实际上线且证据缺失，按失败候选处理，使用已知稳定版本 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 执行 `wrangler versions deploy --version-id ... --percentage 100`。回滚成功，deployment 为 `1ae78701-d097-4da4-9baf-ed521455e3a0`，message 为 `cache: restore verified tags/sitemap stable version after unexplained deployment`。
+- 回滚后只读复核确认当前 deployment 只有 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 100% 流量；远程 D1 六个详情字段仍全部存在，`changes=0`、`changed_db=false`、`rows_written=0`。探针仍不在源文件、Git index 或构建产物中。
+- 本轮没有启用 `popularity`，没有上传新的候选，没有修改 scope 或 D1。因未审计版本实际上线并触发回滚，后续自动晋级已暂停，须先查明 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 的来源并重新完成全套候选门禁。
+
 ## 11. 回滚点
 
 - 查询语义回归：恢复列转换改写；没有迁移。
