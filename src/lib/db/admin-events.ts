@@ -1,5 +1,10 @@
 import type { D1Database } from "../../types/cloudflare";
-import type { EventScale, EventType } from "../events/options";
+import type {
+    EventAdmissionMethod,
+    EventScale,
+    EventScheduleStatus,
+    EventType
+} from "../events/options";
 import { requireD1Success, STATUS, type EventStatus } from "./index";
 import type { EventBaseInput } from "./submissions";
 
@@ -20,6 +25,12 @@ export interface EventRecord {
     qq_group: string | null;
     ticket_url: string | null;
     source_url: string;
+    organizer: string | null;
+    schedule_status: EventScheduleStatus | null;
+    admission_method: EventAdmissionMethod | null;
+    price_range: string | null;
+    admission_start_date: string | null;
+    admission_start_time: string | null;
     submitter_contact: string;
     status: EventStatus;
     reject_reason: string | null;
@@ -99,7 +110,7 @@ function emptyMutationImpact(): MutationImpact {
 
 export class BulkEventIdConflictError extends Error {
     constructor() {
-        super("活动 ID 已被其他请求占用，请重新预览后再提交");
+        super("活动 ID 已被其他请求占用, 请重新预览后再提交");
         this.name = "BulkEventIdConflictError";
     }
 }
@@ -367,9 +378,11 @@ export async function createBulkPublishedEvents(
                     `INSERT INTO events(
                          id, title, type, scale, division_code, venue, address,
                          start_date, end_date, start_time, end_time, cover_url, description,
-                         qq_group, ticket_url, source_url, submitter_contact, status, published_at
+                         qq_group, ticket_url, source_url, organizer, schedule_status,
+                         admission_method, price_range, admission_start_date, admission_start_time,
+                         submitter_contact, status, published_at
                      )
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
                 )
                 .bind(
                     firstEventId + index,
@@ -388,6 +401,12 @@ export async function createBulkPublishedEvents(
                     event.qq_group,
                     event.ticket_url,
                     event.source_url,
+                    event.organizer,
+                    event.schedule_status,
+                    event.admission_method,
+                    event.price_range,
+                    event.admission_start_date,
+                    event.admission_start_time,
                     event.submitter_contact,
                     STATUS.PUBLISHED
                 )
@@ -453,9 +472,11 @@ export async function createPublishedEvent(
                     `INSERT INTO events(
                          id, title, type, scale, division_code, venue, address,
                          start_date, end_date, start_time, end_time, cover_url, description,
-                         qq_group, ticket_url, source_url, submitter_contact, status, published_at
+                         qq_group, ticket_url, source_url, organizer, schedule_status,
+                         admission_method, price_range, admission_start_date, admission_start_time,
+                         submitter_contact, status, published_at
                      )
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
                 )
                 .bind(
                     eventId,
@@ -474,6 +495,12 @@ export async function createPublishedEvent(
                     input.qq_group,
                     input.ticket_url,
                     input.source_url,
+                    input.organizer,
+                    input.schedule_status,
+                    input.admission_method,
+                    input.price_range,
+                    input.admission_start_date,
+                    input.admission_start_time,
                     input.submitter_contact,
                     STATUS.PUBLISHED
                 ),
@@ -578,7 +605,9 @@ export async function editEvent(
                  SET title = ?, type = ?, scale = ?, division_code = ?, venue = ?, address = ?,
                      start_date = ?, end_date = ?, start_time = ?, end_time = ?,
                      cover_url = ?, description = ?,
-                     qq_group = ?, ticket_url = ?, source_url = ?, submitter_contact = ?,
+                     qq_group = ?, ticket_url = ?, source_url = ?, organizer = ?,
+                     schedule_status = ?, admission_method = ?, price_range = ?,
+                     admission_start_date = ?, admission_start_time = ?, submitter_contact = ?,
                      updated_at = datetime('now')
                  WHERE id = ?
                    AND status = ?`
@@ -599,6 +628,12 @@ export async function editEvent(
                 input.qq_group,
                 input.ticket_url,
                 input.source_url,
+                input.organizer,
+                input.schedule_status,
+                input.admission_method,
+                input.price_range,
+                input.admission_start_date,
+                input.admission_start_time,
                 input.submitter_contact,
                 id,
                 snapshot.status

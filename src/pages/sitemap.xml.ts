@@ -1,4 +1,12 @@
 import type { APIRoute } from "astro";
+import { waitUntil } from "cloudflare:workers";
+import {
+    isPublicDataCacheEnabled,
+    parsePublicDataCacheScopes,
+    publicDataCacheResponseHeaders,
+    type PublicDataCacheState
+} from "../lib/cache/public-data";
+import { loadCachedSitemapRows } from "../lib/cache/public-routes";
 import { getDB } from "../lib/db";
 import { listPublishedEventSitemapRows } from "../lib/db/public-events";
 import { getRuntimeEnv } from "../lib/runtime/env";
@@ -20,6 +28,13 @@ function urlEntry(location: string, lastmod?: string) {
 
 export const GET: APIRoute = async ({ url }) => {
     const origin = url.origin;
+    const runtimeEnv = getRuntimeEnv();
+    const failureCacheState: PublicDataCacheState = isPublicDataCacheEnabled(
+        parsePublicDataCacheScopes(runtimeEnv.PUBLIC_DATA_CACHE_SCOPES),
+        "sitemap"
+    )
+        ? "MISS"
+        : "BYPASS";
     const staticEntries = [
         urlEntry(`${origin}/`),
         urlEntry(`${origin}/events`),
@@ -27,9 +42,14 @@ export const GET: APIRoute = async ({ url }) => {
     ];
 
     try {
-        const db = await getDB(getRuntimeEnv());
-        const events = await listPublishedEventSitemapRows(db);
-        const eventEntries = events.map((event) =>
+        const result = await loadCachedSitemapRows({
+            origin,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            limit: 1000,
+            load: () => listPublishedEventSitemapRows(getDB(runtimeEnv), 1000),
+            waitUntil
+        });
+        const eventEntries = result.value.map((event) =>
             urlEntry(`${origin}/events/${event.id}`, event.updated_at)
         );
 
@@ -40,7 +60,8 @@ export const GET: APIRoute = async ({ url }) => {
             ].join("")}</urlset>`,
             {
                 headers: {
-                    "content-type": "application/xml; charset=utf-8"
+                    "content-type": "application/xml; charset=utf-8",
+                    ...publicDataCacheResponseHeaders(result.cacheState)
                 }
             }
         );
@@ -49,7 +70,8 @@ export const GET: APIRoute = async ({ url }) => {
             `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${staticEntries.join("")}</urlset>`,
             {
                 headers: {
-                    "content-type": "application/xml; charset=utf-8"
+                    "content-type": "application/xml; charset=utf-8",
+                    ...publicDataCacheResponseHeaders(failureCacheState)
                 }
             }
         );

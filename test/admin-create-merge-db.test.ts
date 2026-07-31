@@ -76,6 +76,12 @@ const VALID_EVENT: AdminEventInput = {
     ticket_url: "https://example.com/tickets",
     source_url: "https://example.com/source",
     submitter_contact: "admin@example.com",
+    organizer: "测试主办方",
+    schedule_status: null,
+    admission_method: "ticket",
+    price_range: "免费",
+    admission_start_date: "2026-07-20",
+    admission_start_time: "09:30",
     tags: ["同人展"]
 };
 
@@ -106,6 +112,14 @@ test("createPublishedEvent uses two calls and four statements regardless of tag 
         assert.equal(tagInsert?.values[0], tagsJson);
         assert.match(eventInsert?.sql ?? "", /INSERT INTO events/);
         assert.equal(eventInsert?.values[0], 100);
+        assert.deepEqual(eventInsert?.values.slice(16, 22), [
+            "测试主办方",
+            null,
+            "ticket",
+            "免费",
+            "2026-07-20",
+            "09:30"
+        ]);
         assert.match(relationshipInsert?.sql ?? "", /SELECT DISTINCT \?/);
         assert.match(relationshipInsert?.sql ?? "", /json_each\(\?\)/);
         assert.match(relationshipInsert?.sql ?? "", /COALESCE\(tags\.alias_of_id, tags\.id\)/);

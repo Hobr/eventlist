@@ -8,8 +8,8 @@
 
 ### 1. Scope / Trigger
 
-- Trigger: any change to the initial D1 schema, constraints, indexes, or static event option catalogue before the first production deployment.
-- The site has no deployed database migration history. Keep one deterministic baseline at `migrations/0001_init.sql` until the first deployment.
+- Trigger: any change to the development-stage D1 schema, constraints, indexes, or static event option catalogue.
+- The site is still in development and intentionally keeps one deterministic baseline at `migrations/0001_init.sql`. A remote database that recorded an older copy of `0001` is incompatible and must be explicitly rebuilt under separate user authorization; application work must never delete or rebuild it automatically.
 - D1 database: `eventlist-db`, binding `DB`, database id `b11ea70c-4597-4049-a650-718cfbc5b04f`.
 
 ### 2. Signatures
@@ -19,7 +19,7 @@
     - `database_name = "eventlist-db"`
     - `migrations_dir = "migrations"`
 - Baseline file: `migrations/0001_init.sql` creates all application tables, constraints, and indexes without mutable type/scale dimension tables.
-- Shared option module: `src/lib/events/options.ts` exports `EVENT_TYPES`, `EVENT_SCALES`, `EventType`, `EventScale`, membership guards, and label helpers.
+- Shared option module: `src/lib/events/options.ts` exports type, scale, schedule-status, and admission-method catalogues together with their types, membership guards, and label helpers.
 - Access helper: `getDB(runtimeEnv): D1Database`; it returns the configured binding synchronously and never probes D1.
 - Generated binding: `worker-configuration.d.ts` contains `DB: D1Database`.
 - Application tables: `tags`, `events`, `event_visitors`, `event_tags`, `audit_logs`.
@@ -32,8 +32,8 @@
     - `tags = 0`
     - `events = 0`
     - `event_visitors = 0`
-- Event types are the ordered `comic`, `doujin`, `concert`, `stage`, `dance`, `ipflash`, `online`, and `other` entries in `EVENT_TYPES`.
-- Event scales are the ordered `small`, `mid`, `large`, and `mega` entries in `EVENT_SCALES`.
+- Event types are the ordered `comic`, `doujin`, `concert`, `only`, `meeting`, `stage`, `dance`, `ipflash`, `exhibition`, `online`, and `other` entries in `EVENT_TYPES`.
+- Event scales are the ordered `mini`, `small`, `mid`, `large`, and `mega` entries in `EVENT_SCALES`.
 - Array order and labels in `src/lib/events/options.ts` are the UI catalogue; pages and components must not query D1 for these options.
 - `tags.name` is trimmed, 1-24 characters, `COLLATE NOCASE UNIQUE`; aliases cannot reference themselves.
 - `events.type` and `events.scale` use SQL `CHECK (... IN (...))` constraints containing the same codes as the shared TypeScript catalogue.
@@ -41,6 +41,9 @@
 - `start_date` / `end_date` are canonical `YYYY-MM-DD`; `end_date >= start_date`.
 - `start_time` / `end_time` are nullable local `HH:MM` values. When both exist on the same date, `end_time >= start_time`.
 - `tag_suggestions` is nullable free text with a maximum length of 240. It is not a canonical tag relationship.
+- `organizer` is nullable trimmed text with a maximum length of 200; `price_range` is nullable trimmed text with a maximum length of 120.
+- `schedule_status` is nullable `postponed | cancelled`; `admission_method` is nullable `ticket | reservation | walk_in | invitation | other`. The shared option catalogue owns their Chinese labels.
+- `admission_start_date` is a nullable canonical `YYYY-MM-DD`. `admission_start_time` is a nullable canonical `HH:MM` and is valid only when the date exists.
 - Status is one of `pending`, `published`, `rejected`, `offline`.
 - `audit_logs.meta` must be valid JSON.
 - Query indexes cover public status/date listing, status/division listing, admin status/created order, sitemap status/updated order, tag-to-event lookup, and audit time/action lookup.
@@ -48,8 +51,9 @@
 ### 4. Validation & Error Matrix
 
 - Missing `env.DB` -> `getDB` throws a setup error naming the D1 binding.
-- Unknown type or scale submitted through public/admin forms -> explicit validation error; API routes return HTTP 400 JSON.
-- Unknown type or scale written directly to D1 -> SQL CHECK failure.
+- Unknown type, scale, schedule status, or admission method submitted through public/admin forms -> explicit validation error; API routes return HTTP 400 JSON.
+- Unknown option code written directly to D1 -> SQL CHECK failure.
+- Organizer over 200 characters, price range over 120 characters, invalid admission date/time, or admission time without its date -> validation error and SQL CHECK failure.
 - Invalid division code, date, time, date order, same-day time order, status, or overlong `tag_suggestions` -> SQL CHECK failure.
 - Duplicate tags that differ only by ASCII case -> UNIQUE failure.
 - Invalid audit JSON -> SQL CHECK failure.
@@ -58,12 +62,13 @@
 ### 5. Good/Base/Bad Cases
 
 - Good: apply the baseline to an empty `--persist-to` directory, observe one `d1_migrations` row, five application tables, and no `event_types`, `event_scales`, or `cities` table.
-- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts 143 valid events, 10 canonical tags, and 90 anonymous event visitor rows without schema changes.
+- Base: `docs/dev/seed-public-site.sql` applies after the baseline and inserts 143 valid events, 10 canonical tags, and 90 anonymous event visitor rows without schema changes; its primary detail sample includes the optional organizer/admission fields.
 - Bad: querying D1 for type/scale options or joining dimension tables; these values are application-owned constants.
 - Bad: defining a second TypeScript list of type/scale codes instead of importing `src/lib/events/options.ts`.
 - Bad: validating a rewritten baseline against an old `.wrangler/state` database; previous migration records can hide missing statements.
 - Bad: creating a `cities` mirror of `cn-division`; it creates two location sources of truth.
 - Bad: adding `0002_*` before first deployment instead of updating the baseline.
+- Bad: deploying code that reads the new columns against a remote D1 that recorded the older `0001`; rebuild that development database first after explicit authorization.
 
 ### 6. Tests Required
 
@@ -73,12 +78,12 @@
     - Assert only `0001_init.sql` is recorded.
 - Schema assertions:
     - tables and indexes from `sqlite_schema`
-    - `PRAGMA table_info(events)` includes `tag_suggestions`, `start_time`, `end_time`
+    - `PRAGMA table_info(events)` includes `tag_suggestions`, times, organizer, schedule status, admission method, price range, and admission start date/time
     - `PRAGMA foreign_key_list(events)` is empty
     - `PRAGMA foreign_key_list(event_tags)` still references `events` and `tags` with cascade deletes
     - no `event_types`, `event_scales`, or `cities` table
-- Option assertions: all 32 type/scale combinations insert successfully; an unknown type and an unknown scale each fail their SQL CHECK.
-- Other constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions, duplicate case-insensitive tags, invalid audit JSON.
+- Option assertions: all 55 type/scale combinations insert successfully; an unknown type and an unknown scale each fail their SQL CHECK.
+- Other constraint negatives: invalid status/date/time, reversed same-day time, overlong tag suggestions/organizer/price range, invalid schedule/admission codes, admission time without a date, duplicate case-insensitive tags, invalid audit JSON.
 - Compatibility: apply `docs/dev/seed-public-site.sql`, then assert 143 events, 10 canonical tags, and 90 anonymous event visitor rows.
 - Project gates: `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, `corepack pnpm build`.
 
@@ -127,7 +132,7 @@ migrations/0001_init.sql
 - `createPublishedEvent(db, input: AdminEventInput, auditMeta)` creates a published event, canonical tags, relationships, and a `create` audit row in one D1 batch.
 - `mergeTags(db, from, to) -> Promise<TagMergeResult>` returns `changed`, `already-target`, or `conflict` plus mutation impact.
 - `AdminEventMutationValidationError` marks domain validation failures that mutation routes map to HTTP 400; unexpected binding/D1 failures remain HTTP 500.
-- `AdminEventInput` includes `type: EventType`, `scale: EventScale`, nullable `start_time`, nullable `end_time`, and `tags: string[]`.
+- `AdminEventInput` includes typed type/scale/schedule/admission codes, the six nullable organizer/admission fields, nullable event times, and `tags: string[]`.
 - `AdminCreateAuditMeta` includes `authMode: "access" | "token"` and an optional authenticated email.
 
 ### 3. Contracts
@@ -210,7 +215,8 @@ For direct admin creation, use `createPublishedEvent()` instead of composing
 - `listPublishedEvents(db, filters)` -> `{ events, page, pageSize, hasNext }`.
 - `getPublicEvent(db, id)` -> published/offline event or `null`.
 - `insertSubmission(db, input: SubmissionInput)` -> new pending event ID.
-- `SubmissionInput` has `type: EventType`, `scale: EventScale`, `tag_suggestions: string | null`, `start_time: string | null`, and `end_time: string | null`; it has no canonical `tags` array.
+- `SubmissionInput` has typed type/scale/schedule/admission codes, the six nullable organizer/admission fields, `tag_suggestions: string | null`, and no canonical `tags` array.
+- `getPublicEventRecentVisitorCount(db, id)` returns the inclusive current China-local 30-day anonymous visitor count for published/offline events, or `0`.
 - `searchTags(db, query, limit)` performs suggestion search; the public `tag` event filter performs exact canonical-name matching.
 - `buildEventJsonLd(event, canonicalUrl)` combines known times with local `+08:00` ISO values.
 
@@ -233,6 +239,7 @@ For direct admin creation, use `createPublishedEvent()` instead of composing
 - Tag suggestions over 240 characters -> HTTP 400 JSON.
 - Missing/failed Turnstile -> existing 400/500/502 behavior from the public API error contract.
 - Pending/rejected public detail -> 404; offline detail -> 200 with offline notice.
+- Detail heat is queried separately from `PublicEventDetail`, never serializes `visitor_key`, and remains outside the static detail cache payload.
 - Unknown exact tag -> empty list, not a substring match.
 
 ### 5. Good/Base/Bad Cases

@@ -9,7 +9,6 @@ bun.lockb
 /static/
 .claude/settings.local.json
 
-wrangler.jsonc
 .wrangler/
 worker-configuration.d.ts
 .trellis/

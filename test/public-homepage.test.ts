@@ -9,6 +9,7 @@ import {
     toPublicEventRow,
     toPublicFeaturedEvents,
     toPublicHomepageData,
+    toPublicHomepageDiscovery,
     toPublicHomepagePopularity
 } from "../src/lib/public/homepage";
 import {
@@ -107,6 +108,21 @@ test("首页公开主推荐投影只保留展示字段", () => {
     );
 });
 
+test("首页发现缓存投影复用主推荐和今日活动白名单", () => {
+    const discovery: HomepageDiscovery = {
+        featuredEvents: [event(1)],
+        today: [event(2)]
+    };
+    const projected = toPublicHomepageDiscovery(discovery);
+
+    assert.deepEqual(projected.featuredEvents, toPublicFeaturedEvents(discovery.featuredEvents));
+    assert.deepEqual(projected.today, discovery.today.map(toPublicEventRow));
+    assert.doesNotMatch(
+        JSON.stringify(projected),
+        /submitter_contact|source_url|status|reject_reason|tag_suggestions/
+    );
+});
+
 test("首页公开热门投影只保留排行展示字段", () => {
     const popularity: HomepagePopularity = {
         window: 7,
@@ -168,7 +184,7 @@ test("首页今日行和完整快照只逐字段投影公开展示数据", () =>
     );
 });
 
-test("首页浏览器响应校验要求地区和窗口一致，并重建字段白名单", () => {
+test("首页浏览器响应校验要求地区和窗口一致, 并重建字段白名单", () => {
     const body = publicHomepageBody();
     const rawHomepage = body.data.homepage as typeof body.data.homepage & {
         internal?: string;
@@ -220,7 +236,7 @@ test("首页 URL、热门缓存和 history 元数据 helper 保留无关浏览�
     assert.equal(readHomepageHistoryState({ eventlistHomepage: { city: "31", trend: 9 } }), null);
 });
 
-test("热度窗口守卫只接受数值 3、7、30，URL 解析无效值回退到 7", () => {
+test("热度窗口守卫只接受数值 3、7、30, URL 解析无效值回退到 7", () => {
     assert.equal(isPopularityWindow(3), true);
     assert.equal(isPopularityWindow(7), true);
     assert.equal(isPopularityWindow(30), true);
@@ -240,9 +256,11 @@ test("热门 API 使用共享校验、投影和稳定 JSON 错误", async () => 
 
     assert.match(source, /isRegionCode\(city\)/);
     assert.match(source, /isPopularityWindow\(window\)/);
-    assert.match(source, /toPublicHomepagePopularity\(popularity\)/);
-    assert.match(source, /jsonOk\(\{ popularity: publicPopularity \}\)/);
-    assert.match(source, /jsonError\("热门活动暂时无法加载，请稍后重试", 500\)/);
+    assert.match(source, /loadCachedHomepagePopularity\(\{/);
+    assert.match(source, /toPublicHomepagePopularity\(await listHomepagePopularity/);
+    assert.match(source, /\{ popularity: result\.value \}/);
+    assert.match(source, /publicDataCacheResponseHeaders\(result\.cacheState/);
+    assert.match(source, /jsonError\("热门活动暂时无法加载, 请稍后重试", 500\)/);
     assert.doesNotMatch(source, /error instanceof Error \? error\.message/);
 });
 
@@ -253,15 +271,17 @@ test("首页快照 API 严格校验参数并以一次全有或全无响应提交
     assert.match(source, /isPopularityWindow\(window\)/);
     assert.match(source, /getRegionOptionByCode\(city\)/);
     assert.match(source, /Promise\.all\(\[/);
+    assert.match(source, /loadCachedHomepageDiscovery\(\{/);
     assert.match(source, /listHomepageDiscovery\(db, city\)/);
+    assert.match(source, /loadCachedHomepagePopularity\(\{/);
     assert.match(source, /listHomepagePopularity\(db, city, window\)/);
-    assert.match(source, /toPublicHomepageData\(division, discovery, popularity\)/);
-    assert.match(source, /jsonOk\(\{ homepage:/);
-    assert.match(source, /jsonError\("首页活动暂时无法加载，请稍后重试", 500\)/);
+    assert.match(source, /const homepage: PublicHomepageData =/);
+    assert.match(source, /\{ homepage \}/);
+    assert.match(source, /jsonError\("首页活动暂时无法加载, 请稍后重试", 500\)/);
     assert.doesNotMatch(source, /error instanceof Error \? error\.message/);
 });
 
-test("首页客户端由单一快照事件提交，并保持地区化缓存、竞态和历史合同", async () => {
+test("首页客户端由单一快照事件提交, 并保持地区化缓存、竞态和历史合同", async () => {
     const [nav, content, popularity, indexPage, eventCard, today, sidePanel, citySelector] =
         await Promise.all(
             [
@@ -309,7 +329,7 @@ test("首页客户端由单一快照事件提交，并保持地区化缓存、�
     assert.match(citySelector, /if \(navigateOnChange\) navigateToDivision/);
 });
 
-test("地区切换后的新 Hero 复用稳定 reveal 容器，动态 reveal 节点也会被注册", async () => {
+test("地区切换后的新 Hero 复用稳定 reveal 容器, 动态 reveal 节点也会被注册", async () => {
     const [layout, content, carousel] = await Promise.all(
         [
             "../src/layouts/Layout.astro",

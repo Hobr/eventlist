@@ -1,18 +1,29 @@
 ---
+import { waitUntil } from "cloudflare:workers";
 import HomepageContent from "../components/HomepageContent.svelte";
 import NavLocationPicker from "../components/NavLocationPicker.svelte";
 import Layout from "../layouts/Layout.astro";
-import { getDB } from "../lib/db";
 import {
-    listHomepageDiscovery,
-    listHomepagePopularity,
-    type HomepageDiscovery,
-    type HomepagePopularity as HomepagePopularityData
-} from "../lib/db/homepage";
+    combinePublicDataCacheStates,
+    publicDataCacheResponseHeaders,
+    type PublicDataCacheState
+} from "../lib/cache/public-data";
+import {
+    loadCachedHomepageDiscovery,
+    loadCachedHomepagePopularity
+} from "../lib/cache/public-routes";
+import { getDB } from "../lib/db";
+import { listHomepageDiscovery, listHomepagePopularity } from "../lib/db/homepage";
 import { FALLBACK_DIVISION_CODE, getRegionOptionByCode, type RegionOption } from "../lib/divisions";
 import { parsePopularityWindow } from "../lib/events/popularity";
 import { resolveSelectedDivision } from "../lib/geo";
-import { toPublicHomepageData } from "../lib/public/homepage";
+import {
+    toPublicHomepageDiscovery,
+    toPublicHomepagePopularity,
+    type PublicHomepageData,
+    type PublicHomepageDiscovery,
+    type PublicHomepagePopularity
+} from "../lib/public/homepage";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;
@@ -25,12 +36,14 @@ let sourceLabel = "默认城市";
 let regionError = "";
 let discoveryError = "";
 let popularityError = "";
-let discovery: HomepageDiscovery = { featuredEvents: [], today: [] };
-let popularity: HomepagePopularityData = {
+let cacheWarning = "";
+let discovery: PublicHomepageDiscovery = { featuredEvents: [], today: [] };
+let popularity: PublicHomepagePopularity = {
     window: trendWindow,
     local: [],
     nationwide: []
 };
+const cacheStates: PublicDataCacheState[] = [];
 
 try {
     const resolved = await resolveSelectedDivision(
@@ -47,8 +60,8 @@ try {
               : "默认城市";
 } catch (error) {
     regionError = error instanceof Error ? error.message : "无法识别当前地区";
-    discoveryError = "无法确定地区，暂时不能加载今日活动";
-    popularityError = "无法确定地区，暂时不能加载本地热门活动";
+    discoveryError = "无法确定地区, 暂时不能加载今日活动";
+    popularityError = "无法确定地区, 暂时不能加载本地热门活动";
 }
 
 const homepageDivision =
@@ -64,12 +77,35 @@ if (selectedDivision) {
     try {
         const db = await getDB(runtimeEnv);
         const [discoveryResult, popularityResult] = await Promise.allSettled([
-            listHomepageDiscovery(db, selectedDivisionCode),
-            listHomepagePopularity(db, selectedDivisionCode, trendWindow)
+            loadCachedHomepageDiscovery({
+                origin: Astro.url,
+                configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+                divisionCode: selectedDivisionCode,
+                load: async () =>
+                    toPublicHomepageDiscovery(
+                        await listHomepageDiscovery(db, selectedDivisionCode)
+                    ),
+                waitUntil
+            }),
+            loadCachedHomepagePopularity({
+                origin: Astro.url,
+                configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+                divisionCode: selectedDivisionCode,
+                window: trendWindow,
+                load: async () =>
+                    toPublicHomepagePopularity(
+                        await listHomepagePopularity(db, selectedDivisionCode, trendWindow)
+                    ),
+                waitUntil
+            })
         ]);
 
         if (discoveryResult.status === "fulfilled") {
-            discovery = discoveryResult.value;
+            discovery = discoveryResult.value.value;
+            cacheStates.push(discoveryResult.value.cacheState);
+            if (discoveryResult.value.cacheState === "STALE-IF-ERROR") {
+                cacheWarning = "数据暂时无法刷新, 当前显示最近缓存";
+            }
         } else {
             discoveryError =
                 discoveryResult.reason instanceof Error
@@ -78,7 +114,11 @@ if (selectedDivision) {
         }
 
         if (popularityResult.status === "fulfilled") {
-            popularity = popularityResult.value;
+            popularity = popularityResult.value.value;
+            cacheStates.push(popularityResult.value.cacheState);
+            if (popularityResult.value.cacheState === "STALE-IF-ERROR") {
+                cacheWarning = "数据暂时无法刷新, 当前显示最近缓存";
+            }
         } else {
             popularityError =
                 popularityResult.reason instanceof Error
@@ -92,12 +132,25 @@ if (selectedDivision) {
     }
 }
 
-const initialHomepage = toPublicHomepageData(homepageDivision, discovery, popularity);
+if (cacheStates.length > 0) {
+    const headers = publicDataCacheResponseHeaders(combinePublicDataCacheStates(cacheStates));
+    for (const [name, value] of Object.entries(headers)) Astro.response.headers.set(name, value);
+}
+
+const initialHomepage: PublicHomepageData = {
+    division: {
+        code: homepageDivision.code,
+        name: homepageDivision.name,
+        label: homepageDivision.label
+    },
+    ...discovery,
+    popularity
+};
 ---
 
 <Layout
     title="ACG 活动目录"
-    description="按地区和自然日期浏览附近 ACG 活动，并查看近 3 日、7 日和 30 日热门活动。"
+    description="按地区和自然日期浏览附近 ACG 活动, 并查看近 3 日、7 日和 30 日热门活动。"
 >
     <NavLocationPicker
         slot="nav-control"
@@ -108,6 +161,17 @@ const initialHomepage = toPublicHomepageData(homepageDivision, discovery, popula
         {sourceLabel}
         client:load
     />
+
+    {
+        cacheWarning ? (
+            <div
+                class="mb-8 rounded-md bg-warning-subtle p-5 text-sm font-semibold text-warning"
+                role="status"
+            >
+                {cacheWarning}
+            </div>
+        ) : null
+    }
 
     <HomepageContent
         {initialHomepage}

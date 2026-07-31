@@ -16,10 +16,22 @@ CREATE TABLE events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     type TEXT NOT NULL CHECK (
-        type IN ('comic', 'doujin', 'concert', 'stage', 'dance', 'ipflash', 'online', 'other')
+        type IN (
+            'comic',
+            'doujin',
+            'concert',
+            'only',
+            'meeting',
+            'stage',
+            'dance',
+            'ipflash',
+            'exhibition',
+            'online',
+            'other'
+        )
     ),
     scale TEXT NOT NULL CHECK (
-        scale IN ('small', 'mid', 'large', 'mega')
+        scale IN ('mini', 'small', 'mid', 'large', 'mega')
     ),
     division_code TEXT NOT NULL CHECK (
         division_code GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]'
@@ -54,6 +66,39 @@ CREATE TABLE events (
     qq_group TEXT,
     ticket_url TEXT,
     source_url TEXT NOT NULL,
+    organizer TEXT CHECK (
+        organizer IS NULL OR (
+            length(organizer) BETWEEN 1 AND 200
+            AND organizer = trim(organizer)
+        )
+    ),
+    schedule_status TEXT CHECK (
+        schedule_status IS NULL OR schedule_status IN ('postponed', 'cancelled')
+    ),
+    admission_method TEXT CHECK (
+        admission_method IS NULL
+        OR admission_method IN ('ticket', 'reservation', 'walk_in', 'invitation', 'other')
+    ),
+    price_range TEXT CHECK (
+        price_range IS NULL OR (
+            length(price_range) BETWEEN 1 AND 120
+            AND price_range = trim(price_range)
+        )
+    ),
+    admission_start_date TEXT CHECK (
+        admission_start_date IS NULL OR (
+            date(admission_start_date) IS NOT NULL
+            AND admission_start_date = date(admission_start_date)
+        )
+    ),
+    admission_start_time TEXT CHECK (
+        admission_start_time IS NULL OR (
+            admission_start_date IS NOT NULL
+            AND length(admission_start_time) = 5
+            AND admission_start_time GLOB '[0-2][0-9]:[0-5][0-9]'
+            AND CAST(substr(admission_start_time, 1, 2) AS INTEGER) BETWEEN 0 AND 23
+        )
+    ),
     submitter_contact TEXT NOT NULL,
     tag_suggestions TEXT CHECK (
         tag_suggestions IS NULL OR length(tag_suggestions) <= 240

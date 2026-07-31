@@ -179,7 +179,7 @@
 {#snippet emptyRecommendation()}
     <div class="pointer-events-auto max-w-xl">
         <h2 class="text-2xl font-bold text-white">这个地区还没有近期活动</h2>
-        <p class="mt-2 text-sm leading-6 text-white/75">可以切换地区，或先浏览完整活动目录。</p>
+        <p class="mt-2 text-sm leading-6 text-white/75">可以切换地区, 或先浏览完整活动目录</p>
         <a
             href={catalogueHref}
             class="group mt-6 inline-flex h-12 items-center gap-3 rounded-full bg-white py-1 pr-1 pl-5 text-sm font-bold text-black transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-[0.98]"

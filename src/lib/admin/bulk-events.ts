@@ -5,7 +5,13 @@ import {
     type AdminEventInput,
     type BulkEventDuplicateCandidate
 } from "../db/admin-events";
-import { EVENT_SCALES, EVENT_TYPES, type EventOption } from "../events/options";
+import {
+    EVENT_ADMISSION_METHODS,
+    EVENT_SCALES,
+    EVENT_SCHEDULE_STATUSES,
+    EVENT_TYPES,
+    type EventOption
+} from "../events/options";
 import {
     ADMIN_EVENT_FIELD_LABELS,
     validateAdminEventInput,
@@ -33,7 +39,13 @@ export const BULK_EVENT_COLUMNS = [
     { header: "购票地址", field: "ticket_url" },
     { header: "来源链接", field: "source_url" },
     { header: "联系信息", field: "submitter_contact" },
-    { header: "标签", field: "tags" }
+    { header: "标签", field: "tags" },
+    { header: "主办方", field: "organizer" },
+    { header: "活动异常状态", field: "schedule_status" },
+    { header: "入场方式", field: "admission_method" },
+    { header: "票价区间", field: "price_range" },
+    { header: "开始购票/预约/申请日期", field: "admission_start_date" },
+    { header: "开始购票/预约/申请时间", field: "admission_start_time" }
 ] as const satisfies ReadonlyArray<{ header: string; field: AdminEventField }>;
 
 export const BULK_EVENT_HEADERS = BULK_EVENT_COLUMNS.map(({ header }) => header);
@@ -147,7 +159,7 @@ function assertHeaders(headers: string[]) {
         headers.length !== BULK_EVENT_HEADERS.length ||
         headers.some((header, index) => header !== BULK_EVENT_HEADERS[index])
     ) {
-        throw new BulkEventCsvError("CSV 表头必须与下载模板完全一致，且顺序不能改变");
+        throw new BulkEventCsvError("CSV 表头必须与下载模板完全一致, 且顺序不能改变");
     }
 }
 
@@ -158,6 +170,8 @@ function toRawInput(record: string[]) {
     }
     raw.type = resolveOption(raw.type, EVENT_TYPES);
     raw.scale = resolveOption(raw.scale, EVENT_SCALES);
+    raw.schedule_status = resolveOption(raw.schedule_status, EVENT_SCHEDULE_STATUSES);
+    raw.admission_method = resolveOption(raw.admission_method, EVENT_ADMISSION_METHODS);
     return raw;
 }
 

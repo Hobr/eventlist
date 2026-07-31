@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
+import { waitUntil } from "cloudflare:workers";
 import { parseEventForm } from "../../../../../lib/admin/form";
+import { schedulePublicDataInvalidation } from "../../../../../lib/cache/invalidation";
 import { AdminEventMutationValidationError, editEvent } from "../../../../../lib/db/admin-events";
 import { getDB } from "../../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../../lib/http/json";
@@ -8,7 +10,7 @@ import { parseId } from "../../../../../lib/admin/validation";
 
 export const prerender = false;
 
-export const PATCH: APIRoute = async ({ request, params }) => {
+export const PATCH: APIRoute = async ({ request, params, url }) => {
     const id = parseId(params.id);
     if (!id) return jsonError("Invalid event id", 400);
 
@@ -20,13 +22,21 @@ export const PATCH: APIRoute = async ({ request, params }) => {
     }
 
     try {
-        const db = await getDB(getRuntimeEnv());
+        const runtimeEnv = getRuntimeEnv();
+        const db = await getDB(runtimeEnv);
         const result = await editEvent(db, id, input);
         if (result.outcome === "not-found") return jsonError("Event not found", 404);
         if (result.outcome === "conflict") {
             return jsonError("Event status changed; reload and try again", 409);
         }
 
+        schedulePublicDataInvalidation({
+            origin: url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            kind: "edit",
+            impact: result.impact,
+            waitUntil
+        });
         return jsonOk();
     } catch (error) {
         if (error instanceof AdminEventMutationValidationError) {

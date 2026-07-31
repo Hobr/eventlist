@@ -6,7 +6,7 @@ import { toEventIsoDateTime } from "./events/datetime";
 
 export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string) {
     const divisionLabel = getDivisionLabel(event.division_code);
-    const { address, description, ticketUrl } = getEventDetailOptionalContent(event);
+    const { address, description, organizer, ticketUrl } = getEventDetailOptionalContent(event);
     const jsonLd: Record<string, unknown> = {
         "@context": "https://schema.org",
         "@type": "Event",
@@ -14,9 +14,11 @@ export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string)
         startDate: toEventIsoDateTime(event.start_date, event.start_time),
         endDate: toEventIsoDateTime(event.end_date, event.end_time),
         eventStatus:
-            event.status === "offline"
+            event.status === "offline" || event.schedule_status === "cancelled"
                 ? "https://schema.org/EventCancelled"
-                : "https://schema.org/EventScheduled",
+                : event.schedule_status === "postponed"
+                  ? "https://schema.org/EventPostponed"
+                  : "https://schema.org/EventScheduled",
         eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
         url: canonicalUrl,
         location: {
@@ -29,6 +31,12 @@ export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string)
     const coverUrl = getDisplayCoverUrl(event.cover_url);
     if (coverUrl) jsonLd.image = [coverUrl];
     if (description) jsonLd.description = description;
+    if (organizer) {
+        jsonLd.organizer = {
+            "@type": "Organization",
+            name: organizer
+        };
+    }
     if (ticketUrl) {
         jsonLd.offers = {
             "@type": "Offer",

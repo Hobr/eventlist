@@ -4,6 +4,23 @@ import { EVENT_ENDED_CLAUSE } from "./public-events";
 
 export type EventViewRecordOutcome = "changed" | "already-current" | "ignored";
 
+export async function getPublicEventRecentVisitorCount(db: D1Database, eventId: number) {
+    const row = await db
+        .prepare(
+            `SELECT COUNT(*) AS unique_visitors
+             FROM event_visitors INDEXED BY idx_event_visitors_recent
+             JOIN events ON events.id = event_visitors.event_id
+             WHERE event_visitors.event_id = ?
+               AND events.status IN (?, ?)
+               AND event_visitors.last_seen_date BETWEEN date('now', '+8 hours', '-29 days')
+                   AND date('now', '+8 hours')`
+        )
+        .bind(eventId, STATUS.PUBLISHED, STATUS.OFFLINE)
+        .first<{ unique_visitors: number }>();
+
+    return row?.unique_visitors ?? 0;
+}
+
 export async function recordEventView(
     db: D1Database,
     eventId: number,

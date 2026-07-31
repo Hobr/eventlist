@@ -1,4 +1,6 @@
 import type { APIRoute } from "astro";
+import { waitUntil } from "cloudflare:workers";
+import { schedulePublicDataInvalidation } from "../../../../lib/cache/invalidation";
 import { mergeTags } from "../../../../lib/db/admin-events";
 import { getDB } from "../../../../lib/db";
 import { jsonError, jsonOk } from "../../../../lib/http/json";
@@ -11,7 +13,7 @@ function readId(value: FormDataEntryValue | null) {
     return parseId(typeof value === "string" ? value : undefined);
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, url }) => {
     let from: number;
     let to: number;
     try {
@@ -29,10 +31,20 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     try {
-        const db = await getDB(getRuntimeEnv());
+        const runtimeEnv = getRuntimeEnv();
+        const db = await getDB(runtimeEnv);
         const result = await mergeTags(db, from, to);
         if (result.outcome === "conflict")
             return jsonError("Source and target tags must be canonical", 409);
+        if (result.outcome === "changed") {
+            schedulePublicDataInvalidation({
+                origin: url,
+                configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+                kind: "merge",
+                impact: result.impact,
+                waitUntil
+            });
+        }
         return jsonOk();
     } catch (error) {
         return jsonError(error instanceof Error ? error.message : "Failed to merge tags", 500);

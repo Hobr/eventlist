@@ -127,11 +127,11 @@
             });
             const body = await response.json().catch(() => null);
             if (!response.ok) {
-                throw new Error(readApiError(body, "地区活动加载失败，请稍后重试"));
+                throw new Error(readApiError(body, "地区活动加载失败, 请稍后重试"));
             }
 
             const homepage = readHomepageResponse(body, city, trend);
-            if (!homepage) throw new Error("首页返回内容无效，请稍后重试");
+            if (!homepage) throw new Error("首页返回内容无效, 请稍后重试");
             if (controller.signal.aborted || requestId !== requestSequence) return false;
 
             if (options.historyMode !== "none") {
@@ -161,7 +161,7 @@
             return true;
         } catch (error) {
             if (controller.signal.aborted || requestId !== requestSequence) return false;
-            errorMessage = error instanceof Error ? error.message : "地区活动加载失败，请稍后重试";
+            errorMessage = error instanceof Error ? error.message : "地区活动加载失败, 请稍后重试";
             if (options.fallbackToNavigation) {
                 window.location.assign(targetUrl.href);
             }
@@ -256,7 +256,7 @@
     description={currentSourceLabel
         ? `当前：${currentDivision.label} · ${currentSourceLabel}`
         : `当前：${currentDivision.label}`}
-    triggerAriaLabel={`更改地区，当前为${currentDivision.label}`}
+    triggerAriaLabel={`更改地区, 当前为${currentDivision.label}`}
     triggerClass="h-9 max-w-[8.5rem] gap-1.5 rounded-full border-border/80 bg-surface/88 px-2.5 text-xs text-foreground shadow-none hover:bg-surface-subtle sm:h-10 sm:max-w-[10rem] sm:px-3 sm:text-sm"
     contentClass="max-w-sm"
 >
@@ -289,7 +289,7 @@
             </Button>
             {#if pendingDivisionCode}
                 <p class="text-center text-xs text-muted" aria-live="polite">
-                    正在加载所选地区，当前内容仍可继续浏览。
+                    正在加载所选地区, 当前内容仍可继续浏览
                 </p>
             {/if}
         </div>

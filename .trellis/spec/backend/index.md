@@ -16,6 +16,7 @@ This directory contains guidelines for backend development. Fill in each file wi
 | ----------------------------------------------- | ----------------------------------- | ------- |
 | [Directory Structure](./directory-structure.md) | Module organization and file layout | To fill |
 | [Database Guidelines](./database-guidelines.md) | D1 patterns, queries, migrations    | Filled  |
+| [Public Data Cache](./public-data-cache.md) | Cache API public DTO contracts and rollout gates | Filled |
 | [管理员批量导入活动](./admin-bulk-event-import.md) | CSV 预览、API、D1 原子写入 | 已填写 |
 | [Error Handling](./error-handling.md)           | Error types, handling strategies    | Filled  |
 | [Quality Guidelines](./quality-guidelines.md)   | Code standards, forbidden patterns  | To fill |

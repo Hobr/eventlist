@@ -37,6 +37,11 @@ export interface PublicHomepagePopularity {
 
 export type PublicEventRow = DatabasePublicEventRow;
 
+export interface PublicHomepageDiscovery {
+    featuredEvents: PublicFeaturedEvent[];
+    today: PublicEventRow[];
+}
+
 export interface PublicHomepageData {
     division: PublicHomepageDivision;
     featuredEvents: PublicFeaturedEvent[];
@@ -90,6 +95,13 @@ export function toPublicFeaturedEvents(
     return events.map(toPublicFeaturedEvent);
 }
 
+export function toPublicHomepageDiscovery(discovery: HomepageDiscovery): PublicHomepageDiscovery {
+    return {
+        featuredEvents: toPublicFeaturedEvents(discovery.featuredEvents),
+        today: discovery.today.map(toPublicEventRow)
+    };
+}
+
 export function toPublicHomepagePopularity(
     popularity: HomepagePopularity
 ): PublicHomepagePopularity {
@@ -111,8 +123,7 @@ export function toPublicHomepageData(
             name: division.name,
             label: division.label
         },
-        featuredEvents: toPublicFeaturedEvents(discovery.featuredEvents),
-        today: discovery.today.map(toPublicEventRow),
+        ...toPublicHomepageDiscovery(discovery),
         popularity: toPublicHomepagePopularity(popularity)
     };
 }

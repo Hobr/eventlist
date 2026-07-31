@@ -1,4 +1,5 @@
 ---
+import { waitUntil } from "cloudflare:workers";
 import {
     ChevronLeftOutline as ChevronLeft,
     ChevronRightOutline as ChevronRight
@@ -6,6 +7,11 @@ import {
 import FilterBar from "../../components/FilterBar.svelte";
 import EventCard from "../../components/EventCard.astro";
 import Layout from "../../layouts/Layout.astro";
+import {
+    combinePublicDataCacheStates,
+    publicDataCacheResponseHeaders
+} from "../../lib/cache/public-data";
+import { loadCachedPublicEventList, loadCachedPublicTags } from "../../lib/cache/public-routes";
 import { getDB } from "../../lib/db";
 import {
     listPublishedEvents,
@@ -34,6 +40,11 @@ function parseDate(value: string | null) {
     return value && isCanonicalDate(value) ? value : undefined;
 }
 
+function parseTag(value: string | null) {
+    const normalized = value?.trim();
+    return normalized || undefined;
+}
+
 function parseTiming(value: string | null): EventTiming {
     return value === "ended" || value === "all" ? value : "upcoming";
 }
@@ -56,7 +67,7 @@ const filters: PublishedEventFilters = {
     divisionCode: parseDivisionCode(Astro.url.searchParams.get("city")),
     type: Astro.url.searchParams.get("type") || undefined,
     scale: Astro.url.searchParams.get("scale") || undefined,
-    tag: Astro.url.searchParams.get("tag") || undefined,
+    tag: parseTag(Astro.url.searchParams.get("tag")),
     from: parseDate(Astro.url.searchParams.get("from")),
     to: parseDate(Astro.url.searchParams.get("to")),
     starts: parseDate(Astro.url.searchParams.get("starts")),
@@ -86,21 +97,42 @@ const timingCopy = {
 
 const types = EVENT_TYPES;
 const scales = EVENT_SCALES;
+const runtimeEnv = getRuntimeEnv();
 let tags = [];
 let events = [];
 let hasNext = false;
 let errorMessage = "";
+let cacheWarning = "";
 
 try {
-    const db = await getDB(getRuntimeEnv());
-    const [loadedTags, page] = await Promise.all([
-        topTags(db, 20),
-        listPublishedEvents(db, filters)
+    const db = await getDB(runtimeEnv);
+    const [tagResult, pageResult] = await Promise.all([
+        loadCachedPublicTags({
+            origin: Astro.url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            query: "",
+            limit: 20,
+            load: () => topTags(db, 20),
+            waitUntil
+        }),
+        loadCachedPublicEventList({
+            origin: Astro.url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            filters,
+            load: () => listPublishedEvents(db, filters),
+            waitUntil
+        })
     ]);
 
-    tags = loadedTags;
-    events = page.events;
-    hasNext = page.hasNext;
+    tags = tagResult.value;
+    events = pageResult.value.events;
+    hasNext = pageResult.value.hasNext;
+    const cacheState = combinePublicDataCacheStates([tagResult.cacheState, pageResult.cacheState]);
+    const headers = publicDataCacheResponseHeaders(cacheState);
+    for (const [name, value] of Object.entries(headers)) Astro.response.headers.set(name, value);
+    if (cacheState === "STALE-IF-ERROR") {
+        cacheWarning = "数据暂时无法刷新, 当前显示最近缓存";
+    }
 } catch (error) {
     errorMessage = error instanceof Error ? error.message : "无法加载活动列表";
 }
@@ -129,6 +161,17 @@ try {
         </header>
 
         <FilterBar types={types} scales={scales} tags={tags} filters={filters} client:load />
+
+        {
+            cacheWarning ? (
+                <div
+                    class="rounded-md bg-warning-subtle p-5 text-sm font-semibold text-warning"
+                    role="status"
+                >
+                    {cacheWarning}
+                </div>
+            ) : null
+        }
 
         {
             errorMessage ? (

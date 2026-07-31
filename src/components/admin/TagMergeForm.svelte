@@ -38,13 +38,13 @@
                 const body = (await response.json().catch(() => null)) as {
                     error?: string;
                 } | null;
-                throw new Error(body?.error ?? "归并失败，请重试");
+                throw new Error(body?.error ?? "归并失败, 请重试");
             }
 
             window.location.reload();
             return true;
         } catch (error) {
-            errorMessage = error instanceof Error ? error.message : "归并失败，请重试";
+            errorMessage = error instanceof Error ? error.message : "归并失败, 请重试";
             return false;
         } finally {
             pending = false;
@@ -81,7 +81,7 @@
     />
     <ConfirmDialog
         title="确认归并标签？"
-        description={`${sourceLabel} 的活动会全部改为 ${targetLabel}。该操作不可逆。`}
+        description={`${sourceLabel} 的活动会全部改为 ${targetLabel}, 该操作不可逆`}
         confirmLabel="确认归并"
         {pending}
         disabled={selectionInvalid || pending}

@@ -1,13 +1,15 @@
 import type { APIRoute } from "astro";
+import { waitUntil } from "cloudflare:workers";
 import { parseEventForm } from "../../../../lib/admin/form";
-import { getDB } from "../../../../lib/db";
+import { schedulePublicDataInvalidation } from "../../../../lib/cache/invalidation";
+import { getDB, STATUS } from "../../../../lib/db";
 import { createPublishedEvent } from "../../../../lib/db/admin-events";
 import { jsonError, jsonOk } from "../../../../lib/http/json";
 import { getRuntimeEnv } from "../../../../lib/runtime/env";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, url }) => {
     if (!locals.admin) return jsonError("Unauthorized", 401);
 
     let input;
@@ -21,10 +23,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     try {
-        const db = await getDB(getRuntimeEnv());
+        const runtimeEnv = getRuntimeEnv();
+        const db = await getDB(runtimeEnv);
         const id = await createPublishedEvent(db, input, {
             authMode: locals.admin.mode,
             ...(locals.admin.email ? { email: locals.admin.email } : {})
+        });
+        schedulePublicDataInvalidation({
+            origin: url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            kind: "create",
+            impact: {
+                eventIds: [id],
+                oldDivisionCodes: [],
+                newDivisionCodes: [input.division_code],
+                newStatus: STATUS.PUBLISHED,
+                tagsChanged: true
+            },
+            waitUntil
         });
         return jsonOk({ id }, { status: 201 });
     } catch (error) {

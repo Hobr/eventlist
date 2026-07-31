@@ -62,6 +62,6 @@
     </nav>
 
     <div class="mt-8 border-t border-border pt-6 text-sm text-muted-foreground">
-        按地区与日期浏览已审核活动。
+        按地区与日期浏览已审核活动
     </div>
 </SidePanel>

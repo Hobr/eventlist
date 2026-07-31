@@ -1,6 +1,11 @@
 import type { SubmissionInput } from "../db/submissions";
 import { isCanonicalDate, normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
-import { isEventScale, isEventType } from "../events/options";
+import {
+    isEventAdmissionMethod,
+    isEventScale,
+    isEventScheduleStatus,
+    isEventType
+} from "../events/options";
 
 export interface ParsedSubmissionForm {
     input: SubmissionInput;
@@ -23,6 +28,14 @@ function readOptional(formData: FormData, name: string) {
     if (typeof value !== "string") return null;
     const trimmed = value.trim();
     return trimmed === "" ? null : trimmed;
+}
+
+function readOptionalText(formData: FormData, name: string, label: string, maxLength: number) {
+    const value = readOptional(formData, name);
+    if (value && value.length > maxLength) {
+        throw new Error(`${label}不能超过 ${maxLength} 个字符`);
+    }
+    return value;
 }
 
 function readDivisionCode(formData: FormData) {
@@ -51,6 +64,28 @@ function readDate(formData: FormData, name: string, label: string) {
     if (!isCanonicalDate(value)) {
         throw new Error(`${label}格式无效`);
     }
+    return value;
+}
+
+function readOptionalDate(formData: FormData, name: string, label: string) {
+    const value = readOptional(formData, name);
+    if (value && !isCanonicalDate(value)) {
+        throw new Error(`${label}格式无效`);
+    }
+    return value;
+}
+
+function readScheduleStatus(formData: FormData) {
+    const value = readOptional(formData, "schedule_status");
+    if (!value) return null;
+    if (!isEventScheduleStatus(value)) throw new Error("活动异常状态无效");
+    return value;
+}
+
+function readAdmissionMethod(formData: FormData) {
+    const value = readOptional(formData, "admission_method");
+    if (!value) return null;
+    if (!isEventAdmissionMethod(value)) throw new Error("入场方式无效");
     return value;
 }
 
@@ -98,6 +133,18 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
     if (tagSuggestions && tagSuggestions.length > MAX_TAG_SUGGESTIONS_LENGTH) {
         throw new Error("标签描述不能超过 240 个字符");
     }
+    const admissionStartDate = readOptionalDate(
+        formData,
+        "admission_start_date",
+        "开始购票/预约/申请日期"
+    );
+    const admissionStartTime = normalizeOptionalTime(
+        readOptional(formData, "admission_start_time"),
+        "开始购票/预约/申请时间"
+    );
+    if (admissionStartTime && !admissionStartDate) {
+        throw new Error("填写开始购票/预约/申请时间前请先填写日期");
+    }
 
     return {
         input: {
@@ -116,6 +163,12 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
             qq_group: readOptional(formData, "qq_group"),
             ticket_url: readUrl(formData, "ticket_url", "购票地址"),
             source_url: readUrl(formData, "source_url", "来源链接", true),
+            organizer: readOptionalText(formData, "organizer", "主办方", 200),
+            schedule_status: readScheduleStatus(formData),
+            admission_method: readAdmissionMethod(formData),
+            price_range: readOptionalText(formData, "price_range", "票价区间", 120),
+            admission_start_date: admissionStartDate,
+            admission_start_time: admissionStartTime,
             submitter_contact: readRequired(formData, "submitter_contact", "联系方式"),
             tag_suggestions: tagSuggestions
         },

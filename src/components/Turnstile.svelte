@@ -82,7 +82,7 @@
             })
             .catch(() => {
                 if (disposed) return;
-                errorMessage = "人机校验加载失败，请刷新后重试";
+                errorMessage = "人机校验加载失败, 请刷新后重试";
             });
 
         return () => {

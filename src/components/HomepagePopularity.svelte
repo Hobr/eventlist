@@ -169,12 +169,12 @@
                 const message =
                     body && typeof body === "object" && "error" in body
                         ? String(body.error)
-                        : "热门活动加载失败，请稍后重试";
+                        : "热门活动加载失败, 请稍后重试";
                 throw new Error(message);
             }
 
             const nextPopularity = readPopularityResponse(body, trend);
-            if (!nextPopularity) throw new Error("热门活动返回内容无效，请稍后重试");
+            if (!nextPopularity) throw new Error("热门活动返回内容无效, 请稍后重试");
             if (requestId !== requestSequence || requestCity !== divisionCode) return;
 
             cache.set(cacheKey, nextPopularity);
@@ -185,7 +185,7 @@
         } catch (error) {
             if (controller.signal.aborted || requestId !== requestSequence) return;
             pendingWindow = null;
-            errorMessage = error instanceof Error ? error.message : "热门活动加载失败，请稍后重试";
+            errorMessage = error instanceof Error ? error.message : "热门活动加载失败, 请稍后重试";
         } finally {
             if (requestController === controller) requestController = null;
         }
@@ -271,7 +271,7 @@
         {:else}
             <div class="border-t border-border py-8">
                 <p class="text-sm font-semibold text-muted-foreground">暂无足够浏览数据</p>
-                <p class="mt-1 text-xs text-muted">详情页产生访问后会显示排行。</p>
+                <p class="mt-1 text-xs text-muted">详情页产生访问后会显示排行</p>
             </div>
         {/if}
     </section>
@@ -347,13 +347,13 @@
         {@render popularList(
             "local-popular-heading",
             "本地热门",
-            `${divisionLabel}，近 ${popularity.window} 日`,
+            `${divisionLabel}, 近 ${popularity.window} 日`,
             popularity.local
         )}
         {@render popularList(
             "nationwide-popular-heading",
             "全国热门",
-            `全国范围，近 ${popularity.window} 日`,
+            `全国范围, 近 ${popularity.window} 日`,
             popularity.nationwide
         )}
     </div>

@@ -1,7 +1,16 @@
 import type { AdminEventInput } from "../db/admin-events";
 import { isCountyDivisionCode } from "../divisions";
 import { isCanonicalDate, normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
-import { isEventScale, isEventType, type EventScale, type EventType } from "../events/options";
+import {
+    isEventAdmissionMethod,
+    isEventScale,
+    isEventScheduleStatus,
+    isEventType,
+    type EventAdmissionMethod,
+    type EventScale,
+    type EventScheduleStatus,
+    type EventType
+} from "../events/options";
 
 export const ADMIN_EVENT_FIELDS = [
     "title",
@@ -20,7 +29,13 @@ export const ADMIN_EVENT_FIELDS = [
     "ticket_url",
     "source_url",
     "submitter_contact",
-    "tags"
+    "tags",
+    "organizer",
+    "schedule_status",
+    "admission_method",
+    "price_range",
+    "admission_start_date",
+    "admission_start_time"
 ] as const;
 
 export type AdminEventField = (typeof ADMIN_EVENT_FIELDS)[number];
@@ -43,7 +58,13 @@ export const ADMIN_EVENT_FIELD_LABELS: Record<AdminEventField, string> = {
     ticket_url: "购票地址",
     source_url: "来源链接",
     submitter_contact: "联系信息",
-    tags: "标签"
+    tags: "标签",
+    organizer: "主办方",
+    schedule_status: "活动异常状态",
+    admission_method: "入场方式",
+    price_range: "票价区间",
+    admission_start_date: "开始购票/预约/申请日期",
+    admission_start_time: "开始购票/预约/申请时间"
 };
 
 export interface AdminEventValidationOptions {
@@ -97,9 +118,47 @@ function readEventScale(input: AdminEventRawInput): EventScale {
     return value;
 }
 
+function readScheduleStatus(input: AdminEventRawInput): EventScheduleStatus | null {
+    const value = readOptional(input, "schedule_status");
+    if (!value) return null;
+    if (!isEventScheduleStatus(value)) {
+        invalid("schedule_status", "活动异常状态无效");
+    }
+    return value;
+}
+
+function readAdmissionMethod(input: AdminEventRawInput): EventAdmissionMethod | null {
+    const value = readOptional(input, "admission_method");
+    if (!value) return null;
+    if (!isEventAdmissionMethod(value)) {
+        invalid("admission_method", "入场方式无效");
+    }
+    return value;
+}
+
+function readBoundedOptional(
+    input: AdminEventRawInput,
+    field: "organizer" | "price_range",
+    maximum: number
+) {
+    const value = readOptional(input, field);
+    if (value && value.length > maximum) {
+        invalid(field, `${ADMIN_EVENT_FIELD_LABELS[field]}不能超过 ${maximum} 个字符`);
+    }
+    return value;
+}
+
 function readDate(input: AdminEventRawInput, field: "start_date" | "end_date") {
     const value = readRequired(input, field);
     if (!isCanonicalDate(value)) {
+        invalid(field, `${ADMIN_EVENT_FIELD_LABELS[field]}格式无效`);
+    }
+    return value;
+}
+
+function readOptionalDate(input: AdminEventRawInput, field: "admission_start_date") {
+    const value = readOptional(input, field);
+    if (value && !isCanonicalDate(value)) {
         invalid(field, `${ADMIN_EVENT_FIELD_LABELS[field]}格式无效`);
     }
     return value;
@@ -206,6 +265,20 @@ export function validateAdminEventInput(
         readRequired(raw, "submitter_contact")
     );
     const tags = capture(errors, "tags", () => readTags(raw, options.tagSeparator ?? /[,\n，、]/));
+    const organizer = capture(errors, "organizer", () =>
+        readBoundedOptional(raw, "organizer", 200)
+    );
+    const scheduleStatus = capture(errors, "schedule_status", () => readScheduleStatus(raw));
+    const admissionMethod = capture(errors, "admission_method", () => readAdmissionMethod(raw));
+    const priceRange = capture(errors, "price_range", () =>
+        readBoundedOptional(raw, "price_range", 120)
+    );
+    const admissionStartDate = capture(errors, "admission_start_date", () =>
+        readOptionalDate(raw, "admission_start_date")
+    );
+    const admissionStartTime = capture(errors, "admission_start_time", () =>
+        normalizeOptionalTime(readOptional(raw, "admission_start_time"), "开始购票/预约/申请时间")
+    );
 
     if (startDate && endDate && endDate < startDate) {
         errors.push(new AdminEventValidationError("end_date", "结束日期不能早于开始日期"));
@@ -231,6 +304,15 @@ export function validateAdminEventInput(
 
     if (options.requireTags && tags?.length === 0) {
         errors.push(new AdminEventValidationError("tags", "请至少选择或新增一个规范标签"));
+    }
+
+    if (admissionStartTime && readOptional(raw, "admission_start_date") === null) {
+        errors.push(
+            new AdminEventValidationError(
+                "admission_start_time",
+                "填写开始购票/预约/申请时间前请先填写日期"
+            )
+        );
     }
 
     if (
@@ -266,6 +348,12 @@ export function validateAdminEventInput(
             qq_group: readOptional(raw, "qq_group"),
             ticket_url: ticketUrl,
             source_url: sourceUrl,
+            organizer,
+            schedule_status: scheduleStatus,
+            admission_method: admissionMethod,
+            price_range: priceRange,
+            admission_start_date: admissionStartDate,
+            admission_start_time: admissionStartTime,
             submitter_contact: submitterContact,
             tags
         },

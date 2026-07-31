@@ -39,13 +39,13 @@
                 const body = (await response.json().catch(() => null)) as {
                     error?: string;
                 } | null;
-                throw new Error(body?.error ?? "操作失败，请重试");
+                throw new Error(body?.error ?? "操作失败, 请重试");
             }
 
             window.location.reload();
             return true;
         } catch (error) {
-            errorMessage = error instanceof Error ? error.message : "操作失败，请重试";
+            errorMessage = error instanceof Error ? error.message : "操作失败, 请重试";
             return false;
         } finally {
             pendingAction = null;
@@ -85,13 +85,13 @@
         </Button>
         {#if !hasTags}
             <p class="text-xs leading-5 font-semibold text-warning" role="status">
-                请先整理至少一个规范标签。
+                请先整理至少一个规范标签
             </p>
         {/if}
 
         <ConfirmDialog
             title="驳回这条投稿？"
-            description="请写明需要投稿者修正的内容。驳回后，该活动不会公开展示。"
+            description="请写明需要投稿者修正的内容。驳回后, 该活动不会公开展示"
             confirmLabel="确认驳回"
             pending={pendingAction === "reject"}
             disabled={busy}
@@ -126,7 +126,7 @@
         </Button>
         <ConfirmDialog
             title="下线这个活动？"
-            description="活动会从公开列表中移除，但数据会保留，可以稍后重新发布。"
+            description="活动会从公开列表中移除, 但数据会保留, 可以稍后重新发布"
             confirmLabel="确认下线"
             pending={pendingAction === "offline"}
             disabled={busy}
@@ -158,7 +158,7 @@
         </Button>
         {#if !hasTags}
             <p class="text-xs leading-5 font-semibold text-warning" role="status">
-                请先整理至少一个规范标签。
+                请先整理至少一个规范标签
             </p>
         {/if}
     {/if}
