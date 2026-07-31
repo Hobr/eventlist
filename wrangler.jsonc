@@ -1,38 +1,62 @@
 {
-	"$schema": "./node_modules/wrangler/config-schema.json",
-	"compatibility_date": "2026-06-29",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"name": "eventlist",
-	"main": "./src/worker.ts",
-	"assets": {
-		"directory": "./dist",
-		"binding": "ASSETS",
-	},
-	"observability": {
-		"logs": {
-			"enabled": true,
-			"invocation_logs": true
-		}
-	},
-	"triggers": {
-		"crons": [
-			"5 16 * * *"
-		],
-	},
-	"vars": {
-		"DEFAULT_DIVISION_CODE": "31",
-		"TURNSTILE_SITE_KEY": "0x4AAAAAAECBuh-0cHETrayP",
-		"ACCESS_TEAM": "hobr",
-		"ACCESS_AUD": "33d445ebdc02a8a168aed7093fe7cd6d813afb7dbec7af2bef55dce33da34f8c"
-	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "eventlist-db",
-			"database_id": "0a13eb44-0eb6-4513-9b91-5a02eaac570f",
-			"migrations_dir": "migrations",
-		},
-	],
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "compatibility_date": "2026-06-29",
+    "compatibility_flags": ["nodejs_compat"],
+    "name": "eventlist",
+    "main": "./src/worker.ts",
+    "workers_dev": false,
+    "routes": [
+        {
+            "pattern": "acg.hobr.site",
+            "custom_domain": true,
+            "enabled": true,
+            "previews_enabled": false
+        }
+    ],
+    "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS"
+    },
+    "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1,
+        "logs": {
+            "enabled": true,
+            "head_sampling_rate": 1,
+            "persist": true,
+            "invocation_logs": true
+        },
+        "traces": {
+            "enabled": false,
+            "persist": true,
+            "head_sampling_rate": 1
+        }
+    },
+    "triggers": {
+        "crons": ["5 16 * * *"]
+    },
+    "vars": {
+        "DEFAULT_DIVISION_CODE": "31",
+        "PUBLIC_DATA_CACHE_SCOPES": "tags,sitemap",
+        "TURNSTILE_SITE_KEY": "0x4AAAAAAECBuh-0cHETrayP",
+        "ACCESS_TEAM": "hobr",
+        "ACCESS_AUD": "33d445ebdc02a8a168aed7093fe7cd6d813afb7dbec7af2bef55dce33da34f8c"
+    },
+    "kv_namespaces": [
+        {
+            "binding": "SESSION",
+            "id": "e17f4b9125a44264a5b08b667eae8733"
+        }
+    ],
+    "images": {
+        "binding": "IMAGES"
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "eventlist-db",
+            "database_id": "0a13eb44-0eb6-4513-9b91-5a02eaac570f",
+            "migrations_dir": "migrations"
+        }
+    ]
 }

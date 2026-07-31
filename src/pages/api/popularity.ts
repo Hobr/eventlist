@@ -1,4 +1,12 @@
 import type { APIRoute } from "astro";
+import { waitUntil } from "cloudflare:workers";
+import {
+    isPublicDataCacheEnabled,
+    parsePublicDataCacheScopes,
+    publicDataCacheResponseHeaders,
+    type PublicDataCacheState
+} from "../../lib/cache/public-data";
+import { loadCachedHomepagePopularity } from "../../lib/cache/public-routes";
 import { getDB } from "../../lib/db";
 import { listHomepagePopularity } from "../../lib/db/homepage";
 import { isRegionCode } from "../../lib/divisions";
@@ -15,18 +23,47 @@ export const GET: APIRoute = async ({ url }) => {
     const window = Number(trend);
 
     if (!city || !isRegionCode(city)) {
-        return jsonError("行政区无效", 400);
+        const response = jsonError("行政区无效", 400);
+        const headers = publicDataCacheResponseHeaders("BYPASS", "no-store");
+        for (const [name, value] of Object.entries(headers)) response.headers.set(name, value);
+        return response;
     }
     if (!/^(?:3|7|30)$/.test(trend) || !isPopularityWindow(window)) {
-        return jsonError("热度统计时间范围无效", 400);
+        const response = jsonError("热度统计时间范围无效", 400);
+        const headers = publicDataCacheResponseHeaders("BYPASS", "no-store");
+        for (const [name, value] of Object.entries(headers)) response.headers.set(name, value);
+        return response;
     }
 
+    const runtimeEnv = getRuntimeEnv();
+    const failureCacheState: PublicDataCacheState = isPublicDataCacheEnabled(
+        parsePublicDataCacheScopes(runtimeEnv.PUBLIC_DATA_CACHE_SCOPES),
+        "popularity"
+    )
+        ? "MISS"
+        : "BYPASS";
+
     try {
-        const db = await getDB(getRuntimeEnv());
-        const popularity = await listHomepagePopularity(db, city, window);
-        const publicPopularity = toPublicHomepagePopularity(popularity);
-        return jsonOk({ popularity: publicPopularity });
+        const db = await getDB(runtimeEnv);
+        const result = await loadCachedHomepagePopularity({
+            origin: url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            divisionCode: city,
+            window,
+            load: async () =>
+                toPublicHomepagePopularity(await listHomepagePopularity(db, city, window)),
+            waitUntil
+        });
+        return jsonOk(
+            { popularity: result.value },
+            {
+                headers: publicDataCacheResponseHeaders(result.cacheState, "private, max-age=15")
+            }
+        );
     } catch {
-        return jsonError("热门活动暂时无法加载, 请稍后重试", 500);
+        const response = jsonError("热门活动暂时无法加载, 请稍后重试", 500);
+        const headers = publicDataCacheResponseHeaders(failureCacheState, "no-store");
+        for (const [name, value] of Object.entries(headers)) response.headers.set(name, value);
+        return response;
     }
 };

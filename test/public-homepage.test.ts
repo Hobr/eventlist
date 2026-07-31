@@ -9,6 +9,7 @@ import {
     toPublicEventRow,
     toPublicFeaturedEvents,
     toPublicHomepageData,
+    toPublicHomepageDiscovery,
     toPublicHomepagePopularity
 } from "../src/lib/public/homepage";
 import {
@@ -101,6 +102,21 @@ test("首页公开主推荐投影只保留展示字段", () => {
             cover_url: "https://example.com/cover.webp"
         }
     ]);
+    assert.doesNotMatch(
+        JSON.stringify(projected),
+        /submitter_contact|source_url|status|reject_reason|tag_suggestions/
+    );
+});
+
+test("首页发现缓存投影复用主推荐和今日活动白名单", () => {
+    const discovery: HomepageDiscovery = {
+        featuredEvents: [event(1)],
+        today: [event(2)]
+    };
+    const projected = toPublicHomepageDiscovery(discovery);
+
+    assert.deepEqual(projected.featuredEvents, toPublicFeaturedEvents(discovery.featuredEvents));
+    assert.deepEqual(projected.today, discovery.today.map(toPublicEventRow));
     assert.doesNotMatch(
         JSON.stringify(projected),
         /submitter_contact|source_url|status|reject_reason|tag_suggestions/
@@ -240,8 +256,10 @@ test("热门 API 使用共享校验、投影和稳定 JSON 错误", async () => 
 
     assert.match(source, /isRegionCode\(city\)/);
     assert.match(source, /isPopularityWindow\(window\)/);
-    assert.match(source, /toPublicHomepagePopularity\(popularity\)/);
-    assert.match(source, /jsonOk\(\{ popularity: publicPopularity \}\)/);
+    assert.match(source, /loadCachedHomepagePopularity\(\{/);
+    assert.match(source, /toPublicHomepagePopularity\(await listHomepagePopularity/);
+    assert.match(source, /\{ popularity: result\.value \}/);
+    assert.match(source, /publicDataCacheResponseHeaders\(result\.cacheState/);
     assert.match(source, /jsonError\("热门活动暂时无法加载, 请稍后重试", 500\)/);
     assert.doesNotMatch(source, /error instanceof Error \? error\.message/);
 });
@@ -253,10 +271,12 @@ test("首页快照 API 严格校验参数并以一次全有或全无响应提交
     assert.match(source, /isPopularityWindow\(window\)/);
     assert.match(source, /getRegionOptionByCode\(city\)/);
     assert.match(source, /Promise\.all\(\[/);
+    assert.match(source, /loadCachedHomepageDiscovery\(\{/);
     assert.match(source, /listHomepageDiscovery\(db, city\)/);
+    assert.match(source, /loadCachedHomepagePopularity\(\{/);
     assert.match(source, /listHomepagePopularity\(db, city, window\)/);
-    assert.match(source, /toPublicHomepageData\(division, discovery, popularity\)/);
-    assert.match(source, /jsonOk\(\{ homepage:/);
+    assert.match(source, /const homepage: PublicHomepageData =/);
+    assert.match(source, /\{ homepage \}/);
     assert.match(source, /jsonError\("首页活动暂时无法加载, 请稍后重试", 500\)/);
     assert.doesNotMatch(source, /error instanceof Error \? error\.message/);
 });

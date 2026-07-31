@@ -14,4 +14,5 @@ export interface RuntimeEnv {
     TURNSTILE_SITE_KEY?: string;
     TURNSTILE_SECRET?: string;
     VIEW_HASH_SECRET?: string;
+    PUBLIC_DATA_CACHE_SCOPES?: string;
 }

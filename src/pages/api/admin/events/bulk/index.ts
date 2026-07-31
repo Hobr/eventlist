@@ -1,10 +1,12 @@
 import type { APIRoute } from "astro";
+import { waitUntil } from "cloudflare:workers";
 import {
     buildBulkEventPreview,
     BulkEventCsvError,
     createBulkEventErrorPreview
 } from "../../../../../lib/admin/bulk-events";
-import { getDB } from "../../../../../lib/db";
+import { schedulePublicDataInvalidation } from "../../../../../lib/cache/invalidation";
+import { getDB, STATUS } from "../../../../../lib/db";
 import {
     BulkEventIdConflictError,
     createBulkPublishedEvents
@@ -14,7 +16,7 @@ import { getRuntimeEnv } from "../../../../../lib/runtime/env";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, url }) => {
     if (!locals.admin) return jsonError("Unauthorized", 401);
 
     try {
@@ -25,7 +27,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             return jsonError("请选择 CSV 文件", 400, { preview });
         }
 
-        const db = await getDB(getRuntimeEnv());
+        const runtimeEnv = getRuntimeEnv();
+        const db = await getDB(runtimeEnv);
         const result = await buildBulkEventPreview(db, file);
         if (!result.preview.valid) {
             return jsonError("CSV 包含需要修正的记录", 400, { preview: result.preview });
@@ -45,14 +48,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
             });
         }
 
-        const events = await createBulkPublishedEvents(
-            db,
-            result.events.map(({ row, event }) => ({ row, event })),
-            {
-                authMode: locals.admin.mode,
-                ...(locals.admin.email ? { email: locals.admin.email } : {})
-            }
-        );
+        const items = result.events.map(({ row, event }) => ({ row, event }));
+        const events = await createBulkPublishedEvents(db, items, {
+            authMode: locals.admin.mode,
+            ...(locals.admin.email ? { email: locals.admin.email } : {})
+        });
+        schedulePublicDataInvalidation({
+            origin: url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            kind: "create",
+            impact: {
+                eventIds: events.map(({ id }) => id),
+                oldDivisionCodes: [],
+                newDivisionCodes: items.map(({ event }) => event.division_code),
+                newStatus: STATUS.PUBLISHED,
+                tagsChanged: true
+            },
+            waitUntil
+        });
         return jsonOk({ events }, { status: 201 });
     } catch (error) {
         if (error instanceof BulkEventCsvError) {

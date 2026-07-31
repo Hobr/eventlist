@@ -62,19 +62,19 @@
 使用独立命名空间：
 
 ```ts
-await caches.open("eventlist-public-data-v1");
+await caches.open("eventlist-public-data-v2");
 ```
 
 命名空间版本用于部署级逻辑失效。缓存键使用当前请求 origin 下的保留合成路径，且只用于 Cache API：
 
 ```text
-/_eventlist_cache/v1/home-discovery?division=11
-/_eventlist_cache/v1/popularity?division=11&window=7
-/_eventlist_cache/v1/event-list?...规范化筛选...
-/_eventlist_cache/v1/event-detail?id=123
-/_eventlist_cache/v1/top-tags?limit=20
-/_eventlist_cache/v1/tag-search?q=同人&limit=12
-/_eventlist_cache/v1/sitemap?limit=1000
+/_eventlist_cache/v2/home-discovery?division=11
+/_eventlist_cache/v2/popularity?division=11&window=7
+/_eventlist_cache/v2/event-list?...规范化筛选...
+/_eventlist_cache/v2/event-detail?id=123
+/_eventlist_cache/v2/top-tags?limit=20
+/_eventlist_cache/v2/tag-search?q=同人&limit=12
+/_eventlist_cache/v2/sitemap?limit=1000
 ```
 
 使用命名缓存避免与真实公开路由或默认 `fetch()` 缓存条目混用。缓存请求始终是无 Cookie、无 Authorization、无用户请求头的合成 GET。
@@ -150,7 +150,7 @@ await caches.open("eventlist-public-data-v1");
 
 ```ts
 interface CachedEnvelope<T> {
-    schema: 1;
+    schema: 2;
     generatedAt: number;
     freshUntil: number;
     normalUntil: number;
@@ -298,9 +298,9 @@ Cache API 标记本身不能消除首次统计 POST，也不能绕过 Workers Fr
 | 写入 | 本地立即失效 | 全球保证 |
 | --- | --- | --- |
 | 公共投稿 | 无 | pending 不公开 |
-| 管理员创建/批量创建 | 已知地区的首页/热门键、top tags、sitemap | 其他列表/标签键最多 60 秒 |
-| 管理员编辑 | 详情、旧/新地区首页/热门、top tags、sitemap | 无法枚举的筛选/联想键最多 60 秒 |
-| 审核通过/下线/重新发布 | 详情、已知地区首页/热门、sitemap | 所有公开聚合最多 60 秒 |
+| 管理员创建/批量创建 | 预算内的已知地区首页/热门键、top tags、sitemap | 超出预算及其他列表/标签键最多 60 秒 |
+| 管理员编辑 | 预算内的详情、旧/新地区首页/热门、top tags、sitemap | 超出预算及无法枚举的筛选/联想键最多 60 秒 |
+| 审核通过/下线/重新发布 | 预算内的详情、已知地区首页/热门、top tags、sitemap | 超出预算的固定键与所有公开聚合最多 60 秒 |
 | 驳回 | 仅在此前可能公开时才失效；正常无需 | pending 数据从未缓存 |
 | 标签归并 | top tags；可识别的详情键 | 搜索和筛选键最多 60 秒 |
 | 详情访问 | 当前 `division + window` 热门键可不主动删除 | 热门榜按 25-35 秒开始刷新，最多 60 秒 |
@@ -317,9 +317,11 @@ Cache API 标记本身不能消除首次统计 POST，也不能绕过 Workers Fr
 divisionKeys(code) = { province(code), city(code), code }
 ```
 
-对每个祖先地区码失效 `home-discovery` 一个键和 `popularity` 三个窗口键（3 | 7 | 30）。单侧地区因此最多 3 × 4 = 12 个键，编辑活动涉及旧/新两侧时最多 24 个键——即 §0.3 规定的 `delete()` 硬上限。直辖市的省级码与市级码相同，去重后实际键数更少。
+对每个祖先地区码失效 `home-discovery` 一个键和 `popularity` 三个窗口键（3 | 7 | 30）。单侧地区因此最多 3 × 4 = 12 个键，编辑活动涉及旧/新两侧时最多 24 个键——即 §0.3 规定的 `delete()` 硬上限。旧/新地区相同或批量活动落在同一地区时，按规范 URL 去重后实际键数更少。
 
-`top-tags` 与 `sitemap` 是固定低基数键，不受地区影响。活动列表与标签联想的组合键不可枚举，继续由 60 秒正常上限兜底。
+当 `homepage` 与 `popularity` 同时启用，且旧/新地区各展开为三个不同祖先时，地区聚合会完整占用 24 次预算。为了同时满足 R27 的硬上限和 R28 的旧/新祖先覆盖，失效 helper 必须先加入地区聚合键，再加入详情、`top-tags` 和 `sitemap` 固定键；预算耗尽时，后者不再声称本地立即失效，而是依赖正常 TTL 在最多 60 秒内收敛。
+
+`top-tags` 与 `sitemap` 是固定低基数键，不受地区影响。活动列表与标签联想的组合键不可枚举，同样由 60 秒正常上限兜底。
 
 ## 10. 查询优化
 
@@ -466,13 +468,16 @@ VIEW_DEDUPE_CACHE_ENABLED=true
 
 `PUBLIC_DATA_CACHE_SCOPES` 缺失或为空时完全绕过公开 DTO Cache API。`VIEW_DEDUPE_CACHE_ENABLED` 未启用时，详情继续输出现有 POST，POST 直接执行 D1 当日 upsert；两个开关相互独立。
 
-发布顺序：
+自动发布顺序：
 
 1. 先部署数据库接口收口、查询优化、缓存核心、自定义 Worker 入口和测试，两个生产缓存开关关闭。
-2. 启用热度去重标记并启用每日 Cron，观察统计 POST、D1 操作和 `rows_written`。
-3. 启用首页/热门/标签/sitemap。
-4. 启用详情公开 DTO 缓存；热度标记继续独立工作。
-5. 观察列表真实重复率后启用第 1-3 页列表缓存。
+2. `tags,sitemap` pilot 作为首个稳定版本；外部控制器随后按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope，不再等待逐次人工确认。
+3. 每个候选先确认源码已提交且远程 D1 schema 与候选兼容，再构建独立 Worker Version。候选不得夹带 schema 变更或其他产品功能。
+4. 控制器对候选执行 HTTP/响应哈希/D1 投影探针，并读取 CPU、`exceededCpu` 和错误指标；任一证据缺失或不合格都视为失败。
+5. 候选失败时将上一稳定 Worker Version 恢复到 100% 流量并冻结后续晋级。成功后才把该候选登记为新的稳定版本。
+6. 热度去重标记继续按独立 Worker 请求阈值、开关和验收发布，不进入公开 DTO 自动序列。
+
+自动控制面必须位于 Worker 外部。生产 Worker 只读取 `PUBLIC_DATA_CACHE_SCOPES` 这个硬上限，不持有 Workers Scripts 写令牌，也不自行调用部署 API。控制器必须串行执行；远程 D1 schema 不兼容、版本状态不明确、指标 API 超时、探针失败或候选路由 CPU p99 >= 10 ms 时都 fail closed。
 
 公开读取快速回滚：清空 `PUBLIC_DATA_CACHE_SCOPES`。热度快速回滚：关闭 `VIEW_DEDUPE_CACHE_ENABLED`，恢复每个 POST 直接校验 D1；Cron 可独立保留。若自定义入口本身异常，则将 `main` 恢复为 `@astrojs/cloudflare/entrypoints/server` 并用人工维护命令临时清理过期访客。所有路径都不需要迁移或恢复 D1 事实。
 

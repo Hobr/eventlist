@@ -1,4 +1,5 @@
 ---
+import { waitUntil } from "cloudflare:workers";
 import {
     ArrowLeftOutline as ArrowLeft,
     ArrowUpRightFromSquareOutline as ExternalLink,
@@ -13,6 +14,8 @@ import {
 import EventArtwork from "../../components/EventArtwork.astro";
 import Badge from "../../components/ui/badge.svelte";
 import Layout from "../../layouts/Layout.astro";
+import { publicDataCacheResponseHeaders } from "../../lib/cache/public-data";
+import { loadCachedPublicEventDetail } from "../../lib/cache/public-routes";
 import { getDB, STATUS } from "../../lib/db";
 import { getPublicEvent } from "../../lib/db/public-events";
 import { getPublicEventRecentVisitorCount } from "../../lib/db/views";
@@ -34,15 +37,39 @@ const id = /^[1-9]\d*$/.test(rawId) ? Number(rawId) : Number.NaN;
 let event = null;
 let recentVisitorCount = 0;
 let errorMessage = "";
+let cacheWarning = "";
 
 try {
     if (!Number.isSafeInteger(id)) throw new Error("活动不存在");
 
-    const db = await getDB(getRuntimeEnv());
-    [event, recentVisitorCount] = await Promise.all([
-        getPublicEvent(db, id),
+    const runtimeEnv = getRuntimeEnv();
+    const db = await getDB(runtimeEnv);
+    const [eventLoad, visitorCountLoad] = await Promise.allSettled([
+        loadCachedPublicEventDetail({
+            origin: Astro.url,
+            configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
+            eventId: id,
+            load: () => getPublicEvent(db, id),
+            waitUntil
+        }),
         getPublicEventRecentVisitorCount(db, id)
     ]);
+    if (eventLoad.status === "rejected") throw eventLoad.reason;
+
+    const eventResult = eventLoad.value;
+    event = eventResult.value;
+    if (visitorCountLoad.status === "fulfilled") {
+        recentVisitorCount = visitorCountLoad.value;
+    } else if (event) {
+        cacheWarning = "活动热度暂时无法加载, 其他信息仍可正常查看";
+    } else {
+        throw visitorCountLoad.reason;
+    }
+    const headers = publicDataCacheResponseHeaders(eventResult.cacheState);
+    for (const [name, value] of Object.entries(headers)) Astro.response.headers.set(name, value);
+    if (eventResult.cacheState === "STALE-IF-ERROR") {
+        cacheWarning = "数据暂时无法刷新, 当前显示最近缓存";
+    }
     if (!event) {
         Astro.response.status = 404;
         errorMessage = "活动不存在或尚未公开";
@@ -107,6 +134,15 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                     <ArrowLeft class="size-4" aria-hidden="true" />
                     活动列表
                 </a>
+
+                {cacheWarning ? (
+                    <div
+                        class="rounded-md bg-warning-subtle px-4 py-3 text-sm font-semibold text-warning"
+                        role="status"
+                    >
+                        {cacheWarning}
+                    </div>
+                ) : null}
 
                 {event.status === STATUS.OFFLINE ? (
                     <div class="rounded-md bg-warning-subtle px-4 py-3 text-sm font-semibold text-warning">

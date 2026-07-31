@@ -81,7 +81,7 @@ git diff --check
 - [x] 请求 `/cdn-cgi/handler/scheduled?format=json` 测试 Cron，确认过期行被清理、窗口内行保留、普通页面仍由 Astro handler 提供。
 - [ ] 通过 D1 result meta 比较标签未变化、单项增删与原有全量重写的 `rows_written`，并单独报告 binding 调用减少。
 - [x] `astro dev logs` 检查没有 Secret、原始 IP 或完整 D1 记录进入日志。
-- [ ] 完成后运行 `astro dev stop`。
+- [x] 完成后运行 `astro dev stop`。
 
 ### 2026-07-31 本地验证记录
 
@@ -90,13 +90,23 @@ git diff --check
 - 全新临时 D1 应用 `0001_init.sql` 和开发种子成功；实际热门查询命中 `idx_event_visitors_recent`，清理命中 `idx_event_visitors_recent`，sitemap 命中 `idx_events_status_updated`。
 - 首页、首页快照、热门、活动列表、详情、标签和 sitemap 均返回 HTTP 200；本地 scheduled 端点返回 `{"outcome":"ok","noRetry":false}`，清理日志为结构化聚合信息且不含访客数据。
 - 尚未完成生产 `rows_read` / `rows_written` 与 CPU p50/p99 基线和上线后对比，因此第 6 节保持未勾选，子任务 B 的生产前置条件仍未满足。
+- `corepack pnpm exec astro dev stop` 返回 `No dev server is running.`；后台开发服务已停止。
+- Wrangler 4.116.0 的本地 D1 JSON `meta` 仍只包含 `duration`，不包含生产计费口径的 `rows_read` / `rows_written`。因此第 82 行不能用本地模拟器诚实勾选；当前自动化测试证明编辑固定 2 次 binding 调用，并覆盖差异 SQL 与 statement `changes` 合同，但不能替代生产计费行。若要完成该对比，需要经用户明确批准的生产或隔离远程 D1 编辑样本。
 
 ## 6. 发布与观察
 
 - [ ] 部署后记录 D1 `rows_read` / `rows_written`、Worker 总请求、统计 POST 和错误的前后对比。
 - [ ] 记录按路由的 CPU time p50/p99 与 `exceededCpu` 计数，与 §0 基线对比。
 - [ ] 观察一个正常流量周期，确认热门榜、首页、列表、详情结果与改写前一致。
-- [ ] 把实测 `rows_read` 与 CPU 数据写回父任务，作为子任务 B 是否启动及启用范围的依据。
+- [x] 把当前实测 `rows_read` 与 CPU 数据写回父任务，作为子任务 B 是否启动及启用范围的依据。
+
+### 2026-07-31 生产只读审计
+
+- 当前 100% 部署版本为 `cde5ebf4-5099-46b6-a9d8-a489b36c6f1a`（2026-07-31 07:13:16 UTC）。版本资源显示 `fetch` 与 `scheduled` handler、D1 和 assets bindings；`https://acg.hobr.site` 的定向 tail 样本也全部落到该版本，证明真实 hostname 正在路由到 `eventlist` Worker。
+- 受控 GET 检查中，首页、`/api/homepage`、`/api/popularity`、`/events`、详情、`/api/tags` 和 sitemap 全部返回 HTTP 200；未触发统计 POST、Cron 或管理写入。
+- 受控采样前的 D1 24 小时快照：`read_queries=587`、`write_queries=30`、`rows_read=2569`、`rows_written=83`、数据库大小 98304 bytes。`rows_read` 仅为 5,000,000 日额度的约 0.05%；一次短时路由采样后的滚动快照变为 `read_queries=835`、`rows_read=4502`，写指标保持 `30 / 83`。滚动窗口混入并发真实流量，不能冒充上线前后因果对比。
+- 7 次定向 tail 的当前 CPU p50/p99（ms）：`/` 15/63、`/api/homepage` 6/7、`/events?city=31` 126/193、`/events/2` 4/58、`/api/tags` 2/7、`/sitemap.xml` 5/8。样本 outcome 均为 `ok`，但首页、活动列表与详情的 p99 已明显超过父设计的 10 ms 门禁。
+- 没有可用的上线前同口径 D1/CPU 快照，且当前版本尚未观察完一个正常流量周期，所以本节前 3 项保持未勾选。现有数据已经足以否决立即启动公开 DTO 缓存：D1 使用量很低，而新增 envelope 序列化和后台刷新会增加已经紧张的 CPU。
 
 ## 7. 回滚点
 
