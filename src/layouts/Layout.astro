@@ -48,6 +48,7 @@ function navClasses(href: string) {
         <meta name="generator" content={Astro.generator} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="sitemap" href="/sitemap-index.xml" />
         <title>{siteTitle}</title>
         {jsonLd ? <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} /> : null}
         <script is:inline>
