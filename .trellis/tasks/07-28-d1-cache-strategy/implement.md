@@ -198,7 +198,7 @@ git diff --check
 - [x] 首页 SSR 保持发现/热门 `Promise.allSettled()` 独立错误隔离；`/api/homepage` 保持全有或全无；`/api/popularity` 复用相同热门 loader。
 - [x] 详情只缓存静态 `PublicEventDetail`，近 30 日热度继续独立读取；负结果不缓存，访问统计 POST 不因本序列改变。
 - [x] 列表只准入规范化参数、合理长度字段和第 1-3 页；其他请求透明绕过。`/events` 的 top tags 复用现有 `tags` loader。
-- [x] 建立 Worker 外部自动控制器，按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope；生产 Worker 不保存 Workers Scripts 写令牌。当前控制器为 ACTIVE 的每小时 heartbeat `eventlist-cache-scope-auto-promotion`。
+- [x] 建立 Worker 外部自动控制器，按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope；生产 Worker 不保存 Workers Scripts 写令牌。控制器曾为 ACTIVE 的每小时 heartbeat `eventlist-cache-scope-auto-promotion`，本轮 popularity canary 失败后已暂停。
 - [ ] 每次候选晋级前确认代码已提交、临时 probe 不存在、远程 D1 schema 与代码兼容、上一稳定版本 ID 可用且没有另一晋级任务运行。
 - [ ] 候选证据必须包含版本/scope、观察窗口、请求/错误、CPU p50/p99、`exceededCpu`、HTTP 状态、`X-Eventlist-Cache`、响应哈希和 D1 投影比较；缺失或不明确即不晋级。
 - [ ] CPU p99 >= 10 ms、`exceededCpu > 0`、响应不一致、错误率恶化或部署状态不明确时，自动恢复上一稳定 Worker Version 的 100% 流量并冻结后续晋级。
@@ -218,7 +218,7 @@ git diff --check
 - 站点负责人考虑网站刚上线且预期访问量会明显增长，明确批准不等待连续 3 个完整 24 小时用量门槛，立即提前 pilot；该例外只适用于 `tags,sitemap`，不扩展到首页、热门、详情、列表或访问去重。
 - 真实 hostname 探针返回 HTTP `204`、`X-Eventlist-Cache-Probe: hit` 和 `cf-ray: a23bbadd1ef49e1e-SIN`。探针随后删除，生产路径复查为 `404`。
 - 使用隔离目录 `/tmp/eventlist-cache-deploy.BOrWSw` 从 Git index tree `573179d7b4b63ebad74a8e5a75700fac58075b8f` 构建并部署，避免共享工作区内并发的活动详情字段改动进入生产。隔离快照通过 100/100 测试、lint、type-check、build、Wrangler types 和 deploy dry-run。
-- 当前 100% 生产版本为 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9`，deployment 为 `961d4f01-7e2e-4147-b6b2-650e18f110f0`，`PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，`workers_dev=false`；SESSION KV、Images、D1、Assets 和 Secrets 均保留。
+- 当前 100% 生产版本为 `963426a0-a73f-428e-89d7-84208429e111`，deployment 为 `18e71f2b-f5c9-4c70-be85-0cf60b9ac0f9`，`PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，`workers_dev=false`；SESSION KV、Images、D1、Assets 和 Secrets 均保留。
 - 标签验证覆盖 `MISS -> HIT`、部署传播期一次瞬时 `BYPASS`、随后连续 `HIT`，并观察到正常 `STALE-REFRESH -> HIT` 生命周期。查询 `q=漫` 的响应 SHA-256 始终为 `b4127f678fa7b991e394686a711242b800feac165e071a260169b77f99ac252a`。
 - sitemap 验证覆盖 `MISS -> HIT` 和后续重复 `HIT`；响应 SHA-256 始终为 `0708d18f950faf9b4e887a97e227212c6063cd9e1705ffe8d822cf157ded8767`。缓存前后正文逐字节一致。
 - 路由定向 tail 样本均落在当前版本：标签与 sitemap 各返回 HTTP 200、`outcome=ok`、CPU 8 ms、无日志或异常。当前证据仍是短样本，不替代后续正常流量周期统计。
