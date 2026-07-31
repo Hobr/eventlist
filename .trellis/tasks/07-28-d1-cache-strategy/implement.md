@@ -234,7 +234,9 @@ git diff --check
 - 探针源文件 `src/pages/eventlist-cache-probe-v1.ts` 在工作树和 Git index 中均不存在，构建产物也不包含探针路由；文档与回归测试中保留的探针字符串只是历史证据和缺失断言。
 - 生产部署只读复核显示 deployment `dd3ac459-ade0-4523-adc1-66aa3e782c77` 已把稳定 Worker version `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 恢复到 100% 流量，稳定 scope 仍为 `tags,sitemap`。此前无说明的 version `0a7612c3-5aaf-4e8f-9187-ea7541cea9af` 不作为后续候选或回滚基线。
 - 远程 D1 只读 `pragma_table_info('events')` 实时确认 `organizer`、`schedule_status`、`admission_method`、`price_range`、`admission_start_date` 和 `admission_start_time` 六列全部存在；本次查询 `changes=0`、`rows_written=0`。远程 schema 当前兼容，但自动化每次候选前仍须重新检查，不能复用本次快照。
-- 自动控制器已开启，但本次不晋级：工作树仍有未提交改动，且缺少候选 `popularity` 的新鲜生产请求/错误、CPU p50/p99、`exceededCpu`、HTTP/cache 生命周期、响应哈希和 D1 投影一致性证据。历史 `popularity` p99 7 ms 只能作为背景，不能代替当前候选证据。控制器必须在这些门禁通过后才增加 `popularity`，后续 `homepage`、`detail`、`list` 仍逐 scope 独立验收。
+- 缓存实现与检查证据已提交为 `e6b3e45` 和 `a28c064`，晋级检查开始时工作树干净。`/api/popularity?city=31&trend=7` 连续响应 HTTP 200，两个正文 SHA-256 均为 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`；D1 同口径 7 日查询确认本地和全国候选数均为 0，`rows_written=0`，与响应中的两个空数组一致。
+- 本次仍未晋级：候选上传前的 Cloudflare deployment 状态查询连续返回 `522`、`522`、`525`，对应 Ray ID 为 `a23c89fd8fbf5cd5-SIN`、`a23c8adc8fb29e4a-SIN`、`a23c8c7cfcd809c2-SIN`。因此当前 deployment 状态和候选 CPU/error 证据不明确，控制器按 R31 fail closed；没有执行 `wrangler versions upload`、`wrangler versions deploy` 或 rollback，没有创建候选 version，也没有修改生产流量或 D1。
+- 自动控制器保持 ACTIVE 并每小时重试。下一次只有在 deployment API 恢复、再次确认唯一稳定版本 100%、远程 schema 兼容且全部候选证据齐全后，才增加 `popularity`；后续 `homepage`、`detail`、`list` 仍逐 scope 独立验收。
 
 ## 11. 回滚点
 
