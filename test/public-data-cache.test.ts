@@ -100,7 +100,7 @@ test("production configuration enables only the approved pilot scopes", async ()
     ]);
     assert.deepEqual(
         [...parsePublicDataCacheScopes(config.vars?.PUBLIC_DATA_CACHE_SCOPES)],
-        ["tags", "sitemap"]
+        ["tags", "sitemap", "popularity"]
     );
     await assert.rejects(
         readFile(new URL("../src/pages/eventlist-cache-probe-v1.ts", import.meta.url), "utf8"),
