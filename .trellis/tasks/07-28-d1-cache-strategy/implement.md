@@ -230,7 +230,7 @@ git diff --check
 - 新增 bounded write-after-mutation 失效并接入管理员单条创建、批量创建、编辑、审核通过、驳回、下线、重新发布和标签归并；公共 pending 投稿不触发公开缓存失效。Cache API namespace 打开、`delete()` 和 `waitUntil()` 失败均不会改变已提交的 D1 事实或成功 API 响应。
 - 地区失效优先展开旧/新省、市、精确地区键。当前 `tags,sitemap,popularity` 的最坏跨地区编辑为 18 个热门祖先键、2 个 top-tags 键和 1 个 sitemap 键，共 21 次 delete，低于 24 次硬上限。全 scope 同类编辑会产生 28 个候选，但前 24 个完整保留 A28 要求的所有旧/新地区首页与热门键；详情、top-tags 和 sitemap 的 4 个固定键在该最坏情况下由 60 秒正常 TTL 兜底。
 - 详情页静态 DTO 可用而独立热度查询失败时，页面继续返回可用详情并把热度降级为 0，不再把热度故障误判为 404。
-- 聚焦缓存/失效测试 34/34 通过，完整测试 126/126 通过；`corepack pnpm lint`、`corepack pnpm exec tsc --noEmit`、`corepack pnpm build`、`corepack pnpm exec wrangler types --check` 和 `git diff --check` 全部通过。
+- 聚焦缓存/失效测试 37/37 通过，完整测试 129/129 通过；`corepack pnpm lint`、`corepack pnpm exec tsc --noEmit`、`corepack pnpm build`、`corepack pnpm exec wrangler types --check` 和 `git diff --check` 全部通过。
 - 探针源文件 `src/pages/eventlist-cache-probe-v1.ts` 在工作树和 Git index 中均不存在，构建产物也不包含探针路由；文档与回归测试中保留的探针字符串只是历史证据和缺失断言。
 - 生产部署只读复核显示 deployment `dd3ac459-ade0-4523-adc1-66aa3e782c77` 已把稳定 Worker version `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 恢复到 100% 流量，稳定 scope 仍为 `tags,sitemap`。此前无说明的 version `0a7612c3-5aaf-4e8f-9187-ea7541cea9af` 不作为后续候选或回滚基线。
 - 远程 D1 只读 `pragma_table_info('events')` 实时确认 `organizer`、`schedule_status`、`admission_method`、`price_range`、`admission_start_date` 和 `admission_start_time` 六列全部存在；本次查询 `changes=0`、`rows_written=0`。远程 schema 当前兼容，但自动化每次候选前仍须重新检查，不能复用本次快照。
