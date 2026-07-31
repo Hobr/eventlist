@@ -238,6 +238,13 @@ git diff --check
 - 本次仍未晋级：候选上传前的 Cloudflare deployment 状态查询连续返回 `522`、`522`、`525`，对应 Ray ID 为 `a23c89fd8fbf5cd5-SIN`、`a23c8adc8fb29e4a-SIN`、`a23c8c7cfcd809c2-SIN`。因此当前 deployment 状态和候选 CPU/error 证据不明确，控制器按 R31 fail closed；没有执行 `wrangler versions upload`、`wrangler versions deploy` 或 rollback，没有创建候选 version，也没有修改生产流量或 D1。
 - 自动控制器保持 ACTIVE 并每小时重试。下一次只有在 deployment API 恢复、再次确认唯一稳定版本 100%、远程 schema 兼容且全部候选证据齐全后，才增加 `popularity`；后续 `homepage`、`detail`、`list` 仍逐 scope 独立验收。
 
+### 2026-07-31 20:25 CST 自动晋级重试
+
+- 晋级前工作树干净，`HEAD=a650967`，且包含已审查的缓存实现提交 `e6b3e45` 与检查记录提交 `a28c064`；临时 probe 在源文件、Git index 和现有 `dist` 构建产物中均不存在。
+- 远程 D1 只读 `pragma_table_info('events')` 再次确认 `organizer`、`schedule_status`、`admission_method`、`price_range`、`admission_start_date` 和 `admission_start_time` 六列全部存在；查询 `changes=0`、`changed_db=false`、`rows_written=0`，本轮没有修改 D1。
+- 第一项控制面门禁 `wrangler deployments status --json` 仍失败，Cloudflare API 返回 HTTP `525`，Ray ID `a23c95f39a5cdaa5-SIN`。因此无法确认当前是否仍为唯一稳定版本 100% 流量、是否存在并行 rollout，以及可用回滚版本；本轮按 fail-closed 停止。
+- 未继续运行候选质量/HTTP/CPU 证据采集，未上传或部署候选，未改变 Worker 流量或 scope，未执行 rollback。稳定基线仍只沿用最后一次成功确认的 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` / `tags,sitemap` 作为待重新核验事实，不能视为本轮已确认状态。
+
 ## 11. 回滚点
 
 - 查询语义回归：恢复列转换改写；没有迁移。
