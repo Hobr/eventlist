@@ -250,7 +250,9 @@ git diff --check
 - 重试开始时 `wrangler deployments status --json` 恢复成功，但发现一个此前未记录的版本 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 于 `2026-07-31T12:35:06Z` 上传并已获得 100% 流量；其来源为 `version_upload`、没有 message，版本详情只显示 `PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，没有本任务要求的候选健康证据。因此不能把它视为稳定版本或已审计候选。
 - 由于该版本已经实际上线且证据缺失，按失败候选处理，使用已知稳定版本 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 执行 `wrangler versions deploy --version-id ... --percentage 100`。回滚成功，deployment 为 `1ae78701-d097-4da4-9baf-ed521455e3a0`，message 为 `cache: restore verified tags/sitemap stable version after unexplained deployment`。
 - 回滚后只读复核确认当前 deployment 只有 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 100% 流量；远程 D1 六个详情字段仍全部存在，`changes=0`、`changed_db=false`、`rows_written=0`。探针仍不在源文件、Git index 或构建产物中。
-- 本轮没有启用 `popularity`，没有上传新的候选，没有修改 scope 或 D1。因未审计版本实际上线并触发回滚，后续自动晋级已暂停，须先查明 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 的来源并重新完成全套候选门禁。
+- 本机 Wrangler 日志 `wrangler-2026-07-31_12-34-46_046.log` 显示 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 来自一次交互式 `wrangler deploy`（`sanitizedCommand=deploy`、无参数），不是本控制器的版本上传/晋级命令；该来源已查明，但仍没有可用于公开 scope 晋级的候选健康证据。
+- 回滚后的真实 hostname `/api/popularity?city=31&trend=7` 返回 HTTP 200，正文 SHA-256 为 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`（73 bytes），与此前 D1 对照的空数组响应一致；当前 stable scope 不包含 `popularity`，故该请求没有 `X-Eventlist-Cache` 头是预期行为。
+- 本轮没有启用 `popularity`，没有上传新的候选，没有修改 scope 或 D1。虽然已查明 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 来自交互式部署，后续自动晋级仍保持暂停，须先重新完成全套候选门禁并明确恢复控制器的操作窗口。
 
 ## 11. 回滚点
 
