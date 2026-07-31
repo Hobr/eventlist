@@ -1,4 +1,5 @@
 import type { PublicEventDetail } from "./db/public-events";
+import { getDisplayCoverUrl } from "./events/cover";
 import { getDivisionLabel } from "./divisions";
 import { getEventDetailOptionalContent } from "./events/detail";
 import { toEventIsoDateTime } from "./events/datetime";
@@ -25,7 +26,8 @@ export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string)
         }
     };
 
-    if (event.cover_url) jsonLd.image = [event.cover_url];
+    const coverUrl = getDisplayCoverUrl(event.cover_url);
+    if (coverUrl) jsonLd.image = [coverUrl];
     if (description) jsonLd.description = description;
     if (ticketUrl) {
         jsonLd.offers = {

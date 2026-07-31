@@ -5,6 +5,7 @@
         MapPinOutline as MapPin
     } from "flowbite-svelte-icons";
     import { getDivisionLabel } from "../lib/divisions";
+    import { getDisplayCoverUrl } from "../lib/events/cover";
     import { formatEventSchedule } from "../lib/events/datetime";
     import { getEventScaleLabel, getEventTypeLabel } from "../lib/events/options";
     import type { PublicEventRow } from "../lib/public/homepage";
@@ -33,11 +34,11 @@
     }
 
     const coverImageHtml = $derived.by(() => {
-        const coverUrl = event.cover_url?.trim();
+        const coverUrl = getDisplayCoverUrl(event.cover_url);
         if (!coverUrl) return "";
 
         // Keep the failure fallback working for both hydrated homepage rows and SSR-only catalogue rows.
-        return `<img src="${escapeAttribute(coverUrl)}" alt="" width="1200" height="900" loading="${priority ? "eager" : "lazy"}" decoding="async" fetchpriority="${priority ? "high" : "auto"}" class="absolute inset-0 size-full object-cover" onerror="this.remove()" />`;
+        return `<img src="${escapeAttribute(coverUrl)}" alt="" width="1200" height="900" loading="${priority ? "eager" : "lazy"}" decoding="async" fetchpriority="${priority ? "high" : "auto"}" referrerpolicy="no-referrer" class="absolute inset-0 size-full object-cover" onerror="this.remove()" />`;
     });
 </script>
 

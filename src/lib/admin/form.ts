@@ -124,6 +124,14 @@ function readUrl(
     }
 }
 
+function readCoverUrl(input: AdminEventRawInput) {
+    const value = readUrl(input, "cover_url");
+    if (value && new URL(value).protocol !== "https:") {
+        invalid("cover_url", "封面 URL 必须使用 HTTPS");
+    }
+    return value;
+}
+
 function sqliteNoCaseKey(value: string) {
     return value.replace(/[A-Z]/g, (character) => character.toLowerCase());
 }
@@ -191,7 +199,7 @@ export function validateAdminEventInput(
     const endTime = capture(errors, "end_time", () =>
         normalizeOptionalTime(readOptional(raw, "end_time"), "结束时间")
     );
-    const coverUrl = capture(errors, "cover_url", () => readUrl(raw, "cover_url"));
+    const coverUrl = capture(errors, "cover_url", () => readCoverUrl(raw));
     const ticketUrl = capture(errors, "ticket_url", () => readUrl(raw, "ticket_url"));
     const sourceUrl = capture(errors, "source_url", () => readUrl(raw, "source_url", true));
     const submitterContact = capture(errors, "submitter_contact", () =>
