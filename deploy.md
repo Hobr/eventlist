@@ -101,3 +101,20 @@ corepack pnpm exec wrangler versions list
 corepack pnpm exec wrangler rollback VERSION_ID
 corepack pnpm exec wrangler secret put TURNSTILE_SECRET
 ```
+
+### 访客清理故障恢复
+
+Worker 每天在中国时间 00:05 运行访客清理. 正常日志为
+`{"event":"event_visitors_cleanup","status":"completed"}`, 失败日志的 `status` 为
+`failed`. 日志只记录聚合状态和删除行数, 不得记录原始 IP、访客键或完整数据库行.
+
+若 Cron 失败, 先按上文导出生产 D1 备份, 再确认过期行数并执行与定时任务相同的索引化清理:
+
+```bash
+corepack pnpm exec wrangler d1 execute DB --remote --command "SELECT COUNT(*) AS expired_visitors FROM event_visitors WHERE last_seen_date < date('now', '+8 hours', '-29 days');"
+corepack pnpm exec wrangler d1 execute DB --remote --command "DELETE FROM event_visitors WHERE last_seen_date < date('now', '+8 hours', '-29 days');"
+corepack pnpm exec wrangler d1 execute DB --remote --command "SELECT COUNT(*) AS expired_visitors FROM event_visitors WHERE last_seen_date < date('now', '+8 hours', '-29 days');"
+```
+
+最后一条查询必须返回 `expired_visitors = 0`. 清理延迟只影响数据保留, 不影响热门榜结果;
+热门查询始终按自身的 3 / 7 / 30 日窗口过滤.
