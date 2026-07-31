@@ -668,3 +668,24 @@ Hide absent optional fields on public event details, prefer ticket links with so
 ### Status
 
 [OK] **Completed**
+
+
+## Session 23: Add event admission details
+
+**Date**: 2026-07-31
+**Task**: Add event admission details
+**Branch**: `dev`
+
+### Summary
+
+扩展活动详情、入场字段、状态、更新时间和匿名热度，并采用无兼容的单基线 D1 重构。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `04441e9` | (see git log) |
+
+### Status
+
+[OK] **Completed**
