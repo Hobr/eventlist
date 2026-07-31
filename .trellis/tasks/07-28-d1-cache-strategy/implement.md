@@ -254,6 +254,14 @@ git diff --check
 - 回滚后的真实 hostname `/api/popularity?city=31&trend=7` 返回 HTTP 200，正文 SHA-256 为 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`（73 bytes），与此前 D1 对照的空数组响应一致；当前 stable scope 不包含 `popularity`，故该请求没有 `X-Eventlist-Cache` 头是预期行为。
 - 本轮没有启用 `popularity`，没有上传新的候选，没有修改 scope 或 D1。虽然已查明 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 来自交互式部署，后续自动晋级仍保持暂停，须先重新完成全套候选门禁并明确恢复控制器的操作窗口。
 
+### 2026-07-31 21:05 CST popularity 候选与回滚
+
+- 按用户要求先部署审查后的 stable baseline：版本 `963426a0-a73f-428e-89d7-84208429e111`，deployment `e847c294-8f32-4edc-bbdc-6ce8ee2bf250`，100% 流量，scope 仍为 `tags,sitemap`。部署前后完整测试 `129/129`、聚焦缓存/路由测试 `48/48`、lint、TypeScript、生产 build、Wrangler types、deploy dry-run 和 `git diff --check` 均通过。
+- 随后提交候选配置 `1e08b71 chore: prepare popularity cache candidate`，仅将 `PUBLIC_DATA_CACHE_SCOPES` 累加为 `tags,sitemap,popularity`，上传版本 `895bdd3f-5f8f-4eca-88a3-2b50bed3e8ec`，tag `cache-popularity-20260731-2059`。候选部署为 stable 95% / candidate 5%，没有启用 `VIEW_DEDUPE_CACHE_ENABLED`，没有迁移或写入 D1。
+- 候选观测中，tail 过滤候选版本得到 42 个请求：HTTP 全为 200，`outcome=ok`，错误 0，CPU p50 `9 ms`、p99 `24 ms`、max `24 ms`；`exceededCpu` 没有可用的独立指标，因此该证据项也按缺失处理。重复 HTTP 请求的汇总为 `200 BYPASS=188`、`200 HIT=9`、`200 MISS=1`、`200 STALE-REFRESH=2`；候选响应正文仍为 SHA-256 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`，与 D1 对照的空数组一致。
+- 因候选 CPU p99 `24 ms >= 10 ms` 且 `exceededCpu` 证据缺失，立即按 R31 失败门禁回滚到 `963426a0-a73f-428e-89d7-84208429e111` 100%；回滚 deployment 为 `18e71f2b-f5c9-4c70-be85-0cf60b9ac0f9`，message 为 `cache: rollback popularity canary CPU p99 over 10ms`。后续 scope 晋级冻结；候选版本不再分配流量。
+- 回滚后仓库源配置、生成类型和生产断言均恢复 `tags,sitemap`；自动化保持 `PAUSED`。远程 D1 只读复核仍为六列兼容、`changes=0`、`changed_db=false`、`rows_written=0`，本轮没有 D1 写入。
+
 ## 11. 回滚点
 
 - 查询语义回归：恢复列转换改写；没有迁移。
