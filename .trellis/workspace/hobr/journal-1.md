@@ -647,3 +647,24 @@ Unified the TURNSTILE_SECRET contract, added strict server-side siteverify gatin
 ### Status
 
 [OK] **Completed**
+
+
+## Session 22: Hide empty event details
+
+**Date**: 2026-07-31
+**Task**: Hide empty event details
+**Branch**: `dev`
+
+### Summary
+
+Hide absent optional fields on public event details, prefer ticket links with source fallback, and keep review sources out of JSON-LD. Added executable regression coverage and documented the frontend contract.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8ff2321` | (see git log) |
+
+### Status
+
+[OK] **Completed**
