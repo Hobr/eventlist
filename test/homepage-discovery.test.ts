@@ -56,6 +56,12 @@ function event(id: number): PublicEventDatabaseRow {
         qq_group: null,
         ticket_url: null,
         source_url: "https://example.com/source",
+        organizer: null,
+        schedule_status: null,
+        admission_method: null,
+        price_range: null,
+        admission_start_date: null,
+        admission_start_time: null,
         status: "published",
         updated_at: "2026-07-01 00:00:00",
         tags: null

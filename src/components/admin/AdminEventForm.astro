@@ -5,7 +5,12 @@ import SelectField from "../SelectField.svelte";
 import TagInput from "../TagInput.svelte";
 import type { EventRecord } from "../../lib/db/admin-events";
 import type { TagSummary } from "../../lib/db/tags";
-import { EVENT_SCALES, EVENT_TYPES } from "../../lib/events/options";
+import {
+    EVENT_ADMISSION_METHODS,
+    EVENT_SCALES,
+    EVENT_SCHEDULE_STATUSES,
+    EVENT_TYPES
+} from "../../lib/events/options";
 
 interface Props {
     eventRecord?: EventRecord | null;
@@ -35,6 +40,14 @@ const {
 
 const typeOptions = EVENT_TYPES.map((type) => ({ value: type.name, label: type.label }));
 const scaleOptions = EVENT_SCALES.map((scale) => ({ value: scale.name, label: scale.label }));
+const scheduleStatusOptions = EVENT_SCHEDULE_STATUSES.map((status) => ({
+    value: status.name,
+    label: status.label
+}));
+const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
+    value: method.name,
+    label: method.label
+}));
 const headingId = (name: string) => `${formId}-${name}-heading`;
 const value = (name: keyof EventRecord) => {
     const current = eventRecord?.[name];
@@ -227,6 +240,62 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                 type="url"
                 required
                 value={value("source_url")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div class="sm:col-span-2">
+            <label class={labelCls} for="organizer">主办方</label>
+            <input
+                id="organizer"
+                name="organizer"
+                maxlength="200"
+                value={value("organizer")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <SelectField
+            name="schedule_status"
+            label="活动异常状态"
+            value={value("schedule_status")}
+            options={scheduleStatusOptions}
+            placeholder="正常"
+            client:load
+        />
+        <SelectField
+            name="admission_method"
+            label="入场方式"
+            value={value("admission_method")}
+            options={admissionMethodOptions}
+            placeholder="选择入场方式"
+            client:load
+        />
+        <div class="sm:col-span-2">
+            <label class={labelCls} for="price_range">票价区间</label>
+            <input
+                id="price_range"
+                name="price_range"
+                maxlength="120"
+                value={value("price_range")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="admission_start_date">开始购票/预约/申请日期</label>
+            <input
+                id="admission_start_date"
+                name="admission_start_date"
+                type="date"
+                value={value("admission_start_date")}
+                class={`mt-1.5 ${fieldCls}`}
+            />
+        </div>
+        <div>
+            <label class={labelCls} for="admission_start_time">开始购票/预约/申请时间</label>
+            <input
+                id="admission_start_time"
+                name="admission_start_time"
+                type="time"
+                value={value("admission_start_time")}
                 class={`mt-1.5 ${fieldCls}`}
             />
         </div>

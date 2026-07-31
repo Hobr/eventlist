@@ -15,7 +15,9 @@ INSERT OR IGNORE INTO tags(name) VALUES
 INSERT INTO events(
     title, type, scale, division_code, venue, address,
     start_date, end_date, start_time, end_time, cover_url, description,
-    qq_group, ticket_url, source_url, submitter_contact, status, published_at
+    qq_group, ticket_url, source_url, organizer, schedule_status, admission_method,
+    price_range, admission_start_date, admission_start_time,
+    submitter_contact, status, published_at
 )
 SELECT
     'Eventlist Dev 北京演唱会',
@@ -33,6 +35,12 @@ SELECT
     '123456789',
     'https://example.com/tickets/eventlist-dev-beijing',
     'https://example.com/eventlist/dev-beijing-concert',
+    'Eventlist 开发活动组',
+    NULL,
+    'ticket',
+    '80-280 元',
+    '2026-07-20',
+    '10:00',
     'dev@example.com',
     'published',
     datetime('now')

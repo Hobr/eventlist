@@ -10,8 +10,14 @@ import {
 import { listHomepagePopularity } from "../src/lib/db/homepage";
 import { STATUS, type EventStatus } from "../src/lib/db";
 import { listPublishedEvents, listPublishedEventSitemapRows } from "../src/lib/db/public-events";
-import { deleteExpiredEventVisitors, recordEventView } from "../src/lib/db/views";
+import { insertSubmission } from "../src/lib/db/submissions";
+import {
+    deleteExpiredEventVisitors,
+    getPublicEventRecentVisitorCount,
+    recordEventView
+} from "../src/lib/db/views";
 import { isCanonicalDate } from "../src/lib/events/datetime";
+import { EVENT_SCALES, EVENT_TYPES } from "../src/lib/events/options";
 import { SqliteD1TestDatabase } from "./helpers/sqlite-d1";
 
 const VALID_EVENT: AdminEventInput = {
@@ -31,6 +37,12 @@ const VALID_EVENT: AdminEventInput = {
     ticket_url: "https://example.com/tickets",
     source_url: "https://example.com/source",
     submitter_contact: "admin@example.com",
+    organizer: "测试主办方",
+    schedule_status: null,
+    admission_method: "ticket",
+    price_range: "80-280 元",
+    admission_start_date: "2099-07-01",
+    admission_start_time: "09:30",
     tags: ["同人展"]
 };
 
@@ -147,6 +159,159 @@ test("canonical date validation protects direct indexed filter comparisons", () 
     assert.equal(isCanonicalDate("2026-02-29"), false);
     assert.equal(isCanonicalDate("2026-02-31"), false);
     assert.equal(isCanonicalDate("2026-2-03"), false);
+});
+
+test("single baseline defines nullable admission fields and enforces their constraints", async () => {
+    const database = await createDatabase();
+    try {
+        seedEvent(database);
+        const columns = new Set(
+            database.all<{ name: string }>("PRAGMA table_info(events)").map(({ name }) => name)
+        );
+        for (const field of [
+            "organizer",
+            "schedule_status",
+            "admission_method",
+            "price_range",
+            "admission_start_date",
+            "admission_start_time"
+        ]) {
+            assert.equal(columns.has(field), true, field);
+        }
+
+        const initial = database.first<Record<string, unknown>>(
+            `SELECT organizer, schedule_status, admission_method, price_range,
+                    admission_start_date, admission_start_time
+             FROM events WHERE id = 1`
+        );
+        assert.deepEqual(initial, {
+            organizer: null,
+            schedule_status: null,
+            admission_method: null,
+            price_range: null,
+            admission_start_date: null,
+            admission_start_time: null
+        });
+
+        assert.throws(
+            () => database.run("UPDATE events SET organizer = ? WHERE id = 1", "主".repeat(201)),
+            /constraint failed/i
+        );
+        assert.throws(
+            () => database.run("UPDATE events SET schedule_status = 'delayed' WHERE id = 1"),
+            /constraint failed/i
+        );
+        assert.throws(
+            () => database.run("UPDATE events SET admission_method = 'vip' WHERE id = 1"),
+            /constraint failed/i
+        );
+        assert.throws(
+            () => database.run("UPDATE events SET price_range = ? WHERE id = 1", "票".repeat(121)),
+            /constraint failed/i
+        );
+        assert.throws(
+            () =>
+                database.run("UPDATE events SET admission_start_date = '2026-02-30' WHERE id = 1"),
+            /constraint failed/i
+        );
+        assert.throws(
+            () => database.run("UPDATE events SET admission_start_time = '09:30' WHERE id = 1"),
+            /constraint failed/i
+        );
+
+        database.run(
+            `UPDATE events
+             SET organizer = ?, schedule_status = ?, admission_method = ?, price_range = ?,
+                 admission_start_date = ?, admission_start_time = ?
+             WHERE id = 1`,
+            VALID_EVENT.organizer,
+            "postponed",
+            VALID_EVENT.admission_method,
+            VALID_EVENT.price_range,
+            VALID_EVENT.admission_start_date,
+            VALID_EVENT.admission_start_time
+        );
+    } finally {
+        database.close();
+    }
+});
+
+test("single baseline accepts every shared event type and scale", async () => {
+    const database = await createDatabase();
+    try {
+        let id = 1;
+        for (const type of EVENT_TYPES) {
+            for (const scale of EVENT_SCALES) {
+                database.run(
+                    `INSERT INTO events(
+                         id, title, type, scale, division_code, venue, start_date, end_date,
+                         source_url, submitter_contact
+                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    id,
+                    `${type.name}-${scale.name}`,
+                    type.name,
+                    scale.name,
+                    VALID_EVENT.division_code,
+                    VALID_EVENT.venue,
+                    VALID_EVENT.start_date,
+                    VALID_EVENT.end_date,
+                    VALID_EVENT.source_url,
+                    VALID_EVENT.submitter_contact
+                );
+                id += 1;
+            }
+        }
+
+        assert.equal(
+            database.first<{ count: number }>("SELECT COUNT(*) AS count FROM events")?.count,
+            EVENT_TYPES.length * EVENT_SCALES.length
+        );
+        assert.throws(
+            () => database.run("UPDATE events SET type = 'unknown' WHERE id = 1"),
+            /constraint failed/i
+        );
+        assert.throws(
+            () => database.run("UPDATE events SET scale = 'unknown' WHERE id = 1"),
+            /constraint failed/i
+        );
+    } finally {
+        database.close();
+    }
+});
+
+test("public submission writes every admission field without creating canonical tags", async () => {
+    const database = await createDatabase();
+    try {
+        const { tags: _tags, ...eventInput } = VALID_EVENT;
+        const id = await insertSubmission(database.binding, {
+            ...eventInput,
+            schedule_status: "postponed",
+            tag_suggestions: "同人展、北京"
+        });
+        const stored = database.first<Record<string, unknown>>(
+            `SELECT organizer, schedule_status, admission_method, price_range,
+                    admission_start_date, admission_start_time, tag_suggestions, status
+             FROM events WHERE id = ?`,
+            id
+        );
+
+        assert.deepEqual(stored, {
+            organizer: VALID_EVENT.organizer,
+            schedule_status: "postponed",
+            admission_method: VALID_EVENT.admission_method,
+            price_range: VALID_EVENT.price_range,
+            admission_start_date: VALID_EVENT.admission_start_date,
+            admission_start_time: VALID_EVENT.admission_start_time,
+            tag_suggestions: "同人展、北京",
+            status: STATUS.PENDING
+        });
+        assert.equal(
+            database.first<{ count: number }>("SELECT COUNT(*) AS count FROM tags")?.count,
+            0
+        );
+    } finally {
+        database.close();
+    }
 });
 
 function seedEvent(database: SqliteD1TestDatabase, status: EventStatus = STATUS.PENDING) {
@@ -296,6 +461,30 @@ test("real SQLite view writes expose all three outcomes and keep cleanup off the
     }
 });
 
+test("real SQLite detail heat counts the inclusive retained window and hides non-public events", async () => {
+    const database = await createDatabase();
+    try {
+        seedEvent(database, STATUS.PUBLISHED);
+        database.run(
+            `INSERT INTO event_visitors(event_id, visitor_key, last_seen_date) VALUES
+                 (1, ?, date('now', '+8 hours')),
+                 (1, ?, date('now', '+8 hours', '-29 days')),
+                 (1, ?, date('now', '+8 hours', '-30 days'))`,
+            "a".repeat(64),
+            "b".repeat(64),
+            "c".repeat(64)
+        );
+
+        assert.equal(await getPublicEventRecentVisitorCount(database.binding, 1), 2);
+        database.run("UPDATE events SET status = ? WHERE id = 1", STATUS.OFFLINE);
+        assert.equal(await getPublicEventRecentVisitorCount(database.binding, 1), 2);
+        database.run("UPDATE events SET status = ? WHERE id = 1", STATUS.PENDING);
+        assert.equal(await getPublicEventRecentVisitorCount(database.binding, 1), 0);
+    } finally {
+        database.close();
+    }
+});
+
 test("real SQLite query plans use the required existing indexes", async () => {
     const database = await createDatabase();
     try {
@@ -326,6 +515,14 @@ test("real SQLite query plans use the required existing indexes", async () => {
         });
         const divisionPlan = database.explain(database.prepared[0]);
         assert.ok(divisionPlan.some(({ detail }) => detail.includes("idx_events_public_division")));
+
+        database.resetPrepared();
+        await getPublicEventRecentVisitorCount(database.binding, 1);
+        const detailHeatPlan = database.explain(database.prepared[0]);
+        assert.ok(
+            detailHeatPlan.some(({ detail }) => detail.includes("idx_event_visitors_recent")),
+            JSON.stringify(detailHeatPlan)
+        );
 
         database.resetPrepared();
         await deleteExpiredEventVisitors(database.binding);

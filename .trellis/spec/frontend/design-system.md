@@ -238,13 +238,22 @@
   cards/details and JSON-LD; null historical times keep date-only output.
 - Event-detail optional values use
   `getEventDetailOptionalContent(event: EventDetailOptionalFields)`: trim
-  `description`, `address`, `qq_group`, `ticket_url`, and `source_url`, then
+  `description`, `address`, `qq_group`, both URLs, organizer, price range, and
+  admission-start values, then
   treat `null`, empty, and whitespace-only results as absent. Empty values must
-  not leave headings, wrappers, columns, or dividers. `ticket_url` owns the
-  single action when present; otherwise a non-empty `source_url` is the
-  fallback action. Review-source data must never be emitted as JSON-LD
-  `organizer` data. Regression tests must cover all-empty, description-only,
-  detail-only, ticket-precedence, source-fallback, and JSON-LD omission cases.
+  not leave headings, wrappers, columns, or dividers. Normalize valid HTTP(S)
+  URLs with `new URL(...).toString()` before comparison: distinct ticket and
+  source URLs render as separate actions, while equal normalized URLs keep only
+  the ticket action. Source data is never JSON-LD organizer data; a non-empty
+  `organizer` field emits `Organization.name` and an empty one omits the entire
+  organizer object.
+- Detail facts always show one Beijing-time-derived user status, formatted
+  `updated_at`, and the separate 30-day anonymous visitor count including zero.
+  `offline`, `cancelled`, and `postponed` override date-derived status in that
+  order. Optional organizer, admission method, price range, and admission start
+  date/time share the action rail and use break-safe text without empty `<dl>`
+  wrappers. Regression tests cover URL equality/difference, status boundaries,
+  time formatting, all-empty/partial optional fields, and JSON-LD omission.
 - Public submission uses required fieldsets plus optional progressive
   disclosure inside one form. Inputs must never be moved out of the form or
   removed from the DOM when disclosure closes.

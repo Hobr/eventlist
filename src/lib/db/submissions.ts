@@ -1,5 +1,10 @@
 import type { D1Database } from "../../types/cloudflare";
-import type { EventScale, EventType } from "../events/options";
+import type {
+    EventAdmissionMethod,
+    EventScale,
+    EventScheduleStatus,
+    EventType
+} from "../events/options";
 import { requireD1Success, STATUS } from "./index";
 
 export interface EventBaseInput {
@@ -18,6 +23,12 @@ export interface EventBaseInput {
     qq_group: string | null;
     ticket_url: string | null;
     source_url: string;
+    organizer: string | null;
+    schedule_status: EventScheduleStatus | null;
+    admission_method: EventAdmissionMethod | null;
+    price_range: string | null;
+    admission_start_date: string | null;
+    admission_start_time: string | null;
     submitter_contact: string;
 }
 
@@ -31,9 +42,11 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
             `INSERT INTO events(
                  title, type, scale, division_code, venue, address,
                  start_date, end_date, start_time, end_time, cover_url, description,
-                 qq_group, ticket_url, source_url, submitter_contact, tag_suggestions, status
+                 qq_group, ticket_url, source_url, organizer, schedule_status, admission_method,
+                 price_range, admission_start_date, admission_start_time,
+                 submitter_contact, tag_suggestions, status
              )
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
         .bind(
             input.title,
@@ -51,6 +64,12 @@ export async function insertSubmission(db: D1Database, input: SubmissionInput) {
             input.qq_group,
             input.ticket_url,
             input.source_url,
+            input.organizer,
+            input.schedule_status,
+            input.admission_method,
+            input.price_range,
+            input.admission_start_date,
+            input.admission_start_time,
             input.submitter_contact,
             input.tag_suggestions,
             STATUS.PENDING

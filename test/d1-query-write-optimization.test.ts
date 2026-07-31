@@ -12,7 +12,11 @@ import {
     type PublicEventRow
 } from "../src/lib/db/public-events";
 import * as compatibilityQueries from "../src/lib/db/queries";
-import { deleteExpiredEventVisitors, recordEventView } from "../src/lib/db/views";
+import {
+    deleteExpiredEventVisitors,
+    getPublicEventRecentVisitorCount,
+    recordEventView
+} from "../src/lib/db/views";
 import type { D1Database } from "../src/types/cloudflare";
 
 class FakeStatement {
@@ -125,6 +129,12 @@ function databaseEvent(id = 42): UnsafePublicEventDatabaseRow {
         qq_group: "123456",
         ticket_url: "https://example.com/tickets",
         source_url: "https://example.com/source",
+        organizer: "测试主办方",
+        schedule_status: "postponed",
+        admission_method: "reservation",
+        price_range: "免费",
+        admission_start_date: "2026-07-20",
+        admission_start_time: "09:30",
         status: "published",
         updated_at: "2026-07-28 08:00:00",
         tags: "同人展、游戏展",
@@ -165,6 +175,12 @@ function expectedPublicDetail(id = 42): PublicEventDetail {
         qq_group: "123456",
         ticket_url: "https://example.com/tickets",
         source_url: "https://example.com/source",
+        organizer: "测试主办方",
+        schedule_status: "postponed",
+        admission_method: "reservation",
+        price_range: "免费",
+        admission_start_date: "2026-07-20",
+        admission_start_time: "09:30",
         status: "published",
         updated_at: "2026-07-28 08:00:00"
     };
@@ -296,11 +312,23 @@ test("public SQL uses explicit safe projections and detail filters public status
     assert.match(detailSql, /events\.status IN \(\?, \?\)/);
     assert.deepEqual(detailDb.prepared[0]?.values, [42, "published", "offline"]);
 
+    const heatDb = new FakeDatabase();
+    heatDb.firstResult = { unique_visitors: 0 };
+    assert.equal(await getPublicEventRecentVisitorCount(asD1(heatDb), 42), 0);
+    const heatSql = heatDb.prepared[0]?.sql ?? "";
+    assert.match(
+        heatSql,
+        /last_seen_date BETWEEN date\('now', '\+8 hours', '-29 days'\)\s+AND date\('now', '\+8 hours'\)/
+    );
+    assert.doesNotMatch(heatSql, /SELECT[\s\S]*visitor_key/i);
+    assert.deepEqual(heatDb.prepared[0]?.values, [42, "published", "offline"]);
+
     for (const statement of [
         ...listDb.prepared,
         ...discoveryDb.prepared,
         ...popularityDb.prepared,
-        ...detailDb.prepared
+        ...detailDb.prepared,
+        ...heatDb.prepared
     ]) {
         assertExplicitPublicEventSql(statement.sql);
     }

@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"检查迁移、约束、公共投影、热度隐私和 D1 查询合同"}
+{"file":".trellis/spec/backend/admin-bulk-event-import.md","reason":"检查新旧 CSV 兼容与批量写入回归"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"检查无效字段的状态码和错误边界"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"检查详情页信息层级、空值隐藏、响应式与可访问性"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查新增字段在每个边界完整往返"}

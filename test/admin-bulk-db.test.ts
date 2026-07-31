@@ -25,6 +25,12 @@ const VALID_EVENT: AdminEventInput = {
     ticket_url: "https://example.com/tickets",
     source_url: "https://example.com/source",
     submitter_contact: "admin@example.com",
+    organizer: "测试主办方",
+    schedule_status: null,
+    admission_method: "ticket",
+    price_range: "免费",
+    admission_start_date: "2026-07-20",
+    admission_start_time: "09:30",
     tags: ["漫展", "北京"]
 };
 
@@ -132,6 +138,15 @@ test("20 条活动只执行一次含 42 条语句的原子 batch", async () => {
             email: "admin@example.com"
         }
     });
+
+    assert.deepEqual(db.batches[0]?.[1]?.values.slice(16, 22), [
+        "测试主办方",
+        null,
+        "ticket",
+        "免费",
+        "2026-07-20",
+        "09:30"
+    ]);
 
     for (const relationship of db.batches[0]?.slice(21, 41) ?? []) {
         assert.match(relationship.sql, /json_each\(\?\)/);

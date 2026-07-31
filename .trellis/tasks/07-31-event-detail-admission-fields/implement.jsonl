@@ -1,0 +1,7 @@
+{"file":".trellis/spec/backend/index.md","reason":"定位本任务涉及的 D1、错误处理和批量导入规范"}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"遵循 D1 schema、公开详情、匿名热度和管理员写入合同"}
+{"file":".trellis/spec/backend/admin-bulk-event-import.md","reason":"保持 CSV 模板、解析、验证和原子写入合同"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"保持公开投稿和管理员 API 的字段级错误响应"}
+{"file":".trellis/spec/frontend/index.md","reason":"定位详情页与表单的前端规范"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"遵循活动详情、可选字段、响应式布局和可访问性规则"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"逐层核对表单、DTO、D1 和页面字段不丢失"}

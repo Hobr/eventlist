@@ -91,6 +91,12 @@ const VALID_EVENT: AdminEventInput = {
     ticket_url: "https://example.com/tickets",
     source_url: "https://example.com/source",
     submitter_contact: "admin@example.com",
+    organizer: "测试主办方",
+    schedule_status: null,
+    admission_method: "ticket",
+    price_range: "免费",
+    admission_start_date: "2026-07-20",
+    admission_start_time: "09:30",
     tags: ["同人展"]
 };
 
@@ -261,6 +267,14 @@ test("editEvent uses two fixed D1 calls and preserves unchanged relationships", 
         const [update, audit, tagUpsert, relationDelete, relationInsert] = db.batches[0] ?? [];
         const tagsJson = JSON.stringify(tags);
         assert.match(update?.sql ?? "", /WHERE id = \?[\s\S]*AND status = \?/);
+        assert.deepEqual(update?.values.slice(15, 21), [
+            "测试主办方",
+            null,
+            "ticket",
+            "免费",
+            "2026-07-20",
+            "09:30"
+        ]);
         assert.match(audit?.sql ?? "", /WHERE changes\(\) > 0/);
         assert.match(
             tagUpsert?.sql ?? "",

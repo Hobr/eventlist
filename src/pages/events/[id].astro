@@ -3,7 +3,10 @@ import {
     ArrowLeftOutline as ArrowLeft,
     ArrowUpRightFromSquareOutline as ExternalLink,
     CalendarMonthOutline as CalendarDays,
+    ClockOutline as Clock,
+    FireOutline as Fire,
     MapPinOutline as MapPin,
+    RefreshOutline as Refresh,
     StoreOutline as Store,
     TicketOutline as Ticket
 } from "flowbite-svelte-icons";
@@ -12,8 +15,13 @@ import Badge from "../../components/ui/badge.svelte";
 import Layout from "../../layouts/Layout.astro";
 import { getDB, STATUS } from "../../lib/db";
 import { getPublicEvent } from "../../lib/db/public-events";
+import { getPublicEventRecentVisitorCount } from "../../lib/db/views";
 import { getDivisionLabel } from "../../lib/divisions";
-import { getEventDetailOptionalContent } from "../../lib/events/detail";
+import {
+    formatSqliteUpdatedAt,
+    getEventDetailOptionalContent,
+    getEventUserStatus
+} from "../../lib/events/detail";
 import { formatEventSchedule } from "../../lib/events/datetime";
 import { getEventScaleLabel, getEventTypeLabel } from "../../lib/events/options";
 import { getRuntimeEnv } from "../../lib/runtime/env";
@@ -24,13 +32,17 @@ export const prerender = false;
 const rawId = Astro.params.id ?? "";
 const id = /^[1-9]\d*$/.test(rawId) ? Number(rawId) : Number.NaN;
 let event = null;
+let recentVisitorCount = 0;
 let errorMessage = "";
 
 try {
     if (!Number.isSafeInteger(id)) throw new Error("活动不存在");
 
     const db = await getDB(getRuntimeEnv());
-    event = await getPublicEvent(db, id);
+    [event, recentVisitorCount] = await Promise.all([
+        getPublicEvent(db, id),
+        getPublicEventRecentVisitorCount(db, id)
+    ]);
     if (!event) {
         Astro.response.status = 404;
         errorMessage = "活动不存在或尚未公开";
@@ -50,10 +62,17 @@ const {
     qqGroup,
     ticketUrl,
     sourceUrl,
+    organizer,
+    admissionMethodLabel,
+    priceRange,
+    admissionStart,
     hasAction,
+    hasDetailFacts,
     hasAsideContent,
     hasOptionalContent
 } = getEventDetailOptionalContent(event ?? {});
+const eventStatus = event ? getEventUserStatus(event) : null;
+const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
 ---
 
 <Layout
@@ -164,6 +183,37 @@ const {
                     </div>
                 </section>
 
+                <section
+                    class="grid overflow-hidden rounded-md bg-surface ring-1 ring-border/80 sm:grid-cols-3"
+                    aria-label="活动当前信息"
+                >
+                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
+                        <Clock class="size-5 shrink-0 text-primary" aria-hidden="true" />
+                        <div>
+                            <p class="text-xs font-semibold text-muted">当前状态</p>
+                            <strong class="mt-1 block text-sm text-foreground">
+                                {eventStatus}
+                            </strong>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
+                        <Refresh class="size-5 shrink-0 text-accent" aria-hidden="true" />
+                        <div>
+                            <p class="text-xs font-semibold text-muted">最后更新时间</p>
+                            <strong class="mt-1 block text-sm text-foreground">{updatedAt}</strong>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 p-5">
+                        <Fire class="size-5 shrink-0 text-warning" aria-hidden="true" />
+                        <div>
+                            <p class="text-xs font-semibold text-muted">近 30 日热度</p>
+                            <strong class="mt-1 block text-sm text-foreground tabular-nums">
+                                {recentVisitorCount}
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
                 {hasOptionalContent ? (
                     <div
                         class:list={[
@@ -206,7 +256,7 @@ const {
                                         rel="nofollow noopener noreferrer"
                                         class="group inline-flex h-12 items-center justify-between gap-3 rounded-full bg-primary py-1 pr-1 pl-5 text-sm font-bold text-primary-foreground transition-transform duration-300 ease-motion active:scale-[0.98]"
                                     >
-                                        查看购票页
+                                        购票/预约入口
                                         <span class="flex size-10 items-center justify-center rounded-full bg-white/18">
                                             <Ticket
                                                 class="size-4 transition-transform duration-300 ease-motion group-hover:scale-105"
@@ -214,7 +264,8 @@ const {
                                             />
                                         </span>
                                     </a>
-                                ) : sourceUrl ? (
+                                ) : null}
+                                {sourceUrl ? (
                                     <a
                                         href={sourceUrl}
                                         target="_blank"
@@ -230,7 +281,7 @@ const {
                                         </span>
                                     </a>
                                 ) : null}
-                                {address || qqGroup ? (
+                                {hasDetailFacts ? (
                                     <dl
                                         class:list={[
                                             "flex flex-col gap-4 text-sm",
@@ -251,6 +302,46 @@ const {
                                                     官方交流群
                                                 </dt>
                                                 <dd class="mt-1 text-foreground">{qqGroup}</dd>
+                                            </div>
+                                        ) : null}
+                                        {organizer ? (
+                                            <div>
+                                                <dt class="text-xs font-semibold text-muted">
+                                                    主办方
+                                                </dt>
+                                                <dd class="mt-1 break-words text-foreground">
+                                                    {organizer}
+                                                </dd>
+                                            </div>
+                                        ) : null}
+                                        {admissionMethodLabel ? (
+                                            <div>
+                                                <dt class="text-xs font-semibold text-muted">
+                                                    入场方式
+                                                </dt>
+                                                <dd class="mt-1 text-foreground">
+                                                    {admissionMethodLabel}
+                                                </dd>
+                                            </div>
+                                        ) : null}
+                                        {priceRange ? (
+                                            <div>
+                                                <dt class="text-xs font-semibold text-muted">
+                                                    票价区间
+                                                </dt>
+                                                <dd class="mt-1 [overflow-wrap:anywhere] break-words text-foreground">
+                                                    {priceRange}
+                                                </dd>
+                                            </div>
+                                        ) : null}
+                                        {admissionStart ? (
+                                            <div>
+                                                <dt class="text-xs font-semibold text-muted">
+                                                    开始购票/预约/申请
+                                                </dt>
+                                                <dd class="mt-1 text-foreground">
+                                                    {admissionStart}
+                                                </dd>
                                             </div>
                                         ) : null}
                                     </dl>

@@ -9,7 +9,12 @@ import SelectField from "../components/SelectField.svelte";
 import SubmissionSection from "../components/SubmissionSection.astro";
 import Turnstile from "../components/Turnstile.svelte";
 import Layout from "../layouts/Layout.astro";
-import { EVENT_SCALES, EVENT_TYPES } from "../lib/events/options";
+import {
+    EVENT_ADMISSION_METHODS,
+    EVENT_SCALES,
+    EVENT_SCHEDULE_STATUSES,
+    EVENT_TYPES
+} from "../lib/events/options";
 import { getRuntimeEnv } from "../lib/runtime/env";
 
 export const prerender = false;
@@ -23,6 +28,14 @@ const typeOptions = EVENT_TYPES.map((type) => ({
 const scaleOptions = EVENT_SCALES.map((scale) => ({
     value: scale.name,
     label: scale.label
+}));
+const scheduleStatusOptions = EVENT_SCHEDULE_STATUSES.map((status) => ({
+    value: status.name,
+    label: status.label
+}));
+const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
+    value: method.name,
+    label: method.label
 }));
 
 const fieldCls =
@@ -206,6 +219,56 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     id="address"
                                     name="address"
                                     maxlength="240"
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <label for="organizer" class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>主办方</span>
+                                <input
+                                    id="organizer"
+                                    name="organizer"
+                                    maxlength="200"
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <SelectField
+                                name="schedule_status"
+                                label="活动异常状态"
+                                options={scheduleStatusOptions}
+                                placeholder="正常"
+                                client:load
+                            />
+                            <SelectField
+                                name="admission_method"
+                                label="入场方式"
+                                options={admissionMethodOptions}
+                                placeholder="选择入场方式"
+                                client:load
+                            />
+                            <label for="price-range" class="flex flex-col gap-1.5 sm:col-span-2">
+                                <span class={labelCls}>票价区间</span>
+                                <input
+                                    id="price-range"
+                                    name="price_range"
+                                    maxlength="120"
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <label for="admission-start-date" class="flex flex-col gap-1.5">
+                                <span class={labelCls}>开始购票/预约/申请日期</span>
+                                <input
+                                    id="admission-start-date"
+                                    type="date"
+                                    name="admission_start_date"
+                                    class={fieldCls}
+                                />
+                            </label>
+                            <label for="admission-start-time" class="flex flex-col gap-1.5">
+                                <span class={labelCls}>开始购票/预约/申请时间</span>
+                                <input
+                                    id="admission-start-time"
+                                    type="time"
+                                    name="admission_start_time"
                                     class={fieldCls}
                                 />
                             </label>

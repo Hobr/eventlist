@@ -19,8 +19,8 @@ function makeCsv(rows: string[][]) {
 function validRow(overrides: Partial<Record<(typeof BULK_EVENT_HEADERS)[number], string>> = {}) {
     const values: Record<(typeof BULK_EVENT_HEADERS)[number], string> = {
         活动名称: "测试活动",
-        活动类型: "漫展",
-        活动规模: "小型(地区级)",
+        活动类型: "综合商业展",
+        活动规模: "小型 (100 - 1,000人)",
         行政区代码: "110101",
         场馆: "测试场馆",
         详细地址: "测试地址",
@@ -35,6 +35,12 @@ function validRow(overrides: Partial<Record<(typeof BULK_EVENT_HEADERS)[number],
         来源链接: "https://example.com/source",
         联系信息: "admin@example.com",
         标签: "漫展、北京",
+        主办方: "测试主办方",
+        活动异常状态: "延期",
+        入场方式: "预约",
+        票价区间: "免费",
+        "开始购票/预约/申请日期": "2026-07-20",
+        "开始购票/预约/申请时间": "09:30",
         ...overrides
     };
     return BULK_EVENT_HEADERS.map((header) => values[header]);
@@ -54,6 +60,8 @@ test("CSV 支持中文标签、逗号、引号和多行字段", async () => {
     assert.equal(result.events.length, 1);
     assert.equal(result.events[0]?.event.type, "comic");
     assert.equal(result.events[0]?.event.scale, "small");
+    assert.equal(result.events[0]?.event.schedule_status, "postponed");
+    assert.equal(result.events[0]?.event.admission_method, "reservation");
     assert.equal(result.events[0]?.event.description, '第一行, 包含逗号\n第二行包含"引号"');
     assert.deepEqual(result.events[0]?.event.tags, ["漫展", "北京"]);
 });
@@ -78,9 +86,14 @@ test("CSV 返回逐记录字段错误且不接受逗号分隔标签", async () =
 });
 
 test("CSV 强制使用模板表头和 20 条上限", async () => {
+    const oldHeaders = BULK_EVENT_HEADERS.slice(0, 17);
     await assert.rejects(
         () => parseBulkEventCsv(new File(["wrong\r\nvalue"], "events.csv")),
         BulkEventCsvError
+    );
+    await assert.rejects(
+        () => parseBulkEventCsv(new File([`${oldHeaders.join(",")}\r\n`], "events.csv")),
+        /表头必须与下载模板完全一致/
     );
     await assert.rejects(
         () =>

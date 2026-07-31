@@ -1,5 +1,10 @@
 import type { D1Database } from "../../types/cloudflare";
-import type { EventScale, EventType } from "../events/options";
+import type {
+    EventAdmissionMethod,
+    EventScale,
+    EventScheduleStatus,
+    EventType
+} from "../events/options";
 import { requireD1Success, STATUS, type EventStatus } from "./index";
 
 export type EventSort = "start_asc" | "start_desc" | "end_desc";
@@ -43,6 +48,12 @@ export interface PublicEventDetail extends PublicEventRow {
     qq_group: string | null;
     ticket_url: string | null;
     source_url: string;
+    organizer: string | null;
+    schedule_status: EventScheduleStatus | null;
+    admission_method: EventAdmissionMethod | null;
+    price_range: string | null;
+    admission_start_date: string | null;
+    admission_start_time: string | null;
     status: PublicEventStatus;
     updated_at: string;
 }
@@ -78,6 +89,12 @@ export interface PublicEventDatabaseRow {
     qq_group: string | null;
     ticket_url: string | null;
     source_url: string;
+    organizer: string | null;
+    schedule_status: EventScheduleStatus | null;
+    admission_method: EventAdmissionMethod | null;
+    price_range: string | null;
+    admission_start_date: string | null;
+    admission_start_time: string | null;
     status: EventStatus;
     updated_at: string;
     tags: string | null;
@@ -100,6 +117,12 @@ export const PUBLIC_EVENT_COLUMNS = `
     events.qq_group,
     events.ticket_url,
     events.source_url,
+    events.organizer,
+    events.schedule_status,
+    events.admission_method,
+    events.price_range,
+    events.admission_start_date,
+    events.admission_start_time,
     events.status,
     events.updated_at
 `;
@@ -155,6 +178,12 @@ export function mapPublicEventDetail(event: PublicEventDatabaseRow): PublicEvent
         qq_group: event.qq_group,
         ticket_url: event.ticket_url,
         source_url: event.source_url,
+        organizer: event.organizer,
+        schedule_status: event.schedule_status,
+        admission_method: event.admission_method,
+        price_range: event.price_range,
+        admission_start_date: event.admission_start_date,
+        admission_start_time: event.admission_start_time,
         status: event.status as PublicEventStatus,
         updated_at: event.updated_at
     };
