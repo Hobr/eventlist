@@ -236,6 +236,15 @@
   venue facts, an unframed description column, and a restrained action rail.
   Offline and missing-event states stay explicit. Known event times appear in
   cards/details and JSON-LD; null historical times keep date-only output.
+- Event-detail optional values use
+  `getEventDetailOptionalContent(event: EventDetailOptionalFields)`: trim
+  `description`, `address`, `qq_group`, `ticket_url`, and `source_url`, then
+  treat `null`, empty, and whitespace-only results as absent. Empty values must
+  not leave headings, wrappers, columns, or dividers. `ticket_url` owns the
+  single action when present; otherwise a non-empty `source_url` is the
+  fallback action. Review-source data must never be emitted as JSON-LD
+  `organizer` data. Regression tests must cover all-empty, description-only,
+  detail-only, ticket-precedence, source-fallback, and JSON-LD omission cases.
 - Public submission uses required fieldsets plus optional progressive
   disclosure inside one form. Inputs must never be moved out of the form or
   removed from the DOM when disclosure closes.
