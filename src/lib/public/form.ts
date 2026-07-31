@@ -71,6 +71,14 @@ function readUrl(formData: FormData, name: string, label: string, required = fal
     }
 }
 
+function readCoverUrl(formData: FormData) {
+    const value = readUrl(formData, "cover_url", "封面 URL");
+    if (value && new URL(value).protocol !== "https:") {
+        throw new Error("封面 URL 必须使用 HTTPS");
+    }
+    return value;
+}
+
 export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
     const startDate = readDate(formData, "start_date", "开始日期");
     const endDate = readDate(formData, "end_date", "结束日期");
@@ -103,7 +111,7 @@ export function parseSubmissionForm(formData: FormData): ParsedSubmissionForm {
             end_date: endDate,
             start_time: startTime,
             end_time: endTime,
-            cover_url: readUrl(formData, "cover_url", "封面 URL"),
+            cover_url: readCoverUrl(formData),
             description: readOptional(formData, "description"),
             qq_group: readOptional(formData, "qq_group"),
             ticket_url: readUrl(formData, "ticket_url", "购票地址"),

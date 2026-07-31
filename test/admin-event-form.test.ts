@@ -71,3 +71,16 @@ test("日期、时间和 URL 错误带有对应字段", () => {
         ["start_date", "start_time", "source_url"]
     );
 });
+
+test("管理员表单只接受 HTTPS 封面", () => {
+    const result = validateAdminEventInput({
+        ...VALID_EVENT,
+        cover_url: "http://example.com/cover.jpg"
+    });
+
+    assert.equal(result.input, null);
+    assert.deepEqual(
+        result.errors.map(({ field, message }) => ({ field, message })),
+        [{ field: "cover_url", message: "封面 URL 必须使用 HTTPS" }]
+    );
+});

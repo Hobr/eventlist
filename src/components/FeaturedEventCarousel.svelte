@@ -11,6 +11,7 @@
     import { onMount, untrack } from "svelte";
     import { fade } from "svelte/transition";
     import { SITE_NAME, SITE_SLOGAN } from "../lib/site";
+    import { getDisplayCoverUrl } from "../lib/events/cover";
     import { formatEventSchedule } from "../lib/events/datetime";
     import { getEventScaleLabel } from "../lib/events/options";
     import type { PublicFeaturedEvent } from "../lib/public/homepage";
@@ -33,10 +34,11 @@
 
     const images = $derived(
         events.map((event, eventIndex) => ({
-            src: event.cover_url?.trim() || fallbackCover,
+            src: getDisplayCoverUrl(event.cover_url) || fallbackCover,
             alt: `${event.title} 封面`,
             loading: eventIndex === 0 ? ("eager" as const) : ("lazy" as const),
             decoding: "async" as const,
+            referrerpolicy: "no-referrer" as const,
             onerror: handleCoverError
         }))
     );
@@ -271,6 +273,7 @@
     </div>
 {:else}
     {@const event = events[0] ?? null}
+    {@const coverUrl = getDisplayCoverUrl(event?.cover_url)}
     <section
         aria-labelledby="home-heading"
         class="relative isolate overflow-hidden rounded-md bg-foreground text-white shadow-elevated ring-1 ring-black/10"
@@ -284,15 +287,16 @@
             decoding="async"
             class="absolute inset-0 size-full object-cover"
         />
-        {#if event?.cover_url?.trim()}
+        {#if coverUrl}
             <img
-                src={event.cover_url}
+                src={coverUrl}
                 alt=""
                 width="1200"
                 height="675"
                 loading="eager"
                 decoding="async"
                 fetchpriority="high"
+                referrerpolicy="no-referrer"
                 class="absolute inset-0 size-full object-cover"
                 onerror={handleCoverError}
             />

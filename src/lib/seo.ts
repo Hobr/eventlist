@@ -1,9 +1,12 @@
 import type { PublicEventDetail } from "./db/public-events";
+import { getDisplayCoverUrl } from "./events/cover";
 import { getDivisionLabel } from "./divisions";
+import { getEventDetailOptionalContent } from "./events/detail";
 import { toEventIsoDateTime } from "./events/datetime";
 
 export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string) {
     const divisionLabel = getDivisionLabel(event.division_code);
+    const { address, description, ticketUrl } = getEventDetailOptionalContent(event);
     const jsonLd: Record<string, unknown> = {
         "@context": "https://schema.org",
         "@type": "Event",
@@ -19,21 +22,17 @@ export function buildEventJsonLd(event: PublicEventDetail, canonicalUrl: string)
         location: {
             "@type": "Place",
             name: event.venue,
-            address: event.address ?? divisionLabel ?? undefined
-        },
-        organizer: {
-            "@type": "Organization",
-            name: event.source_url,
-            url: event.source_url
+            address: address ?? divisionLabel ?? undefined
         }
     };
 
-    if (event.cover_url) jsonLd.image = [event.cover_url];
-    if (event.description) jsonLd.description = event.description;
-    if (event.ticket_url) {
+    const coverUrl = getDisplayCoverUrl(event.cover_url);
+    if (coverUrl) jsonLd.image = [coverUrl];
+    if (description) jsonLd.description = description;
+    if (ticketUrl) {
         jsonLd.offers = {
             "@type": "Offer",
-            url: event.ticket_url,
+            url: ticketUrl,
             availability: "https://schema.org/InStock"
         };
     }

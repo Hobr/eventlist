@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { getDisplayCoverUrl } from "../lib/events/cover";
 
 interface Props {
     src?: string | null;
@@ -16,7 +17,7 @@ const {
     fill = false,
     class: className = "aspect-[16/9]"
 } = Astro.props;
-const coverUrl = src?.trim() || null;
+const coverUrl = getDisplayCoverUrl(src);
 const fallbackUrl = "/images/event-fallback.webp";
 ---
 
@@ -48,6 +49,7 @@ const fallbackUrl = "/images/event-fallback.webp";
                 loading={loading}
                 decoding="async"
                 fetchpriority={loading === "eager" ? "high" : "auto"}
+                referrerpolicy="no-referrer"
                 class="absolute inset-0 size-full object-cover"
                 onerror="this.remove()"
             />
