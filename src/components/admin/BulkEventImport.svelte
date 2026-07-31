@@ -117,7 +117,7 @@
             preview = nextPreview;
 
             if (!response.ok) {
-                errorMessage = body?.error ?? "CSV 预览失败，请重试";
+                errorMessage = body?.error ?? "CSV 预览失败, 请重试";
                 state = "invalid";
             } else if (!nextPreview?.valid) {
                 errorMessage = "CSV 包含需要修正的记录";
@@ -126,7 +126,7 @@
                 state = "ready";
             }
         } catch (error) {
-            errorMessage = error instanceof Error ? error.message : "CSV 预览失败，请重试";
+            errorMessage = error instanceof Error ? error.message : "CSV 预览失败, 请重试";
             state = "invalid";
         }
 
@@ -161,7 +161,7 @@
                 const nextPreview = body?.details?.preview;
                 if (nextPreview) preview = nextPreview;
                 confirmedWarningKeys = [];
-                errorMessage = body?.error ?? "批量创建失败，请重试";
+                errorMessage = body?.error ?? "批量创建失败, 请重试";
                 state = nextPreview?.valid ? "ready" : "invalid";
                 focusResult();
                 return;
@@ -171,7 +171,7 @@
             state = "success";
             focusResult();
         } catch (error) {
-            errorMessage = error instanceof Error ? error.message : "批量创建失败，请重试";
+            errorMessage = error instanceof Error ? error.message : "批量创建失败, 请重试";
             state = "ready";
             focusResult();
         }
@@ -257,7 +257,7 @@
                         已创建 {createdEvents.length} 条活动
                     </h2>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        活动已发布，并已写入独立审计记录。
+                        活动已发布, 并已写入独立审计记录
                     </p>
                 </div>
                 <button
@@ -435,11 +435,11 @@
                     {#if state === "submitting"}
                         正在重新校验并创建活动…
                     {:else if preview?.warnings.length && !allWarningsConfirmed}
-                        请确认全部疑似重复项后提交。
+                        请确认全部疑似重复项后提交
                     {:else if preview?.valid}
-                        服务端将在提交时重新解析原始文件。
+                        服务端将在提交时重新解析原始文件
                     {:else}
-                        请修正 CSV 后重新预览。
+                        请修正 CSV 后重新预览
                     {/if}
                 </p>
                 <button

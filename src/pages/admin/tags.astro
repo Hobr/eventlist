@@ -23,7 +23,7 @@ const tagOptions = tags.map((tag) => ({
 }));
 ---
 
-<AdminLayout title="标签归并" description="将重复标签合并到统一名称，保持活动检索整洁。">
+<AdminLayout title="标签归并" description="将重复标签合并到统一名称, 保持活动检索整洁。">
     {
         errorMessage ? (
             <div
@@ -40,7 +40,7 @@ const tagOptions = tags.map((tag) => ({
                             归并重复标签
                         </h2>
                         <p class="mt-1 text-sm text-muted-foreground">
-                            源标签会被移除，关联活动将改用目标标签。
+                            源标签会被移除, 关联活动将改用目标标签。
                         </p>
                     </div>
                     <TagMergeForm options={tagOptions} client:load />

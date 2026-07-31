@@ -27,6 +27,6 @@ export const GET: APIRoute = async ({ url }) => {
         const publicPopularity = toPublicHomepagePopularity(popularity);
         return jsonOk({ popularity: publicPopularity });
     } catch {
-        return jsonError("热门活动暂时无法加载，请稍后重试", 500);
+        return jsonError("热门活动暂时无法加载, 请稍后重试", 500);
     }
 };

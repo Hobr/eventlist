@@ -47,8 +47,8 @@ try {
               : "默认城市";
 } catch (error) {
     regionError = error instanceof Error ? error.message : "无法识别当前地区";
-    discoveryError = "无法确定地区，暂时不能加载今日活动";
-    popularityError = "无法确定地区，暂时不能加载本地热门活动";
+    discoveryError = "无法确定地区, 暂时不能加载今日活动";
+    popularityError = "无法确定地区, 暂时不能加载本地热门活动";
 }
 
 const homepageDivision =
@@ -97,7 +97,7 @@ const initialHomepage = toPublicHomepageData(homepageDivision, discovery, popula
 
 <Layout
     title="ACG 活动目录"
-    description="按地区和自然日期浏览附近 ACG 活动，并查看近 3 日、7 日和 30 日热门活动。"
+    description="按地区和自然日期浏览附近 ACG 活动, 并查看近 3 日、7 日和 30 日热门活动。"
 >
     <NavLocationPicker
         slot="nav-control"

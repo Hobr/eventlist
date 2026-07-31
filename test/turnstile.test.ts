@@ -138,7 +138,7 @@ test("公开投稿仅在 Turnstile 成功后访问 D1", async () => {
     assert.equal(response.status, 400);
     assert.deepEqual(await response.json(), {
         ok: false,
-        error: "人机校验失败，请刷新后重试"
+        error: "人机校验失败, 请刷新后重试"
     });
     assert.equal(databaseAccessed, false);
 });

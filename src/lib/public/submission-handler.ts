@@ -16,7 +16,7 @@ export async function handleSubmissionRequest(request: Request, runtimeEnv: Runt
             request.headers.get("CF-Connecting-IP")
         );
         if (!verification.success) {
-            return jsonError("人机校验失败，请刷新后重试", 400);
+            return jsonError("人机校验失败, 请刷新后重试", 400);
         }
 
         const db = getDB(runtimeEnv);

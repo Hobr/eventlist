@@ -34,6 +34,6 @@ export const GET: APIRoute = async ({ url }) => {
         ]);
         return jsonOk({ homepage: toPublicHomepageData(division, discovery, popularity) });
     } catch {
-        return jsonError("首页活动暂时无法加载，请稍后重试", 500);
+        return jsonError("首页活动暂时无法加载, 请稍后重试", 500);
     }
 };

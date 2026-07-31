@@ -99,7 +99,7 @@ function emptyMutationImpact(): MutationImpact {
 
 export class BulkEventIdConflictError extends Error {
     constructor() {
-        super("活动 ID 已被其他请求占用，请重新预览后再提交");
+        super("活动 ID 已被其他请求占用, 请重新预览后再提交");
         this.name = "BulkEventIdConflictError";
     }
 }

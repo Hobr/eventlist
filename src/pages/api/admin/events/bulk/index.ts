@@ -40,7 +40,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             ({ key }) => !confirmedKeys.has(key)
         );
         if (unconfirmedWarnings.length > 0) {
-            return jsonError("发现新的疑似重复活动，请确认后重新提交", 409, {
+            return jsonError("发现新的疑似重复活动, 请确认后重新提交", 409, {
                 preview: result.preview
             });
         }

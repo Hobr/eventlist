@@ -147,7 +147,7 @@ function assertHeaders(headers: string[]) {
         headers.length !== BULK_EVENT_HEADERS.length ||
         headers.some((header, index) => header !== BULK_EVENT_HEADERS[index])
     ) {
-        throw new BulkEventCsvError("CSV 表头必须与下载模板完全一致，且顺序不能改变");
+        throw new BulkEventCsvError("CSV 表头必须与下载模板完全一致, 且顺序不能改变");
     }
 }
 

@@ -84,7 +84,7 @@ const returnHref =
                     submitButtonId="edit-save-button"
                     statusId="edit-save-status"
                     submitLabel="保存修改"
-                    statusText="修改仅在保存后生效。"
+                    statusText="修改仅在保存后生效"
                 />
             </div>
         )
@@ -122,14 +122,14 @@ const returnHref =
                     const body = (await response.json().catch(() => null)) as {
                         error?: string;
                     } | null;
-                    throw new Error(body?.error ?? "保存失败，请重试");
+                    throw new Error(body?.error ?? "保存失败, 请重试");
                 }
 
-                saveStatus.textContent = "保存成功，正在返回队列…";
+                saveStatus.textContent = "保存成功, 正在返回队列…";
                 window.location.assign(returnHref);
             } catch (error) {
                 saveStatus.textContent =
-                    error instanceof Error ? error.message : "保存失败，请重试";
+                    error instanceof Error ? error.message : "保存失败, 请重试";
                 saveStatus.classList.add("text-danger");
                 saveButton.disabled = false;
                 saveButton.removeAttribute("aria-busy");

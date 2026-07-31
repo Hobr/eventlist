@@ -19,7 +19,7 @@ try {
 }
 ---
 
-<AdminLayout title="增加活动" description="录入后立即发布到公开活动目录。">
+<AdminLayout title="增加活动" description="录入后立即发布到公开活动目录">
     {
         errorMessage ? (
             <div
@@ -48,7 +48,7 @@ try {
                     submitButtonId="create-save-button"
                     statusId="create-save-status"
                     submitLabel="发布活动"
-                    statusText="请至少选择一个规范标签。新标签会在发布时加入标签库。"
+                    statusText="请至少选择一个规范标签, 新标签会在发布时加入标签库"
                     defaultDivisionCode={runtimeEnv.DEFAULT_DIVISION_CODE}
                     showRequiredIndicators
                 />
@@ -86,14 +86,14 @@ try {
                     error?: string;
                     data?: { id?: number };
                 } | null;
-                if (!response.ok) throw new Error(body?.error ?? "发布失败，请重试");
+                if (!response.ok) throw new Error(body?.error ?? "发布失败, 请重试");
                 if (!body?.data?.id) throw new Error("发布成功但未返回活动 ID");
 
-                saveStatus.textContent = "发布成功，正在打开活动编辑页…";
+                saveStatus.textContent = "发布成功, 正在打开活动编辑页…";
                 window.location.assign(`/admin/events/${body.data.id}/edit`);
             } catch (error) {
                 saveStatus.textContent =
-                    error instanceof Error ? error.message : "发布失败，请重试";
+                    error instanceof Error ? error.message : "发布失败, 请重试";
                 saveStatus.classList.add("text-danger");
                 saveButton.disabled = false;
                 saveButton.removeAttribute("aria-busy");

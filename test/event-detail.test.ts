@@ -54,7 +54,7 @@ test("活动详情可选信息将 null、空字符串和纯空白统一为空分
     }
 });
 
-test("活动详情可选信息严格优先购票链接，并在缺少购票链接时回退到来源", () => {
+test("活动详情可选信息严格优先购票链接, 并在缺少购票链接时回退到来源", () => {
     assert.deepEqual(getEventDetailOptionalContent(event()), {
         description: "活动介绍",
         address: "测试地址",
@@ -83,7 +83,7 @@ test("活动详情可选信息严格优先购票链接，并在缺少购票链�
     );
 });
 
-test("活动详情可选信息区分仅介绍和仅侧栏内容，避免空白列与孤立分隔线", () => {
+test("活动详情可选信息区分仅介绍和仅侧栏内容, 避免空白列与孤立分隔线", () => {
     assert.deepEqual(getEventDetailOptionalContent({ description: "活动介绍" }), {
         description: "活动介绍",
         address: null,
@@ -138,7 +138,7 @@ test("活动详情模板按可选内容模型移除空标题、容器和分隔�
     assert.doesNotMatch(source, /href=\{event\.source_url\}/);
 });
 
-test("JSON-LD 保留有效公开详情和购票链接，但不公开审核来源", () => {
+test("JSON-LD 保留有效公开详情和购票链接, 但不公开审核来源", () => {
     const jsonLd = buildEventJsonLd(event(), "https://example.com/events/1");
     const location = jsonLd.location as Record<string, unknown>;
     const offers = jsonLd.offers as Record<string, unknown>;

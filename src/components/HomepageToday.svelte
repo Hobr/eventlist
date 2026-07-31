@@ -38,7 +38,7 @@
         <div class="mt-8 border-y border-border/80 py-10">
             <h3 class="text-xl font-black text-foreground">今天暂无本地活动</h3>
             <p class="mt-2 text-sm text-muted-foreground">
-                可以进入活动目录查看这个地区接下来举办的活动。
+                可以进入活动目录查看这个地区接下来举办的活动
             </p>
         </div>
     {/if}

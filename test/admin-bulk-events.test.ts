@@ -29,7 +29,7 @@ function validRow(overrides: Partial<Record<(typeof BULK_EVENT_HEADERS)[number],
         开始时间: "09:00",
         结束时间: "18:00",
         封面URL: "https://example.com/cover.jpg",
-        活动描述: '第一行，包含逗号\n第二行包含"引号"',
+        活动描述: '第一行, 包含逗号\n第二行包含"引号"',
         QQ群: "123456",
         购票地址: "https://example.com/tickets",
         来源链接: "https://example.com/source",
@@ -54,7 +54,7 @@ test("CSV 支持中文标签、逗号、引号和多行字段", async () => {
     assert.equal(result.events.length, 1);
     assert.equal(result.events[0]?.event.type, "comic");
     assert.equal(result.events[0]?.event.scale, "small");
-    assert.equal(result.events[0]?.event.description, '第一行，包含逗号\n第二行包含"引号"');
+    assert.equal(result.events[0]?.event.description, '第一行, 包含逗号\n第二行包含"引号"');
     assert.deepEqual(result.events[0]?.event.tags, ["漫展", "北京"]);
 });
 

@@ -62,7 +62,7 @@ function event(id: number): PublicEventDatabaseRow {
     };
 }
 
-test("首页发现查询返回最多五条进行中优先候选，并将今日活动限制为 10 条", async () => {
+test("首页发现查询返回最多五条进行中优先候选, 并将今日活动限制为 10 条", async () => {
     const db = new FakeDatabase();
     const featuredEvents = [event(1), event(2), event(3)];
     const today = [featuredEvents[0], event(4)];

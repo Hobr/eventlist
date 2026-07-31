@@ -15,7 +15,7 @@ export const POST: APIRoute = async ({ params }) => {
         const db = await getDB(getRuntimeEnv());
         const result = await transitionEventStatus(db, id, STATUS.OFFLINE, STATUS.PUBLISHED);
         if (result.conflict === "missing-canonical-tag") {
-            return jsonError("请先整理至少一个规范标签，再重新发布活动", 409);
+            return jsonError("请先整理至少一个规范标签, 再重新发布活动", 409);
         }
         if (result.outcome === "conflict") return jsonError("Event is not offline", 409);
 

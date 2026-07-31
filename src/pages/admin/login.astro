@@ -20,7 +20,7 @@ if (Astro.request.method === "POST") {
     const token = formData.get("token");
 
     if (authMode !== "token") {
-        errorMessage = "当前为 Cloudflare Access 模式，请通过 Access 登录入口访问。";
+        errorMessage = "当前为 Cloudflare Access 模式, 请通过 Access 登录入口访问。";
     } else if (typeof token !== "string" || !(await verifyTokenValue(token, runtimeEnv))) {
         errorMessage = "Token 无效。";
     } else {
@@ -87,7 +87,7 @@ if (Astro.request.method === "POST") {
                                 Cloudflare Access 已启用
                             </h2>
                             <p class="mt-2 text-sm leading-6 text-muted-foreground">
-                                请从受保护的 Access 应用入口进入。身份通过验证后，后台会自动开放。
+                                请从受保护的 Access 应用入口进入。身份通过验证后, 后台会自动开放。
                             </p>
                             <div class="mt-5 rounded-md bg-accent-subtle px-4 py-3 text-sm font-semibold text-accent">
                                 当前页面不需要本地 Token。
