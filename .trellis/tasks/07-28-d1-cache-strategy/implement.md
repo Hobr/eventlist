@@ -198,7 +198,7 @@ git diff --check
 - [x] 首页 SSR 保持发现/热门 `Promise.allSettled()` 独立错误隔离；`/api/homepage` 保持全有或全无；`/api/popularity` 复用相同热门 loader。
 - [x] 详情只缓存静态 `PublicEventDetail`，近 30 日热度继续独立读取；负结果不缓存，访问统计 POST 不因本序列改变。
 - [x] 列表只准入规范化参数、合理长度字段和第 1-3 页；其他请求透明绕过。`/events` 的 top tags 复用现有 `tags` loader。
-- [x] 建立 Worker 外部自动控制器，按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope；生产 Worker 不保存 Workers Scripts 写令牌。当前控制器为 ACTIVE 的每小时 heartbeat `eventlist-cache-scope-auto-promotion`。
+- [x] 建立 Worker 外部自动控制器，按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope；生产 Worker 不保存 Workers Scripts 写令牌。控制器曾为 ACTIVE 的每小时 heartbeat `eventlist-cache-scope-auto-promotion`，本轮 popularity canary 失败后已暂停。
 - [ ] 每次候选晋级前确认代码已提交、临时 probe 不存在、远程 D1 schema 与代码兼容、上一稳定版本 ID 可用且没有另一晋级任务运行。
 - [ ] 候选证据必须包含版本/scope、观察窗口、请求/错误、CPU p50/p99、`exceededCpu`、HTTP 状态、`X-Eventlist-Cache`、响应哈希和 D1 投影比较；缺失或不明确即不晋级。
 - [ ] CPU p99 >= 10 ms、`exceededCpu > 0`、响应不一致、错误率恶化或部署状态不明确时，自动恢复上一稳定 Worker Version 的 100% 流量并冻结后续晋级。
@@ -218,7 +218,7 @@ git diff --check
 - 站点负责人考虑网站刚上线且预期访问量会明显增长，明确批准不等待连续 3 个完整 24 小时用量门槛，立即提前 pilot；该例外只适用于 `tags,sitemap`，不扩展到首页、热门、详情、列表或访问去重。
 - 真实 hostname 探针返回 HTTP `204`、`X-Eventlist-Cache-Probe: hit` 和 `cf-ray: a23bbadd1ef49e1e-SIN`。探针随后删除，生产路径复查为 `404`。
 - 使用隔离目录 `/tmp/eventlist-cache-deploy.BOrWSw` 从 Git index tree `573179d7b4b63ebad74a8e5a75700fac58075b8f` 构建并部署，避免共享工作区内并发的活动详情字段改动进入生产。隔离快照通过 100/100 测试、lint、type-check、build、Wrangler types 和 deploy dry-run。
-- 当前 100% 生产版本为 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9`，deployment 为 `961d4f01-7e2e-4147-b6b2-650e18f110f0`，`PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，`workers_dev=false`；SESSION KV、Images、D1、Assets 和 Secrets 均保留。
+- 当前 100% 生产版本为 `963426a0-a73f-428e-89d7-84208429e111`，deployment 为 `18e71f2b-f5c9-4c70-be85-0cf60b9ac0f9`，`PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，`workers_dev=false`；SESSION KV、Images、D1、Assets 和 Secrets 均保留。
 - 标签验证覆盖 `MISS -> HIT`、部署传播期一次瞬时 `BYPASS`、随后连续 `HIT`，并观察到正常 `STALE-REFRESH -> HIT` 生命周期。查询 `q=漫` 的响应 SHA-256 始终为 `b4127f678fa7b991e394686a711242b800feac165e071a260169b77f99ac252a`。
 - sitemap 验证覆盖 `MISS -> HIT` 和后续重复 `HIT`；响应 SHA-256 始终为 `0708d18f950faf9b4e887a97e227212c6063cd9e1705ffe8d822cf157ded8767`。缓存前后正文逐字节一致。
 - 路由定向 tail 样本均落在当前版本：标签与 sitemap 各返回 HTTP 200、`outcome=ok`、CPU 8 ms、无日志或异常。当前证据仍是短样本，不替代后续正常流量周期统计。
@@ -237,6 +237,30 @@ git diff --check
 - 缓存实现与检查证据已提交为 `e6b3e45` 和 `a28c064`，晋级检查开始时工作树干净。`/api/popularity?city=31&trend=7` 连续响应 HTTP 200，两个正文 SHA-256 均为 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`；D1 同口径 7 日查询确认本地和全国候选数均为 0，`rows_written=0`，与响应中的两个空数组一致。
 - 本次仍未晋级：候选上传前的 Cloudflare deployment 状态查询连续返回 `522`、`522`、`525`，对应 Ray ID 为 `a23c89fd8fbf5cd5-SIN`、`a23c8adc8fb29e4a-SIN`、`a23c8c7cfcd809c2-SIN`。因此当前 deployment 状态和候选 CPU/error 证据不明确，控制器按 R31 fail closed；没有执行 `wrangler versions upload`、`wrangler versions deploy` 或 rollback，没有创建候选 version，也没有修改生产流量或 D1。
 - 自动控制器保持 ACTIVE 并每小时重试。下一次只有在 deployment API 恢复、再次确认唯一稳定版本 100%、远程 schema 兼容且全部候选证据齐全后，才增加 `popularity`；后续 `homepage`、`detail`、`list` 仍逐 scope 独立验收。
+
+### 2026-07-31 20:25 CST 自动晋级重试
+
+- 晋级前工作树干净，`HEAD=a650967`，且包含已审查的缓存实现提交 `e6b3e45` 与检查记录提交 `a28c064`；临时 probe 在源文件、Git index 和现有 `dist` 构建产物中均不存在。
+- 远程 D1 只读 `pragma_table_info('events')` 再次确认 `organizer`、`schedule_status`、`admission_method`、`price_range`、`admission_start_date` 和 `admission_start_time` 六列全部存在；查询 `changes=0`、`changed_db=false`、`rows_written=0`，本轮没有修改 D1。
+- 第一项控制面门禁 `wrangler deployments status --json` 仍失败，Cloudflare API 返回 HTTP `525`，Ray ID `a23c95f39a5cdaa5-SIN`。因此无法确认当前是否仍为唯一稳定版本 100% 流量、是否存在并行 rollout，以及可用回滚版本；本轮按 fail-closed 停止。
+- 未继续运行候选质量/HTTP/CPU 证据采集，未上传或部署候选，未改变 Worker 流量或 scope，未执行 rollback。稳定基线仍只沿用最后一次成功确认的 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` / `tags,sitemap` 作为待重新核验事实，不能视为本轮已确认状态。
+
+### 2026-07-31 20:38 CST 自动晋级重试与回滚
+
+- 重试开始时 `wrangler deployments status --json` 恢复成功，但发现一个此前未记录的版本 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 于 `2026-07-31T12:35:06Z` 上传并已获得 100% 流量；其来源为 `version_upload`、没有 message，版本详情只显示 `PUBLIC_DATA_CACHE_SCOPES="tags,sitemap"`，没有本任务要求的候选健康证据。因此不能把它视为稳定版本或已审计候选。
+- 由于该版本已经实际上线且证据缺失，按失败候选处理，使用已知稳定版本 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 执行 `wrangler versions deploy --version-id ... --percentage 100`。回滚成功，deployment 为 `1ae78701-d097-4da4-9baf-ed521455e3a0`，message 为 `cache: restore verified tags/sitemap stable version after unexplained deployment`。
+- 回滚后只读复核确认当前 deployment 只有 `5adefda0-0e8e-4c66-88ef-fcbee8aa28c9` 100% 流量；远程 D1 六个详情字段仍全部存在，`changes=0`、`changed_db=false`、`rows_written=0`。探针仍不在源文件、Git index 或构建产物中。
+- 本机 Wrangler 日志 `wrangler-2026-07-31_12-34-46_046.log` 显示 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 来自一次交互式 `wrangler deploy`（`sanitizedCommand=deploy`、无参数），不是本控制器的版本上传/晋级命令；该来源已查明，但仍没有可用于公开 scope 晋级的候选健康证据。
+- 回滚后的真实 hostname `/api/popularity?city=31&trend=7` 返回 HTTP 200，正文 SHA-256 为 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`（73 bytes），与此前 D1 对照的空数组响应一致；当前 stable scope 不包含 `popularity`，故该请求没有 `X-Eventlist-Cache` 头是预期行为。
+- 本轮没有启用 `popularity`，没有上传新的候选，没有修改 scope 或 D1。虽然已查明 `f5ebe628-948a-40bd-aefa-b8d4a9c916cb` 来自交互式部署，后续自动晋级仍保持暂停，须先重新完成全套候选门禁并明确恢复控制器的操作窗口。
+
+### 2026-07-31 21:05 CST popularity 候选与回滚
+
+- 按用户要求先部署审查后的 stable baseline：版本 `963426a0-a73f-428e-89d7-84208429e111`，deployment `e847c294-8f32-4edc-bbdc-6ce8ee2bf250`，100% 流量，scope 仍为 `tags,sitemap`。部署前后完整测试 `129/129`、聚焦缓存/路由测试 `48/48`、lint、TypeScript、生产 build、Wrangler types、deploy dry-run 和 `git diff --check` 均通过。
+- 随后提交候选配置 `1e08b71 chore: prepare popularity cache candidate`，仅将 `PUBLIC_DATA_CACHE_SCOPES` 累加为 `tags,sitemap,popularity`，上传版本 `895bdd3f-5f8f-4eca-88a3-2b50bed3e8ec`，tag `cache-popularity-20260731-2059`。候选部署为 stable 95% / candidate 5%，没有启用 `VIEW_DEDUPE_CACHE_ENABLED`，没有迁移或写入 D1。
+- 候选观测中，tail 过滤候选版本得到 42 个请求：HTTP 全为 200，`outcome=ok`，错误 0，CPU p50 `9 ms`、p99 `24 ms`、max `24 ms`；`exceededCpu` 没有可用的独立指标，因此该证据项也按缺失处理。重复 HTTP 请求的汇总为 `200 BYPASS=188`、`200 HIT=9`、`200 MISS=1`、`200 STALE-REFRESH=2`；候选响应正文仍为 SHA-256 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`，与 D1 对照的空数组一致。
+- 因候选 CPU p99 `24 ms >= 10 ms` 且 `exceededCpu` 证据缺失，立即按 R31 失败门禁回滚到 `963426a0-a73f-428e-89d7-84208429e111` 100%；回滚 deployment 为 `18e71f2b-f5c9-4c70-be85-0cf60b9ac0f9`，message 为 `cache: rollback popularity canary CPU p99 over 10ms`。后续 scope 晋级冻结；候选版本不再分配流量。
+- 回滚后仓库源配置、生成类型和生产断言均恢复 `tags,sitemap`；自动化保持 `PAUSED`。远程 D1 只读复核仍为六列兼容、`changes=0`、`changed_db=false`、`rows_written=0`，本轮没有 D1 写入。
 
 ## 11. 回滚点
 
