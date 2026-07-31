@@ -46,10 +46,18 @@ function validRow(overrides: Partial<Record<(typeof BULK_EVENT_HEADERS)[number],
     return BULK_EVENT_HEADERS.map((header) => values[header]);
 }
 
-test("模板只包含 BOM 和固定表头", () => {
+test("模板包含 BOM、固定表头和一条有效示范活动", async () => {
     const template = createBulkEventTemplate();
     assert.ok(template.startsWith("\uFEFF"));
-    assert.equal(template.slice(1), `${BULK_EVENT_HEADERS.join(",")}\r\n`);
+    assert.ok(template.slice(1).startsWith(`${BULK_EVENT_HEADERS.join(",")}\r\n`));
+
+    const result = await parseBulkEventCsv(new File([template], "events.csv"));
+    assert.equal(result.preview.valid, true);
+    assert.equal(result.events.length, 1);
+    assert.equal(result.events[0]?.event.title, "示例动漫嘉年华（导入前请修改或删除）");
+    assert.equal(result.events[0]?.event.type, "comic");
+    assert.equal(result.events[0]?.event.scale, "small");
+    assert.deepEqual(result.events[0]?.event.tags, ["动漫", "漫展"]);
 });
 
 test("CSV 支持中文标签、逗号、引号和多行字段", async () => {
@@ -104,7 +112,7 @@ test("CSV 强制使用模板表头和 20 条上限", async () => {
     );
 });
 
-test("CSV 拒绝无效 UTF-8、未闭合引号、空模板和非 CSV 扩展名", async () => {
+test("CSV 拒绝无效 UTF-8、未闭合引号、无数据模板和非 CSV 扩展名", async () => {
     await assert.rejects(
         () => parseBulkEventCsv(new File([new Uint8Array([0xff, 0xfe, 0xfd])], "events.csv")),
         /UTF-8/
@@ -117,7 +125,10 @@ test("CSV 拒绝无效 UTF-8、未闭合引号、空模板和非 CSV 扩展名",
         /CSV 格式无效/
     );
     await assert.rejects(
-        () => parseBulkEventCsv(new File([createBulkEventTemplate()], "events.csv")),
+        () =>
+            parseBulkEventCsv(
+                new File([`\uFEFF${BULK_EVENT_HEADERS.join(",")}\r\n`], "events.csv")
+            ),
         /至少需要包含 1 条活动/
     );
     await assert.rejects(

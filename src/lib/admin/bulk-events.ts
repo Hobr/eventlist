@@ -50,6 +50,32 @@ export const BULK_EVENT_COLUMNS = [
 
 export const BULK_EVENT_HEADERS = BULK_EVENT_COLUMNS.map(({ header }) => header);
 
+const BULK_EVENT_EXAMPLE: Record<AdminEventField, string> = {
+    title: "示例动漫嘉年华（导入前请修改或删除）",
+    type: "综合商业展",
+    scale: "小型 (100 - 1,000人)",
+    division_code: "110105",
+    venue: "示例国际会展中心",
+    address: "北京市朝阳区示例路 88 号",
+    start_date: "2026-10-01",
+    end_date: "2026-10-02",
+    start_time: "09:00",
+    end_time: "18:00",
+    cover_url: "https://example.com/cover.jpg",
+    description: "这是一条示范活动，请按实际情况修改",
+    qq_group: "123456789",
+    ticket_url: "https://example.com/tickets",
+    source_url: "https://example.com/source",
+    submitter_contact: "admin@example.com",
+    tags: "动漫、漫展",
+    organizer: "示例文化有限公司",
+    schedule_status: "",
+    admission_method: "购票",
+    price_range: "80-120 元",
+    admission_start_date: "2026-09-01",
+    admission_start_time: "10:00"
+};
+
 export interface BulkEventError {
     row: number | null;
     field: string | null;
@@ -196,8 +222,15 @@ export function bulkEventDuplicateKey(
     ]);
 }
 
+function serializeCsvRow(values: readonly string[]) {
+    return values
+        .map((value) => (/[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value))
+        .join(",");
+}
+
 export function createBulkEventTemplate() {
-    return `\uFEFF${BULK_EVENT_HEADERS.join(",")}\r\n`;
+    const example = BULK_EVENT_COLUMNS.map(({ field }) => BULK_EVENT_EXAMPLE[field]);
+    return `\uFEFF${serializeCsvRow(BULK_EVENT_HEADERS)}\r\n${serializeCsvRow(example)}\r\n`;
 }
 
 export async function parseBulkEventCsv(file: File): Promise<ParsedBulkEventCsv> {
