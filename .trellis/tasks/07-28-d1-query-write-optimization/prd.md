@@ -27,13 +27,13 @@
 
 ## Acceptance Criteria
 
-- [ ] A1. `EXPLAIN QUERY PLAN` 证明热门窗口与访客清理使用 `idx_event_visitors_recent`、sitemap 使用 `idx_events_status_updated` 且不再额外排序、精确地区列表仍使用 `idx_events_public_division`。
-- [ ] A2. 改写前后对同一份种子数据的完整结果、排序、分页和 3/7/30 日聚合逐项一致，中国本地时间口径不变。
-- [ ] A3. 详情访问不再触发任何清理语句；过期访客由每日 Cron 删除，Cron 延迟或失败不影响热门查询正确性与页面请求。
-- [ ] A4. `getDB()` 不执行任何 D1 statement，外键约束仍由 D1 默认行为与迁移声明生效（集成测试覆盖）。
-- [ ] A5. 公开首页、热门、列表、详情 DTO 均来自显式公开投影，不含 `submitter_contact`、`tag_suggestions`、`reject_reason` 或审计字段。
-- [ ] A6. 编辑活动的 D1 binding 调用固定为 2 次且不随标签数增长；未变化的 `event_tags` 关系不被删除重写；标签归并固定 2 次；状态变更 changed ≤ 2 次、冲突/幂等 ≤ 1 次。
-- [ ] A7. 状态机回归测试证明 changed / already-target / wrong-status / missing-tag / not-found 的响应码、审计条数与当前行为一致。
-- [ ] A8. 报告分别给出 binding 调用数、batch statements 数、D1 `meta.rows_read` / `rows_written` 的前后对比，不把"更少往返"记为"更少计费行"。
-- [ ] A9. 记录部署前后按路由的 CPU time p50/p99 与 `exceededCpu` 计数，作为子任务 B 的判断基线。
-- [ ] A10. `pnpm test`、`pnpm lint`、`tsc --noEmit`、`pnpm build` 全部通过。
+- [x] A1. `EXPLAIN QUERY PLAN` 证明热门窗口与访客清理使用 `idx_event_visitors_recent`、sitemap 使用 `idx_events_status_updated` 且不再额外排序、精确地区列表仍使用 `idx_events_public_division`。
+- [x] A2. 改写前后对同一份种子数据的完整结果、排序、分页和 3/7/30 日聚合逐项一致，中国本地时间口径不变。
+- [x] A3. 详情访问不再触发任何清理语句；过期访客由每日 Cron 删除，Cron 延迟或失败不影响热门查询正确性与页面请求。
+- [x] A4. `getDB()` 不执行任何 D1 statement，外键约束仍由 D1 默认行为与迁移声明生效（集成测试覆盖）。
+- [x] A5. 公开首页、热门、列表、详情 DTO 均来自显式公开投影，不含 `submitter_contact`、`tag_suggestions`、`reject_reason` 或审计字段。
+- [x] A6. 编辑活动的 D1 binding 调用固定为 2 次且不随标签数增长；未变化的 `event_tags` 关系不被删除重写；标签归并固定 2 次；状态变更 changed ≤ 2 次、冲突/幂等 ≤ 1 次。
+- [x] A7. 状态机回归测试证明 changed / already-target / wrong-status / missing-tag / not-found 的响应码、审计条数与当前行为一致。
+- [x] A8. 分别报告自动化合同中的 binding 调用数与 batch statements，以及生产 D1 `rows_read` / `rows_written` 观测；若没有同口径历史生产快照，必须明确记录限制，不得把"更少往返"记为"更少计费行"或虚构前后对比。
+- [x] A9. 记录可获得的按路由 CPU time p50/p99、调用 outcome 和 `exceededCpu` 可见性限制；按父任务 R31/R34 作为观测证据，不作为本次激活或子任务关闭门禁，也不得虚构缺失的部署前基线。
+- [x] A10. `pnpm test`、`pnpm lint`、`tsc --noEmit`、`pnpm build` 全部通过。
