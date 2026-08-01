@@ -57,7 +57,7 @@ export const GET: APIRoute = async ({ url }) => {
         return jsonOk(
             { popularity: result.value },
             {
-                headers: publicDataCacheResponseHeaders(result.cacheState, "private, max-age=15")
+                headers: publicDataCacheResponseHeaders(result.cacheState, "private, max-age=5")
             }
         );
     } catch {

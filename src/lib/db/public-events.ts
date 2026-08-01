@@ -5,6 +5,7 @@ import type {
     EventScheduleStatus,
     EventType
 } from "../events/options";
+import { isCanonicalDate } from "../events/datetime";
 import { requireD1Success, STATUS, type EventStatus } from "./index";
 
 export type EventSort = "start_asc" | "start_desc" | "end_desc";
@@ -136,14 +137,18 @@ export const PUBLIC_EVENT_SELECT = `
     LEFT JOIN tags ON tags.id = event_tags.tag_id AND tags.alias_of_id IS NULL
 `;
 
-export const EVENT_ENDED_CLAUSE = `(
-    events.end_date < date('now', '+8 hours')
+export function eventEndedClause(dateExpression = "date('now', '+8 hours')") {
+    return `(
+    events.end_date < ${dateExpression}
     OR (
-        events.end_date = date('now', '+8 hours')
+        events.end_date = ${dateExpression}
         AND events.end_time IS NOT NULL
         AND events.end_time <= time('now', '+8 hours')
     )
 )`;
+}
+
+export const EVENT_ENDED_CLAUSE = eventEndedClause();
 
 export function divisionFilter(column: string, divisionCode: string) {
     if (divisionCode.length === 6 || divisionCode.length === 12) {
@@ -206,18 +211,31 @@ export async function getPublicEvent(db: D1Database, id: number) {
 
 export async function listPublishedEvents(
     db: D1Database,
-    filters: PublishedEventFilters = {}
+    filters: PublishedEventFilters = {},
+    asOfDate?: string
 ): Promise<PublicEventPage> {
+    if (asOfDate !== undefined && !isCanonicalDate(asOfDate)) {
+        throw new RangeError("Event list date must be a canonical date");
+    }
     const page = Math.max(1, filters.page ?? 1);
     const pageSize = Math.min(50, Math.max(1, filters.pageSize ?? 20));
     const offset = (page - 1) * pageSize;
     const clauses = ["events.status = ?"];
-    const values: Array<number | string> = [STATUS.PUBLISHED];
+    const values: Array<number | string> = [
+        ...(asOfDate === undefined ? [] : [asOfDate]),
+        STATUS.PUBLISHED
+    ];
+    const clockPrefix =
+        asOfDate === undefined ? "" : "WITH cache_clock(as_of_date) AS (VALUES (?))";
+    const endedClause =
+        asOfDate === undefined
+            ? EVENT_ENDED_CLAUSE
+            : eventEndedClause("(SELECT as_of_date FROM cache_clock)");
 
     if (filters.timing === "ended") {
-        clauses.push(EVENT_ENDED_CLAUSE);
+        clauses.push(endedClause);
     } else if (filters.timing !== "all") {
-        clauses.push(`NOT ${EVENT_ENDED_CLAUSE}`);
+        clauses.push(`NOT ${endedClause}`);
     }
 
     if (filters.divisionCode) {
@@ -278,7 +296,8 @@ export async function listPublishedEvents(
             : `events.start_date ${effectiveSort === "start_desc" ? "DESC" : "ASC"}, events.id ${effectiveSort === "start_desc" ? "DESC" : "ASC"}`;
     const result = await db
         .prepare(
-            `${PUBLIC_EVENT_SELECT}
+            `${clockPrefix}
+             ${PUBLIC_EVENT_SELECT}
              WHERE ${clauses.join(" AND ")}
              GROUP BY events.id
              ORDER BY ${orderBy}

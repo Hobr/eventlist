@@ -28,6 +28,8 @@ export const POST: APIRoute = async ({ params, url }) => {
                 configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
                 kind: "status",
                 impact: result.impact,
+                zoneId: runtimeEnv.CLOUDFLARE_ZONE_ID,
+                purgeToken: runtimeEnv.CLOUDFLARE_CACHE_PURGE_TOKEN,
                 waitUntil
             });
         }

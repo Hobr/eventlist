@@ -1,9 +1,11 @@
 import type { D1Database } from "../../types/cloudflare";
 import type { PopularityWindow } from "../events/popularity";
+import { isCanonicalDate } from "../events/datetime";
 import { requireD1Success, STATUS } from "./index";
 import {
     divisionFilter,
     EVENT_ENDED_CLAUSE,
+    eventEndedClause,
     mapPublicEventRow,
     PUBLIC_EVENT_COLUMNS,
     PUBLIC_EVENT_SELECT,
@@ -47,21 +49,37 @@ function mapPopularEvent(event: PopularEventDatabaseRow): PopularEvent {
 
 export async function listHomepageDiscovery(
     db: D1Database,
-    divisionCode: string
+    divisionCode: string,
+    asOfDate?: string
 ): Promise<HomepageDiscovery> {
+    if (asOfDate !== undefined && !isCanonicalDate(asOfDate)) {
+        throw new RangeError("Homepage date must be a canonical date");
+    }
     const division = divisionFilter("events.division_code", divisionCode);
+    const clockPrefix =
+        asOfDate === undefined ? "" : "WITH cache_clock(as_of_date) AS (VALUES (?))";
+    const dateExpression =
+        asOfDate === undefined ? "date('now', '+8 hours')" : "(SELECT as_of_date FROM cache_clock)";
+    const futureDateExpression =
+        asOfDate === undefined
+            ? "date('now', '+8 hours', '+14 days')"
+            : `date(${dateExpression}, '+14 days')`;
+    const endedClause =
+        asOfDate === undefined ? EVENT_ENDED_CLAUSE : eventEndedClause(dateExpression);
+    const bindPrefix = asOfDate === undefined ? [] : [asOfDate];
     const [featuredResult, todayResult] = await db.batch<PublicEventDatabaseRow>([
         db
             .prepare(
-                `${PUBLIC_EVENT_SELECT}
+                `${clockPrefix}
+                 ${PUBLIC_EVENT_SELECT}
                  WHERE events.status = ?
-                   AND NOT ${EVENT_ENDED_CLAUSE}
+                   AND NOT ${endedClause}
                    AND ${division.clause}
-                   AND events.start_date <= date('now', '+8 hours', '+14 days')
+                   AND events.start_date <= ${futureDateExpression}
                  GROUP BY events.id
                  ORDER BY CASE
-                              WHEN events.start_date < date('now', '+8 hours') THEN 0
-                              WHEN events.start_date = date('now', '+8 hours')
+                              WHEN events.start_date < ${dateExpression} THEN 0
+                              WHEN events.start_date = ${dateExpression}
                                AND (
                                    events.start_time IS NULL
                                    OR events.start_time <= time('now', '+8 hours')
@@ -74,33 +92,34 @@ export async function listHomepageDiscovery(
                           events.id ASC
                  LIMIT 5`
             )
-            .bind(STATUS.PUBLISHED, division.value),
+            .bind(...bindPrefix, STATUS.PUBLISHED, division.value),
         db
             .prepare(
-                `${PUBLIC_EVENT_SELECT}
+                `${clockPrefix}
+                 ${PUBLIC_EVENT_SELECT}
                  WHERE events.status = ?
                    AND ${division.clause}
-                   AND events.start_date <= date('now', '+8 hours')
-                   AND events.end_date >= date('now', '+8 hours')
+                   AND events.start_date <= ${dateExpression}
+                   AND events.end_date >= ${dateExpression}
                  GROUP BY events.id
                  ORDER BY CASE
-                              WHEN events.start_date < date('now', '+8 hours') THEN 0
+                              WHEN events.start_date < ${dateExpression} THEN 0
                               ELSE 1
                           END ASC,
                           CASE
-                              WHEN events.start_date = date('now', '+8 hours')
+                              WHEN events.start_date = ${dateExpression}
                                AND events.start_time IS NOT NULL THEN 0
                               ELSE 1
                           END ASC,
                           CASE
-                              WHEN events.start_date = date('now', '+8 hours')
+                              WHEN events.start_date = ${dateExpression}
                               THEN events.start_time
                           END ASC,
                           ${EVENT_SCALE_ORDER} DESC,
                           events.id ASC
                  LIMIT 10`
             )
-            .bind(STATUS.PUBLISHED, division.value)
+            .bind(...bindPrefix, STATUS.PUBLISHED, division.value)
     ]);
 
     const featuredEvents =

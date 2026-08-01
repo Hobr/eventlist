@@ -1,68 +1,131 @@
 # Technical Design
 
-## 0. 本文件的定位
+## 1. Architecture
 
-本子任务的完整技术设计**不在此处复制**，以父任务为准：
+保留现有 `eventlist-public-data-v2` Cache API 读穿层，不迁移整页缓存或 Workers Caching。变更分为四部分：
 
-`.trellis/tasks/07-28-d1-cache-strategy/design.md`
+1. 为 Cache API response 附加固定 `Cache-Tag`。
+2. 管理员 D1 mutation 成功后，在现有本地 `cache.delete()` 之外调度一次 Cloudflare Cache Purge API 请求。
+3. 调整热门与非热门 DTO 的 TTL。
+4. 为首页发现和活动列表缓存键加入中国本地日期。
 
-| 主题 | 父设计章节 |
+D1 仍是唯一事实来源。缓存和 purge 都是可失败的优化层。
+
+## 2. Cache Tags
+
+缓存条目使用低基数、固定 ASCII tag：
+
+| Scope | Required tag |
 | --- | --- |
-| 免费方案额度排序、Cache API 部署前提、CPU 与 subrequest 预算 | §0 - §0.3 |
-| 缓存边界、命名空间、公开 DTO 与键规范化 | §2 - §4 |
-| 新鲜/正常陈旧/故障陈旧状态机与并发回源控制 | §5 - §6 |
-| 热度当日成功标记与请求流程 | §7.1 - §7.4、§7.6 |
-| 失败降级与用户可见行为 | §8 |
-| 写后失效与地区祖先前缀展开 | §9、§9.1 |
-| 路由集成、可观测性、分阶段发布与回滚 | §12 - §14 |
-| 未采用方案及其现行依据 | §15 |
+| `homepage` | `eventlist-homepage` |
+| `popularity` | `eventlist-popularity` |
+| `tags` | `eventlist-tags` |
+| `detail` | `eventlist-detail` |
+| `sitemap` | `eventlist-sitemap` |
+| `list` | `eventlist-list` |
 
-本文件只记录属于子任务 B 的增量决策。父设计中任何决策变更都改父文件，不在此处重述。
+详情可附加 `eventlist-detail-{id}` 供未来精确 purge，但本次全局正确性使用低基数 scope tag。管理员写入频率低，CRUD 后 broad scope purge 比维护不可枚举的列表/标签键索引更简单可靠。
 
-## 1. 前置条件（阻断）
+`writePublicDataCache()` 接收由受测 adapter 提供的 tag 列表，把去重后的值写入 `Cache-Tag` response header。helper 只接受代码生成的 tag，不接收请求头、原始查询字符串或任意用户文本。
 
-1. Worker 绑定自定义域名 `acg.hobr.site`。
-2. 在 `https://acg.hobr.site` 上的探针证明 `cache.put()` 后 `cache.match()` 命中（父实施 §0.1）。
-3. 子任务 `07-28-d1-query-write-optimization` 已上线并取得连续 3 个完整 24 小时指标窗口，其 `rows_read`、Worker 请求与 CPU 实测数据可用。
+## 3. Global Purge Client
 
-这些条件阻断的是**路由接入和生产激活**，不阻断默认关闭、无全局 Cache API 副作用的纯基础代码。公开 DTO 缓存层保留为 feature-flagged 能力；当容量收益不足或 CPU 不满足门禁时延后激活，不取消。
+新增可注入测试的 Cloudflare purge client：
 
-## 2. 继承自子任务 A 的接缝
+```text
+POST https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/purge_cache
+Authorization: Bearer {CLOUDFLARE_CACHE_PURGE_TOKEN}
+Content-Type: application/json
 
-A 已经交付以下接口，本子任务直接消费，不得重构：
+{"tags":[...]}
+```
 
-- 管理写入操作函数返回的 `MutationImpact`（活动 ID、旧/新地区、旧/新状态、`tagsChanged`）——失效 helper 的唯一输入，不得提交后回读 D1。
-- 纯可序列化的公开 DTO（`PublicEventPage`、`PublicEventDetail` 等）——envelope 的缓存值。
-- `recordEventView()` 的三态返回 `changed | already-current | ignored`——`ignored` 时禁止写标记。
-- 各自独立、签名为 `(db, 规范化参数) => Promise<DTO>` 的 loader——读穿缓存原样包一层。
+Runtime 配置：
 
-## 3. 执行清单
+- `CLOUDFLARE_ZONE_ID`：普通 Wrangler var。
+- `CLOUDFLARE_CACHE_PURGE_TOKEN`：Worker secret，只授予目标 zone 的 `Cache Purge: Edit`。
 
-本子任务继续使用父任务 `implement.md` 作为执行清单。首个 preflight slice 只实现规范键、envelope 解析、TTL 状态边界、严格默认关闭的 scope 解析和注入式最小存储接口；后续 Phase 2 已完成稳定抖动、读穿 loader、`waitUntil()`、并发合并、`homepage,popularity,detail,list` 路由接入和写后失效，但四个新增 scope 仍保持生产关闭。热度标记和外部自动控制器尚未实现。
+每个 changed 管理 mutation 将本地 delete work 与一个全局 purge work 合并进同一个 `waitUntil()`。purge tag 先去重并保持固定顺序；单次 mutation 最多一个 HTTP 请求，避免撞击免费方案 5 次/分钟限制。
 
-## 4. 2026-07-31 前置条件审计（历史快照）
+默认采用安全的 broad 映射：
 
-本节保留首次审计时的阻断状态。此后真实 hostname 探针已通过并删除，`tags,sitemap` 获得一次性提前 pilot；最新生产证据和回滚版本以父任务 `implement.md` 的“`tags,sitemap` 提前 pilot”记录为准。该例外没有扩展到四个新增 scope。
+- 创建、批量创建、编辑或公开状态变化：purge 全部六个公开 DTO scope tag。
+- 标签归并：按批准的保守映射 purge `homepage,popularity,tags,detail,list`，不让正确性依赖当前热门榜公开投影是否展示标签。`src/lib/db/admin-events.ts` 的归并 SQL 只修改 `event_tags.tag_id` 与 `tags.alias_of_id`，不更新 `events.updated_at` 或活动 URL，因此不 purge sitemap。
+- 成功驳回 pending、冲突、already-target、校验失败、404 和公共 pending 投稿：不 purge。
 
-- **自定义 hostname：功能上已满足，配置记录未满足。** `https://acg.hobr.site` 返回 200，定向 Workers tail 证明请求由 `eventlist` 当前版本处理；但 `wrangler.jsonc` 没有 `routes` / Custom Domain 记录，绑定仍只存在于 Cloudflare 侧配置。
-- **真实 Cache API 探针：未满足。** 当前产品源码没有任何 `caches.open()` / `cache.put()`，生产 hostname 也没有可用探针证据。不得用本地 Miniflare 结果替代。
-- **子任务 A 的正常流量观察：未满足。** 已取得一次 D1 24 小时滚动快照和短时 CPU tail，但没有上线前同口径基线，也尚未观察完一个正常流量周期。
-- **启动结论：只进入默认关闭的 preflight 实现，生产激活继续延后。** 当前 D1 `rows_read=2569/24h`，约为 5,000,000 日额度的 0.05%；与此同时活动列表 CPU p50/p99 为 126/193 ms，首页为 15/63 ms，已越过父设计的 10 ms 门禁。现有证据不支持任何公开 DTO scope 生产 pilot。
-- 先累计连续 3 个完整 24 小时窗口并重取 D1、Worker 请求和路由 CPU 指标。真实 hostname 探针在 `acg.hobr.site` 证明 `put` 后 `match` 命中之前，`PUBLIC_DATA_CACHE_SCOPES` 必须缺失或为空，任何路由不得调用 Cache API。
+全局 tag 映射不按当前 `PUBLIC_DATA_CACHE_SCOPES` 裁剪。scope 关闭只禁止读取和本地 Cache API 操作；mutation 仍 purge 完整受影响 tag 集合，防止长 TTL 旧条目在后续重新启用 scope 时恢复可见。
 
-## 5. 激活阈值
+全局 purge 失败时：
 
-- 公开 DTO pilot：连续 3 个完整 24 小时窗口的 D1 `rows_read` 均不低于 500,000（免费日额度的 10%），或已观察到可归因于 D1 公开读取的持续延迟/错误压力。
-- 热度标记评审：连续 3 个完整 24 小时窗口的 Worker 请求均不低于 25,000（免费日额度的 25%），且详情统计 POST 占比足以形成可测收益。该阈值不用于证明公开 DTO 缓存收益。
-- CPU 门禁：候选 scope 的路由级正常流量 CPU p99 必须低于 10 ms，且 `exceededCpu` 为 0；否则继续延后。提前 pilot 必须记录具体路由的延迟或错误证据及预期缓解机制。
-- 通用门禁：`wrangler.jsonc` 记录真实 hostname 路由，自定义 hostname `put` / `match` 探针通过，开关关闭时路由合同与 D1 直读保持一致。
+- 不抛回管理路由，不更改其 HTTP 状态或 JSON envelope。
+- 保留当前数据中心的本地 delete 尝试。
+- 输出结构化日志 `{ event: "public_cache_global_purge", status, kind, tags, code? }`，不得输出 token、Authorization header 或完整 Cloudflare response body。
+- 依赖正常 TTL 最终收敛。
 
-## 6. 发布顺序和回滚
+## 4. TTL Policy
 
-1. 部署 preflight 基础，保持 `PUBLIC_DATA_CACHE_SCOPES` 缺失或为空；这一步不打开 Cache API。
-2. 门禁通过后先 pilot `tags,sitemap`，观察一个完整正常流量周期的命中率、D1、CPU 和错误。
-3. 外部控制面严格按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope。
-4. `list` 仅在第 1-3 页具有可测重复命中、CPU 有余量且前序 scope 稳定时启用。
-5. 热度标记按独立阈值、开关和验收单独发布。
+| Data | Fresh | Normal limit | D1 fault limit |
+| --- | --- | --- | --- |
+| Popularity | stable jitter 45-55 seconds | 60 seconds | 5 minutes |
+| Homepage discovery | 30 minutes | 30 minutes | 48 hours |
+| Event list | 30 minutes | 30 minutes | 48 hours |
+| Event detail | 6 hours | 6 hours | 48 hours |
+| Tags/search | 30 minutes | 30 minutes | 48 hours |
+| Sitemap | 6 hours | 6 hours | 48 hours |
 
-单 scope 回滚是从 `PUBLIC_DATA_CACHE_SCOPES` 删除对应值；全量回滚是清空变量。解析器对缺失、空值或任一未知 token 严格 fail closed 为全关闭，避免拼写错误造成部分激活。回滚后所有路由直接读取 D1，不删除或恢复 D1 数据。
+非热门 DTO 的 fresh 与 normal 边界相同，因此正常期间不会进入 `STALE-REFRESH`。首页、列表和标签在 30 分钟到期后同步回源，详情和 sitemap 在 6 小时到期后同步回源。只有 D1 故障时才能在 48 小时内返回 `STALE-IF-ERROR`。
+
+热门榜保留当前状态机：45-55 秒后先返回旧值并后台刷新，60 秒后同步回源。`/api/popularity` 私有浏览器缓存不超过 5 秒。访问统计写入不 purge 热门榜，避免每个访客制造刷新风暴。
+
+## 5. Date-Sensitive Keys
+
+首页 `today` 与活动列表 `timing` 依赖中国本地日期。将 `asOfDate` 加入以下规范键：
+
+```text
+home-discovery?division=31&date=2026-08-01
+event-list?...&date=2026-08-01
+```
+
+日期来自共享 `getChinaLocalDate()`，不是浏览器时区或请求字符串。adapter 在生成键和执行 D1 loader 前读取一次日期，保证同一次 load 不跨日期。DTO guard 继续验证地区和分页身份。
+
+热门榜会在 60 秒内回源，允许沿用现有地区+窗口键；详情和 sitemap 不依赖自然日期。首页、活动列表和标签查询仍受当前时间影响，因此分别使用 30 分钟正常 TTL；首页和活动列表另外将中国本地日期加入规范键。
+
+## 6. Route Integration
+
+现有所有公开路由继续复用 `loadCached*` adapter。仅改变 adapter 传入的 TTL、tag 和日期参数；不复制缓存逻辑到页面。
+
+现有八个管理 mutation 路由继续调用 `schedulePublicDataInvalidation()`。该 helper 扩展为同时调度：
+
+- 当前数据中心的 bounded `cache.delete()`；
+- 全局 Cache-Tag purge。
+
+路由只需传入已取得的 `runtimeEnv` 配置，不自行构造 Authorization header 或 purge body。
+
+## 7. Compatibility And Security
+
+- 不改变 namespace/schema；TTL 和 tag 不改变 payload 解析合同，部署前已有条目按旧 TTL 自然失效或被新版本冷启动隔离。
+- token 只存 Worker secret；`.dev.vars.example` 只声明空键名。
+- zone ID 可以进入 `wrangler.jsonc`，但必须由实时 Cloudflare 账户查询确认。
+- purge client 只访问固定 Cloudflare API origin，zone ID 必须匹配 Cloudflare ID 格式，禁止接受任意 URL。
+- Cache-Tag 只使用代码常量；Cloudflare 会在对客户端响应前移除该 header。
+- 不授予生产 Worker Workers Scripts、D1 管理或其他账户写权限。
+
+## 8. Verification
+
+自动测试覆盖 TTL 边界、跨日期键、tag 写入、purge 请求合同、tag 去重、零/单请求预算和全部失败降级。
+
+生产验证顺序：
+
+1. 确认工作树、当前版本、zone ID、最小权限 token 和上一稳定版本。
+2. 部署前运行全量质量命令和 dry-run。
+3. 将 scope 一次设置为六项并部署 100%。
+4. 对首页、热门 API、标签、列表、详情和 sitemap 验证 `MISS -> HIT` 与正文哈希一致。
+5. 使用可恢复的受控管理员编辑触发 purge，确认 Cloudflare API 成功、相关公开 route 重新 `MISS` 且 D1 投影一致；恢复测试数据后再次 purge。
+6. 确认旧自动晋级控制器仍为暂停状态。
+
+## 9. Rollback
+
+- 逻辑回滚：恢复上一 Worker Version 100%。
+- 缓存回滚：将 `PUBLIC_DATA_CACHE_SCOPES` 恢复为 `tags,sitemap` 或清空；旧条目不会在关闭 scope 后被读取。
+- purge 配置回滚：移除 `CLOUDFLARE_CACHE_PURGE_TOKEN` 和 zone var；本地 delete 与 TTL 仍保证最终收敛。
+- D1 无迁移、无缓存事实写入，不需要数据库恢复。

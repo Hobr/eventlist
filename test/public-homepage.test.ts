@@ -272,7 +272,7 @@ test("首页快照 API 严格校验参数并以一次全有或全无响应提交
     assert.match(source, /getRegionOptionByCode\(city\)/);
     assert.match(source, /Promise\.all\(\[/);
     assert.match(source, /loadCachedHomepageDiscovery\(\{/);
-    assert.match(source, /listHomepageDiscovery\(db, city\)/);
+    assert.match(source, /listHomepageDiscovery\(db, city, asOfDate\)/);
     assert.match(source, /loadCachedHomepagePopularity\(\{/);
     assert.match(source, /listHomepagePopularity\(db, city, window\)/);
     assert.match(source, /const homepage: PublicHomepageData =/);

@@ -1,6 +1,7 @@
 import { STATUS } from "../db";
 import type { MutationImpact } from "../db/admin-events";
 import { isRegionCode } from "../divisions";
+import { getChinaLocalDate } from "../events/datetime";
 import {
     openPublicDataCacheInvalidationStore,
     type PublicDataCacheInvalidationStore
@@ -9,9 +10,16 @@ import {
     buildPublicDataCacheRequest,
     isPublicDataCacheEnabled,
     parsePublicDataCacheScopes,
+    PUBLIC_DATA_CACHE_SCOPES,
+    PUBLIC_DATA_CACHE_TAGS,
     type PublicDataCacheScope,
     type PublicDataCacheWaitUntil
 } from "./public-data";
+import {
+    purgePublicDataCacheTags,
+    type PublicDataCachePurgeFetch,
+    type PublicDataCachePurgeLogger
+} from "./purge";
 
 export const PUBLIC_DATA_CACHE_INVALIDATION_LIMIT = 24;
 
@@ -30,6 +38,10 @@ interface PublicDataCacheInvalidationOptions {
     kind: PublicDataMutationKind;
     impact: MutationImpact;
     getStore?: () => Promise<PublicDataCacheInvalidationStore>;
+    zoneId?: string;
+    purgeToken?: string;
+    purgeFetch?: PublicDataCachePurgeFetch;
+    purgeLogger?: PublicDataCachePurgeLogger;
 }
 
 interface ScheduledPublicDataCacheInvalidationOptions extends PublicDataCacheInvalidationOptions {
@@ -60,9 +72,11 @@ export function buildPublicDataInvalidationRequests(options: {
     scopes: ReadonlySet<PublicDataCacheScope>;
     kind: PublicDataMutationKind;
     impact: MutationImpact;
+    asOfDate?: string;
 }) {
     const requests = new Map<string, Request>();
     const { impact, kind, origin, scopes } = options;
+    const asOfDate = options.asOfDate ?? getChinaLocalDate();
     const invalidateDetail =
         kind === "merge" || ((kind === "edit" || kind === "status") && affectsPublicDetail(impact));
     const invalidatePublishedAggregates = kind === "create" || affectsPublishedAggregates(impact);
@@ -81,7 +95,8 @@ export function buildPublicDataInvalidationRequests(options: {
                     requests,
                     buildPublicDataCacheRequest(origin, {
                         resource: "home-discovery",
-                        divisionCode
+                        divisionCode,
+                        asOfDate
                     })
                 );
             }
@@ -136,6 +151,23 @@ export function buildPublicDataInvalidationRequests(options: {
     };
 }
 
+export function buildPublicDataPurgeTags(options: {
+    kind: PublicDataMutationKind;
+    impact: MutationImpact;
+}) {
+    const { kind, impact } = options;
+    const affectsPublicData = [impact.oldStatus, impact.newStatus].some(
+        (status) => status === STATUS.PUBLISHED || status === STATUS.OFFLINE
+    );
+    if (kind !== "create" && kind !== "merge" && !affectsPublicData) return [];
+
+    const allowedScopes =
+        kind === "merge"
+            ? PUBLIC_DATA_CACHE_SCOPES.filter((scope) => scope !== "sitemap")
+            : [...PUBLIC_DATA_CACHE_SCOPES];
+    return allowedScopes.map((scope) => PUBLIC_DATA_CACHE_TAGS[scope]);
+}
+
 export async function invalidatePublicDataAfterMutation(
     options: PublicDataCacheInvalidationOptions
 ): Promise<PublicDataCacheInvalidationResult> {
@@ -146,39 +178,66 @@ export async function invalidatePublicDataAfterMutation(
         kind: options.kind,
         impact: options.impact
     });
-    if (built.requests.length === 0) {
-        return { attempted: 0, deleted: 0, failed: 0, truncated: built.truncated };
-    }
+    const localInvalidation = (async (): Promise<PublicDataCacheInvalidationResult> => {
+        if (built.requests.length === 0) {
+            return { attempted: 0, deleted: 0, failed: 0, truncated: built.truncated };
+        }
 
-    let store: PublicDataCacheInvalidationStore;
-    try {
-        store = await (options.getStore ?? openPublicDataCacheInvalidationStore)();
-    } catch {
+        let store: PublicDataCacheInvalidationStore;
+        try {
+            store = await (options.getStore ?? openPublicDataCacheInvalidationStore)();
+        } catch {
+            return {
+                attempted: built.requests.length,
+                deleted: 0,
+                failed: built.requests.length,
+                truncated: built.truncated
+            };
+        }
+
+        const results = await Promise.allSettled(
+            built.requests.map((request) => store.delete(request))
+        );
+        let deleted = 0;
+        let failed = 0;
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value) deleted += 1;
+            } else {
+                failed += 1;
+            }
+        }
+
         return {
             attempted: built.requests.length,
-            deleted: 0,
-            failed: built.requests.length,
+            deleted,
+            failed,
             truncated: built.truncated
         };
-    }
+    })();
 
-    const results = await Promise.allSettled(
-        built.requests.map((request) => store.delete(request))
-    );
-    let deleted = 0;
-    let failed = 0;
-    for (const result of results) {
-        if (result.status === "fulfilled") {
-            if (result.value) deleted += 1;
-        } else {
-            failed += 1;
-        }
-    }
+    const purgeTags = buildPublicDataPurgeTags({
+        kind: options.kind,
+        impact: options.impact
+    });
+    const globalPurge =
+        purgeTags.length > 0
+            ? purgePublicDataCacheTags({
+                  zoneId: options.zoneId,
+                  token: options.purgeToken,
+                  tags: purgeTags,
+                  kind: options.kind,
+                  fetchImpl: options.purgeFetch,
+                  logger: options.purgeLogger
+              })
+            : Promise.resolve();
 
+    const [localResult] = await Promise.allSettled([localInvalidation, globalPurge]);
+    if (localResult.status === "fulfilled") return localResult.value;
     return {
         attempted: built.requests.length,
-        deleted,
-        failed,
+        deleted: 0,
+        failed: built.requests.length,
         truncated: built.truncated
     };
 }

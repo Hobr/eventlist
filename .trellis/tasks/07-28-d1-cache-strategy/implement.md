@@ -1,6 +1,23 @@
 # Implementation Plan
 
-## 0. 启动前门禁
+## 0. 2026-08-01 当前生效执行计划
+
+> 本节与子任务 `07-28-public-dto-cache-layer` 的现行合同覆盖下方所有冲突的容量、CPU、逐 scope canary、自动晋级、短 TTL 和仅本地失效指令。下方未同步的旧清单与 dated rollout 记录仅作为历史证据，不得用于判断当前生产状态、阻断或改变本次执行。
+
+- [ ] 用户批准最新最终规划摘要后，启动子任务 `07-28-public-dto-cache-layer`；父任务本身不作为本轮产品代码实现目标。
+- [ ] 启动后先运行 `trellis-before-dev`，保留共享工作区和并发任务的既有改动。
+- [ ] 为六类 Cache API 条目写入固定 scope `Cache-Tag`，将首页发现和活动列表键加入同一次 loader 使用的中国本地日期。
+- [ ] 将 `popularity` 调整为 45-55 秒稳定抖动新鲜期、60 秒正常上限、5 分钟 D1 故障上限，并将 `/api/popularity` 私有浏览器缓存降到 5 秒；首页、列表和标签调整为 30 分钟新鲜/正常上限，详情和 sitemap 调整为 6 小时新鲜/正常上限，五类均保留 48 小时 D1 故障上限。
+- [ ] 扩展现有写后失效：保留最多 24 次本地 `cache.delete()`，并在公开数据发生 changed mutation 后最多调度一次 Cloudflare zone Cache-Tag purge。
+- [ ] 创建、批量创建、编辑、审核通过、下线和重新发布 purge 全部六个 scope tag；标签归并 purge `homepage,popularity,tags,detail,list`，不 purge sitemap；成功驳回 pending、公共投稿、访问统计和非 changed 结果不 purge。
+- [ ] purge 使用 `CLOUDFLARE_ZONE_ID` 与最小权限 `CLOUDFLARE_CACHE_PURGE_TOKEN`；任何配置、网络、限流或 Cloudflare 结果失败均不得回滚 D1 或改变成功管理响应。
+- [ ] 运行缓存 TTL、日期键、tag、purge 请求合同、失败降级、失效映射和现有回归测试，再运行完整 test、lint、TypeScript、生产 build、Wrangler types、deploy dry-run 与 `git diff --check`。
+- [ ] 人工确认 zone ID、Cache Purge-only token、上一稳定 Worker Version 和旧自动控制器仍暂停后，将 `PUBLIC_DATA_CACHE_SCOPES` 一次设置为 `homepage,popularity,tags,detail,sitemap,list` 并部署 100%。CPU、D1 用量和 `exceededCpu` 只记录为观测证据，不作为激活门禁。
+- [ ] 在线验证六类路由正文一致与 `MISS -> HIT`，再用可恢复管理员 mutation 验证全局 purge 后重新 `MISS`；失败时恢复上一 Worker Version 或将 scope 恢复为 `tags,sitemap`/空值，不修改 D1 schema 或事实数据。
+
+## H0. 历史启动门禁（已被 §0 覆盖）
+
+> 本节保留 2026-07-31 及更早的决策记录。其 CPU、容量和启动顺序不再是当前实施要求。
 
 - [ ] 用户明确批准本次最终规划摘要后，才运行 `task.py start`。
 - [ ] 记录工作区现有改动，保留并避开本任务之外的用户文件；不得覆盖当前 `pnpm-lock.yaml` 改动。
@@ -89,7 +106,7 @@
 
 ### 4.1 默认关闭的 preflight slice
 
-- [x] 复用现有公开 DTO 类型，建立先行版本 `eventlist-public-data-v1` 常量与版本化、固定字段顺序的合成 GET 键；请求不继承 Cookie、Authorization 或原始查询字符串。详情字段扩展随后将源码 namespace/schema 提升为 v2/2，当前生产 pilot 仍运行隔离部署的 v1。
+- [x] 复用现有公开 DTO 类型，建立先行版本 `eventlist-public-data-v1` 常量与版本化、固定字段顺序的合成 GET 键；请求不继承 Cookie、Authorization 或原始查询字符串。详情字段扩展随后将源码 namespace/schema 提升为 v2/2；当时的生产 pilot 运行隔离部署的 v1，现行生产状态以 2026-08-01 部署记录为准。
 - [x] 实现 `CachedEnvelope<T>` 创建/解析与 fresh、normal-stale、fault-stale、hard-expired 边界分类；损坏、版本错误或时间边界倒置的条目按 miss 处理。
 - [x] 实现 `PUBLIC_DATA_CACHE_SCOPES` 严格解析：缺失、空值或任一未知 token 均 fail closed 为全关闭。
 - [x] 建立注入式 `PublicDataCacheStore` 最小接口及异常安全 read/write helper；scope 关闭时不调用 `match` / `put`。
@@ -179,7 +196,7 @@ git diff --check
 - [ ] 使用 `astro dev logs` 检查没有 Secret、原始 IP 或完整 D1 记录进入日志。
 - [ ] 完成后运行 `astro dev stop`。
 
-## 10. 发布和监控
+## 10. 历史发布和监控（已被 §0 覆盖）
 
 - [x] 先以空 `PUBLIC_DATA_CACHE_SCOPES` 且关闭 `VIEW_DEDUPE_CACHE_ENABLED` 部署数据库接口收口、查询优化、自定义入口、Cron 和缓存代码。
 - [ ] 记录部署前 D1 `rows_read` / `rows_written`、Worker 总请求、统计 POST 和错误基线；确认 D1 Free 写入行包含索引成本。
@@ -192,7 +209,7 @@ git diff --check
 - [ ] 只有列表重复请求能提供有意义命中率时才启用 `list`。
 - [ ] 命中率低、错误上升或地区/状态错误时立即清空 scope；不需要数据库回滚。
 
-### 10.1 自动扩大到其他 scope
+### 10.1 历史自动扩大到其他 scope（控制器保持暂停）
 
 - [x] 为 `popularity`、`homepage`、`detail`、`list` 分别完成缓存 loader、DTO guard、规范键、TTL、错误降级、响应状态和路由接入；不得只修改环境变量。
 - [x] 首页 SSR 保持发现/热门 `Promise.allSettled()` 独立错误隔离；`/api/homepage` 保持全有或全无；`/api/popularity` 复用相同热门 loader。
@@ -261,6 +278,23 @@ git diff --check
 - 候选观测中，tail 过滤候选版本得到 42 个请求：HTTP 全为 200，`outcome=ok`，错误 0，CPU p50 `9 ms`、p99 `24 ms`、max `24 ms`；`exceededCpu` 没有可用的独立指标，因此该证据项也按缺失处理。重复 HTTP 请求的汇总为 `200 BYPASS=188`、`200 HIT=9`、`200 MISS=1`、`200 STALE-REFRESH=2`；候选响应正文仍为 SHA-256 `14686e102e42cec920088d969feb11bf0f8d001d26400cd7832511a448825ebc`，与 D1 对照的空数组一致。
 - 因候选 CPU p99 `24 ms >= 10 ms` 且 `exceededCpu` 证据缺失，立即按 R31 失败门禁回滚到 `963426a0-a73f-428e-89d7-84208429e111` 100%；回滚 deployment 为 `18e71f2b-f5c9-4c70-be85-0cf60b9ac0f9`，message 为 `cache: rollback popularity canary CPU p99 over 10ms`。后续 scope 晋级冻结；候选版本不再分配流量。
 - 回滚后仓库源配置、生成类型和生产断言均恢复 `tags,sitemap`；自动化保持 `PAUSED`。远程 D1 只读复核仍为六列兼容、`changes=0`、`changed_db=false`、`rows_written=0`，本轮没有 D1 写入。
+
+### 2026-08-01 六个公开 DTO scope 生产激活
+
+- `wrangler secret list` 确认 `CLOUDFLARE_CACHE_PURGE_TOKEN`、`TURNSTILE_SECRET` 和 `VIEW_HASH_SECRET` 三个 secret 名称存在，未读取或输出 secret 值。新增 purge secret 后，部署前 100% 基线变为 secret-triggered version `210dcb4f-3d9c-4199-a64b-c5d97d2a5be8`；回滚命令为 `corepack pnpm exec wrangler rollback 210dcb4f-3d9c-4199-a64b-c5d97d2a5be8 --message "cache: rollback public DTO cache deployment"`。
+- 部署前完整门禁通过：`corepack pnpm test` 为 `135/135`，lint、`tsc --noEmit`、生产 build、`wrangler types --check`、deploy dry-run 和 `git diff HEAD --check` 均成功。dry-run 绑定包含 D1、Assets、Images、SESSION、完整 `homepage,popularity,tags,detail,sitemap,list` scope 和 zone ID。
+- 使用 message `cache: activate six public DTO scopes with global tag purge` 部署 version `5864145e-3824-4ea8-9c80-eded7ec88e0f`；deployment `b4be4c0b-de3f-4e82-b7f5-08405b0beb57` 只分配该版本 `100%` 流量。部署后再次查询仍为同一版本 100%。
+- 真实 hostname 重复请求均在 `SIN` 数据中心完成，正文逐字节一致：`/api/homepage?city=11&trend=30` 为 `200 MISS -> HIT`，SHA-256 `67e12d5e6071eb6a163a95bc80cb7c6c957df9beab3afe21f4d5c231f88a967d`；`/api/popularity?city=31&trend=3` 为 `200 MISS -> HIT`，SHA-256 `1cce321293120c3e06ef6f50a5df7b6146f750bb6b9fd0d33f3ffc79b04079e7`；`/api/tags?q=acg` 为 `200 MISS -> HIT`，SHA-256 `b4127f678fa7b991e394686a711242b800feac165e071a260169b77f99ac252a`。
+- `/events?timing=all&page=1&sort=start_asc` 为 `200 MISS -> HIT`，SHA-256 `27fccc7dbc62e28f3287176c4fd49b2b70362ce5c5c3e20f0fe5cb14cb42829d`；`/sitemap.xml` 为 `200 MISS -> HIT`，SHA-256 `8135fcf82d1db5874967c15da47fab6448c0f65f50e4f61402a1d624433c6a49`。JSON、HTML 和 XML 结构检查均通过。
+- 远程 D1 只读查询确认 `events` 总数为 `0`，`changed_db=false`、`rows_written=0`。因此没有合法公开详情 ID；`/events/1` 两次均为预期的 `404 MISS`，正文 SHA-256 `e55838ce87df472044b94fb0599ea758be65e97222f7ee54fbc45998d0b960c7` 且逐字节一致，证明负详情未被缓存。未创建合成生产数据。
+- 本轮没有响应不一致，未执行回滚。部署时生产库尚无活动，因此管理员 purge 验证推迟到真实活动数据可用后完成；未为验证创建合成生产数据。
+
+### 2026-08-01 管理员编辑与全局 purge 验证
+
+- 生产库出现真实活动后，先将 `/api/homepage?city=11&trend=30`、`/api/popularity?city=31&trend=3`、`/api/tags?q=acg`、`/events?timing=all&page=1&sort=start_asc`、`/events/2` 和 `/sitemap.xml` 全部预热到 `200 HIT`；详情已进入正向缓存路径。
+- 使用现有 Cloudflare Access 管理员会话，将活动 2 的来源链接临时增加 `#cache-purge-check-20260801` 并保存。随后六个公开 surface 全部返回 `200 MISS`，其中首页、热门、标签、列表和 sitemap 正文哈希与修改前一致，详情正文随来源链接变化而更新，证明一次管理员 edit 触发了六个 Cache-Tag 的全局 purge。
+- 将来源链接恢复为 `https://show.bilibili.com/platform/detail.html?id=1003089` 后，六个公开 surface 再次全部返回 `200 MISS`，后续请求全部恢复为 `200 HIT`。远程 D1 只读复核确认来源链接已精确恢复，验证查询 `changed_db=false`、`rows_written=0`。
+- 两次可逆管理员 mutation 均成功清除目标 zone 的相关缓存，证明 Worker 中保存的 purge token 具备目标 zone `Cache Purge: Edit` 能力；没有读取或输出 token 值，没有触发 rollback。
 
 ## 11. 回滚点
 

@@ -1,61 +1,61 @@
-# Public DTO cache layer on Cache API
+# Public DTO cache production activation
 
 ## Goal
 
-以默认关闭的方式预先建立基于 Cloudflare Cache API 的公开 DTO 缓存基础，并在生产证据达到明确阈值、真实 hostname 探针通过后，分 scope 引入读穿缓存与热度当日成功标记。在所有阶段保持 D1 为唯一事实来源，正常服务陈旧不超过 60 秒；本子任务保留并延后激活，不取消。
+一次启用 `homepage,popularity,tags,detail,sitemap,list` 六个公开 DTO 缓存 scope。热门榜缩短定时刷新周期；其他公开 DTO 使用长 TTL，并在管理员 CRUD 成功后通过 Cache-Tag 全局失效，从而减少重复 D1 读取且不改变公开响应、地区、筛选、状态或隐私合同。
 
 ## Parent
 
-父任务：`.trellis/tasks/07-28-d1-cache-strategy/`
+父任务：`.trellis/tasks/07-28-d1-cache-strategy/`。
 
-需求以父任务 `prd.md` 的 R1-R33 为准；技术设计见父任务 `design.md` §0-§9、§12-§15；执行清单见父任务 `implement.md` §0.1、§3（当日成功标记部分）、§4-§8、§10、§11。本文件只界定本子任务的范围、前置条件与验收边界。
+本文件记录 2026-08-01 起的现行激活合同；父任务中的早期门禁、短 TTL 和逐 scope 自动晋级记录保留为历史证据，但不再阻断本次实施。
 
-## Activation Preconditions
+## Background
 
-纯函数、注入式适配接口和默认关闭的配置解析可以先实现、测试和部署；任何公开路由的 Cache API `match` / `put`、生产 scope 激活或热度标记激活，仍须满足以下门禁（父设计 §0.1）：
+- 激活实施前，Cache API 读穿层、DTO guard、规范键、状态机、路由接入、本地写后失效和测试已经实现，生产仅启用 `tags,sitemap`；本任务随后按部署记录一次启用全部六个 scope。
+- 用户明确要求忽略此前的 D1 用量、CPU p99、`exceededCpu` 和逐 scope canary 门禁，一次启用首页发现、热门榜、活动详情和活动列表缓存。
+- Cloudflare Cache API 条目不会复制到其他数据中心，`cache.delete()` 也只清理当前请求所在数据中心，因此仅延长 TTL 会导致其他地区长期陈旧。
+- Cloudflare 免费方案支持按 Cache-Tag 全局 purge；当前限制为每账号 5 次 purge 请求/分钟，每次最多 100 个操作。管理员 mutation 需要将所有受影响 tag 合并为一次请求。
+- 首页发现和活动列表结果依赖中国本地日期。长 TTL 下必须把日期纳入规范键，避免跨午夜复用前一天结果。
 
-1. Worker 已绑定自定义域名 `acg.hobr.site`（Workers 路由或 Custom Domain）。官方文档只保证自定义域与 Pages 域具备可用的 Cache API 操作，`*.workers.dev` 不在该列表内。
-2. 在 `https://acg.hobr.site` 上的探针证明 `cache.put()` 后 `cache.match()` 可以命中。本地 `astro dev` 的 Miniflare 结果不作为依据。
+## Requirements
 
-此外，子任务 `07-28-d1-query-write-optimization` 应已上线并观察完整指标窗口，其 `rows_read`、Worker 请求与 CPU 实测数据用于确认本子任务的必要性与启用范围。
-
-公开 DTO scope 只有在连续 3 个完整 24 小时窗口中，D1 `rows_read` 每个窗口均达到日额度 5,000,000 的 10%（500,000），或出现可归因于 D1 公开读取的持续延迟/错误压力时，才进入生产 pilot 评审。热度标记只有在连续 3 个完整 24 小时窗口中，Worker 请求每个窗口均达到日额度 100,000 的 25%（25,000），且详情统计 POST 占比足以形成可测收益时，才单独评审。提前 pilot 必须有路由级延迟/错误证据，不能只凭预期收益。
-
-任何候选 scope 还必须有目标路由的正常流量 CPU 基线；CPU p99 达到或超过 10 ms、出现 `exceededCpu`，或样本不足以判断时不得激活该 scope。
-
-## Scope
-
-- `src/lib/cache/public-data.ts`：命名 namespace、版本化规范键、`CachedEnvelope<T>` 状态机、稳定抖动、`waitUntil()` 后台刷新、isolate 内 Promise 合并、异常安全降级。首个 preflight slice 只交付规范键、envelope/TTL 状态、严格默认关闭的 scope 解析和注入式最小存储接口。
-- `src/lib/cache/view-dedupe.ts`：中国本地日期 TTL、二次 SHA-256 标记摘要、独立 namespace、D1 确认后才写标记。
-- 路由接入：首页、`/api/homepage`、`/api/popularity`、`/events`、详情、`/api/tags`、`/sitemap.xml`；详情 SSR 命中标记时省略统计 POST。
-- 写后失效：`MutationImpact` 驱动，地区键按省/市/县祖先前缀展开（父设计 §9.1）。
-- 分阶段开关 `PUBLIC_DATA_CACHE_SCOPES` 与 `VIEW_DEDUPE_CACHE_ENABLED`，以及对应回滚路径。
-
-## Out of Scope
-
-- 索引改写、Cron 清理、`getDB()` 收口、DTO 投影、管理写入收口——属于子任务 `07-28-d1-query-write-optimization`。
-- KV、Durable Objects、Queues、整页 HTML 缓存、全局 Workers Cache（父设计 §15 已论证否决理由）。
-- 首个 preflight slice 不接入公开路由、不实现热度标记、不添加生产探针路由、不修改 `wrangler.jsonc` 开关，也不部署或修改 Cloudflare/D1 资源。后续父任务已单独批准四个新增 scope 的暗部署路由接入；这不构成生产激活授权。
+- R1. 生产 `PUBLIC_DATA_CACHE_SCOPES` 固定为 `homepage,popularity,tags,detail,sitemap,list`；缺失、空值或未知 token 时仍保持现有 fail-closed 行为。
+- R2. `popularity` 使用缓存键稳定计算的 45-55 秒新鲜期、60 秒正常上限和 5 分钟 D1 故障上限；`/api/popularity` 私有浏览器缓存不超过 5 秒，访问写入不主动 purge 热门榜。
+- R3. `homepage`、`tags`、`list` 使用 30 分钟新鲜期与正常上限、48 小时 D1 故障上限；`detail`、`sitemap` 使用 6 小时新鲜期与正常上限、48 小时 D1 故障上限。正常期间不做周期刷新，到达各自上限后同步回源。
+- R4. 首页发现与活动列表规范键包含 `getChinaLocalDate()` 生成的中国本地日期。日期变化必须产生新键，即使旧条目仍在 48 小时存储期内也不得被读取。
+- R5. 每个缓存响应写入固定、可测试、仅含 printable ASCII 的 `Cache-Tag`：`eventlist-homepage`、`eventlist-popularity`、`eventlist-tags`、`eventlist-detail`、`eventlist-sitemap`、`eventlist-list`；详情可以额外携带活动 ID tag，但全局正确性不得依赖枚举全部详情 ID。
+- R6. 管理员创建、批量创建、编辑、审核通过、下线和重新发布在 D1 事实与审计成功后 purge 全部六个 scope tag；标签归并 purge `homepage,popularity,tags,detail,list`，不 purge sitemap。每次 mutation 最多调度一次 Cloudflare `POST /zones/{zone_id}/purge_cache`，请求体使用去重后的 tag 数组。
+- R7. 全局 purge 使用 `CLOUDFLARE_CACHE_PURGE_TOKEN` secret 和 `CLOUDFLARE_ZONE_ID` 普通变量。token 只授予目标 zone 的 Cache Purge 权限，不得提交到仓库、日志或响应，也不得授予 Workers Scripts 写权限。
+- R8. purge 缺少配置、网络失败、非 2xx、Cloudflare `success:false` 或限流时，记录不含 token 的结构化错误；不得回滚 D1、改变成功管理 API 响应或取消现有本地 best-effort `cache.delete()`。长 TTL 是 purge 失败的最终收敛边界。
+- R9. 成功驳回 pending 活动、公共 pending 投稿、失败/冲突/already-target mutation 和访问统计 POST 不触发全局公开 DTO purge。访问去重缓存不在本次范围。
+- R10. 缓存 payload 继续只保存受测公开 DTO；完整 `EventRecord`、投稿联系、建议标签、驳回原因、审计和访客信息不得进入缓存或 purge 日志。
+- R11. 本次不迁移到 Workers Caching，不缓存整页 HTML，不修改 D1 schema，不改变热门统计口径、路由响应字段、状态码、SSR 错误隔离、列表准入或详情访问 POST。
+- R12. 实施完成后执行一次人工审查的全量生产部署，不使用旧的自动逐 scope 控制器；控制器保持暂停。部署失败或线上响应不一致时，通过清空新增 scope 或恢复上一 Worker Version 回滚。
 
 ## Acceptance Criteria
 
-- [x] A0. 默认关闭的缓存基础可独立测试：缺失、空值或含未知 scope 的 `PUBLIC_DATA_CACHE_SCOPES` 解析为全关闭；关闭时注入式存储接口没有 `match` / `put` 调用。
-- [x] A1. 生产 hostname 探针证据已记录，且在启用任何 scope 之前完成。
-- [x] A2. 缓存键测试证明地区、窗口、活动 ID、筛选、分页、排序、标签不串用，参数顺序不产生重复键。
-- [x] A3. 状态机测试覆盖 fresh hit、miss、后台刷新、60 秒阻塞边界、stale-if-error、硬期限、损坏条目与 Cache API 故障；缓存写失败不改变原成功响应。
-- [ ] A4. 隐私测试证明所有缓存值不含投稿联系、建议标签、驳回原因、审计或访客键；标记键与日志不含原始 IP 或 `visitorKey`。
-- [ ] A5. 失效测试证明修改 `110101` 的活动会失效 `11`、`1101`、`110101` 三级的发现键与 3/7/30 三个热门窗口键，旧/新地区双侧覆盖。
-- [ ] A6. 调用预算测试证明单次公开读取的 Cache API + D1 调用合计 ≤ 10，单次写后失效的 `delete()` ≤ 24。
-- [ ] A7. 热度测试证明首次与跨日写入 D1、同日重复为 no-op、无效或已结束活动与 D1 失败不建立标记、标记命中时 SSR 省略统计 POST 且 IP/日期变化后恢复输出。
-- [ ] A8. 启用前后按路由的 CPU time p50/p99 对比表明公开读取仍在 10 ms 预算内，`exceededCpu` 未上升。
-- [ ] A9. 清空 `PUBLIC_DATA_CACHE_SCOPES` 后所有路由直接回源 D1 且响应合同不变；`VIEW_DEDUPE_CACHE_ENABLED` 关闭后统计恢复原有 POST 路径。
-- [ ] A10. `pnpm test`、`pnpm lint`、`tsc --noEmit`、`pnpm build` 全部通过。
+- [ ] A1. 单元测试证明全部六个 scope 同时启用，未知配置仍全量关闭；`wrangler.jsonc` 和生成类型与生产目标一致。
+- [ ] A2. TTL 测试证明热门榜在 45-55 秒后进入后台刷新、60 秒后阻塞回源、5 分钟后硬过期，且 `/api/popularity` 私有浏览器缓存不超过 5 秒；首页、列表和标签在 30 分钟内保持命中，详情和 sitemap 在 6 小时内保持命中，各自超过正常上限后阻塞回源，D1 故障最多使用 48 小时旧值。
+- [ ] A3. 首页发现和列表键在地区、筛选等参数相同但中国本地日期不同时不相等；旧日期 envelope 不会被新日期请求读取。
+- [ ] A4. 每类缓存写入正确 Cache-Tag；tag 不含 Unicode、空格、secret、用户输入或原始查询字符串。
+- [ ] A5. 管理员成功 mutation 最多产生一次全局 purge HTTP 请求，使用 Bearer token、正确 zone endpoint 和去重 tag；标签归并精确使用五个非 sitemap scope tag，成功驳回 pending、公共投稿及非 changed 结果为零请求。
+- [ ] A6. 缺少 secret/zone、网络异常、限流、非 2xx 和 `success:false` 测试均保留管理 API 成功与 D1 事实，并产生可诊断但不泄密的结构化日志。
+- [ ] A7. 现有本地失效、24 次 delete 上限、DTO guard、负详情不缓存、并发合并、stale-if-error 和响应状态测试继续通过。
+- [ ] A8. `corepack pnpm test`、`corepack pnpm lint`、`corepack pnpm exec tsc --noEmit`、`corepack pnpm build`、`corepack pnpm exec wrangler types --check` 和 `git diff --check` 全部通过。
+- [ ] A9. 生产版本绑定包含完整 scope、zone ID 和 Cache Purge secret；真实 hostname 上六类路由均验证正文正确且可观察 `MISS -> HIT`。
+- [ ] A10. 生产只使用可恢复管理员编辑验证六类 scope purge 成功及相关 route 重新 `MISS`。标签归并的五类 purge 映射与 sitemap 不 purge 只通过自动化测试或临时本地 D1 验证，不在生产执行不可逆归并；所有公开结果必须与 D1 投影一致。
+- [ ] A11. 旧自动控制器保持暂停；上一稳定 Worker Version 与清空新增 scope 的回滚步骤均已记录。
 
-## Rollout And Rollback
+## Out of Scope
 
-1. 先部署默认关闭的纯缓存基础，生产环境不设置 `PUBLIC_DATA_CACHE_SCOPES`。
-2. 达到激活阈值且真实 hostname 探针通过后，先 pilot `tags,sitemap`；观察一个完整正常流量周期。
-3. 外部控制面按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope；远程 D1 schema、CPU、错误和响应一致性任一门禁不满足时自动停止，候选失败时恢复上一稳定 Worker Version。
-4. 热度标记按独立 Worker 请求阈值、独立开关和独立验收评审，不与公开 DTO scope 捆绑。
+- 启用或迁移到 Cloudflare Workers Caching、Cache Reserve、KV、Durable Objects 或第三方缓存。
+- 整页 HTML、管理页面、鉴权响应、POST/PATCH 响应或访问统计 payload 缓存。
+- 启用 `VIEW_DEDUPE_CACHE_ENABLED` 或修改热度访客写入语义。
+- 修改 D1 schema、索引或管理员业务事务。
 
-任一 scope 出现地区/状态串用、错误率上升、CPU p99 达到 10 ms、`exceededCpu` 增加或命中收益不足时，立即从 `PUBLIC_DATA_CACHE_SCOPES` 删除该 scope；全量回滚时清空变量。缓存没有事实写入权，回滚不需要 D1 迁移或数据恢复。
+## Operational Prerequisites
+
+- 部署前必须取得目标 zone 的 `CLOUDFLARE_ZONE_ID`。
+- 部署前必须由用户提供或创建仅含目标 zone `Cache Purge: Edit` 权限的 API token，并通过 `wrangler secret put CLOUDFLARE_CACHE_PURGE_TOKEN` 写入；不得复用权限更宽的全局 API key。
+- 若部署时无法取得最小权限 token，可以完成代码与测试，但不得声称全局 CRUD 失效已上线。

@@ -66,7 +66,8 @@ export const GET: APIRoute = async ({ url }) => {
                 origin: url,
                 configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
                 divisionCode: city,
-                load: async () => toPublicHomepageDiscovery(await listHomepageDiscovery(db, city)),
+                load: async (asOfDate) =>
+                    toPublicHomepageDiscovery(await listHomepageDiscovery(db, city, asOfDate)),
                 waitUntil
             }),
             loadCachedHomepagePopularity({

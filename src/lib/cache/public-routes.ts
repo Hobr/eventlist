@@ -8,7 +8,7 @@ import type {
 } from "../db/public-events";
 import type { TagSummary } from "../db/tags";
 import { isRegionCode } from "../divisions";
-import { isCanonicalDate } from "../events/datetime";
+import { getChinaLocalDate, isCanonicalDate } from "../events/datetime";
 import {
     isEventAdmissionMethod,
     isEventScale,
@@ -26,6 +26,7 @@ import {
     buildPublicDataCacheRequest,
     loadPublicDataWithCache,
     parsePublicDataCacheScopes,
+    PUBLIC_DATA_CACHE_TAGS,
     stablePublicDataCacheJitterMs,
     type PublicDataCacheLoadResult,
     type PublicDataCacheScope,
@@ -33,19 +34,20 @@ import {
     type PublicDataCacheWaitUntil
 } from "./public-data";
 
-const NORMAL_TTL_MS = 60_000;
-const PUBLIC_DATA_FAULT_TTL_MS = 5 * 60_000;
-const HOMEPAGE_FAULT_TTL_MS = 10 * 60_000;
-const TAGS_FAULT_TTL_MS = 10 * 60_000;
-const SITEMAP_FAULT_TTL_MS = 30 * 60_000;
+const POPULARITY_NORMAL_TTL_MS = 60_000;
+const POPULARITY_FAULT_TTL_MS = 5 * 60_000;
+const STANDARD_TTL_MS = 30 * 60_000;
+const DETAIL_TTL_MS = 6 * 60 * 60_000;
+const PUBLIC_DATA_FAULT_TTL_MS = 48 * 60 * 60_000;
 
 interface PublicRouteCacheOptions<T> {
     origin: string | URL;
     configuredScopes: string | null | undefined;
-    load: () => Promise<T>;
+    load: (asOfDate?: string) => Promise<T>;
     waitUntil: PublicDataCacheWaitUntil;
     getStore?: () => Promise<PublicDataCacheStore>;
     now?: () => number;
+    asOfDate?: string;
 }
 
 function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]) {
@@ -349,9 +351,11 @@ export function isSitemapEventRowList(value: unknown): value is SitemapEventRow[
 export async function loadCachedHomepageDiscovery(
     options: PublicRouteCacheOptions<PublicHomepageDiscovery> & { divisionCode: string }
 ): Promise<PublicDataCacheLoadResult<PublicHomepageDiscovery>> {
+    const asOfDate = options.asOfDate ?? getChinaLocalDate();
     const request = buildPublicDataCacheRequest(options.origin, {
         resource: "home-discovery",
-        divisionCode: options.divisionCode
+        divisionCode: options.divisionCode,
+        asOfDate
     });
 
     const isRequestedDiscovery = (value: unknown): value is PublicHomepageDiscovery =>
@@ -366,12 +370,13 @@ export async function loadCachedHomepageDiscovery(
         request,
         getStore: options.getStore ?? openPublicDataCacheStore,
         isValue: isRequestedDiscovery,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.homepage],
         ttl: {
-            freshTtlMs: stablePublicDataCacheJitterMs(request.url, 40_000, 50_000),
-            normalTtlMs: NORMAL_TTL_MS,
-            faultTtlMs: HOMEPAGE_FAULT_TTL_MS
+            freshTtlMs: STANDARD_TTL_MS,
+            normalTtlMs: STANDARD_TTL_MS,
+            faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
         },
-        load: options.load,
+        load: () => options.load(asOfDate),
         waitUntil: options.waitUntil,
         now: options.now
     });
@@ -402,10 +407,11 @@ export async function loadCachedHomepagePopularity(
         request,
         getStore: options.getStore ?? openPublicDataCacheStore,
         isValue: isRequestedPopularity,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.popularity],
         ttl: {
-            freshTtlMs: stablePublicDataCacheJitterMs(request.url, 25_000, 35_000),
-            normalTtlMs: NORMAL_TTL_MS,
-            faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
+            freshTtlMs: stablePublicDataCacheJitterMs(request.url, 45_000, 55_000),
+            normalTtlMs: POPULARITY_NORMAL_TTL_MS,
+            faultTtlMs: POPULARITY_FAULT_TTL_MS
         },
         load: options.load,
         waitUntil: options.waitUntil,
@@ -434,9 +440,10 @@ export async function loadCachedPublicEventDetail(
         isValue: isRequestedNullableDetail,
         isCacheValue: isRequestedDetail,
         shouldCache: isRequestedDetail,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.detail, `eventlist-detail-${options.eventId}`],
         ttl: {
-            freshTtlMs: stablePublicDataCacheJitterMs(request.url, 40_000, 50_000),
-            normalTtlMs: NORMAL_TTL_MS,
+            freshTtlMs: DETAIL_TTL_MS,
+            normalTtlMs: DETAIL_TTL_MS,
             faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
         },
         load: options.load,
@@ -448,9 +455,11 @@ export async function loadCachedPublicEventDetail(
 export async function loadCachedPublicEventList(
     options: PublicRouteCacheOptions<PublicEventPage> & { filters: PublishedEventFilters }
 ): Promise<PublicDataCacheLoadResult<PublicEventPage>> {
+    const asOfDate = options.asOfDate ?? getChinaLocalDate();
     const request = buildPublicDataCacheRequest(options.origin, {
         resource: "event-list",
-        filters: options.filters
+        filters: options.filters,
+        asOfDate
     });
     const scopes = isPublicEventListCacheable(options.filters)
         ? parsePublicDataCacheScopes(options.configuredScopes)
@@ -469,12 +478,13 @@ export async function loadCachedPublicEventList(
         request,
         getStore: options.getStore ?? openPublicDataCacheStore,
         isValue: isRequestedPage,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.list],
         ttl: {
-            freshTtlMs: stablePublicDataCacheJitterMs(request.url, 40_000, 50_000),
-            normalTtlMs: NORMAL_TTL_MS,
+            freshTtlMs: STANDARD_TTL_MS,
+            normalTtlMs: STANDARD_TTL_MS,
             faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
         },
-        load: options.load,
+        load: () => options.load(asOfDate),
         waitUntil: options.waitUntil,
         now: options.now
     });
@@ -504,10 +514,11 @@ export async function loadCachedPublicTags(
         request,
         getStore: options.getStore ?? openPublicDataCacheStore,
         isValue: isRequestedTagList,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.tags],
         ttl: {
-            freshTtlMs: stablePublicDataCacheJitterMs(request.url, 40_000, 50_000),
-            normalTtlMs: NORMAL_TTL_MS,
-            faultTtlMs: TAGS_FAULT_TTL_MS
+            freshTtlMs: STANDARD_TTL_MS,
+            normalTtlMs: STANDARD_TTL_MS,
+            faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
         },
         load: options.load,
         waitUntil: options.waitUntil,
@@ -532,10 +543,11 @@ export async function loadCachedSitemapRows(
         request,
         getStore: options.getStore ?? openPublicDataCacheStore,
         isValue: isRequestedSitemap,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.sitemap],
         ttl: {
-            freshTtlMs: NORMAL_TTL_MS,
-            normalTtlMs: NORMAL_TTL_MS,
-            faultTtlMs: SITEMAP_FAULT_TTL_MS
+            freshTtlMs: DETAIL_TTL_MS,
+            normalTtlMs: DETAIL_TTL_MS,
+            faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
         },
         load: options.load,
         waitUntil: options.waitUntil,

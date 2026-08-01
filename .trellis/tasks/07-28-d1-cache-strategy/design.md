@@ -161,14 +161,14 @@ interface CachedEnvelope<T> {
 
 | 数据 | 新鲜期 | 正常陈旧上限 | 仅 D1 故障可用上限 |
 | --- | --- | --- | --- |
-| 首页发现 | 40-50 秒抖动 | 60 秒 | 10 分钟 |
-| 热门榜 | 25-35 秒抖动 | 60 秒 | 5 分钟 |
-| 活动列表 | 40-50 秒抖动 | 60 秒 | 5 分钟 |
-| 活动详情 | 40-50 秒抖动 | 60 秒 | 5 分钟 |
-| 热门标签/标签联想 | 40-50 秒抖动 | 60 秒 | 10 分钟 |
-| sitemap | 60 秒 | 60 秒 | 30 分钟 |
+| 首页发现 | 30 分钟 | 30 分钟 | 48 小时 |
+| 热门榜 | 45-55 秒抖动 | 60 秒 | 5 分钟 |
+| 活动列表 | 30 分钟 | 30 分钟 | 48 小时 |
+| 活动详情 | 6 小时 | 6 小时 | 48 小时 |
+| 热门标签/标签联想 | 30 分钟 | 30 分钟 | 48 小时 |
+| sitemap | 6 小时 | 6 小时 | 48 小时 |
 
-抖动由缓存键稳定计算，只改变后台刷新开始时间，不改变 60 秒正常上限。它用于避免所有热点键在同一秒同时回源。
+热门抖动由缓存键稳定计算，用于避免所有热门键在同一秒回源。其他公开 DTO 的 fresh 与 normal 边界相同，正常期间不做后台周期刷新；首页、列表和标签以 30 分钟边界处理活动自然开始/结束，详情和 sitemap 以 6 小时边界兜底，管理员 CRUD 仍通过 Cache-Tag 全局 purge 成为主要刷新触发。
 
 状态机：
 
@@ -274,7 +274,7 @@ Cron 每天只增加一次 Worker 调用。即使 Cron 延迟或失败，热门 
 
 ### 7.6 热门读取刷新
 
-热门榜继续使用 25-35 秒新鲜期、60 秒正常硬上限。访问写入不主动删除热门缓存：逐访客失效会把热点写流量转换成热门 SQL 回源风暴，反而消耗更多 D1 读取并造成排名组件抖动。
+热门榜使用 45-55 秒新鲜期、60 秒正常硬上限。访问写入不主动删除热门缓存：逐访客失效会把热点写流量转换成热门 SQL 回源风暴，反而消耗更多 D1 读取并造成排名组件抖动。管理员 CRUD 仍通过全局 scope tag purge 热门缓存。
 
 Cache API 标记本身不能消除首次统计 POST，也不能绕过 Workers Free 的 10 万请求/日上限。详情 SSR 的标记命中判断可以省略同一数据中心内后续重复 POST，但首次、跨日、IP 变化、标记丢失和跨数据中心访问仍会产生统计请求。
 
@@ -282,30 +282,34 @@ Cache API 标记本身不能消除首次统计 POST，也不能绕过 Workers Fr
 
 - `cache.match()` 失败或条目损坏：视为未命中，回源 D1。
 - `cache.put()` / `cache.delete()` 失败：记录采样诊断，但不让原成功请求失败。
-- D1 正常时，超过 60 秒的条目必须阻塞刷新，不得继续返回旧值。
+- D1 正常时，`popularity` 超过 60 秒，首页/列表/标签超过 30 分钟，详情/sitemap 超过 6 小时后必须阻塞刷新，不得继续返回旧值。
 - D1 故障且存在 `errorUntil` 内的安全缓存：
   - JSON API 增加 `X-Eventlist-Cache: STALE-IF-ERROR` 和对应 `Server-Timing` 标记。
   - SSR 页面保留内容并显示克制的“数据暂时无法刷新，当前显示最近缓存”提示。
   - sitemap 返回最近完整缓存；无缓存时保留现有仅静态 URL 的降级。
 - 无可用缓存时维持现有错误状态和状态码。
 
-成功的 `/api/homepage`、`/api/popularity` 和 `/api/tags` 可返回 `Cache-Control: private, max-age=15`，减少同一浏览器快速往返；错误响应使用 `no-store`。HTML 页面不做共享响应缓存，保留 SSR、地区解析、浏览器历史和现有客户端状态。
+成功的 `/api/homepage` 和 `/api/tags` 可返回 `Cache-Control: private, max-age=15`；`/api/popularity` 使用 `private, max-age=5`，避免浏览器缓存把服务端 60 秒边界继续放大。错误响应使用 `no-store`。HTML 页面不做共享响应缓存，保留 SSR、地区解析、浏览器历史和现有客户端状态。
 
 ## 9. 写后失效
 
-数据库业务操作的事实写入和审计成功后执行 best-effort 本地失效。Cache API 失效不得加入 D1 原子批次，也不得因失败回滚事实写入。
+数据库业务操作的事实写入和审计成功后，同时执行 best-effort 本地失效与一次 Cache-Tag 全局 purge。两类失效都不得加入 D1 原子批次，也不得因失败回滚事实写入。
 
-| 写入 | 本地立即失效 | 全球保证 |
+| 写入 | 本地立即失效 | 全局 Cache-Tag purge |
 | --- | --- | --- |
 | 公共投稿 | 无 | pending 不公开 |
-| 管理员创建/批量创建 | 预算内的已知地区首页/热门键、top tags、sitemap | 超出预算及其他列表/标签键最多 60 秒 |
-| 管理员编辑 | 预算内的详情、旧/新地区首页/热门、top tags、sitemap | 超出预算及无法枚举的筛选/联想键最多 60 秒 |
-| 审核通过/下线/重新发布 | 预算内的详情、已知地区首页/热门、top tags、sitemap | 超出预算的固定键与所有公开聚合最多 60 秒 |
+| 管理员创建/批量创建 | 预算内的已知地区首页/热门键、top tags、sitemap | 一次 purge 六个公开 DTO scope tag |
+| 管理员编辑 | 预算内的详情、旧/新地区首页/热门、top tags、sitemap | 一次 purge 六个公开 DTO scope tag |
+| 审核通过/下线/重新发布 | 预算内的详情、已知地区首页/热门、top tags、sitemap | 一次 purge 六个公开 DTO scope tag |
 | 驳回 | 仅在此前可能公开时才失效；正常无需 | pending 数据从未缓存 |
-| 标签归并 | top tags；可识别的详情键 | 搜索和筛选键最多 60 秒 |
-| 详情访问 | 当前 `division + window` 热门键可不主动删除 | 热门榜按 25-35 秒开始刷新，最多 60 秒 |
+| 标签归并 | top tags；可识别的详情键 | 一次 purge `homepage,popularity,tags,detail,list`；不 purge sitemap |
+| 详情访问 | 不主动删除热门缓存 | 热门榜按 45-55 秒开始刷新，最多 60 秒 |
 
-失效 helper 接收 origin 和数据库操作直接返回的 `MutationImpact`。无法安全枚举的高基数列表键不尝试全量删除，由正常 TTL 保证边界；路由不得为构造失效提示再次查询 D1。
+失效 helper 接收 origin、runtime purge 配置和数据库操作直接返回的 `MutationImpact`。本地 delete 继续处理已知键；无法枚举的高基数列表/标签键由低基数 scope tag 全局 purge。路由不得为构造失效提示再次查询 D1。每个 mutation 的 tag 去重后只发一个 Cloudflare purge API 请求。
+
+全局 tag 映射不按当前 `PUBLIC_DATA_CACHE_SCOPES` 裁剪。scope 关闭只禁止读取和本地 Cache API 操作；公开数据 mutation 仍 purge 完整受影响 tag 集合，避免 48 小时内的旧条目在后续重新启用 scope 时恢复可见。
+
+标签归并采用批准的保守映射：当前热门榜数据库行虽然查询聚合标签，但公开缓存 DTO 不暴露该字段；仍 purge `popularity`，使失效合同不依赖当前投影字段并为后续公开投影演进保留正确性。`src/lib/db/admin-events.ts` 的 `mergeTags()` 只修改 `event_tags.tag_id` 与 `tags.alias_of_id`，不更新 `events.updated_at` 或活动 URL，因此 sitemap 内容不变。
 
 ### 9.1 地区键必须按祖先前缀展开
 
@@ -319,9 +323,9 @@ divisionKeys(code) = { province(code), city(code), code }
 
 对每个祖先地区码失效 `home-discovery` 一个键和 `popularity` 三个窗口键（3 | 7 | 30）。单侧地区因此最多 3 × 4 = 12 个键，编辑活动涉及旧/新两侧时最多 24 个键——即 §0.3 规定的 `delete()` 硬上限。旧/新地区相同或批量活动落在同一地区时，按规范 URL 去重后实际键数更少。
 
-当 `homepage` 与 `popularity` 同时启用，且旧/新地区各展开为三个不同祖先时，地区聚合会完整占用 24 次预算。为了同时满足 R27 的硬上限和 R28 的旧/新祖先覆盖，失效 helper 必须先加入地区聚合键，再加入详情、`top-tags` 和 `sitemap` 固定键；预算耗尽时，后者不再声称本地立即失效，而是依赖正常 TTL 在最多 60 秒内收敛。
+当 `homepage` 与 `popularity` 同时启用，且旧/新地区各展开为三个不同祖先时，地区聚合会完整占用 24 次本地 delete 预算。helper 仍优先处理地区聚合键；未执行的本地固定键由同一次全局 scope-tag purge 覆盖，purge 失败时按对应 scope 的 30 分钟或 6 小时正常 TTL 收敛。
 
-`top-tags` 与 `sitemap` 是固定低基数键，不受地区影响。活动列表与标签联想的组合键不可枚举，同样由 60 秒正常上限兜底。
+`top-tags` 与 `sitemap` 是固定低基数键，不受地区影响。活动列表与标签联想的组合键不可枚举，因此全局 purge 使用 `eventlist-list` 与 `eventlist-tags` scope tag，而不是枚举 URL。
 
 ## 10. 查询优化
 
@@ -455,9 +459,10 @@ BYPASS | MISS | HIT | STALE-REFRESH | REFRESHED | STALE-IF-ERROR
 - 单次调用的 D1 + Cache API 调用数合计对照 §0.3 的 50 subrequest 上限记录峰值。
 - 数据库操作另记录采样后的 binding 调用数与 batch statement 数，避免把“更少往返”误报为“更少计费行”。
 - 热度链路只记录聚合状态：`VIEW_MARKER_HIT | VIEW_MARKER_MISS | VIEW_D1_RECORDED | VIEW_D1_NOOP | VIEW_ERROR`，不得记录原始 IP、访客键或标记摘要。
+- 全局失效记录 `public_cache_global_purge` 的 kind、tag、HTTP/Cloudflare 结果和安全错误码；不得记录 token、Authorization header 或完整上游响应。
 - 发布前记录基线；发布后比较首页、热门、标签、详情和列表的 D1 行读取趋势，并单独比较 Worker 统计 POST、热度 D1 操作和 `rows_written` 趋势。
 
-## 14. 分阶段发布与回滚
+## 14. 生产发布与回滚
 
 使用环境变量控制缓存范围：
 
@@ -468,16 +473,16 @@ VIEW_DEDUPE_CACHE_ENABLED=true
 
 `PUBLIC_DATA_CACHE_SCOPES` 缺失或为空时完全绕过公开 DTO Cache API。`VIEW_DEDUPE_CACHE_ENABLED` 未启用时，详情继续输出现有 POST，POST 直接执行 D1 当日 upsert；两个开关相互独立。
 
-自动发布顺序：
+当前发布顺序：
 
-1. 先部署数据库接口收口、查询优化、缓存核心、自定义 Worker 入口和测试，两个生产缓存开关关闭。
-2. `tags,sitemap` pilot 作为首个稳定版本；外部控制器随后按 `popularity -> homepage -> detail -> list` 每次只增加一个 scope，不再等待逐次人工确认。
-3. 每个候选先确认源码已提交且远程 D1 schema 与候选兼容，再构建独立 Worker Version。候选不得夹带 schema 变更或其他产品功能。
-4. 控制器对候选执行 HTTP/响应哈希/D1 投影探针，并读取 CPU、`exceededCpu` 和错误指标；任一证据缺失或不合格都视为失败。
-5. 候选失败时将上一稳定 Worker Version 恢复到 100% 流量并冻结后续晋级。成功后才把该候选登记为新的稳定版本。
-6. 热度去重标记继续按独立 Worker 请求阈值、开关和验收发布，不进入公开 DTO 自动序列。
+1. 完成 Cache-Tag、全局 purge、TTL、日期键和自动测试。
+2. 取得目标 zone ID，并由用户提供只含目标 zone Cache Purge 权限的 token；通过 Worker secret 保存。
+3. 记录上一稳定 Worker Version，运行全量质量命令和 deploy dry-run。
+4. 一次将 `PUBLIC_DATA_CACHE_SCOPES` 设置为 `homepage,popularity,tags,detail,sitemap,list` 并部署 100%，不执行逐 scope canary 或 CPU/用量门禁。
+5. 验证全部公开路由 `MISS -> HIT`、正文哈希与 D1 投影一致，并通过可恢复管理员 mutation 验证全局 purge 后重新 miss。
+6. 旧自动晋级控制器保持暂停；热度去重标记仍使用独立开关，不随本次激活。
 
-自动控制面必须位于 Worker 外部。生产 Worker 只读取 `PUBLIC_DATA_CACHE_SCOPES` 这个硬上限，不持有 Workers Scripts 写令牌，也不自行调用部署 API。控制器必须串行执行；远程 D1 schema 不兼容、版本状态不明确、指标 API 超时、探针失败或候选路由 CPU p99 >= 10 ms 时都 fail closed。
+生产 Worker 不持有 Workers Scripts 写令牌，只新增目标 zone 的最小 Cache Purge token。purge 失败不影响已成功的管理写入，并由 60 秒/30 分钟/6 小时正常 TTL 兜底。
 
 公开读取快速回滚：清空 `PUBLIC_DATA_CACHE_SCOPES`。热度快速回滚：关闭 `VIEW_DEDUPE_CACHE_ENABLED`，恢复每个 POST 直接校验 D1；Cron 可独立保留。若自定义入口本身异常，则将 `main` 恢复为 `@astrojs/cloudflare/entrypoints/server` 并用人工维护命令临时清理过期访客。所有路径都不需要迁移或恢复 D1 事实。
 
@@ -485,7 +490,7 @@ VIEW_DEDUPE_CACHE_ENABLED=true
 
 ### KV 通用缓存
 
-每个请求先读 KV 会把压力转移到 10 万 key 读取/日和 1000 写入/日，额度比 D1 行读取更紧；全球最终一致也不能提供优于本方案的 60 秒写后可见性。
+每个请求先读 KV 会把压力转移到 10 万 key 读取/日和 1000 写入/日，额度比 D1 行读取更紧；它也不能替代本方案在管理员 CRUD 后执行的 Cache-Tag 全局 purge。
 
 ### 全局 Workers Cache
 
@@ -496,7 +501,7 @@ VIEW_DEDUPE_CACHE_ENABLED=true
 - Workers Cache 是 zoneless 的，在 `workers.dev` 上同样可用，不依赖 §0.1 的自定义域前提。
 - 默认分层缓存（lower/upper tier），命中范围优于按数据中心隔离的 Cache API。
 - 按缓存键的请求合并，本方案只能用 isolate 内 Promise Map 近似（§6）。
-- `Cache-Tag` + `cache.purge()` 全局失效，可以消除 §9 依赖的 60 秒最终一致窗口。
+- Workers Cache 提供平台原生的全局 purge；当前 Cache API 方案已通过 zone Cache-Tag purge 获得所需的跨数据中心失效，因此这项能力不再是迁移的决定性理由。
 - 命中时 Worker 不执行，因此同时省掉 CPU——正是 §0.2 最紧的那条限制。
 
 原先"未显式设置头的 200 响应会被启发式缓存 2 小时"这一顾虑不成立：`@astrojs/cloudflare` 的 cache provider 在启用时默认对响应写入 `Cloudflare-CDN-Cache-Control: no-store`，需要缓存的响应再显式opt-in。该顾虑不再作为否决依据。

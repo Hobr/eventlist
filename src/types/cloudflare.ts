@@ -15,4 +15,6 @@ export interface RuntimeEnv {
     TURNSTILE_SECRET?: string;
     VIEW_HASH_SECRET?: string;
     PUBLIC_DATA_CACHE_SCOPES?: string;
+    CLOUDFLARE_ZONE_ID?: string;
+    CLOUDFLARE_CACHE_PURGE_TOKEN?: string;
 }

@@ -7,10 +7,12 @@ import {
     combinePublicDataCacheStates,
     createCachedEnvelope,
     loadPublicDataWithCache,
+    normalizePublicDataCacheTags,
     parseCachedEnvelope,
     parsePublicDataCacheScopes,
     PUBLIC_DATA_CACHE_NAMESPACE,
     PUBLIC_DATA_CACHE_SCHEMA,
+    PUBLIC_DATA_CACHE_TAGS,
     publicDataCacheResponseHeaders,
     readPublicDataCache,
     stablePublicDataCacheJitterMs,
@@ -80,13 +82,13 @@ test("cache scopes are disabled by default and invalid configuration fails close
     );
 });
 
-test("production configuration enables only the approved pilot scopes", async () => {
+test("production configuration enables all approved public DTO cache scopes", async () => {
     const config = JSON.parse(
         await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8")
     ) as {
         workers_dev?: boolean;
         routes?: Array<{ pattern?: string; custom_domain?: boolean }>;
-        vars?: { PUBLIC_DATA_CACHE_SCOPES?: string };
+        vars?: { PUBLIC_DATA_CACHE_SCOPES?: string; CLOUDFLARE_ZONE_ID?: string };
     };
 
     assert.equal(config.workers_dev, false);
@@ -100,8 +102,11 @@ test("production configuration enables only the approved pilot scopes", async ()
     ]);
     assert.deepEqual(
         [...parsePublicDataCacheScopes(config.vars?.PUBLIC_DATA_CACHE_SCOPES)],
-        ["tags", "sitemap"]
+        ["homepage", "popularity", "tags", "detail", "sitemap", "list"]
     );
+    assert.match(config.vars?.CLOUDFLARE_ZONE_ID ?? "", /^[a-f0-9]{32}$/);
+    const devVarsExample = await readFile(new URL("../.dev.vars.example", import.meta.url), "utf8");
+    assert.match(devVarsExample, /^CLOUDFLARE_CACHE_PURGE_TOKEN=$/m);
     await assert.rejects(
         readFile(new URL("../src/pages/eventlist-cache-probe-v1.ts", import.meta.url), "utf8"),
         { code: "ENOENT" }
@@ -114,11 +119,18 @@ test("synthetic cache keys are versioned, normalized, and isolated", () => {
     const origin = "https://acg.example/some/request/path?ignored=true";
     const homepage = buildPublicDataCacheRequest(origin, {
         resource: "home-discovery",
-        divisionCode: "11"
+        divisionCode: "11",
+        asOfDate: "2026-08-01"
     });
     const anotherDivision = buildPublicDataCacheRequest(origin, {
         resource: "home-discovery",
-        divisionCode: "31"
+        divisionCode: "31",
+        asOfDate: "2026-08-01"
+    });
+    const anotherDate = buildPublicDataCacheRequest(origin, {
+        resource: "home-discovery",
+        divisionCode: "11",
+        asOfDate: "2026-08-02"
     });
     const popularity = buildPublicDataCacheRequest(origin, {
         resource: "popularity",
@@ -151,7 +163,8 @@ test("synthetic cache keys are versioned, normalized, and isolated", () => {
             tag: " 同人展 ",
             page: 2,
             pageSize: 20
-        }
+        },
+        asOfDate: "2026-08-01"
     });
     const listB = buildPublicDataCacheRequest(origin, {
         resource: "event-list",
@@ -161,11 +174,13 @@ test("synthetic cache keys are versioned, normalized, and isolated", () => {
             tag: "同人展",
             timing: "ended",
             divisionCode: "11"
-        }
+        },
+        asOfDate: "2026-08-01"
     });
     const listNextPage = buildPublicDataCacheRequest(origin, {
         resource: "event-list",
-        filters: { divisionCode: "11", timing: "ended", tag: "同人展", page: 3 }
+        filters: { divisionCode: "11", timing: "ended", tag: "同人展", page: 3 },
+        asOfDate: "2026-08-01"
     });
     const listAnotherSort = buildPublicDataCacheRequest(origin, {
         resource: "event-list",
@@ -175,14 +190,25 @@ test("synthetic cache keys are versioned, normalized, and isolated", () => {
             tag: "同人展",
             page: 2,
             sort: "start_desc"
-        }
+        },
+        asOfDate: "2026-08-01"
+    });
+    const listAnotherDate = buildPublicDataCacheRequest(origin, {
+        resource: "event-list",
+        filters: {
+            divisionCode: "11",
+            timing: "ended",
+            tag: "同人展",
+            page: 2
+        },
+        asOfDate: "2026-08-02"
     });
 
     assert.equal(homepage.method, "GET");
     assert.equal([...homepage.headers].length, 0);
     assert.equal(
         homepage.url,
-        "https://acg.example/_eventlist_cache/v2/home-discovery?division=11"
+        "https://acg.example/_eventlist_cache/v2/home-discovery?division=11&date=2026-08-01"
     );
     assert.equal(
         tagSearch.url,
@@ -190,12 +216,14 @@ test("synthetic cache keys are versioned, normalized, and isolated", () => {
     );
     assert.equal(listA.url, listB.url);
     assert.notEqual(homepage.url, anotherDivision.url);
+    assert.notEqual(homepage.url, anotherDate.url);
     assert.notEqual(homepage.url, popularity.url);
     assert.notEqual(popularity.url, anotherWindow.url);
     assert.notEqual(popularity.url, detail.url);
     assert.notEqual(detail.url, anotherDetail.url);
     assert.notEqual(listA.url, listNextPage.url);
     assert.notEqual(listA.url, listAnotherSort.url);
+    assert.notEqual(listA.url, listAnotherDate.url);
     assert.throws(
         () => buildPublicDataCacheRequest(origin, { resource: "event-detail", eventId: 0 }),
         /positive safe integer/
@@ -203,6 +231,15 @@ test("synthetic cache keys are versioned, normalized, and isolated", () => {
     assert.throws(
         () => buildPublicDataCacheRequest(origin, { resource: "event-detail", eventId: 1.5 }),
         /positive safe integer/
+    );
+    assert.throws(
+        () =>
+            buildPublicDataCacheRequest(origin, {
+                resource: "home-discovery",
+                divisionCode: "11",
+                asOfDate: "2026-02-30"
+            }),
+        /canonical date/
     );
 });
 
@@ -332,12 +369,19 @@ test("enabled cache access classifies valid values and treats corrupt values as 
             store,
             request,
             envelope,
+            cacheTags: [PUBLIC_DATA_CACHE_TAGS.detail, PUBLIC_DATA_CACHE_TAGS.detail],
             now: 1_050
         }),
         "stored"
     );
     assert.equal(store.puts, 1);
     assert.equal(store.writtenResponse?.headers.get("cache-control"), "public, max-age=1");
+    assert.equal(store.writtenResponse?.headers.get("cache-tag"), PUBLIC_DATA_CACHE_TAGS.detail);
+    assert.deepEqual(normalizePublicDataCacheTags(["eventlist-tags", "eventlist-tags"]), [
+        "eventlist-tags"
+    ]);
+    assert.equal(normalizePublicDataCacheTags(["eventlist-tags", "非法"]), null);
+    assert.equal(normalizePublicDataCacheTags(["eventlist-tags,other"]), null);
 });
 
 test("enabled cache access fails closed when the store or write envelope is invalid", async () => {
@@ -385,6 +429,18 @@ test("enabled cache access fails closed when the store or write envelope is inva
             store,
             request,
             envelope: { ...envelope, errorUntil: Number.NaN },
+            now: 1_050
+        }),
+        "skipped"
+    );
+    assert.equal(
+        await writePublicDataCache({
+            scope: "detail",
+            scopes,
+            store,
+            request,
+            envelope,
+            cacheTags: ["eventlist-detail", "invalid tag"],
             now: 1_050
         }),
         "skipped"
@@ -789,10 +845,10 @@ test("tags adapter normalizes keys, enforces admission, and writes the approved 
     );
     const envelope = parseCachedEnvelope(await store.writtenResponse?.text());
     assert.ok(envelope);
-    assert.ok(envelope.freshUntil - envelope.generatedAt >= 40_000);
-    assert.ok(envelope.freshUntil - envelope.generatedAt <= 50_000);
-    assert.equal(envelope.normalUntil - envelope.generatedAt, 60_000);
-    assert.equal(envelope.errorUntil - envelope.generatedAt, 10 * 60_000);
+    assert.equal(envelope.freshUntil - envelope.generatedAt, 30 * 60_000);
+    assert.equal(envelope.normalUntil - envelope.generatedAt, 30 * 60_000);
+    assert.equal(envelope.errorUntil - envelope.generatedAt, 48 * 60 * 60_000);
+    assert.equal(store.writtenResponse?.headers.get("cache-tag"), PUBLIC_DATA_CACHE_TAGS.tags);
 
     const bypassStore = new FakeCacheStore();
     const bypass = await loadCachedPublicTags({
@@ -901,11 +957,16 @@ test("event detail cache guard requires the complete v2 static DTO and rejects d
 
 test("homepage and popularity adapters use canonical keys and approved TTLs", async () => {
     const discoveryStore = new FakeCacheStore();
+    let discoveryLoadDate: string | undefined;
     const discovery = await loadCachedHomepageDiscovery({
         origin: "https://acg.example/?city=ignored",
         configuredScopes: "homepage,popularity",
         divisionCode: "1101",
-        load: async () => homepageDiscovery,
+        asOfDate: "2026-08-01",
+        load: async (asOfDate) => {
+            discoveryLoadDate = asOfDate;
+            return homepageDiscovery;
+        },
         waitUntil: () => undefined,
         getStore: async () => discoveryStore,
         now: () => 10_000
@@ -913,14 +974,18 @@ test("homepage and popularity adapters use canonical keys and approved TTLs", as
     assert.equal(discovery.cacheState, "MISS");
     assert.equal(
         discoveryStore.matchedRequest?.url,
-        "https://acg.example/_eventlist_cache/v2/home-discovery?division=1101"
+        "https://acg.example/_eventlist_cache/v2/home-discovery?division=1101&date=2026-08-01"
     );
+    assert.equal(discoveryLoadDate, "2026-08-01");
     const discoveryEnvelope = parseCachedEnvelope(await discoveryStore.writtenResponse?.text());
     assert.ok(discoveryEnvelope);
-    assert.ok(discoveryEnvelope.freshUntil - discoveryEnvelope.generatedAt >= 40_000);
-    assert.ok(discoveryEnvelope.freshUntil - discoveryEnvelope.generatedAt <= 50_000);
-    assert.equal(discoveryEnvelope.normalUntil - discoveryEnvelope.generatedAt, 60_000);
-    assert.equal(discoveryEnvelope.errorUntil - discoveryEnvelope.generatedAt, 10 * 60_000);
+    assert.equal(discoveryEnvelope.freshUntil - discoveryEnvelope.generatedAt, 30 * 60_000);
+    assert.equal(discoveryEnvelope.normalUntil - discoveryEnvelope.generatedAt, 30 * 60_000);
+    assert.equal(discoveryEnvelope.errorUntil - discoveryEnvelope.generatedAt, 48 * 60 * 60_000);
+    assert.equal(
+        discoveryStore.writtenResponse?.headers.get("cache-tag"),
+        PUBLIC_DATA_CACHE_TAGS.homepage
+    );
 
     const popularityStore = new FakeCacheStore();
     const popularity = await loadCachedHomepagePopularity({
@@ -940,10 +1005,14 @@ test("homepage and popularity adapters use canonical keys and approved TTLs", as
     );
     const popularityEnvelope = parseCachedEnvelope(await popularityStore.writtenResponse?.text());
     assert.ok(popularityEnvelope);
-    assert.ok(popularityEnvelope.freshUntil - popularityEnvelope.generatedAt >= 25_000);
-    assert.ok(popularityEnvelope.freshUntil - popularityEnvelope.generatedAt <= 35_000);
+    assert.ok(popularityEnvelope.freshUntil - popularityEnvelope.generatedAt >= 45_000);
+    assert.ok(popularityEnvelope.freshUntil - popularityEnvelope.generatedAt <= 55_000);
     assert.equal(popularityEnvelope.normalUntil - popularityEnvelope.generatedAt, 60_000);
     assert.equal(popularityEnvelope.errorUntil - popularityEnvelope.generatedAt, 5 * 60_000);
+    assert.equal(
+        popularityStore.writtenResponse?.headers.get("cache-tag"),
+        PUBLIC_DATA_CACHE_TAGS.popularity
+    );
 });
 
 test("integrated route miss paths stay below the ten-subrequest read budget", async () => {
@@ -1200,7 +1269,13 @@ test("detail adapter never caches negative results or dynamic visitor heat", asy
     );
     const detailEnvelope = parseCachedEnvelope(await detailStore.writtenResponse?.text());
     assert.ok(detailEnvelope);
-    assert.equal(detailEnvelope.errorUntil - detailEnvelope.generatedAt, 5 * 60_000);
+    assert.equal(detailEnvelope.freshUntil - detailEnvelope.generatedAt, 6 * 60 * 60_000);
+    assert.equal(detailEnvelope.normalUntil - detailEnvelope.generatedAt, 6 * 60 * 60_000);
+    assert.equal(detailEnvelope.errorUntil - detailEnvelope.generatedAt, 48 * 60 * 60_000);
+    assert.equal(
+        detailStore.writtenResponse?.headers.get("cache-tag"),
+        `${PUBLIC_DATA_CACHE_TAGS.detail},eventlist-detail-42`
+    );
     assert.equal(Object.hasOwn(detailEnvelope.value as object, "recentVisitorCount"), false);
 });
 
@@ -1220,11 +1295,16 @@ test("list adapter admits only normalized bounded filters and pages one through 
     assert.equal(isPublicEventListCacheable(filters), true);
 
     const store = new FakeCacheStore();
+    let listLoadDate: string | undefined;
     const admitted = await loadCachedPublicEventList({
         origin: "https://acg.example/events?ignored=true",
         configuredScopes: "list",
         filters,
-        load: async () => ({ ...publicEventPage, page: 3 }),
+        asOfDate: "2026-08-01",
+        load: async (asOfDate) => {
+            listLoadDate = asOfDate;
+            return { ...publicEventPage, page: 3 };
+        },
         waitUntil: () => undefined,
         getStore: async () => store,
         now: () => 10_000
@@ -1232,14 +1312,15 @@ test("list adapter admits only normalized bounded filters and pages one through 
     assert.equal(admitted.cacheState, "MISS");
     assert.equal(
         store.matchedRequest?.url,
-        "https://acg.example/_eventlist_cache/v2/event-list?timing=ended&division=11&type=comic&scale=small&tag=%E5%90%8C%E4%BA%BA%E5%B1%95&from=2026-01-01&to=2026-12-31&starts=&active=&sort=end_desc&page=3&pageSize=20"
+        "https://acg.example/_eventlist_cache/v2/event-list?timing=ended&division=11&type=comic&scale=small&tag=%E5%90%8C%E4%BA%BA%E5%B1%95&from=2026-01-01&to=2026-12-31&starts=&active=&sort=end_desc&page=3&pageSize=20&date=2026-08-01"
     );
+    assert.equal(listLoadDate, "2026-08-01");
     const envelope = parseCachedEnvelope(await store.writtenResponse?.text());
     assert.ok(envelope);
-    assert.ok(envelope.freshUntil - envelope.generatedAt >= 40_000);
-    assert.ok(envelope.freshUntil - envelope.generatedAt <= 50_000);
-    assert.equal(envelope.normalUntil - envelope.generatedAt, 60_000);
-    assert.equal(envelope.errorUntil - envelope.generatedAt, 5 * 60_000);
+    assert.equal(envelope.freshUntil - envelope.generatedAt, 30 * 60_000);
+    assert.equal(envelope.normalUntil - envelope.generatedAt, 30 * 60_000);
+    assert.equal(envelope.errorUntil - envelope.generatedAt, 48 * 60 * 60_000);
+    assert.equal(store.writtenResponse?.headers.get("cache-tag"), PUBLIC_DATA_CACHE_TAGS.list);
 
     for (const rejectedFilters of [
         { ...filters, page: 4 },
@@ -1267,7 +1348,7 @@ test("list adapter admits only normalized bounded filters and pages one through 
     }
 });
 
-test("sitemap adapter stores rows for 60 seconds and retains them for 30-minute faults", async () => {
+test("sitemap adapter stores rows for six hours and retains them for 48-hour faults", async () => {
     const store = new FakeCacheStore();
     const miss = await loadCachedSitemapRows({
         origin: "https://acg.example",
@@ -1281,9 +1362,10 @@ test("sitemap adapter stores rows for 60 seconds and retains them for 30-minute 
     assert.equal(miss.cacheState, "MISS");
     const written = parseCachedEnvelope(await store.writtenResponse?.text());
     assert.ok(written);
-    assert.equal(written.freshUntil - written.generatedAt, 60_000);
-    assert.equal(written.normalUntil - written.generatedAt, 60_000);
-    assert.equal(written.errorUntil - written.generatedAt, 30 * 60_000);
+    assert.equal(written.freshUntil - written.generatedAt, 6 * 60 * 60_000);
+    assert.equal(written.normalUntil - written.generatedAt, 6 * 60 * 60_000);
+    assert.equal(written.errorUntil - written.generatedAt, 48 * 60 * 60_000);
+    assert.equal(store.writtenResponse?.headers.get("cache-tag"), PUBLIC_DATA_CACHE_TAGS.sitemap);
 
     const fallbackStore = new FakeCacheStore();
     fallbackStore.response = new Response(JSON.stringify(written));
@@ -1335,10 +1417,12 @@ test("public routes reuse cache adapters without changing route-specific isolati
     assert.match(homepageApi, /loadCachedHomepagePopularity\(\{/);
     assert.match(popularityApi, /loadCachedHomepagePopularity\(\{/);
     assert.match(popularityApi, /publicDataCacheResponseHeaders\(result\.cacheState/);
+    assert.match(popularityApi, /private, max-age=5/);
 
     assert.match(eventsPage, /loadCachedPublicTags\(\{/);
     assert.match(eventsPage, /query: ""/);
     assert.match(eventsPage, /loadCachedPublicEventList\(\{/);
+    assert.match(eventsPage, /listPublishedEvents\(db, filters, asOfDate\)/);
     assert.match(detailPage, /loadCachedPublicEventDetail\(\{/);
     assert.match(detailPage, /getPublicEventRecentVisitorCount\(db, id\)/);
     assert.match(eventsPage, /tag: parseTag\(Astro\.url\.searchParams\.get\("tag"\)\)/);
