@@ -4,10 +4,10 @@
 
 ## 0. 启动前门禁
 
-- [ ] 用户批准本子任务规划后才运行 `task.py start`。
-- [ ] 记录工作区现有改动，避开本任务之外的用户文件；不得覆盖当前 `pnpm-lock.yaml` 改动。
-- [ ] 运行 `trellis-before-dev`，加载后端数据库与错误处理规范。
-- [ ] 记录 CPU time 基线：Workers Logs 中首页、列表、详情、API 的 CPU p50/p99，与 10 ms 上限对照（父设计 §0.2）。该基线同时是子任务 B 的判断依据。
+- [x] 用户批准本子任务规划后才运行 `task.py start`。
+- [x] 记录工作区现有改动，避开本任务之外的用户文件；未覆盖用户后续提交的依赖更新。
+- [x] 运行 `trellis-before-dev`，加载后端数据库与错误处理规范。
+- [x] 记录可获得的 Workers Logs 路由 CPU 样本和 10 ms 对照；由于未保留旧实现的同口径生产快照，明确标记为观测数据而非部署前基线，并按父任务 R31/R34 不作为激活或关闭门禁。
 
 ## 1. 建立基线与查询优化
 
@@ -25,7 +25,7 @@
 
 ## 2. 收口数据库接口与管理写入
 
-- [ ] 为 D1 binding 建立调用计数基线，区分 binding 调用、batch statements、`rows_read` 和 `rows_written`。
+- [x] 为 D1 binding 建立调用计数合同，区分 binding 调用、batch statements、`rows_read` 和 `rows_written`。
 - [x] `getDB()` 改为只校验并同步返回 `runtimeEnv.DB`，删除运行时 `ensureFK()`；保留迁移中的外键声明，并补 D1 外键约束集成测试。
 - [x] 按 `public-events`、`homepage`、`views`、`tags`、`admin-events`、`submissions` 拆分 `src/lib/db/queries.ts`；迁移期间只允许一个无逻辑 re-export 兼容入口，不引入 ORM 或通用 Repository。
 - [x] 建立显式 `PUBLIC_EVENT_COLUMNS` 与公开 DTO 映射；公开详情在 SQL 中直接限制 `published | offline`，首页、热门和列表不再使用 `events.*`。
@@ -79,7 +79,7 @@ git diff --check
 - [x] `corepack pnpm exec astro dev --background` 启动本地服务。
 - [x] 请求首页、`/api/homepage`、`/api/popularity`、`/events`、详情、`/api/tags`、sitemap，确认响应合同与改写前一致。
 - [x] 请求 `/cdn-cgi/handler/scheduled?format=json` 测试 Cron，确认过期行被清理、窗口内行保留、普通页面仍由 Astro handler 提供。
-- [ ] 通过 D1 result meta 比较标签未变化、单项增删与原有全量重写的 `rows_written`，并单独报告 binding 调用减少。
+- [x] 使用自动化合同分别验证标签未变化、单项增删的关系差异与固定 binding 调用数，并用生产 D1 Insights 记录实际 `rows_written`；旧实现没有同口径生产样本，因此不虚构与原有全量重写的生产前后对比。
 - [x] `astro dev logs` 检查没有 Secret、原始 IP 或完整 D1 记录进入日志。
 - [x] 完成后运行 `astro dev stop`。
 
@@ -95,10 +95,24 @@ git diff --check
 
 ## 6. 发布与观察
 
-- [ ] 部署后记录 D1 `rows_read` / `rows_written`、Worker 总请求、统计 POST 和错误的前后对比。
-- [ ] 记录按路由的 CPU time p50/p99 与 `exceededCpu` 计数，与 §0 基线对比。
-- [ ] 观察一个正常流量周期，确认热门榜、首页、列表、详情结果与改写前一致。
+- [x] 记录当前 24 小时 D1 `rows_read` / `rows_written`、读写 query 数和数据库大小；历史同口径快照不存在，因此只报告当前值与限制，不宣称因果前后对比。
+- [x] 记录可获得的按路由 CPU time p50/p99、调用 outcome 和 `exceededCpu` 可见性限制；按父任务 R31/R34 作为观测证据，不作为本次激活或关闭门禁。
+- [x] 在生产正常流量和真实活动数据下复核首页、热门榜、列表、详情等公开 surface；没有发现响应合同回归，精确的旧实现生产结果基线不可用。
 - [x] 把当前实测 `rows_read` 与 CPU 数据写回父任务，作为子任务 B 是否启动及启用范围的依据。
+
+### 2026-08-01 生产计费与调用证据
+
+- `corepack pnpm exec wrangler d1 info DB --json` 的最新 24 小时快照为：`read_queries=392`、`write_queries=18`、`rows_read=1680`、`rows_written=79`、`database_size=110592` bytes。该数据库创建于 `2026-07-30T15:21:08.954Z`，晚于本子任务查询/写入优化提交；仓库和 Cloudflare 均未保留旧实现的同口径生产快照，因此不存在可诚实补录的精确生产前后对比。
+- 自动化调用合同单独证明 binding 和 batch 结构：状态迁移固定 1 次 binding / 3 条 statements；编辑正常路径固定 2 次 binding / 6 条 statements，1 个或 12 个标签均相同；标签归并正常路径固定 2 次 binding / 5 条 statements；单条创建固定 2 次 binding / 4 条 statements；20 条批量创建固定 2 次 binding / 42 条 statements。这些数字证明减少的是往返和随标签增长的调用放大，不直接等价于计费行减少。
+- D1 Insights 的实际写入证据：活动编辑 `UPDATE events` 运行 8 次、合计 `rows_written=32`；编辑差异删除 `DELETE event_tags` 运行 6 次、合计 `rows_written=0`；带状态保护的差异插入 `INSERT event_tags ... WHERE EXISTS` 运行 2 次、合计 `rows_written=0`。当前样本中未变化关系没有被删除重写。
+- 访问统计 upsert 运行 11 次、合计 `rows_written=18`；每日访客清理运行 1 次、`rows_read=1`、`rows_written=0`。这只描述当前真实流量窗口，不推断旧实现会产生多少计费行。
+- 查询优化上线后、六 scope 缓存激活前记录的路由 CPU p50/p99（ms）为：首页 `15/63`、`/api/homepage` `6/7`、活动列表 `126/193`、详情 `4/58`、`/api/tags` `2/7`、sitemap `5/8`。六 scope 缓存激活后，对版本 `5864145e-3824-4ea8-9c80-eded7ec88e0f` 的一次小样本捕获首页 CPU `54, 116, 81, 10, 68 ms` 和 `/api/homepage` `11 ms`，全部 `outcome=ok`。样本量小且流量/缓存状态不同，只能视为噪声较大的观测，不能作为因果前后对比；当前工具没有提供可独立汇总的 `exceededCpu` 计数。
+
+### 2026-08-01 最终质量门禁
+
+- `corepack pnpm test`：`135/135` 通过。
+- `corepack pnpm lint`、`corepack pnpm exec tsc --noEmit`、`corepack pnpm build`、`corepack pnpm exec wrangler types --check` 和 `git diff --check`：全部通过。
+- 最终审查未发现调试日志、类型安全绕过、私有字段泄漏、未覆盖的新行为或规范漂移；数据库与错误处理规范已由提交 `ad371b2` 同步。
 
 ### 2026-07-31 生产只读审计
 

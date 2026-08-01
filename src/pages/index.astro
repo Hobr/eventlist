@@ -81,9 +81,9 @@ if (selectedDivision) {
                 origin: Astro.url,
                 configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
                 divisionCode: selectedDivisionCode,
-                load: async () =>
+                load: async (asOfDate) =>
                     toPublicHomepageDiscovery(
-                        await listHomepageDiscovery(db, selectedDivisionCode)
+                        await listHomepageDiscovery(db, selectedDivisionCode, asOfDate)
                     ),
                 waitUntil
             }),

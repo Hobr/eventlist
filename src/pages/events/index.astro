@@ -119,7 +119,7 @@ try {
             origin: Astro.url,
             configuredScopes: runtimeEnv.PUBLIC_DATA_CACHE_SCOPES,
             filters,
-            load: () => listPublishedEvents(db, filters),
+            load: (asOfDate) => listPublishedEvents(db, filters, asOfDate),
             waitUntil
         })
     ]);

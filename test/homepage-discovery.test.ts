@@ -109,3 +109,20 @@ test("首页发现查询返回最多五条进行中优先候选, 并将今日活
         [1, 4]
     );
 });
+
+test("首页发现可以固定同一次缓存加载使用的中国日期", async () => {
+    const db = new FakeDatabase();
+
+    await listHomepageDiscovery(asD1(db), "11", "2026-08-01");
+
+    assert.equal(db.prepared.length, 2);
+    for (const statement of db.prepared) {
+        assert.match(statement.sql, /WITH cache_clock\(as_of_date\) AS \(VALUES \(\?\)\)/);
+        assert.match(statement.sql, /SELECT as_of_date FROM cache_clock/);
+        assert.deepEqual(statement.values, ["2026-08-01", "published", "11%"]);
+    }
+    await assert.rejects(
+        listHomepageDiscovery(asD1(new FakeDatabase()), "11", "2026-02-30"),
+        /canonical date/
+    );
+});

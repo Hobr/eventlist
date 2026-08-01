@@ -1,2 +1,3 @@
 TURNSTILE_SECRET=
 VIEW_HASH_SECRET=local-development-only-change-me
+CLOUDFLARE_CACHE_PURGE_TOKEN=

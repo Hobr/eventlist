@@ -7,7 +7,7 @@ import {
     transitionEventStatus,
     type AdminEventInput
 } from "../src/lib/db/admin-events";
-import { listHomepagePopularity } from "../src/lib/db/homepage";
+import { listHomepageDiscovery, listHomepagePopularity } from "../src/lib/db/homepage";
 import { STATUS, type EventStatus } from "../src/lib/db";
 import { listPublishedEvents, listPublishedEventSitemapRows } from "../src/lib/db/public-events";
 import { insertSubmission } from "../src/lib/db/submissions";
@@ -528,6 +528,66 @@ test("real SQLite query plans use the required existing indexes", async () => {
         await deleteExpiredEventVisitors(database.binding);
         const cleanupPlan = database.explain(database.prepared[0]);
         assert.ok(cleanupPlan.some(({ detail }) => detail.includes("idx_event_visitors_recent")));
+    } finally {
+        database.close();
+    }
+});
+
+test("date-sensitive public queries use the cache key's captured China date", async () => {
+    const database = await createDatabase();
+    try {
+        for (const [id, startDate, endDate] of [
+            [1, "2026-07-31", "2026-07-31"],
+            [2, "2026-08-01", "2026-08-01"],
+            [3, "2026-08-02", "2026-08-02"]
+        ] as const) {
+            database.run(
+                `INSERT INTO events(
+                     id, title, type, scale, division_code, venue, start_date, end_date,
+                     source_url, submitter_contact, status
+                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                id,
+                `Date fixture ${id}`,
+                VALID_EVENT.type,
+                VALID_EVENT.scale,
+                VALID_EVENT.division_code,
+                VALID_EVENT.venue,
+                startDate,
+                endDate,
+                `https://example.com/source/${id}`,
+                VALID_EVENT.submitter_contact,
+                STATUS.PUBLISHED
+            );
+        }
+
+        const upcoming = await listPublishedEvents(
+            database.binding,
+            { timing: "upcoming", divisionCode: "11", page: 1, pageSize: 20 },
+            "2026-08-01"
+        );
+        const ended = await listPublishedEvents(
+            database.binding,
+            { timing: "ended", divisionCode: "11", page: 1, pageSize: 20 },
+            "2026-08-01"
+        );
+        const discovery = await listHomepageDiscovery(database.binding, "11", "2026-08-01");
+
+        assert.deepEqual(
+            upcoming.events.map(({ id }) => id),
+            [2, 3]
+        );
+        assert.deepEqual(
+            ended.events.map(({ id }) => id),
+            [1]
+        );
+        assert.deepEqual(
+            discovery.today.map(({ id }) => id),
+            [2]
+        );
+        assert.deepEqual(
+            discovery.featuredEvents.map(({ id }) => id),
+            [2, 3]
+        );
     } finally {
         database.close();
     }

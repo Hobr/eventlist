@@ -40,6 +40,8 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
                 newStatus: STATUS.PUBLISHED,
                 tagsChanged: true
             },
+            zoneId: runtimeEnv.CLOUDFLARE_ZONE_ID,
+            purgeToken: runtimeEnv.CLOUDFLARE_CACHE_PURGE_TOKEN,
             waitUntil
         });
         return jsonOk({ id }, { status: 201 });

@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 23
-- **Last Active**: 2026-07-31
+- **Total Sessions**: 26
+- **Last Active**: 2026-08-01
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~691 | Active |
+| `journal-1.md` | ~761 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -30,6 +30,9 @@
 
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 26 | 2026-08-01 | Close D1 cache strategy parent task | `938a940` | `dev` |
+| 25 | 2026-08-01 | Complete D1 query and write optimization | `b963e4d`, `619d921`, `2de233d`, `d02e62b`, `d206d69`, `d85d3f4`, `ad371b2`, `58a7e7a` | `dev` |
+| 24 | 2026-08-01 | Complete public DTO cache rollout | `3f1c929` | `dev` |
 | 23 | 2026-07-31 | Add event admission details | `04441e9` | `dev` |
 | 22 | 2026-07-31 | Hide empty event details | `8ff2321` | `dev` |
 | 21 | 2026-07-31 | Integrate Cloudflare Turnstile | `e2a6f23` | `dev` |

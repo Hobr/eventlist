@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/07-28-public-dto-cache-layer/prd.md","reason":"验收全部六个 scope、TTL、全局 purge、安全与生产证据"}
+{"file":".trellis/tasks/07-28-public-dto-cache-layer/design.md","reason":"复核 tag 映射、跨日期键、失败降级、部署和回滚设计"}
+{"file":".trellis/tasks/07-28-public-dto-cache-layer/research/global-cache-purge.md","reason":"核对实现是否符合 Cloudflare 当前全局 purge 能力与免费方案限制"}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"检查代码与项目可执行缓存规范一致并更新历史门禁"}

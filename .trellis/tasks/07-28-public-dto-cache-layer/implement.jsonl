@@ -1,3 +1,0 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
-{"file": ".trellis/tasks/07-28-d1-cache-strategy/design.md", "reason": "父任务完整技术设计：缓存边界、键规范化、状态机、失效与发布回滚"}
-{"file": ".trellis/spec/backend/error-handling.md", "reason": "缓存失败、D1 失败、API 状态码与 beacon 不阻塞页面的合同"}

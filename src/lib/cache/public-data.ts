@@ -5,6 +5,7 @@ import type {
     SitemapEventRow
 } from "../db/public-events";
 import type { TagSummary } from "../db/tags";
+import { getChinaLocalDate, isCanonicalDate } from "../events/datetime";
 import type { PublicHomepageDiscovery, PublicHomepagePopularity } from "../public/homepage";
 
 export const PUBLIC_DATA_CACHE_NAMESPACE = "eventlist-public-data-v2";
@@ -19,6 +20,15 @@ export const PUBLIC_DATA_CACHE_SCOPES = [
 ] as const;
 
 export type PublicDataCacheScope = (typeof PUBLIC_DATA_CACHE_SCOPES)[number];
+
+export const PUBLIC_DATA_CACHE_TAGS: Readonly<Record<PublicDataCacheScope, string>> = {
+    homepage: "eventlist-homepage",
+    popularity: "eventlist-popularity",
+    tags: "eventlist-tags",
+    detail: "eventlist-detail",
+    sitemap: "eventlist-sitemap",
+    list: "eventlist-list"
+};
 
 export interface PublicDataCachePayloads {
     "home-discovery": PublicHomepageDiscovery;
@@ -81,9 +91,9 @@ export type PublicDataCacheWaitUntil = (promise: Promise<unknown>) => void;
 export type PublicDataCacheInFlight = Map<string, Promise<unknown>>;
 
 export type PublicDataCacheKey =
-    | { resource: "home-discovery"; divisionCode: string }
+    | { resource: "home-discovery"; divisionCode: string; asOfDate?: string }
     | { resource: "popularity"; divisionCode: string; window: 3 | 7 | 30 }
-    | { resource: "event-list"; filters: PublishedEventFilters }
+    | { resource: "event-list"; filters: PublishedEventFilters; asOfDate?: string }
     | { resource: "event-detail"; eventId: number }
     | { resource: "top-tags"; limit: number }
     | { resource: "tag-search"; query: string; limit: number }
@@ -212,6 +222,18 @@ function requirePositiveSafeInteger(value: number, label: string) {
     return value;
 }
 
+function requireCanonicalCacheDate(value: string) {
+    if (!isCanonicalDate(value)) throw new RangeError("Cache date must be a canonical date");
+    return value;
+}
+
+export function normalizePublicDataCacheTags(tags: readonly string[] | undefined): string[] | null {
+    if (tags === undefined) return [];
+    const normalized = [...new Set(tags)];
+    if (normalized.some((tag) => !/^[A-Za-z0-9:_-]+$/.test(tag))) return null;
+    return normalized;
+}
+
 function eventListSearchParams(filters: PublishedEventFilters) {
     const timing = filters.timing ?? "upcoming";
     const sort = filters.sort ?? (timing === "ended" ? "end_desc" : "start_asc");
@@ -246,7 +268,10 @@ export function buildPublicDataCacheRequest(origin: string | URL, key: PublicDat
     let params: URLSearchParams;
     switch (key.resource) {
         case "home-discovery":
-            params = new URLSearchParams([["division", key.divisionCode]]);
+            params = new URLSearchParams([
+                ["division", key.divisionCode],
+                ["date", requireCanonicalCacheDate(key.asOfDate ?? getChinaLocalDate())]
+            ]);
             break;
         case "popularity":
             params = new URLSearchParams([
@@ -256,6 +281,7 @@ export function buildPublicDataCacheRequest(origin: string | URL, key: PublicDat
             break;
         case "event-list":
             params = eventListSearchParams(key.filters);
+            params.set("date", requireCanonicalCacheDate(key.asOfDate ?? getChinaLocalDate()));
             break;
         case "event-detail":
             params = new URLSearchParams([
@@ -404,6 +430,7 @@ export async function writePublicDataCache<T>(options: {
     store: PublicDataCacheStore;
     request: Request;
     envelope: CachedEnvelope<T>;
+    cacheTags?: readonly string[];
     now?: number;
 }): Promise<PublicDataCacheWriteResult> {
     if (!isPublicDataCacheEnabled(options.scopes, options.scope)) return "bypass";
@@ -412,6 +439,8 @@ export async function writePublicDataCache<T>(options: {
     if (!isNonNegativeFiniteNumber(now) || !parseCachedEnvelope(options.envelope)) {
         return "skipped";
     }
+    const cacheTags = normalizePublicDataCacheTags(options.cacheTags);
+    if (!cacheTags) return "skipped";
     const maxAge = Math.ceil((options.envelope.errorUntil - now) / 1000);
     if (maxAge <= 0) return "skipped";
 
@@ -421,7 +450,8 @@ export async function writePublicDataCache<T>(options: {
             new Response(JSON.stringify(options.envelope), {
                 headers: {
                     "cache-control": `public, max-age=${maxAge}`,
-                    "content-type": "application/json; charset=utf-8"
+                    "content-type": "application/json; charset=utf-8",
+                    ...(cacheTags.length > 0 ? { "cache-tag": cacheTags.join(",") } : {})
                 }
             })
         );
@@ -439,6 +469,7 @@ export async function loadPublicDataWithCache<T>(options: {
     isValue: (value: unknown) => value is T;
     isCacheValue?: (value: unknown) => value is T;
     shouldCache?: (value: T) => boolean;
+    cacheTags?: readonly string[];
     ttl: PublicDataCacheTtlPolicy;
     load: () => Promise<T>;
     waitUntil: PublicDataCacheWaitUntil;
@@ -499,6 +530,7 @@ export async function loadPublicDataWithCache<T>(options: {
                 store,
                 request: options.request,
                 envelope,
+                cacheTags: options.cacheTags,
                 now: generatedAt
             });
             if (background) {

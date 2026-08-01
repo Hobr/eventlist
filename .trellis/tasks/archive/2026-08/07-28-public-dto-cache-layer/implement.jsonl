@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/07-28-d1-cache-strategy/design.md","reason":"父任务缓存边界、公开 DTO、错误降级和回滚合同"}
+{"file":".trellis/tasks/07-28-public-dto-cache-layer/research/global-cache-purge.md","reason":"Cache API 数据中心边界、Cache-Tag 全局 purge、免费方案限制和权限要求"}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"现有缓存键、DTO guard、失效和测试规范；实施时需同步更新现行合同"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"管理员 mutation 成功响应和公开 API 错误合同"}
