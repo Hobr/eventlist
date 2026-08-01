@@ -4,16 +4,18 @@
 
 > 本节与子任务 `07-28-public-dto-cache-layer` 的现行合同覆盖下方所有冲突的容量、CPU、逐 scope canary、自动晋级、短 TTL 和仅本地失效指令。下方未同步的旧清单与 dated rollout 记录仅作为历史证据，不得用于判断当前生产状态、阻断或改变本次执行。
 
-- [ ] 用户批准最新最终规划摘要后，启动子任务 `07-28-public-dto-cache-layer`；父任务本身不作为本轮产品代码实现目标。
-- [ ] 启动后先运行 `trellis-before-dev`，保留共享工作区和并发任务的既有改动。
-- [ ] 为六类 Cache API 条目写入固定 scope `Cache-Tag`，将首页发现和活动列表键加入同一次 loader 使用的中国本地日期。
-- [ ] 将 `popularity` 调整为 45-55 秒稳定抖动新鲜期、60 秒正常上限、5 分钟 D1 故障上限，并将 `/api/popularity` 私有浏览器缓存降到 5 秒；首页、列表和标签调整为 30 分钟新鲜/正常上限，详情和 sitemap 调整为 6 小时新鲜/正常上限，五类均保留 48 小时 D1 故障上限。
-- [ ] 扩展现有写后失效：保留最多 24 次本地 `cache.delete()`，并在公开数据发生 changed mutation 后最多调度一次 Cloudflare zone Cache-Tag purge。
-- [ ] 创建、批量创建、编辑、审核通过、下线和重新发布 purge 全部六个 scope tag；标签归并 purge `homepage,popularity,tags,detail,list`，不 purge sitemap；成功驳回 pending、公共投稿、访问统计和非 changed 结果不 purge。
-- [ ] purge 使用 `CLOUDFLARE_ZONE_ID` 与最小权限 `CLOUDFLARE_CACHE_PURGE_TOKEN`；任何配置、网络、限流或 Cloudflare 结果失败均不得回滚 D1 或改变成功管理响应。
-- [ ] 运行缓存 TTL、日期键、tag、purge 请求合同、失败降级、失效映射和现有回归测试，再运行完整 test、lint、TypeScript、生产 build、Wrangler types、deploy dry-run 与 `git diff --check`。
-- [ ] 人工确认 zone ID、Cache Purge-only token、上一稳定 Worker Version 和旧自动控制器仍暂停后，将 `PUBLIC_DATA_CACHE_SCOPES` 一次设置为 `homepage,popularity,tags,detail,sitemap,list` 并部署 100%。CPU、D1 用量和 `exceededCpu` 只记录为观测证据，不作为激活门禁。
-- [ ] 在线验证六类路由正文一致与 `MISS -> HIT`，再用可恢复管理员 mutation 验证全局 purge 后重新 `MISS`；失败时恢复上一 Worker Version 或将 scope 恢复为 `tags,sitemap`/空值，不修改 D1 schema 或事实数据。
+- [x] 用户批准最新最终规划摘要后，启动子任务 `07-28-public-dto-cache-layer`；父任务本身不作为本轮产品代码实现目标。
+- [x] 启动后先运行 `trellis-before-dev`，保留共享工作区和并发任务的既有改动。
+- [x] 为六类 Cache API 条目写入固定 scope `Cache-Tag`，将首页发现和活动列表键加入同一次 loader 使用的中国本地日期。
+- [x] 将 `popularity` 调整为 45-55 秒稳定抖动新鲜期、60 秒正常上限、5 分钟 D1 故障上限，并将 `/api/popularity` 私有浏览器缓存降到 5 秒；首页、列表和标签调整为 30 分钟新鲜/正常上限，详情和 sitemap 调整为 6 小时新鲜/正常上限，五类均保留 48 小时 D1 故障上限。
+- [x] 扩展现有写后失效：保留最多 24 次本地 `cache.delete()`，并在公开数据发生 changed mutation 后最多调度一次 Cloudflare zone Cache-Tag purge。
+- [x] 创建、批量创建、编辑、审核通过、下线和重新发布 purge 全部六个 scope tag；标签归并 purge `homepage,popularity,tags,detail,list`，不 purge sitemap；成功驳回 pending、公共投稿、访问统计和非 changed 结果不 purge。
+- [x] purge 使用 `CLOUDFLARE_ZONE_ID` 与最小权限 `CLOUDFLARE_CACHE_PURGE_TOKEN`；任何配置、网络、限流或 Cloudflare 结果失败均不得回滚 D1 或改变成功管理响应。
+- [x] 运行缓存 TTL、日期键、tag、purge 请求合同、失败降级、失效映射和现有回归测试，再运行完整 test、lint、TypeScript、生产 build、Wrangler types、deploy dry-run 与 `git diff --check`。
+- [x] 人工确认 zone ID、Cache Purge-only token、上一稳定 Worker Version 和旧自动控制器仍暂停后，将 `PUBLIC_DATA_CACHE_SCOPES` 一次设置为 `homepage,popularity,tags,detail,sitemap,list` 并部署 100%。CPU、D1 用量和 `exceededCpu` 只记录为观测证据，不作为激活门禁。
+- [x] 在线验证六类路由正文一致与 `MISS -> HIT`，再用可恢复管理员 mutation 验证全局 purge 后重新 `MISS`；失败时恢复上一 Worker Version 或将 scope 恢复为 `tags,sitemap`/空值，不修改 D1 schema 或事实数据。
+
+> §1-§10 保留原始分阶段计划和历史 rollout 证据。实际执行与验收分别由已归档的 `07-28-d1-query-write-optimization` 和 `07-28-public-dto-cache-layer` 子任务记录；被 R29-R38 或最终交付清单覆盖的旧未勾选门禁不再阻断父任务关闭。
 
 ## H0. 历史启动门禁（已被 §0 覆盖）
 
@@ -34,8 +36,8 @@
 ### 0.2 分工
 
 - **子任务 A `07-28-d1-query-write-optimization`（不依赖 Cache API，先做）**：第 1、2 节，以及第 3 节中除 Cache API 标记以外的部分（`recordEventView` 收口、`deleteExpiredEventVisitors`、`src/worker.ts` 自定义入口与 Cron）。第 8 节中对应的测试同批完成。
-- **子任务 B `07-28-public-dto-cache-layer`**：默认关闭的纯缓存基础可在 §0.1 前交付；第 3 节的当日成功标记、第 4-7 节中的路由/Cache API 接入，以及对应集成测试仍依赖 §0.1 通过。
-- 子任务 A 上线并观察一个正常流量周期后，再依据实测 `rows_read` / CPU 决定 B 的启动时机与范围。
+- **子任务 B `07-28-public-dto-cache-layer`**：交付第 4-7 节的公开 DTO 路由、Cache-Tag 全局失效与生产激活；第 3 节访问标记在最终范围中明确排除。
+- 子任务 A 上线后曾按实测 `rows_read` / CPU 评估 B；该旧门禁随后被用户的 2026-08-01 最终决策覆盖，六个公开 DTO scope 已一次启用，指标仅作观测。
 
 ## 1. 建立基线与查询优化
 
@@ -66,7 +68,9 @@
 - [ ] 将单条管理员创建的逐标签 statements 收口为集合式标签插入和关系插入；保持 `nextEventId` 冲突重试与事件/关系/审计原子 batch。
 - [ ] 保持批量创建现有的集合式标签和原子 batch，不因模块拆分增加额外逐条查询或审计调用。
 
-## 3. 优化热度写入链路
+## 3. 历史访问标记方案（未纳入最终交付）
+
+> 本节是 2026-07-31 的早期设计草案。最终六 scope 激活不实现或启用 `VIEW_DEDUPE_CACHE_ENABLED`；详情继续发送现有非阻塞统计 POST。下列未勾选项保留为未来独立任务的候选，不属于本父任务关闭条件。
 
 - [ ] 新增 `src/lib/cache/view-dedupe.ts`，实现：
   - 中国本地日期与下一本地零点 TTL 计算
@@ -296,12 +300,22 @@ git diff --check
 - 将来源链接恢复为 `https://show.bilibili.com/platform/detail.html?id=1003089` 后，六个公开 surface 再次全部返回 `200 MISS`，后续请求全部恢复为 `200 HIT`。远程 D1 只读复核确认来源链接已精确恢复，验证查询 `changed_db=false`、`rows_written=0`。
 - 两次可逆管理员 mutation 均成功清除目标 zone 的相关缓存，证明 Worker 中保存的 purge token 具备目标 zone `Cache Purge: Edit` 能力；没有读取或输出 token 值，没有触发 rollback。
 
+### 2026-08-01 父任务最终集成审查
+
+- [x] 两个子任务均已归档：`07-28-d1-query-write-optimization` 与 `07-28-public-dto-cache-layer`；父 PRD A1-A34 已按最终范围逐项复核。
+- [x] 最终全量质量门禁通过：`135/135` 测试、lint、`tsc --noEmit`、生产 build、`wrangler types --check`、Wrangler deploy dry-run 和 `git diff --check`。
+- [x] 当前生产 deployment `b4be4c0b-de3f-4e82-b7f5-08405b0beb57` 仍将版本 `5864145e-3824-4ea8-9c80-eded7ec88e0f` 分配 `100%` 流量；源码配置固定启用 `homepage,popularity,tags,detail,sitemap,list`，`workers_dev=false`。
+- [x] 2026-08-01 23:16 CST 只读复核中，首页 API 与热门 API 均为 `200 MISS -> HIT`；标签、活动列表、活动 2 详情和 sitemap 均为 `200 HIT`。热门 API 保持 `private, max-age=5`，所有路由由 `SIN` 数据中心返回。
+- [x] 生产 D1 最新 24 小时观测为 `read_queries=392`、`write_queries=18`、`rows_read=1680`、`rows_written=79`。数据库没有同口径旧实现基线，因此只报告当前值，不宣称精确因果降幅。
+- [x] `VIEW_DEDUPE_CACHE_ENABLED` 不在最终交付范围；公开详情静态 DTO 缓存继续保留既有访问统计 POST，未把访问 marker 的未实现状态误报为完成。
+- [x] 最小权限 purge secret 只验证名称和实际 purge 能力，未读取或输出 secret 值；仓库与生产 Worker 不包含 Workers Scripts 写令牌，旧自动晋级控制器保持暂停。
+
 ## 11. 回滚点
 
 - 查询语义回归：恢复列转换改写；没有迁移。
 - 数据库接口回归：保留新模块兼容 re-export，逐个路由恢复旧操作函数；不得恢复每请求 `ensureFK()`，除非新的官方证据证明 D1 行为改变。
 - 缓存状态机回归：删除或清空 `PUBLIC_DATA_CACHE_SCOPES`，严格解析器关闭全部 scope，所有 loader 直接回 D1；无需恢复 D1 数据。
-- 热度标记回归：关闭 `VIEW_DEDUPE_CACHE_ENABLED`，详情恢复每次输出 POST，POST 直接执行 D1 当日条件 upsert。
+- 访问统计回归：本次未启用 `VIEW_DEDUPE_CACHE_ENABLED`，无需 marker 回滚；若未来独立任务启用，关闭该开关即可恢复当前每次详情输出 POST 的行为。
 - 自定义入口/Cron 回归：将 `wrangler.jsonc.main` 恢复为 `@astrojs/cloudflare/entrypoints/server`；热门查询仍正确，临时使用人工命令做过期清理。
 - DTO 回归：恢复页面读取函数，但不得保留缓存中的完整私有记录。
 - 写后失效回归：关闭缓存优先，不回滚已成功的 D1 写入。
