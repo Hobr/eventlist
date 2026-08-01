@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 23
-- **Last Active**: 2026-07-31
+- **Total Sessions**: 24
+- **Last Active**: 2026-08-01
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~691 | Active |
+| `journal-1.md` | ~712 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -30,6 +30,7 @@
 
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 24 | 2026-08-01 | Complete public DTO cache rollout | `3f1c929` | `dev` |
 | 23 | 2026-07-31 | Add event admission details | `04441e9` | `dev` |
 | 22 | 2026-07-31 | Hide empty event details | `8ff2321` | `dev` |
 | 21 | 2026-07-31 | Integrate Cloudflare Turnstile | `e2a6f23` | `dev` |

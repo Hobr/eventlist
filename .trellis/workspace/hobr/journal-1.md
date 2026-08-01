@@ -689,3 +689,24 @@ Hide absent optional fields on public event details, prefer ticket links with so
 ### Status
 
 [OK] **Completed**
+
+
+## Session 24: Complete public DTO cache rollout
+
+**Date**: 2026-08-01
+**Task**: Complete public DTO cache rollout
+**Branch**: `dev`
+
+### Summary
+
+Activated six public DTO cache scopes, verified reversible admin Cache-Tag purge twice in production, restored event data, and archived the cache-layer child task.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3f1c929` | (see git log) |
+
+### Status
+
+[OK] **Completed**
