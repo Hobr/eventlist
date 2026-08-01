@@ -74,4 +74,4 @@ Production rollout completed on 2026-08-01:
 - [x] Run Trellis quality check and resolve findings.
 - [x] Record production version, deployment, scope, rollback version, and mutation-based purge evidence in the parent implementation log.
 - [x] Update the relevant cache spec.
-- [ ] Commit all scoped changes and archive/finish the child task.
+- [x] Commit all scoped changes and archive/finish the child task.
