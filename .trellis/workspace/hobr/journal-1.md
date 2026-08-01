@@ -710,3 +710,31 @@ Activated six public DTO cache scopes, verified reversible admin Cache-Tag purge
 ### Status
 
 [OK] **Completed**
+
+
+## Session 25: Complete D1 query and write optimization
+
+**Date**: 2026-08-01
+**Task**: Complete D1 query and write optimization
+**Branch**: `dev`
+
+### Summary
+
+Completed indexed public reads, fixed-call atomic admin writes, scheduled visitor cleanup, explicit public DTO projections, production D1 billing evidence, and final 135-test quality verification; documented that no same-metric pre-optimization production baseline exists.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b963e4d` | (see git log) |
+| `619d921` | (see git log) |
+| `2de233d` | (see git log) |
+| `d02e62b` | (see git log) |
+| `d206d69` | (see git log) |
+| `d85d3f4` | (see git log) |
+| `ad371b2` | (see git log) |
+| `58a7e7a` | (see git log) |
+
+### Status
+
+[OK] **Completed**
