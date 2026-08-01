@@ -738,3 +738,24 @@ Completed indexed public reads, fixed-call atomic admin writes, scheduled visito
 ### Status
 
 [OK] **Completed**
+
+
+## Session 26: Close D1 cache strategy parent task
+
+**Date**: 2026-08-01
+**Task**: Close D1 cache strategy parent task
+**Branch**: `dev`
+
+### Summary
+
+Reconciled the parent requirements with both archived child tasks, removed stale access-marker obligations from the final scope, reverified the six-scope 100% production deployment and live cache responses, reran all 135 tests and deployment gates, and closed all parent acceptance criteria.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `938a940` | (see git log) |
+
+### Status
+
+[OK] **Completed**
