@@ -759,3 +759,26 @@ Reconciled the parent requirements with both archived child tasks, removed stale
 ### Status
 
 [OK] **Completed**
+
+
+## Session 27: 完成 Brooks 全仓质量清扫
+
+**Date**: 2026-08-03
+**Task**: 完成 Brooks 全仓质量清扫
+**Branch**: `dev`
+
+### Summary
+
+完成 Review、Test、Debt、Audit 四维清扫，修复 7 项并保留 8 项 residual；140 项测试及全部质量门禁通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0ad8d63` | (see git log) |
+| `144afe3` | (see git log) |
+| `5b7a7e3` | (see git log) |
+
+### Status
+
+[OK] **Completed**
