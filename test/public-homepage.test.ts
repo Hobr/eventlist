@@ -21,6 +21,10 @@ import {
     readPopularityResponse
 } from "../src/lib/public/homepage-client";
 
+function readSource(path: string) {
+    return readFile(new URL(path, import.meta.url), "utf8");
+}
+
 function event(id: number) {
     const publicRow: PublicEventRow = {
         id,
@@ -281,20 +285,8 @@ test("首页快照 API 严格校验参数并以一次全有或全无响应提交
     assert.doesNotMatch(source, /error instanceof Error \? error\.message/);
 });
 
-test("首页客户端由单一快照事件提交, 并保持地区化缓存、竞态和历史合同", async () => {
-    const [nav, content, popularity, indexPage, eventCard, today, sidePanel, citySelector] =
-        await Promise.all(
-            [
-                "../src/components/NavLocationPicker.svelte",
-                "../src/components/HomepageContent.svelte",
-                "../src/components/HomepagePopularity.svelte",
-                "../src/pages/index.astro",
-                "../src/components/EventCard.astro",
-                "../src/components/HomepageToday.svelte",
-                "../src/components/ui/side-panel.svelte",
-                "../src/components/CitySelector.svelte"
-            ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))
-        );
+test("地区快照请求丢弃过期响应并只在成功后提交历史和偏好", async () => {
+    const nav = await readSource("../src/components/NavLocationPicker.svelte");
 
     assert.match(nav, /const requestId = \+\+requestSequence/);
     assert.match(nav, /requestController\?\.abort\(\)/);
@@ -307,6 +299,17 @@ test("首页客户端由单一快照事件提交, 并保持地区化缓存、竞
     assert.match(nav, /writeDivisionPreference\(homepage\.division\.code\)/);
     assert.match(nav, /HOMEPAGE_DATA_EVENT/);
     assert.match(nav, /使用普通页面导航打开该地区/);
+});
+
+test("首页快照岛独占组合渲染且不发起第二组请求", async () => {
+    const [content, indexPage, eventCard, today] = await Promise.all(
+        [
+            "../src/components/HomepageContent.svelte",
+            "../src/pages/index.astro",
+            "../src/components/EventCard.astro",
+            "../src/components/HomepageToday.svelte"
+        ].map(readSource)
+    );
 
     assert.match(content, /homepage = detail\.homepage/);
     assert.match(content, /<FeaturedEventCarousel/);
@@ -314,16 +317,29 @@ test("首页客户端由单一快照事件提交, 并保持地区化缓存、竞
     assert.match(content, /<HomepageToday/);
     assert.doesNotMatch(content, /fetch\(/);
 
-    assert.match(popularity, /homepagePopularityCacheKey\(requestCity, trend\)/);
-    assert.match(popularity, /requestCity !== divisionCode/);
-    assert.match(popularity, /mergeHomepageHistoryState/);
-    assert.match(popularity, /history\.replaceState/);
-
     assert.match(indexPage, /<HomepageContent[\s\S]*client:load/);
     assert.doesNotMatch(indexPage, /<HomepagePopularity/);
     assert.doesNotMatch(indexPage, /<EventCard/);
     assert.match(eventCard, /<EventRow event=\{toPublicEventRow\(event\)\}/);
     assert.match(today, /<EventRow \{event\}/);
+});
+
+test("首页热门组件按地区隔离缓存并在成功后替换历史", async () => {
+    const popularity = await readSource("../src/components/HomepagePopularity.svelte");
+
+    assert.match(popularity, /homepagePopularityCacheKey\(requestCity, trend\)/);
+    assert.match(popularity, /requestCity !== divisionCode/);
+    assert.match(popularity, /mergeHomepageHistoryState/);
+    assert.match(popularity, /history\.replaceState/);
+});
+
+test("地区选择外壳保留受控侧栏和默认导航行为", async () => {
+    const [sidePanel, citySelector] = await Promise.all(
+        ["../src/components/ui/side-panel.svelte", "../src/components/CitySelector.svelte"].map(
+            readSource
+        )
+    );
+
     assert.match(sidePanel, /open = \$bindable\(false\)/);
     assert.match(citySelector, /navigateOnChange = true/);
     assert.match(citySelector, /if \(navigateOnChange\) navigateToDivision/);
@@ -335,7 +351,7 @@ test("地区切换后的新 Hero 复用稳定 reveal 容器, 动态 reveal 节�
             "../src/layouts/Layout.astro",
             "../src/components/HomepageContent.svelte",
             "../src/components/FeaturedEventCarousel.svelte"
-        ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))
+        ].map(readSource)
     );
 
     assert.match(layout, /const intersectionObserver =/);
