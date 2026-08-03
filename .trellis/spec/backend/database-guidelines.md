@@ -20,6 +20,7 @@
     - `migrations_dir = "migrations"`
 - Baseline file: `migrations/0001_init.sql` creates all application tables, constraints, and indexes without mutable type/scale dimension tables.
 - Shared option module: `src/lib/events/options.ts` exports type, scale, schedule-status, and admission-method catalogues together with their types, membership guards, and label helpers.
+- Shared input-contract module: `src/lib/events/input.ts` owns `EventBaseInput`, `SubmissionInput`, and `AdminEventInput`. Form validators and D1 adapters import these domain types directly; `src/lib/db/submissions.ts` and `src/lib/db/admin-events.ts` only re-export them for compatibility and must not become their source of truth again.
 - Access helper: `getDB(runtimeEnv): D1Database`; it returns the configured binding synchronously and never probes D1.
 - Generated binding: `worker-configuration.d.ts` contains `DB: D1Database`.
 - Application tables: `tags`, `events`, `event_visitors`, `event_tags`, `audit_logs`.
@@ -370,7 +371,7 @@ await db
 - Assert the request path contains no visitor cleanup, the daily scheduled handler invokes cleanup, and popularity/cleanup query plans use `idx_event_visitors_recent`.
 - Compare direct indexed date/order queries with the legacy `date(...)`/`time(...)` expressions on the seeded catalogue for listing order, pagination, and 3/7/30-day popularity.
 - Assert `starts` and `active` catalogue URLs produce removable conditions and exact matching results.
-- Run Prettier, TypeScript, Wrangler type sync, and the production build; run ESLint when its installed parser supports TypeScript 7.
+- Run Prettier, TypeScript, Wrangler type sync, ESLint, and the production build. The current installed TypeScript 7 / `@typescript-eslint/parser` toolchain loads successfully, so lint failures are normal hard-gate failures rather than the historical parser exception.
 
 ### 7. Wrong vs Correct
 

@@ -20,5 +20,16 @@
             "suggestion": 1
         },
         "scope": "Entire tracked repository (245 approved files; 115 non-Trellis files analyzed)"
+    },
+    {
+        "date": "2026-08-03",
+        "mode": "Full Sweep",
+        "score": 72,
+        "findings": {
+            "critical": 0,
+            "warning": 5,
+            "suggestion": 3
+        },
+        "scope": "Entire tracked repository (409 baseline tracked files; 176 non-Trellis files plus active task inputs; generated assets consistency-only)"
     }
 ]

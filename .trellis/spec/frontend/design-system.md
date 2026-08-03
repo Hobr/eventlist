@@ -423,14 +423,12 @@ function handlePanelKeydown(event: KeyboardEvent) {
   it must return no matches. Confirm `src/styles/app.css` retains
   `flowbite/plugin`, both Flowbite `@source` paths, and the system-media dark
   variant. Production source must not call `initFlowbite()`.
-- The project currently uses TypeScript 7. `@typescript-eslint/parser` 8.64 is
-  not yet compatible with TypeScript 7 and can fail while importing
-  `eslint.config.js` before any project rule runs (for example, an internal
-  Node assertion or a `typescript-estree` enum access error). Treat this as a
-  known upstream tooling gap: continue to run Prettier, `tsc --noEmit`, and the
-  production build, but do not downgrade TypeScript, patch dependencies, or
-  change application code merely to make ESLint load. Re-enable the ESLint
-  gate once the installed parser officially supports TypeScript 7.
+- The current installed TypeScript 7 / `@typescript-eslint/parser` toolchain
+  loads the project ESLint configuration successfully. Treat
+  `corepack pnpm lint` as a required gate: diagnose any future failure against
+  the installed versions and source diff instead of applying the historical
+  parser exception. Do not downgrade TypeScript or patch dependencies merely
+  to suppress a lint failure.
 - Validate public routes and `/admin/login` at approximately 390x844,
   768x1024, and 1440x1000. Assert `scrollWidth <= clientWidth`, stable media
   dimensions, focusable disclosure/dialog controls, and visible workflow
