@@ -1,0 +1,7 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"保护 D1 schema、查询、原子写入、隐私和唯一事实来源合同"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"保护公共与管理 API 的响应 envelope、状态码和失败边界"}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"保护 Cache API DTO、fail-closed、TTL 与写后失效合同"}
+{"file":".trellis/spec/backend/admin-bulk-event-import.md","reason":"保护 CSV 跨层解析与 D1 原子批处理合同"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"保护 Flowbite Svelte、Tailwind token、交互与可访问性合同"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"指导重复知识与共享边界修复"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"指导跨 API、服务、数据库和组件边界复核"}

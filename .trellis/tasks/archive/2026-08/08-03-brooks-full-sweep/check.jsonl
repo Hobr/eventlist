@@ -1,0 +1,7 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"复核 D1、领域字段、隐私与测试门禁未漂移"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"复核错误 envelope 和稳定状态码"}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"复核缓存键、DTO、TTL、失效和 secret 边界"}
+{"file":".trellis/spec/backend/admin-bulk-event-import.md","reason":"复核批量导入跨层和原子性回归"}
+{"file":".trellis/spec/frontend/design-system.md","reason":"复核前端设计系统、响应式与可访问性禁区"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复核修复未制造重复或第二事实来源"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"复核静态消费者与层边界的数据流一致性"}
