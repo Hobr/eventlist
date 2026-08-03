@@ -5,8 +5,10 @@ import type {
     EventScheduleStatus,
     EventType
 } from "../events/options";
+import type { AdminEventInput } from "../events/input";
 import { requireD1Success, STATUS, type EventStatus } from "./index";
-import type { EventBaseInput } from "./submissions";
+
+export type { AdminEventInput } from "../events/input";
 
 export interface EventRecord {
     id: number;
@@ -39,10 +41,6 @@ export interface EventRecord {
     published_at: string | null;
     tag_suggestions: string | null;
     tags: string | null;
-}
-
-export interface AdminEventInput extends EventBaseInput {
-    tags: string[];
 }
 
 export type AuditAction =
@@ -547,7 +545,6 @@ export async function createPublishedEvent(
 interface EditEventSnapshot {
     status: EventStatus;
     division_code: string;
-    tag_ids_json: string;
 }
 
 interface EditEventProbe {
@@ -565,18 +562,7 @@ export async function editEvent(
         .prepare(
             `SELECT
                  events.status,
-                 events.division_code,
-                 COALESCE((
-                     SELECT json_group_array(current_tags.tag_id)
-                     FROM (
-                         SELECT event_tags.tag_id
-                         FROM event_tags
-                         JOIN tags ON tags.id = event_tags.tag_id
-                         WHERE event_tags.event_id = events.id
-                           AND tags.alias_of_id IS NULL
-                         ORDER BY event_tags.tag_id
-                     ) AS current_tags
-                 ), '[]') AS tag_ids_json
+                 events.division_code
              FROM events
              WHERE events.id = ?
              LIMIT 1`
@@ -596,7 +582,6 @@ export async function editEvent(
     ) {
         throw new AdminEventMutationValidationError("已发布或已下线活动必须至少保留一个规范标签");
     }
-    JSON.parse(snapshot.tag_ids_json);
 
     const statements = [
         db
@@ -699,13 +684,14 @@ export async function editEvent(
         requireD1Success(result, "Failed to update event");
     }
 
-    const updateChanges = results[0]?.meta.changes ?? 0;
-    const auditChanges = results[1]?.meta.changes ?? 0;
+    const [updateResult, auditResult, , deleteTagsResult, insertTagsResult, probeResult] = results;
+    const updateChanges = updateResult?.meta.changes ?? 0;
+    const auditChanges = auditResult?.meta.changes ?? 0;
     if (auditChanges !== updateChanges) {
         throw new Error("Edit audit result did not match the event update");
     }
 
-    const current = results[5]?.results?.[0];
+    const current = probeResult?.results?.[0];
     if (updateChanges === 0) {
         return {
             outcome: current ? "conflict" : "not-found",
@@ -721,7 +707,9 @@ export async function editEvent(
             newDivisionCodes: [input.division_code],
             oldStatus: snapshot.status,
             newStatus: snapshot.status,
-            tagsChanged: (results[3]?.meta.changes ?? 0) > 0 || (results[4]?.meta.changes ?? 0) > 0
+            tagsChanged:
+                (deleteTagsResult?.meta.changes ?? 0) > 0 ||
+                (insertTagsResult?.meta.changes ?? 0) > 0
         }
     };
 }
@@ -852,8 +840,9 @@ export async function mergeTags(db: D1Database, from: number, to: number): Promi
         requireD1Success(result, "Failed to merge tags");
     }
 
-    const aliasChanges = results[2]?.meta.changes ?? 0;
-    const auditChanges = results[3]?.meta.changes ?? 0;
+    const [, , aliasResult, auditResult, probeResult] = results;
+    const aliasChanges = aliasResult?.meta.changes ?? 0;
+    const auditChanges = auditResult?.meta.changes ?? 0;
     if (auditChanges !== aliasChanges) {
         throw new Error("Tag merge audit result did not match the alias update");
     }
@@ -869,7 +858,7 @@ export async function mergeTags(db: D1Database, from: number, to: number): Promi
         };
     }
 
-    const probe = results[4]?.results?.[0];
+    const probe = probeResult?.results?.[0];
     return {
         outcome: probe?.source_alias_of_id === to ? "already-target" : "conflict",
         impact: emptyMutationImpact()

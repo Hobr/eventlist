@@ -1,5 +1,5 @@
-import type { SubmissionInput } from "../db/submissions";
 import { isCanonicalDate, normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
+import type { SubmissionInput } from "../events/input";
 import {
     isEventAdmissionMethod,
     isEventScale,

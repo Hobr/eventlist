@@ -227,8 +227,7 @@ function editDatabase(
     db.firstResults = [
         {
             status: options.status ?? STATUS.PUBLISHED,
-            division_code: options.divisionCode ?? "110101",
-            tag_ids_json: "[1]"
+            division_code: options.divisionCode ?? "110101"
         }
     ];
     const probeStatus =
@@ -266,6 +265,7 @@ test("editEvent uses two fixed D1 calls and preserves unchanged relationships", 
 
         const [update, audit, tagUpsert, relationDelete, relationInsert] = db.batches[0] ?? [];
         const tagsJson = JSON.stringify(tags);
+        assert.doesNotMatch(db.prepared[0]?.sql ?? "", /json_group_array|tag_ids_json/);
         assert.match(update?.sql ?? "", /WHERE id = \?[\s\S]*AND status = \?/);
         assert.deepEqual(update?.values.slice(15, 21), [
             "测试主办方",

@@ -1,6 +1,6 @@
-import type { AdminEventInput } from "../db/admin-events";
 import { isCountyDivisionCode } from "../divisions";
 import { isCanonicalDate, normalizeOptionalTime, validateEventSchedule } from "../events/datetime";
+import type { AdminEventInput } from "../events/input";
 import {
     isEventAdmissionMethod,
     isEventScale,
