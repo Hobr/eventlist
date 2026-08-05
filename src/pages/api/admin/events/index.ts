@@ -33,7 +33,7 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
         }
         bilibiliImport = parseBilibiliImportSubmission(formData);
         if (bilibiliImport && input.source_url !== bilibiliImport.canonicalSourceUrl) {
-            return jsonError("会员购来源链接与活动 ID 不一致，请重新导入", 400);
+            return jsonError("会员购来源链接与活动 ID 不一致, 请重新导入", 400);
         }
     } catch (error) {
         return jsonError(
@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ request, locals, url }) => {
                 ({ key }) => !bilibiliImport.confirmedWarningKeys.has(key)
             );
             if (unconfirmedWarnings.length > 0) {
-                return jsonError("发现新的疑似重复活动，请确认后重新提交", 409, {
+                return jsonError("发现新的疑似重复活动, 请确认后重新提交", 409, {
                     warnings: warnings
                 });
             }

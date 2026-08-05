@@ -39,3 +39,5 @@ The goal is to help AI assistants and new team members understand how YOUR proje
 ---
 
 **文档语言**：所有项目文档应使用**简体中文**。代码标识符、API 路径、命令、配置键和必要的技术术语保持原文。
+
+**符号规范**: 禁止使用全角标点或其他全角符号; 统一使用对应的半角 ASCII 符号.

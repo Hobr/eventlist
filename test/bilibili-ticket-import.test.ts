@@ -132,7 +132,7 @@ test("图片、价格、类型和状态只做保守规范化", async () => {
     );
 });
 
-test("多场次使用最早场次开始和最晚场次结束，不信任较窄的顶层范围", async () => {
+test("多场次使用最早场次开始和最晚场次结束, 不信任较窄的顶层范围", async () => {
     const payload = (await samplePayload()) as { data: Record<string, unknown> };
     payload.data.start_time = 1786860000;
     payload.data.end_time = 1786870800;
@@ -151,7 +151,7 @@ test("多场次使用最早场次开始和最晚场次结束，不信任较窄�
     );
 });
 
-test("行政区按省市区上下文唯一匹配，缺失或歧义时不猜测", () => {
+test("行政区按省市区上下文唯一匹配, 缺失或歧义时不猜测", () => {
     assert.equal(
         matchBilibiliDivisionCode({
             provinceName: "上海市",

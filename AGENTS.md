@@ -32,6 +32,10 @@ astro dev --background
 
 Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
 
+## Text Conventions
+
+- Do not use full-width punctuation or symbols. Use half-width ASCII equivalents instead.
+
 ## Documentation
 
 Full documentation: https://docs.astro.build

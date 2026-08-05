@@ -24,7 +24,7 @@ const hasNext = events.length > PAGE_SIZE;
 events = events.slice(0, PAGE_SIZE);
 ---
 
-<AdminLayout title="已发布活动" description="维护正在公开展示的活动信息。">
+<AdminLayout title="已发布活动" description="维护正在公开展示的活动信息">
     {
         errorMessage ? (
             <div class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15">

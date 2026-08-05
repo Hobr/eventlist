@@ -80,7 +80,7 @@
         }}
     />
     <ConfirmDialog
-        title="确认归并标签？"
+        title="确认归并标签?"
         description={`${sourceLabel} 的活动会全部改为 ${targetLabel}, 该操作不可逆`}
         confirmLabel="确认归并"
         {pending}

@@ -54,7 +54,7 @@ test("模板包含 BOM、固定表头和一条有效示范活动", async () => {
     const result = await parseBulkEventCsv(new File([template], "events.csv"));
     assert.equal(result.preview.valid, true);
     assert.equal(result.events.length, 1);
-    assert.equal(result.events[0]?.event.title, "示例动漫嘉年华（导入前请修改或删除）");
+    assert.equal(result.events[0]?.event.title, "示例动漫嘉年华(导入前请修改或删除)");
     assert.equal(result.events[0]?.event.type, "comic");
     assert.equal(result.events[0]?.event.scale, "small");
     assert.deepEqual(result.events[0]?.event.tags, ["动漫", "漫展"]);

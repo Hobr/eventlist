@@ -272,16 +272,16 @@ export function normalizeBilibiliTicketResponse(
     const root = asObject(payload);
     const data = asObject(root?.data);
     if (root?.success !== true || readNumber(root, "code") !== 0) {
-        throw new BilibiliImportError("会员购未返回可导入的活动，请检查 ID 后重试");
+        throw new BilibiliImportError("会员购未返回可导入的活动, 请检查 ID 后重试");
     }
-    if (!data) throw new BilibiliImportError("会员购活动数据结构已变化，请手动录入");
+    if (!data) throw new BilibiliImportError("会员购活动数据结构已变化, 请手动录入");
 
     const responseId = readNumber(data, "id") ?? readNumber(data, "project_id");
     if (responseId !== options.projectId) {
-        throw new BilibiliImportError("会员购活动 ID 与响应不一致，请检查后重试");
+        throw new BilibiliImportError("会员购活动 ID 与响应不一致, 请检查后重试");
     }
     const title = readString(data, "name");
-    if (!title) throw new BilibiliImportError("会员购活动缺少名称，请手动录入");
+    if (!title) throw new BilibiliImportError("会员购活动缺少名称, 请手动录入");
 
     const canonicalSourceUrl = canonicalBilibiliSourceUrl(options.projectId);
     const venueInfo = asObject(data.venue_info);
@@ -353,7 +353,7 @@ export function normalizeBilibiliTicketResponse(
     if (typeSuggestion) {
         warnings.push({
             code: "type-suggestion",
-            message: "已根据活动名称建议为 ONLY 专场，请在发布前确认活动类型。"
+            message: "已根据活动名称建议为 ONLY 专场, 请在发布前确认活动类型"
         });
     }
     if (hasMultipleSessions) {
@@ -361,13 +361,13 @@ export function normalizeBilibiliTicketResponse(
         const rangeEnd = end ? `${end.date} ${end.time}` : "未知结束时间";
         warnings.push({
             code: "multiple-sessions",
-            message: `会员购包含 ${sessions.length} 个场次，已压缩为 ${rangeStart} 至 ${rangeEnd}，请核对活动说明和时间。`
+            message: `会员购包含 ${sessions.length} 个场次, 已压缩为 ${rangeStart} 至 ${rangeEnd}, 请核对活动说明和时间`
         });
     }
     if (!divisionCode && readString(venueInfo, "district_name")) {
         warnings.push({
             code: "division-unmatched",
-            message: "无法唯一匹配会员购地区，请手动选择区/县。"
+            message: "无法唯一匹配会员购地区, 请手动选择区/县"
         });
     }
 
@@ -384,7 +384,7 @@ export function normalizeBilibiliTicketResponse(
 async function readBoundedResponse(response: Response) {
     const contentLength = Number(response.headers.get("content-length"));
     if (Number.isFinite(contentLength) && contentLength > MAX_BILIBILI_RESPONSE_BYTES) {
-        throw new BilibiliImportError("会员购返回的数据过大，无法导入");
+        throw new BilibiliImportError("会员购返回的数据过大, 无法导入");
     }
     if (!response.body) return "";
 
@@ -398,7 +398,7 @@ async function readBoundedResponse(response: Response) {
         total += value.byteLength;
         if (total > MAX_BILIBILI_RESPONSE_BYTES) {
             await reader.cancel();
-            throw new BilibiliImportError("会员购返回的数据过大，无法导入");
+            throw new BilibiliImportError("会员购返回的数据过大, 无法导入");
         }
         text += decoder.decode(value, { stream: true });
     }
@@ -428,17 +428,17 @@ export async function fetchBilibiliTicketPreview(
             signal: controller.signal
         });
         if (!response.ok) {
-            throw new BilibiliImportError(`会员购服务暂时不可用（HTTP ${response.status}）`);
+            throw new BilibiliImportError(`会员购服务暂时不可用(HTTP ${response.status})`);
         }
         if (!response.headers.get("content-type")?.toLocaleLowerCase().includes("json")) {
-            throw new BilibiliImportError("会员购返回了无法识别的数据，请手动录入");
+            throw new BilibiliImportError("会员购返回了无法识别的数据, 请手动录入");
         }
         const text = await readBoundedResponse(response);
         let payload: unknown;
         try {
             payload = JSON.parse(text);
         } catch {
-            throw new BilibiliImportError("会员购返回了无法识别的数据，请手动录入");
+            throw new BilibiliImportError("会员购返回了无法识别的数据, 请手动录入");
         }
         return normalizeBilibiliTicketResponse(payload, {
             projectId,
@@ -448,9 +448,9 @@ export async function fetchBilibiliTicketPreview(
     } catch (error) {
         if (error instanceof BilibiliImportError) throw error;
         if (controller.signal.aborted) {
-            throw new BilibiliImportError("会员购请求超时，请稍后重试或手动录入");
+            throw new BilibiliImportError("会员购请求超时, 请稍后重试或手动录入");
         }
-        throw new BilibiliImportError("暂时无法连接会员购，请稍后重试或手动录入");
+        throw new BilibiliImportError("暂时无法连接会员购, 请稍后重试或手动录入");
     } finally {
         clearTimeout(timeout);
     }
@@ -495,7 +495,7 @@ export function parseBilibiliImportSubmission(formData: FormData): BilibiliImpor
     const projectValue = formData.get("bilibili_project_id");
     if (providerValue === null && projectValue === null) return null;
     if (providerValue !== BILIBILI_TICKET_PROVIDER || typeof projectValue !== "string") {
-        throw new BilibiliImportError("会员购导入信息无效，请重新导入");
+        throw new BilibiliImportError("会员购导入信息无效, 请重新导入");
     }
 
     const projectId = parseBilibiliProjectId(projectValue);

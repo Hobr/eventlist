@@ -79,17 +79,17 @@ const filters: PublishedEventFilters = {
 
 const timingCopy = {
     upcoming: {
-        description: "筛选近期已发布且未结束的 ACG 活动。",
+        description: "筛选近期已发布且未结束的 ACG 活动",
         kicker: "已发布 · 未结束",
         emptyTitle: "没有匹配的近期活动"
     },
     ended: {
-        description: "查询已发布且已经结束的 ACG 活动。",
+        description: "查询已发布且已经结束的 ACG 活动",
         kicker: "已发布 · 已结束",
         emptyTitle: "没有匹配的已结束活动"
     },
     all: {
-        description: "查询全部已发布的 ACG 活动。",
+        description: "查询全部已发布的 ACG 活动",
         kicker: "已发布 · 全部",
         emptyTitle: "没有匹配的活动"
     }
@@ -216,7 +216,7 @@ try {
             ) : (
                 <div class="border-y border-border/80 py-16 text-center">
                     <h2 class="text-xl font-bold text-foreground">{timingCopy.emptyTitle}</h2>
-                    <p class="mt-2 text-sm text-muted-foreground">尝试移除部分筛选条件。</p>
+                    <p class="mt-2 text-sm text-muted-foreground">尝试移除部分筛选条件</p>
                     <a
                         href="/events"
                         class="mt-6 inline-flex h-10 items-center rounded-full bg-foreground px-5 text-sm font-bold text-background transition-transform duration-300 ease-motion active:scale-[0.98]"

@@ -20,9 +20,9 @@ if (Astro.request.method === "POST") {
     const token = formData.get("token");
 
     if (authMode !== "token") {
-        errorMessage = "当前为 Cloudflare Access 模式, 请通过 Access 登录入口访问。";
+        errorMessage = "当前为 Cloudflare Access 模式, 请通过 Access 登录入口访问";
     } else if (typeof token !== "string" || !(await verifyTokenValue(token, runtimeEnv))) {
-        errorMessage = "Token 无效。";
+        errorMessage = "Token 无效";
     } else {
         const next = Astro.url.searchParams.get("next") ?? "/admin";
         Astro.cookies.set("admin_token", token, {
@@ -87,10 +87,10 @@ if (Astro.request.method === "POST") {
                                 Cloudflare Access 已启用
                             </h2>
                             <p class="mt-2 text-sm leading-6 text-muted-foreground">
-                                请从受保护的 Access 应用入口进入。身份通过验证后, 后台会自动开放。
+                                请从受保护的 Access 应用入口进入, 身份通过验证后, 后台会自动开放
                             </p>
                             <div class="mt-5 rounded-md bg-accent-subtle px-4 py-3 text-sm font-semibold text-accent">
-                                当前页面不需要本地 Token。
+                                当前页面不需要本地 Token
                             </div>
                             {errorMessage ? (
                                 <p class="mt-4 text-sm font-semibold text-danger" role="alert">
@@ -117,7 +117,7 @@ if (Astro.request.method === "POST") {
                                     class="mt-1.5 flex h-11 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                                 />
                                 <p class="mt-1.5 text-xs text-muted">
-                                    Token 仅用于建立本机管理会话。
+                                    Token 仅用于建立本机管理会话
                                 </p>
                             </div>
                             {errorMessage ? (
@@ -140,7 +140,7 @@ if (Astro.request.method === "POST") {
             </div>
 
             <p class="mt-6 text-xs leading-5 text-muted">
-                管理操作会写入审核记录。请仅在可信设备上使用。
+                管理操作会写入审核记录, 请仅在可信设备上使用
             </p>
         </main>
     </body>

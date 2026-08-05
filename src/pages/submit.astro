@@ -45,7 +45,7 @@ const textareaCls =
 const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
-<Layout title="提交活动" description="提交 ACG 活动, 进入审核队列后再公开展示。">
+<Layout title="提交活动" description="提交 ACG 活动, 进入审核队列后再公开展示">
     {
         sent ? (
             <section
@@ -54,7 +54,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             >
                 <CircleCheck class="mx-auto size-10 text-accent" aria-hidden="true" />
                 <h1 class="mt-5 text-3xl font-black text-foreground">活动已进入审核队列</h1>
-                <p class="mt-3 text-sm text-muted-foreground">审核通过后会出现在公开活动列表中。</p>
+                <p class="mt-3 text-sm text-muted-foreground">审核通过后会出现在公开活动列表中</p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
                     <a
                         href="/events"
@@ -78,7 +78,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                     </p>
                     <h1 class="mt-3 text-4xl font-black text-foreground sm:text-5xl">提交活动</h1>
                     <p class="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                        必填信息保持可见；封面、描述、交流群和购票信息可按需补充。
+                        必填信息保持可见；封面、描述、交流群和购票信息可按需补充
                     </p>
                 </header>
 
@@ -176,7 +176,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                             <label for="start-time" class="flex flex-col gap-1.5">
-                                <span class={labelCls}>开始时间（选填）</span>
+                                <span class={labelCls}>开始时间(选填)</span>
                                 <input
                                     id="start-time"
                                     type="time"
@@ -185,7 +185,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                 />
                             </label>
                             <label for="end-time" class="flex flex-col gap-1.5">
-                                <span class={labelCls}>结束时间（选填）</span>
+                                <span class={labelCls}>结束时间(选填)</span>
                                 <input id="end-time" type="time" name="end_time" class={fieldCls} />
                             </label>
                         </div>
@@ -193,7 +193,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
 
                     <SubmissionSection
                         title="补充公开信息"
-                        description="这些内容会帮助访客判断是否参加活动。"
+                        description="这些内容会帮助访客判断是否参加活动"
                         optional
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
@@ -210,7 +210,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                                     class={`${textareaCls} min-h-24`}
                                 />
                                 <span class="text-xs text-muted">
-                                    这里只需大概描述, 正式标签会在审核时统一整理。
+                                    这里只需大概描述, 正式标签会在审核时统一整理
                                 </span>
                             </label>
                             <label for="address" class="flex flex-col gap-1.5 sm:col-span-2">
@@ -316,7 +316,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
 
                     <SubmissionSection
                         title="审核与提交"
-                        description="联系方式仅用于核对信息, 不会在前台公开。"
+                        description="联系方式仅用于核对信息, 不会在前台公开"
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label for="source-url" class="flex flex-col gap-1.5 sm:col-span-2">

@@ -53,7 +53,7 @@ export const BULK_EVENT_COLUMNS = [
 export const BULK_EVENT_HEADERS = BULK_EVENT_COLUMNS.map(({ header }) => header);
 
 const BULK_EVENT_EXAMPLE: Record<AdminEventField, string> = {
-    title: "示例动漫嘉年华（导入前请修改或删除）",
+    title: "示例动漫嘉年华(导入前请修改或删除)",
     type: "综合商业展",
     scale: "小型 (100 - 1,000人)",
     division_code: "110105",
@@ -64,7 +64,7 @@ const BULK_EVENT_EXAMPLE: Record<AdminEventField, string> = {
     start_time: "09:00",
     end_time: "18:00",
     cover_url: "https://example.com/cover.jpg",
-    description: "这是一条示范活动，请按实际情况修改",
+    description: "这是一条示范活动, 请按实际情况修改",
     qq_group: "123456789",
     ticket_url: "https://example.com/tickets",
     source_url: "https://example.com/source",

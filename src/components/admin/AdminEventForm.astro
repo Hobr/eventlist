@@ -208,7 +208,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             />
         </div>
         <div>
-            <label class={labelCls} for="start_time">开始时间（选填）</label>
+            <label class={labelCls} for="start_time">开始时间(选填)</label>
             <input
                 id="start_time"
                 name="start_time"
@@ -218,7 +218,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             />
         </div>
         <div>
-            <label class={labelCls} for="end_time">结束时间（选填）</label>
+            <label class={labelCls} for="end_time">结束时间(选填)</label>
             <input
                 id="end_time"
                 name="end_time"
@@ -260,7 +260,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             {
                 sourceReadOnly ? (
                     <p id={`${formId}-source-note`} class="mt-1.5 text-xs text-muted-foreground">
-                        由会员购活动 ID 生成，作为重复检测和审计标识，不能修改。
+                        由会员购活动 ID 生成, 作为重复检测和审计标识, 不能修改
                     </p>
                 ) : null
             }
@@ -386,7 +386,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
         }
         <TagInput
             initial={eventRecord?.tags ?? initialValues.tags ?? ""}
-            label="规范标签（至少一个）"
+            label="规范标签(至少一个)"
             available={canonicalTags}
             showRequiredIndicator={showRequiredIndicators}
             client:load

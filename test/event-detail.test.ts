@@ -207,7 +207,7 @@ test("活动详情模板按可选内容模型移除空标题、容器和分隔�
     assert.match(source, /hasAction \? "mt-2 border-t border-border pt-5" : ""/);
     assert.match(
         source,
-        /description=\{event \? \(description \?\? undefined\) : "活动不存在或尚未公开。"\}/
+        /description=\{event \? \(description \?\? undefined\) : "活动不存在或尚未公开"\}/
     );
     assert.doesNotMatch(source, /暂无活动介绍|未填写/);
     assert.doesNotMatch(source, /href=\{event\.source_url\}/);

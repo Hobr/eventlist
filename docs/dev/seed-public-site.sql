@@ -31,7 +31,7 @@ SELECT
     '10:00',
     '18:00',
     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f',
-    '本地开发用 published 样例, 用于验证首页、列表、详情与 sitemap。',
+    '本地开发用 published 样例, 用于验证首页、列表、详情与 sitemap',
     '123456789',
     'https://example.com/tickets/eventlist-dev-beijing',
     'https://example.com/eventlist/dev-beijing-concert',
@@ -66,7 +66,7 @@ SELECT
     '09:30',
     NULL,
     NULL,
-    '本地开发用 published 样例, 用于验证跨城市筛选。',
+    '本地开发用 published 样例, 用于验证跨城市筛选',
     NULL,
     NULL,
     'https://example.com/eventlist/dev-shanghai-doujin',
@@ -89,7 +89,7 @@ WITH shanghai_samples(
             'comic', 'large', '310115', '浦东测试展览中心', '上海市浦东新区测试大道 101 号',
             '+7 days', '+8 days', '09:30', '17:30',
             'https://images.unsplash.com/photo-1608889175123-8ee362201f81',
-            '上海未来活动样例 01, 用于验证地区筛选、分页与大型漫展展示。',
+            '上海未来活动样例 01, 用于验证地区筛选、分页与大型漫展展示',
             'https://example.com/tickets/shanghai-anime-carnival',
             'https://example.com/eventlist/dev-shanghai-anime-carnival'
         ),
@@ -98,7 +98,7 @@ WITH shanghai_samples(
             'concert', 'mid', '310104', '徐汇测试音乐厅', '上海市徐汇区测试路 102 号',
             '+10 days', '+10 days', '18:30', '21:00',
             'https://images.unsplash.com/photo-1501386761578-eac5c94b800a',
-            '上海未来活动样例 02, 用于验证单日音乐活动和购票链接。',
+            '上海未来活动样例 02, 用于验证单日音乐活动和购票链接',
             'https://example.com/tickets/shanghai-virtual-singer-live',
             'https://example.com/eventlist/dev-shanghai-virtual-singer-live'
         ),
@@ -107,7 +107,7 @@ WITH shanghai_samples(
             'doujin', 'mid', '310101', '黄浦测试文化馆', '上海市黄浦区测试路 103 号',
             '+14 days', '+14 days', '10:00', '16:30',
             NULL,
-            '上海未来活动样例 03, 用于验证同人展与作品标签组合。',
+            '上海未来活动样例 03, 用于验证同人展与作品标签组合',
             NULL,
             'https://example.com/eventlist/dev-shanghai-touhou-meetup'
         ),
@@ -116,7 +116,7 @@ WITH shanghai_samples(
             'stage', 'mid', '310106', '静安测试剧场', '上海市静安区测试路 104 号',
             '+17 days', '+18 days', '19:00', '21:30',
             'https://images.unsplash.com/photo-1503095396549-807759245b35',
-            '上海未来活动样例 04, 用于验证跨日舞台活动。',
+            '上海未来活动样例 04, 用于验证跨日舞台活动',
             'https://example.com/tickets/shanghai-2-5d-stage',
             'https://example.com/eventlist/dev-shanghai-2-5d-stage'
         ),
@@ -125,7 +125,7 @@ WITH shanghai_samples(
             'dance', 'small', '310112', '闵行测试艺术空间', '上海市闵行区测试路 105 号',
             '+21 days', '+21 days', '14:00', '18:00',
             NULL,
-            '上海未来活动样例 05, 用于验证小型宅舞活动。',
+            '上海未来活动样例 05, 用于验证小型宅舞活动',
             NULL,
             'https://example.com/eventlist/dev-shanghai-otaku-dance'
         ),
@@ -134,7 +134,7 @@ WITH shanghai_samples(
             'ipflash', 'small', '310105', '长宁测试商业广场', '上海市长宁区测试路 106 号',
             '+24 days', '+31 days', NULL, NULL,
             'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a',
-            '上海未来活动样例 06, 用于验证无具体时间的多日快闪活动。',
+            '上海未来活动样例 06, 用于验证无具体时间的多日快闪活动',
             NULL,
             'https://example.com/eventlist/dev-shanghai-ip-pop-up'
         ),
@@ -143,7 +143,7 @@ WITH shanghai_samples(
             'comic', 'large', '310110', '杨浦测试会展中心', '上海市杨浦区测试路 107 号',
             '+28 days', '+29 days', '09:00', '18:00',
             'https://images.unsplash.com/photo-1511512578047-dfb367046420',
-            '上海未来活动样例 07, 用于验证游戏与漫展标签筛选。',
+            '上海未来活动样例 07, 用于验证游戏与漫展标签筛选',
             'https://example.com/tickets/shanghai-game-festival',
             'https://example.com/eventlist/dev-shanghai-game-festival'
         ),
@@ -152,7 +152,7 @@ WITH shanghai_samples(
             'stage', 'small', '310109', '虹口测试演艺厅', '上海市虹口区测试路 108 号',
             '+32 days', '+32 days', '13:30', '16:00',
             NULL,
-            '上海未来活动样例 08, 用于验证小型舞台演出。',
+            '上海未来活动样例 08, 用于验证小型舞台演出',
             'https://example.com/tickets/shanghai-voice-actor-meetup',
             'https://example.com/eventlist/dev-shanghai-voice-actor-meetup'
         ),
@@ -161,7 +161,7 @@ WITH shanghai_samples(
             'doujin', 'mid', '310107', '普陀测试创意园', '上海市普陀区测试路 109 号',
             '+35 days', '+35 days', '10:30', '17:00',
             NULL,
-            '上海未来活动样例 09, 用于验证同人市集和区县筛选。',
+            '上海未来活动样例 09, 用于验证同人市集和区县筛选',
             NULL,
             'https://example.com/eventlist/dev-shanghai-creator-market'
         ),
@@ -170,7 +170,7 @@ WITH shanghai_samples(
             'concert', 'large', '310113', '宝山测试音乐公园', '上海市宝山区测试路 110 号',
             '+38 days', '+39 days', '11:00', '21:00',
             'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
-            '上海未来活动样例 10, 用于验证多日大型音乐活动。',
+            '上海未来活动样例 10, 用于验证多日大型音乐活动',
             'https://example.com/tickets/shanghai-anime-music-festival',
             'https://example.com/eventlist/dev-shanghai-anime-music-festival'
         ),
@@ -179,7 +179,7 @@ WITH shanghai_samples(
             'online', 'mid', '310114', '嘉定测试数字中心', '上海市嘉定区测试路 111 号',
             '+42 days', '+42 days', '10:00', '20:00',
             NULL,
-            '上海未来活动样例 11, 用于验证线上类型与线下地点共存。',
+            '上海未来活动样例 11, 用于验证线上类型与线下地点共存',
             NULL,
             'https://example.com/eventlist/dev-shanghai-hybrid-expo'
         ),
@@ -188,7 +188,7 @@ WITH shanghai_samples(
             'comic', 'mega', '310117', '松江测试国际会展中心', '上海市松江区测试路 112 号',
             '+49 days', '+50 days', '09:00', '18:30',
             'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-            '上海未来活动样例 12, 用于验证超大型活动、分页和热门列表。',
+            '上海未来活动样例 12, 用于验证超大型活动、分页和热门列表',
             'https://example.com/tickets/shanghai-acg-expo',
             'https://example.com/eventlist/dev-shanghai-acg-expo'
         )
@@ -242,7 +242,7 @@ SELECT
     NULL,
     NULL,
     NULL,
-    '无具体时间的跨日活动样例, 用于验证正在进行分组与数量上限。',
+    '无具体时间的跨日活动样例, 用于验证正在进行分组与数量上限',
     NULL,
     NULL,
     'https://example.com/eventlist/dev-shanghai-ongoing-' || printf('%02d', n),
@@ -303,7 +303,7 @@ SELECT
         WHEN n = 8 THEN 'https://images.unsplash.com/photo-1540575467063-178a50c2df87'
         ELSE NULL
     END,
-    '同一开始日期的高密度样例, 用于验证稳定规模排序、无时间展示与首页数量上限。',
+    '同一开始日期的高密度样例, 用于验证稳定规模排序、无时间展示与首页数量上限',
     NULL,
     NULL,
     'https://example.com/eventlist/dev-shanghai-same-day-' || printf('%03d', n),
@@ -335,7 +335,7 @@ SELECT
     '09:30',
     '17:00',
     NULL,
-    '本地开发用已结束 published 样例, 可通过活动页的“已结束”状态筛选检索。',
+    '本地开发用已结束 published 样例, 可通过活动页的“已结束”状态筛选检索',
     NULL,
     NULL,
     'https://example.com/eventlist/dev-ended-doujin',
@@ -362,7 +362,7 @@ SELECT
     '2026-07-20',
     '2026-07-20',
     NULL,
-    '本地开发用 offline 样例, 详情页可见但列表不展示。',
+    '本地开发用 offline 样例, 详情页可见但列表不展示',
     NULL,
     NULL,
     'https://example.com/eventlist/dev-offline-stage',
@@ -389,7 +389,7 @@ SELECT
     '2026-09-01',
     '2026-09-01',
     NULL,
-    '本地开发用 pending 样例, 公共详情应返回 404。',
+    '本地开发用 pending 样例, 公共详情应返回 404',
     NULL,
     NULL,
     'https://example.com/eventlist/dev-pending-comic',

@@ -38,7 +38,7 @@ try {
             importError =
                 error instanceof BilibiliImportError
                     ? error.message
-                    : "会员购活动暂时无法导入，请手动录入";
+                    : "会员购活动暂时无法导入, 请手动录入";
         }
     }
 } catch (error) {
@@ -91,7 +91,7 @@ const importedFieldCount = importPreview
                                 从会员购导入
                             </h2>
                             <p class="mt-1 text-sm text-muted-foreground">
-                                输入活动 ID 后读取可用字段，发布前仍可检查和修改。
+                                输入活动 ID 后读取可用字段, 发布前仍可检查和修改
                             </p>
                         </div>
                         <form
@@ -130,7 +130,7 @@ const importedFieldCount = importPreview
                             role="alert"
                         >
                             <p class="font-semibold">{importError}</p>
-                            <p class="mt-1 text-danger/85">下方表单仍可手动录入活动。</p>
+                            <p class="mt-1 text-danger/85">下方表单仍可手动录入活动</p>
                         </div>
                     ) : null}
                 </section>
@@ -144,7 +144,7 @@ const importedFieldCount = importPreview
                     submitLabel="发布活动"
                     statusText={
                         hasExactDuplicate
-                            ? "该会员购活动已经存在，不能重复发布"
+                            ? "该会员购活动已经存在, 不能重复发布"
                             : "请至少选择一个规范标签, 新标签会在发布时加入标签库"
                     }
                     defaultDivisionCode={importPreview ? "" : runtimeEnv.DEFAULT_DIVISION_CODE}
@@ -181,7 +181,7 @@ const importedFieldCount = importPreview
                                             已读取 {importPreview.values.title}
                                         </h2>
                                         <p class="mt-1 text-sm text-muted-foreground">
-                                            已填入 {importedFieldCount} 项，来源 ID{" "}
+                                            已填入 {importedFieldCount} 项, 来源 ID{" "}
                                             {importPreview.projectId}
                                         </p>
                                     </div>
@@ -218,7 +218,7 @@ const importedFieldCount = importPreview
                                         class="mt-4 rounded-md bg-danger-subtle p-3 text-sm text-danger ring-1 ring-danger/15"
                                         role="alert"
                                     >
-                                        <p class="font-semibold">该会员购活动已经导入。</p>
+                                        <p class="font-semibold">该会员购活动已经导入</p>
                                         <a
                                             class="mt-1 inline-flex font-semibold underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                             href={`/admin/events/${importPreview.exactDuplicate.id}/edit`}
@@ -236,7 +236,7 @@ const importedFieldCount = importPreview
                                     {importPreview.duplicateCandidates.length > 0 ? (
                                         <fieldset class="space-y-3">
                                             <legend class="text-sm font-semibold text-foreground">
-                                                发现疑似重复活动，确认后才能发布
+                                                发现疑似重复活动, 确认后才能发布
                                             </legend>
                                             {importPreview.duplicateCandidates.map(
                                                 ({ key, event }) => (
@@ -257,8 +257,8 @@ const importedFieldCount = importPreview
                                                             >
                                                                 {event.title}
                                                             </a>
-                                                            （{event.start_date}，{event.venue}
-                                                            ），仍要继续发布。
+                                                            ({event.start_date}, {event.venue}
+                                                            ), 仍要继续发布
                                                         </span>
                                                     </label>
                                                 )
@@ -316,7 +316,7 @@ const importedFieldCount = importPreview
         fieldset.className = "space-y-3";
         const legend = document.createElement("legend");
         legend.className = "text-sm font-semibold text-foreground";
-        legend.textContent = "发现新的疑似重复活动，确认后才能发布";
+        legend.textContent = "发现新的疑似重复活动, 确认后才能发布";
         fieldset.append(legend);
 
         for (const warning of warnings) {
@@ -342,7 +342,7 @@ const importedFieldCount = importPreview
             link.textContent = warning.event.title;
             text.append(
                 link,
-                `（${warning.event.start_date}，${warning.event.venue}），仍要继续发布。`
+                `(${warning.event.start_date}, ${warning.event.venue}), 仍要继续发布`
             );
             label.append(input, text);
             fieldset.append(label);
