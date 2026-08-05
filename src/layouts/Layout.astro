@@ -3,7 +3,8 @@ import {
     CalendarMonthOutline as CalendarDays,
     CodeForkOutline as GitFork,
     GlobeOutline as Compass,
-    PaperPlaneOutline as Send
+    PaperPlaneOutline as Send,
+    TagOutline as Tags
 } from "flowbite-svelte-icons";
 import PublicMobileNav from "../components/PublicMobileNav.svelte";
 import { SITE_NAME, SITE_SLOGAN } from "../lib/site";
@@ -100,6 +101,14 @@ function navClasses(href: string) {
                         >
                             <CalendarDays class="size-4" aria-hidden="true" />
                             活动
+                        </a>
+                        <a
+                            href="/categories"
+                            aria-current={isCurrent("/categories") ? "page" : undefined}
+                            class:list={navClasses("/categories")}
+                        >
+                            <Tags class="size-4" aria-hidden="true" />
+                            分类
                         </a>
                         <a
                             href="/submit"

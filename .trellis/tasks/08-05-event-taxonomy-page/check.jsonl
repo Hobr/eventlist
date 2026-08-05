@@ -1,0 +1,4 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Verify status/count semantics, canonical tag exclusion, option ordering, and no schema drift."}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"Verify cache key/payload guard, tags scope reuse, TTL, fixed Cache-Tag, and mutation invalidation."}
+{"file":".trellis/spec/frontend/design-system.md","reason":"Verify public navigation, semantic links, responsive layout, focus states, and visual density."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Verify the end-to-end data contract and error behavior across database, cache, page, and URL filters."}

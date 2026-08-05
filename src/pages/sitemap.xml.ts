@@ -38,6 +38,7 @@ export const GET: APIRoute = async ({ url }) => {
     const staticEntries = [
         urlEntry(`${origin}/`),
         urlEntry(`${origin}/events`),
+        urlEntry(`${origin}/categories`),
         urlEntry(`${origin}/submit`)
     ];
 

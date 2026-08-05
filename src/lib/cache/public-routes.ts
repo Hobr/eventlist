@@ -6,6 +6,7 @@ import type {
     PublishedEventFilters,
     SitemapEventRow
 } from "../db/public-events";
+import type { PublicEventTaxonomy, PublicTaxonomySummary } from "../db/public-taxonomy";
 import type { TagSummary } from "../db/tags";
 import { isRegionCode } from "../divisions";
 import { getChinaLocalDate, isCanonicalDate } from "../events/datetime";
@@ -333,6 +334,47 @@ export function isTagSummaryList(value: unknown): value is TagSummary[] {
     return Array.isArray(value) && value.every(isTagSummary);
 }
 
+function isPublicTaxonomySummary(value: unknown): value is PublicTaxonomySummary {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const summary = value as Record<string, unknown>;
+    return (
+        hasOnlyKeys(summary, ["name", "event_count"]) &&
+        typeof summary.name === "string" &&
+        summary.name.length > 0 &&
+        summary.name === summary.name.trim() &&
+        isPositiveSafeInteger(summary.event_count)
+    );
+}
+
+function hasUniqueSummaryNames(summaries: PublicTaxonomySummary[]) {
+    return new Set(summaries.map(({ name }) => name)).size === summaries.length;
+}
+
+export function isPublicEventTaxonomy(value: unknown): value is PublicEventTaxonomy {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const taxonomy = value as Record<string, unknown>;
+    if (
+        !hasOnlyKeys(taxonomy, ["tags", "types", "scales"]) ||
+        !Array.isArray(taxonomy.tags) ||
+        !Array.isArray(taxonomy.types) ||
+        !Array.isArray(taxonomy.scales)
+    ) {
+        return false;
+    }
+
+    const tags = taxonomy.tags as PublicTaxonomySummary[];
+    const types = taxonomy.types as PublicTaxonomySummary[];
+    const scales = taxonomy.scales as PublicTaxonomySummary[];
+    return (
+        tags.every((summary) => isPublicTaxonomySummary(summary) && summary.name.length <= 24) &&
+        types.every((summary) => isPublicTaxonomySummary(summary) && isEventType(summary.name)) &&
+        scales.every((summary) => isPublicTaxonomySummary(summary) && isEventScale(summary.name)) &&
+        hasUniqueSummaryNames(tags) &&
+        hasUniqueSummaryNames(types) &&
+        hasUniqueSummaryNames(scales)
+    );
+}
+
 function isSitemapEventRow(value: unknown): value is SitemapEventRow {
     if (!value || typeof value !== "object" || Array.isArray(value)) return false;
     const row = value as Record<string, unknown>;
@@ -514,6 +556,31 @@ export async function loadCachedPublicTags(
         request,
         getStore: options.getStore ?? openPublicDataCacheStore,
         isValue: isRequestedTagList,
+        cacheTags: [PUBLIC_DATA_CACHE_TAGS.tags],
+        ttl: {
+            freshTtlMs: STANDARD_TTL_MS,
+            normalTtlMs: STANDARD_TTL_MS,
+            faultTtlMs: PUBLIC_DATA_FAULT_TTL_MS
+        },
+        load: options.load,
+        waitUntil: options.waitUntil,
+        now: options.now
+    });
+}
+
+export async function loadCachedPublicEventTaxonomy(
+    options: PublicRouteCacheOptions<PublicEventTaxonomy>
+): Promise<PublicDataCacheLoadResult<PublicEventTaxonomy>> {
+    const request = buildPublicDataCacheRequest(options.origin, {
+        resource: "event-taxonomy"
+    });
+
+    return loadPublicDataWithCache({
+        scope: "tags",
+        scopes: parsePublicDataCacheScopes(options.configuredScopes),
+        request,
+        getStore: options.getStore ?? openPublicDataCacheStore,
+        isValue: isPublicEventTaxonomy,
         cacheTags: [PUBLIC_DATA_CACHE_TAGS.tags],
         ttl: {
             freshTtlMs: STANDARD_TTL_MS,

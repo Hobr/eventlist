@@ -23,6 +23,7 @@ import {
     isPublicEventListCacheable,
     isPublicEventPage,
     isPublicEventDetail,
+    isPublicEventTaxonomy,
     isPublicHomepageDiscovery,
     isPublicHomepagePopularity,
     isSitemapEventRowList,
@@ -31,6 +32,7 @@ import {
     loadCachedHomepagePopularity,
     loadCachedPublicEventDetail,
     loadCachedPublicEventList,
+    loadCachedPublicEventTaxonomy,
     loadCachedPublicTags,
     loadCachedSitemapRows
 } from "../src/lib/cache/public-routes";
@@ -460,6 +462,11 @@ test("enabled cache access fails closed when the store or write envelope is inva
 });
 
 const tagRows = [{ id: 1, name: "同人展", event_count: 3 }];
+const taxonomyRows = {
+    tags: [{ name: "同人展", event_count: 3 }],
+    types: [{ name: "comic", event_count: 2 }],
+    scales: [{ name: "large", event_count: 2 }]
+};
 const sitemapRows = [{ id: 42, updated_at: "2026-07-31 12:00:00" }];
 const publicEventRow = {
     id: 42,
@@ -858,6 +865,43 @@ test("tags adapter normalizes keys, enforces admission, and writes the approved 
         limit: 12,
         load: async () => tagRows,
         waitUntil: () => assert.fail("bypass must not schedule work"),
+        getStore: async () => bypassStore
+    });
+    assert.equal(bypass.cacheState, "BYPASS");
+    assert.equal(bypassStore.matches, 0);
+    assert.equal(bypassStore.puts, 0);
+});
+
+test("taxonomy adapter reuses the tags scope and validates its public DTO", async () => {
+    const store = new FakeCacheStore();
+    const result = await loadCachedPublicEventTaxonomy({
+        origin: "https://acg.example/categories?ignored=true",
+        configuredScopes: "tags",
+        load: async () => taxonomyRows,
+        waitUntil: () => assert.fail("misses refresh synchronously"),
+        getStore: async () => store,
+        now: () => 12_000
+    });
+
+    assert.equal(result.cacheState, "MISS");
+    assert.equal(
+        store.matchedRequest?.url,
+        "https://acg.example/_eventlist_cache/v2/event-taxonomy"
+    );
+    const envelope = parseCachedEnvelope(await store.writtenResponse?.text());
+    assert.ok(envelope);
+    assert.equal(envelope.freshUntil - envelope.generatedAt, 30 * 60_000);
+    assert.equal(envelope.normalUntil - envelope.generatedAt, 30 * 60_000);
+    assert.equal(envelope.errorUntil - envelope.generatedAt, 48 * 60 * 60_000);
+    assert.equal(store.writtenResponse?.headers.get("cache-tag"), PUBLIC_DATA_CACHE_TAGS.tags);
+    assert.equal(isPublicEventTaxonomy(envelope.value), true);
+
+    const bypassStore = new FakeCacheStore();
+    const bypass = await loadCachedPublicEventTaxonomy({
+        origin: "https://acg.example",
+        configuredScopes: "list",
+        load: async () => taxonomyRows,
+        waitUntil: () => assert.fail("disabled scope must not schedule work"),
         getStore: async () => bypassStore
     });
     assert.equal(bypass.cacheState, "BYPASS");

@@ -199,7 +199,7 @@
 - 首页地区侧栏中的省、市、区县只修改待应用值。有效“应用地区”成功后，导航标签、Hero、热门、今日、URL、history 元数据和地区偏好才一起提交；加载/失败期间继续显示旧快照，并提供目标 URL 的普通导航回退。
 - 主动地区切换使用 `history.pushState`，已保存地区恢复和热门窗口切换使用 `replaceState`，且必须合并保留已有 `history.state` 字段。`popstate` 无刷新请求对应完整快照；恢复失败时使用普通导航重新建立 URL 与内容一致性。
 - At `sm` and wider, the public navigation capsule uses three balanced columns:
-  brand at the left, `首页 / 活动 / 投稿` geometrically centered, and the
+  brand at the left, `首页 / 活动 / 分类 / 投稿` geometrically centered, and the
   homepage-only location trigger at the right. Mobile keeps brand plus the
   location trigger and menu without overlap or page-level horizontal scroll.
 - Featured selection is compact and explainable. The whole rounded Hero is the

@@ -2,7 +2,8 @@
     import {
         CalendarMonthOutline as CalendarDays,
         GlobeOutline as Compass,
-        PaperPlaneOutline as Send
+        PaperPlaneOutline as Send,
+        TagOutline as Tags
     } from "flowbite-svelte-icons";
     import { SITE_NAME, SITE_SLOGAN } from "../lib/site";
     import SidePanel from "./ui/side-panel.svelte";
@@ -16,6 +17,7 @@
     const items = [
         { href: "/", label: "首页", icon: Compass },
         { href: "/events", label: "活动", icon: CalendarDays },
+        { href: "/categories", label: "分类", icon: Tags },
         { href: "/submit", label: "投稿", icon: Send }
     ];
 

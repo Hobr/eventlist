@@ -1,0 +1,5 @@
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"D1 aggregation, published-state filtering, canonical tag joins, and shared option catalogue rules."}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"Public DTO cache resource, tags scope, key, TTL, guard, and invalidation contract."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Stable public page failure and D1 error handling expectations."}
+{"file":".trellis/spec/frontend/design-system.md","reason":"Astro/Tailwind public page structure, navigation, semantic links, responsive layout, and accessibility rules."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Data-flow and boundary checklist for D1, cache DTO, Astro SSR, and filter URL links."}

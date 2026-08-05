@@ -4,6 +4,7 @@ import type {
     PublishedEventFilters,
     SitemapEventRow
 } from "../db/public-events";
+import type { PublicEventTaxonomy } from "../db/public-taxonomy";
 import type { TagSummary } from "../db/tags";
 import { getChinaLocalDate, isCanonicalDate } from "../events/datetime";
 import type { PublicHomepageDiscovery, PublicHomepagePopularity } from "../public/homepage";
@@ -35,6 +36,7 @@ export interface PublicDataCachePayloads {
     popularity: PublicHomepagePopularity;
     "event-list": PublicEventPage;
     "event-detail": PublicEventDetail;
+    "event-taxonomy": PublicEventTaxonomy;
     "top-tags": TagSummary[];
     "tag-search": TagSummary[];
     sitemap: SitemapEventRow[];
@@ -95,6 +97,7 @@ export type PublicDataCacheKey =
     | { resource: "popularity"; divisionCode: string; window: 3 | 7 | 30 }
     | { resource: "event-list"; filters: PublishedEventFilters; asOfDate?: string }
     | { resource: "event-detail"; eventId: number }
+    | { resource: "event-taxonomy" }
     | { resource: "top-tags"; limit: number }
     | { resource: "tag-search"; query: string; limit: number }
     | { resource: "sitemap"; limit: number };
@@ -287,6 +290,9 @@ export function buildPublicDataCacheRequest(origin: string | URL, key: PublicDat
             params = new URLSearchParams([
                 ["id", String(requirePositiveSafeInteger(key.eventId, "Event ID"))]
             ]);
+            break;
+        case "event-taxonomy":
+            params = new URLSearchParams();
             break;
         case "top-tags":
             params = new URLSearchParams([["limit", String(positiveInteger(key.limit, 20))]]);

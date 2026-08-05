@@ -31,6 +31,7 @@
 - `PUBLIC_DATA_CACHE_SCOPES` 缺失、空值或含任一未知 scope 时全量关闭。关闭时 `match` / `put` 调用数必须为 0。
 - `match` 异常、非 2xx、损坏 envelope 或 DTO guard 失败按 miss 处理；`put` 异常返回 `error`，不得改变原 D1 成功结果；非法或已过期 envelope 返回 `skipped`。
 - Cache-Tag 只能来自代码常量，必须是去重后的 printable ASCII。固定 scope tag 为 `eventlist-homepage`、`eventlist-popularity`、`eventlist-tags`、`eventlist-detail`、`eventlist-sitemap`、`eventlist-list`；不得包含用户输入、原始查询字符串、secret 或 Unicode。
+- `event-taxonomy` 是无参数的公开 DTO 资源，复用 `tags` scope、`eventlist-tags` Cache-Tag 和标签/公开活动变更失效路径；其 payload 只包含规范标签、已知类型/规模代码及非零 `event_count`，fresh/normal 为 30 分钟、故障兜底为 48 小时。
 - 缓存值只能使用逐字段公开 DTO，不得保存投稿联系方式、建议标签、驳回原因、审计数据、访客键或完整管理记录。
 - 路由 DTO guard 除逐字段校验外，还必须把 payload 身份绑定到规范键：详情 ID、热门窗口与本地地区、列表页码与 pageSize 不匹配时按 miss 回源；首页今日活动必须属于请求地区。不得只验证 DTO 形状后接受其他键的合法对象。
 - `event-detail` 静态 DTO 包含主办方和入场字段；近 30 日热度必须独立查询，不能进入缓存 payload 或 validator。

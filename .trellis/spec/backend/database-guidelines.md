@@ -231,6 +231,7 @@ For direct admin creation, use `createPublishedEvent()` instead of composing
 - Submission free-text suggestions are stored only in `events.tag_suggestions`; submission must not create rows in `tags` or `event_tags`.
 - Canonical tags displayed on cards/details come only from canonical `event_tags` relationships.
 - `tag` filtering is exact; `searchTags` may use substring search for suggestions.
+- 公开分类聚合只统计 `events.status = published`，包含已结束活动；类型和规模从 `src/lib/events/options.ts` 的稳定目录投影，标签只连接 `alias_of_id IS NULL` 的规范标签，其他事件状态和标签别名不得进入分类计数。
 - User date filters remain date-based. Timing classification uses `end_time` only when it exists; ended results default to end-date descending, while the default upcoming list remains start-date ascending.
 
 ### 4. Validation & Error Matrix
