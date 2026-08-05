@@ -254,7 +254,7 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                     <div
                         class:list={[
                             "gap-12",
-                            description && hasAsideContent
+                            hasAsideContent
                                 ? "grid lg:grid-cols-[minmax(0,1fr)_21rem]"
                                 : "flex flex-col"
                         ]}
@@ -279,7 +279,7 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                                     "flex h-fit flex-col gap-4",
                                     description
                                         ? "border-t border-border/80 pt-7 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
-                                        : "max-w-[21rem]"
+                                        : "max-w-[21rem] lg:col-start-2"
                                 ]}
                             >
                                 {hasAction ? (

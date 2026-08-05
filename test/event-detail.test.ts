@@ -207,14 +207,26 @@ test("活动详情模板按可选内容模型移除空标题、容器和分隔�
     assert.match(source, /hasAction \? "mt-2 border-t border-border pt-5" : ""/);
     assert.match(
         source,
-        /description[\s\S]*\? "border-t border-border\/80 pt-7 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"[\s\S]*: "max-w-\[21rem\]"/
-    );
-    assert.match(
-        source,
         /description=\{event \? \(description \?\? undefined\) : "活动不存在或尚未公开。"\}/
     );
     assert.doesNotMatch(source, /暂无活动介绍|未填写/);
     assert.doesNotMatch(source, /href=\{event\.source_url\}/);
+});
+
+test("活动详情模板在无介绍但有侧栏时保持桌面第二列和移动单列", async () => {
+    const source = await readFile(
+        new URL("../src/pages/events/[id].astro", import.meta.url),
+        "utf8"
+    );
+
+    assert.match(
+        source,
+        /<div\s+class:list=\{\[\s*"gap-12",\s*hasAsideContent\s*\?\s*"grid lg:grid-cols-\[minmax\(0,1fr\)_21rem\]"\s*:\s*"flex flex-col"\s*\]\}\s*>/
+    );
+    assert.match(
+        source,
+        /<aside\s+class:list=\{\[\s*"flex h-fit flex-col gap-4",\s*description\s*\?\s*"border-t border-border\/80 pt-7 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"\s*:\s*"max-w-\[21rem\] lg:col-start-2"\s*\]\}\s*>/
+    );
 });
 
 test("JSON-LD 保留有效公开详情和购票链接, 但不公开审核来源", () => {
