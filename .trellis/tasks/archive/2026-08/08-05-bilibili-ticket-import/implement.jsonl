@@ -1,0 +1,9 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/08-05-bilibili-ticket-import/prd.md", "reason": "当前任务的目标、范围、字段映射要求、验收标准和立即发布决策。"}
+{"file": ".trellis/tasks/08-05-bilibili-ticket-import/design.md", "reason": "当前任务的上游解析、预填、重复检测、D1 原子写入和兼容性设计。"}
+{"file": ".trellis/spec/backend/admin-bulk-event-import.md", "reason": "复用 CSV 导入的共享活动校验、稳定重复警告键和管理员导入交互合同。"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "约束 D1 原子批次、管理员立即发布、标签关系、审计和无迁移兼容策略。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "约束管理员 API 的 400、409、500 和稳定 JSON 错误详情。"}
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "约束 AdminEventForm、管理员页面密度、表单状态、响应式和无障碍。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "约束会员购 unknown JSON 到表单、API、D1 的单一类型化数据流。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "要求复用共享验证器、行政区数据和重复检测逻辑，避免复制合同。"}

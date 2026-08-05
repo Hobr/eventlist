@@ -1,0 +1,10 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/08-05-bilibili-ticket-import/prd.md", "reason": "按全部验收标准检查样例映射、人工补齐、重复保护、安全和回归。"}
+{"file": ".trellis/tasks/08-05-bilibili-ticket-import/design.md", "reason": "检查实现是否遵守固定上游边界、服务端投影、只读来源和无迁移原子写入设计。"}
+{"file": ".trellis/tasks/08-05-bilibili-ticket-import/implement.md", "reason": "检查全部验证命令、风险文件、浏览器视口和回归清单是否完成。"}
+{"file": ".trellis/spec/backend/admin-bulk-event-import.md", "reason": "检查共享重复逻辑提取后 CSV 预览、警告键和提交行为没有回归。"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "检查 published 状态、标签、审计、批次回滚和 D1 兼容性。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "检查鉴权、校验、重复冲突和意外失败响应。"}
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "检查共享表单、管理员交互、响应式、焦点和无障碍合同。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "检查上游字段只由集中解码器解释且各层合同一致。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查没有重复活动校验、行政区或重复键实现。"}
