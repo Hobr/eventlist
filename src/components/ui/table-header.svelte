@@ -7,7 +7,12 @@
         children?: import("svelte").Snippet;
     }
     let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(cn("[&_tr]:border-b", className));
+    let classes = $derived(
+        cn(
+            "bg-surface-subtle text-muted-foreground dark:bg-surface-subtle! dark:text-muted-foreground! [&_tr]:border-b",
+            className
+        )
+    );
 </script>
 
 <FlowbiteTableHead defaultRow={false} class={classes}>

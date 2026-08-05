@@ -1,5 +1,6 @@
 ---
 import TagMergeForm from "../../components/admin/TagMergeForm.svelte";
+import Alert from "../../components/ui/alert.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { listTags } from "../../lib/db/tags";
 import { getDB } from "../../lib/db";
@@ -26,12 +27,9 @@ const tagOptions = tags.map((tag) => ({
 <AdminLayout title="标签归并" description="将重复标签合并到统一名称, 保持活动检索整洁">
     {
         errorMessage ? (
-            <div
-                class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15"
-                role="alert"
-            >
+            <Alert tone="danger" class="p-6 text-center font-semibold">
                 {errorMessage}
-            </div>
+            </Alert>
         ) : (
             <div class="flex flex-col gap-8">
                 <section class="border-b border-border/80 pb-8" aria-labelledby="merge-heading">

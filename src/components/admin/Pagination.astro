@@ -1,5 +1,5 @@
 ---
-import Button from "../../components/ui/button.svelte";
+import { PaginationItem } from "flowbite-svelte";
 
 interface Props {
     page: number;
@@ -18,17 +18,25 @@ function hrefFor(nextPage: number) {
 <nav class="flex items-center justify-center gap-3 py-4 text-sm text-muted" aria-label="分页">
     {
         page > 1 ? (
-            <Button variant="outline" size="sm" href={hrefFor(page - 1)}>
+            <PaginationItem
+                href={hrefFor(page - 1)}
+                rel="prev"
+                class="rounded-md border-border-strong bg-surface text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:border-border-strong! dark:bg-surface! dark:text-muted-foreground! dark:hover:bg-surface-subtle! dark:hover:text-foreground!"
+            >
                 上一页
-            </Button>
+            </PaginationItem>
         ) : null
     }
     <span class="font-medium text-muted-foreground">第 {page} 页</span>
     {
         hasNext ? (
-            <Button variant="outline" size="sm" href={hrefFor(page + 1)}>
+            <PaginationItem
+                href={hrefFor(page + 1)}
+                rel="next"
+                class="rounded-md border-border-strong bg-surface text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:border-border-strong! dark:bg-surface! dark:text-muted-foreground! dark:hover:bg-surface-subtle! dark:hover:text-foreground!"
+            >
                 下一页
-            </Button>
+            </PaginationItem>
         ) : null
     }
 </nav>

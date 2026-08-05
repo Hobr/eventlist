@@ -2,6 +2,7 @@
 import { waitUntil } from "cloudflare:workers";
 import HomepageContent from "../components/HomepageContent.svelte";
 import NavLocationPicker from "../components/NavLocationPicker.svelte";
+import Alert from "../components/ui/alert.svelte";
 import Layout from "../layouts/Layout.astro";
 import {
     combinePublicDataCacheStates,
@@ -164,12 +165,9 @@ const initialHomepage: PublicHomepageData = {
 
     {
         cacheWarning ? (
-            <div
-                class="mb-8 rounded-md bg-warning-subtle p-5 text-sm font-semibold text-warning"
-                role="status"
-            >
+            <Alert tone="warning" class="mb-8 p-5 font-semibold" role="status">
                 {cacheWarning}
-            </div>
+            </Alert>
         ) : null
     }
 

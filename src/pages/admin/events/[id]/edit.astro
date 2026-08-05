@@ -1,6 +1,7 @@
 ---
 import { ArrowLeftOutline as ArrowLeft } from "flowbite-svelte-icons";
 import AdminEventForm from "../../../../components/admin/AdminEventForm.astro";
+import Alert from "../../../../components/ui/alert.svelte";
 import Badge from "../../../../components/ui/badge.svelte";
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import { getDB } from "../../../../lib/db";
@@ -55,12 +56,9 @@ const returnHref =
 >
     {
         errorMessage || !eventRecord ? (
-            <div
-                class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15"
-                role="alert"
-            >
+            <Alert tone="danger" class="p-6 text-center font-semibold">
                 {errorMessage}
-            </div>
+            </Alert>
         ) : (
             <div>
                 <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">

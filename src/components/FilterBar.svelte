@@ -12,6 +12,8 @@
     import DivisionPicker from "./DivisionPicker.svelte";
     import SelectField from "./SelectField.svelte";
     import Button from "./ui/button.svelte";
+    import Input from "./ui/input.svelte";
+    import Label from "./ui/label.svelte";
     import SidePanel from "./ui/side-panel.svelte";
 
     interface Props {
@@ -182,15 +184,10 @@
                 value={filters.type ?? ""}
                 options={typeOptions}
             />
-            <label class="flex flex-col gap-1.5">
-                <span class="text-sm font-semibold text-muted-foreground">开始日期</span>
-                <input
-                    type="date"
-                    name="from"
-                    value={filters.from ?? ""}
-                    class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
-                />
-            </label>
+            <div class="flex flex-col gap-1.5">
+                <Label for="event-filter-from">开始日期</Label>
+                <Input id="event-filter-from" type="date" name="from" value={filters.from ?? ""} />
+            </div>
             {#if filters.scale}<input type="hidden" name="scale" value={filters.scale} />{/if}
             {#if filters.tag}<input type="hidden" name="tag" value={filters.tag} />{/if}
             {#if filters.to}<input type="hidden" name="to" value={filters.to} />{/if}
@@ -247,31 +244,26 @@
                     options={scaleOptions}
                 />
                 <SelectField name="sort" label="排序" value={sortValue} options={sortOptions} />
-                <label class="flex flex-col gap-1.5">
-                    <span class="text-sm font-semibold text-muted-foreground">结束日期</span>
-                    <input
-                        type="date"
-                        name="to"
-                        value={filters.to ?? ""}
-                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
-                    />
-                </label>
-                <label class="flex flex-col gap-1.5">
-                    <span class="text-sm font-semibold text-muted-foreground">标签</span>
-                    <input
+                <div class="flex flex-col gap-1.5">
+                    <Label for="event-filter-to">结束日期</Label>
+                    <Input id="event-filter-to" type="date" name="to" value={filters.to ?? ""} />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <Label for="event-filter-tag">标签</Label>
+                    <Input
+                        id="event-filter-tag"
                         type="search"
                         name="tag"
                         list="event-tag-suggestions"
                         value={filters.tag ?? ""}
                         oninput={handleTagInput}
-                        class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                     />
                     <datalist id="event-tag-suggestions">
                         {#each suggestions as tag (tag.id)}
                             <option value={tag.name}>{tag.event_count} 场活动</option>
                         {/each}
                     </datalist>
-                </label>
+                </div>
                 <div class="flex gap-3 border-t border-border pt-5">
                     <Button type="submit" class="flex-1">应用筛选</Button>
                     <Button href="/events" variant="outline">

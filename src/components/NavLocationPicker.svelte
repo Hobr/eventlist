@@ -18,6 +18,7 @@
         type HomepageDataEventDetail
     } from "../lib/public/homepage-client";
     import Button from "./ui/button.svelte";
+    import Alert from "./ui/alert.svelte";
     import SidePanel from "./ui/side-panel.svelte";
     import CitySelector from "./CitySelector.svelte";
 
@@ -304,7 +305,7 @@
         />
 
         {#if errorMessage}
-            <div class="rounded-md bg-danger-subtle p-4 text-sm text-danger" role="alert">
+            <Alert tone="danger" class="p-4">
                 <p class="font-semibold">{errorMessage}</p>
                 {#if fallbackHref}
                     <a
@@ -314,7 +315,7 @@
                         使用普通页面导航打开该地区
                     </a>
                 {/if}
-            </div>
+            </Alert>
         {/if}
     </div>
 </SidePanel>

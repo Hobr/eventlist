@@ -28,12 +28,16 @@
     } as const;
 
     const tones: Record<Tone, string> = {
-        default: "border border-border bg-surface-subtle text-muted-foreground",
-        primary: "border border-transparent bg-primary-subtle text-primary-subtle-foreground",
-        accent: "border border-transparent bg-accent-subtle text-accent",
-        warning: "border border-transparent bg-warning-subtle text-warning",
-        outline: "border border-border-strong bg-surface text-foreground",
-        danger: "border border-transparent bg-danger-subtle text-danger"
+        default:
+            "border border-border bg-surface-subtle text-muted-foreground dark:border-border! dark:bg-surface-subtle! dark:text-muted-foreground!",
+        primary:
+            "border border-transparent bg-primary-subtle text-primary-subtle-foreground dark:border-transparent! dark:bg-primary-subtle! dark:text-primary-subtle-foreground!",
+        accent: "border border-transparent bg-accent-subtle text-accent dark:border-transparent! dark:bg-accent-subtle! dark:text-accent!",
+        warning:
+            "border border-transparent bg-warning-subtle text-warning dark:border-transparent! dark:bg-warning-subtle! dark:text-warning!",
+        outline:
+            "border border-border-strong bg-surface text-foreground dark:border-border-strong! dark:bg-surface! dark:text-foreground!",
+        danger: "border border-transparent bg-danger-subtle text-danger dark:border-transparent! dark:bg-danger-subtle! dark:text-danger!"
     };
 
     let classes = $derived(

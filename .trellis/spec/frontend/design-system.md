@@ -60,6 +60,18 @@
 - Provide light and dark values through `prefers-color-scheme` in
   `tokens.css`. Dark mode is automatic; do NOT add a `.dark` class toggle or
   ThemeToggle unless a future task explicitly requests manual control.
+- Flowbite components emit their own `dark:bg-*`, `dark:text-*`, and
+  `dark:border-*` utilities. Shared adapters must override those defaults with
+  the matching semantic-token utility and Tailwind v4 important modifier, for
+  example `dark:bg-surface!`. Verify the production CSS contains
+  `background-color: var(--color-surface) !important`; source classes alone are
+  not sufficient evidence.
+- A caller that intentionally changes a Button variant's color must provide the
+  equivalent explicit dark override. For example, a white control over event
+  artwork uses `bg-white dark:bg-white!`, while a semantic inverse action uses
+  `bg-foreground dark:bg-foreground!`. Without the caller override, the
+  adapter's important dark variant correctly wins and silently changes the
+  intended special-case color.
 - Public/admin HTML documents declare `<meta name="color-scheme" content="light dark">`
   so native controls follow the same system preference as semantic tokens.
 - Do not reintroduce `--md-sys-*` tokens or Material 3 as the frontend
@@ -84,7 +96,7 @@
 
 - Primitives are Svelte 5 runes components, accept a `class` prop, and merge
   it via `cn()` so callers can override/extend safely.
-- Existing primitives: `button`, `badge`, `card` + `card-header` /
+- Existing primitives: `button`, `badge`, `alert`, `checkbox`, `file-upload`, `card` + `card-header` /
   `card-title` / `card-description` / `card-content` / `card-footer`,
   `input`, `label`, `textarea`, `separator`, `table` + `table-header` /
   `table-body` / `table-row` / `table-head` / `table-cell`, `side-panel`, and
@@ -98,6 +110,37 @@
   daisyUI, etc.); the `ui/` layer is hand-maintained.
 - Keep `ui/` components free of business field semantics (no `event`,
   `division`, etc.).
+- Button, Input, Textarea, Label, Card, Checkbox, and FileUpload adapters derive
+  their public props from the matching Flowbite type and forward remaining
+  native attributes. Preserve `id`, `name`, `href`, `target`, `title`, `aria-*`,
+  `data-*`, validation attributes, and DOM event handlers instead of adding a
+  local prop whitelist. Input/Textarea keep bindable `value`, Checkbox keeps
+  bindable `checked`, and FileUpload keeps bindable `files` and `elementRef`.
+- Repeated project contracts use `src/components/ui/` adapters. One-off
+  structural composition may import Flowbite `ButtonGroup`, `Listgroup`,
+  `ListgroupItem`, `PaginationItem`, `SidebarGroup`, or `SidebarItem` directly
+  when the page still owns layout and business state.
+- Visual warning, error, success, and neutral message containers use `ui/alert`.
+  Compact inline validation and live-status text stays native when an Alert
+  container would add incorrect visual weight.
+
+### Approved Native Boundaries
+
+- Keep page-level `form`, `nav`, `section`, `article`, and layout containers as
+  semantic HTML. Flowbite does not own page information architecture.
+- Keep public submission optional fields in native `details`, so fields remain
+  reachable without JavaScript and retain browser validation.
+- Keep hidden inputs, datalist elements, and the Turnstile response field native.
+- The admin new-event page dynamically creates duplicate-warning confirmation
+  checkboxes from a non-hydrated DOM script. Keep those checkboxes native so the
+  existing `required` validation and rerender contract have one state owner.
+- Keep EventCard `row` and `compact`, EventRow, public desktop three-column
+  navigation, plain text links, and compact inline error/live status text native.
+  Their specialized semantics are more specific than the available Flowbite
+  component contract.
+- Pagination uses standalone Flowbite `PaginationItem` links because the server
+  exposes `page` and `hasNext`, not a total page count. Every item must retain a
+  real SSR `href`.
 
 ## Business Components
 

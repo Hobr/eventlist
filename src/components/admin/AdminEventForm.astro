@@ -3,6 +3,10 @@ import { FloppyDiskOutline as Save } from "flowbite-svelte-icons";
 import DivisionPicker from "../DivisionPicker.svelte";
 import SelectField from "../SelectField.svelte";
 import TagInput from "../TagInput.svelte";
+import Button from "../ui/button.svelte";
+import Input from "../ui/input.svelte";
+import Label from "../ui/label.svelte";
+import Textarea from "../ui/textarea.svelte";
 import type { AdminEventField, AdminEventRawInput } from "../../lib/admin/form";
 import type { EventRecord } from "../../lib/db/admin-events";
 import type { TagSummary } from "../../lib/db/tags";
@@ -62,9 +66,6 @@ const value = (name: AdminEventField) => {
     const initial = initialValues[name];
     return typeof initial === "string" ? initial : "";
 };
-const fieldCls =
-    "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
-const labelCls = "text-sm font-semibold text-muted-foreground";
 ---
 
 <form
@@ -86,21 +87,15 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             <p class="mt-1 text-sm text-muted-foreground">用清晰、可检索的名称与分类描述活动</p>
         </div>
         <div class="sm:col-span-2">
-            <label class={labelCls} for="title">
+            <Label for="title">
                 活动名称
                 {
                     showRequiredIndicators ? (
                         <span class="ml-1 text-xs font-semibold text-danger">必填</span>
                     ) : null
                 }
-            </label>
-            <input
-                id="title"
-                name="title"
-                required
-                value={value("title")}
-                class={`mt-1.5 ${fieldCls}`}
-            />
+            </Label>
+            <Input id="title" name="title" required value={value("title")} class="mt-1.5" />
         </div>
         <SelectField
             name="type"
@@ -146,85 +141,74 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             />
         </div>
         <div>
-            <label class={labelCls} for="venue">
+            <Label for="venue">
                 场馆
                 {
                     showRequiredIndicators ? (
                         <span class="ml-1 text-xs font-semibold text-danger">必填</span>
                     ) : null
                 }
-            </label>
-            <input
-                id="venue"
-                name="venue"
-                required
-                value={value("venue")}
-                class={`mt-1.5 ${fieldCls}`}
-            />
+            </Label>
+            <Input id="venue" name="venue" required value={value("venue")} class="mt-1.5" />
         </div>
         <div>
-            <label class={labelCls} for="address">详细地址</label>
-            <input
-                id="address"
-                name="address"
-                value={value("address")}
-                class={`mt-1.5 ${fieldCls}`}
-            />
+            <Label for="address">详细地址</Label>
+            <Input id="address" name="address" value={value("address")} class="mt-1.5" />
         </div>
         <div>
-            <label class={labelCls} for="start_date">
+            <Label for="start_date">
                 开始日期
                 {
                     showRequiredIndicators ? (
                         <span class="ml-1 text-xs font-semibold text-danger">必填</span>
                     ) : null
                 }
-            </label>
-            <input
+            </Label>
+            <Input
                 id="start_date"
                 name="start_date"
                 type="date"
                 required
                 value={value("start_date")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="end_date">
+            <Label for="end_date">
                 结束日期
                 {
                     showRequiredIndicators ? (
                         <span class="ml-1 text-xs font-semibold text-danger">必填</span>
                     ) : null
                 }
-            </label>
-            <input
+            </Label>
+            <Input
                 id="end_date"
                 name="end_date"
                 type="date"
                 required
                 value={value("end_date")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="start_time">开始时间(选填)</label>
-            <input
+            <Label for="start_time">开始时间(选填)</Label>
+            <Input
                 id="start_time"
                 name="start_time"
                 type="time"
                 value={value("start_time")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="end_time">结束时间(选填)</label>
-            <input
+            <Label for="end_time">结束时间(选填)</Label>
+            <Input
                 id="end_time"
                 name="end_time"
                 type="time"
                 value={value("end_time")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
     </section>
@@ -239,15 +223,15 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             </h2>
         </div>
         <div class="sm:col-span-2">
-            <label class={labelCls} for="source_url">
+            <Label for="source_url">
                 来源链接
                 {
                     showRequiredIndicators ? (
                         <span class="ml-1 text-xs font-semibold text-danger">必填</span>
                     ) : null
                 }
-            </label>
-            <input
+            </Label>
+            <Input
                 id="source_url"
                 name="source_url"
                 type="url"
@@ -255,7 +239,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                 value={value("source_url")}
                 readonly={sourceReadOnly}
                 aria-describedby={sourceReadOnly ? `${formId}-source-note` : undefined}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
             {
                 sourceReadOnly ? (
@@ -266,13 +250,13 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             }
         </div>
         <div class="sm:col-span-2">
-            <label class={labelCls} for="organizer">主办方</label>
-            <input
+            <Label for="organizer">主办方</Label>
+            <Input
                 id="organizer"
                 name="organizer"
                 maxlength="200"
                 value={value("organizer")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <SelectField
@@ -292,80 +276,75 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             client:load
         />
         <div class="sm:col-span-2">
-            <label class={labelCls} for="price_range">票价区间</label>
-            <input
+            <Label for="price_range">票价区间</Label>
+            <Input
                 id="price_range"
                 name="price_range"
                 maxlength="120"
                 value={value("price_range")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="admission_start_date">开始购票/预约/申请日期</label>
-            <input
+            <Label for="admission_start_date">开始购票/预约/申请日期</Label>
+            <Input
                 id="admission_start_date"
                 name="admission_start_date"
                 type="date"
                 value={value("admission_start_date")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="admission_start_time">开始购票/预约/申请时间</label>
-            <input
+            <Label for="admission_start_time">开始购票/预约/申请时间</Label>
+            <Input
                 id="admission_start_time"
                 name="admission_start_time"
                 type="time"
                 value={value("admission_start_time")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="submitter_contact">
+            <Label for="submitter_contact">
                 投稿联系方式
                 {
                     showRequiredIndicators ? (
                         <span class="ml-1 text-xs font-semibold text-danger">必填</span>
                     ) : null
                 }
-            </label>
-            <input
+            </Label>
+            <Input
                 id="submitter_contact"
                 name="submitter_contact"
                 required
                 value={value("submitter_contact")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="ticket_url">购票地址</label>
-            <input
+            <Label for="ticket_url">购票地址</Label>
+            <Input
                 id="ticket_url"
                 name="ticket_url"
                 type="url"
                 value={value("ticket_url")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
         <div>
-            <label class={labelCls} for="qq_group">官方交流群</label>
-            <input
-                id="qq_group"
-                name="qq_group"
-                value={value("qq_group")}
-                class={`mt-1.5 ${fieldCls}`}
-            />
+            <Label for="qq_group">官方交流群</Label>
+            <Input id="qq_group" name="qq_group" value={value("qq_group")} class="mt-1.5" />
         </div>
         <div>
-            <label class={labelCls} for="cover_url">封面 URL</label>
-            <input
+            <Label for="cover_url">封面 URL</Label>
+            <Input
                 id="cover_url"
                 name="cover_url"
                 type="url"
                 pattern="https://.*"
                 value={value("cover_url")}
-                class={`mt-1.5 ${fieldCls}`}
+                class="mt-1.5"
             />
         </div>
     </section>
@@ -392,13 +371,13 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             client:load
         />
         <div>
-            <label class={labelCls} for="description">活动说明</label>
-            <textarea
+            <Label for="description">活动说明</Label>
+            <Textarea
                 id="description"
                 name="description"
-                class="mt-1.5 flex min-h-36 w-full resize-y rounded-md border border-border-strong bg-surface px-3 py-2 text-sm leading-6 text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
-                >{value("description")}</textarea
-            >
+                value={value("description")}
+                class="mt-1.5 min-h-36 leading-6"
+            />
         </div>
     </section>
 
@@ -415,21 +394,16 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             {statusText}
         </p>
         <div class="flex gap-2">
-            <a
-                class="inline-flex h-10 flex-1 items-center justify-center rounded-md bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] sm:flex-none"
-                href={cancelHref}
-            >
-                取消
-            </a>
-            <button
+            <Button class="flex-1 sm:flex-none" href={cancelHref} variant="outline"> 取消 </Button>
+            <Button
                 id={submitButtonId}
-                class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100 sm:flex-none"
+                class="flex-1 px-5 sm:flex-none"
                 type="submit"
                 disabled={submitDisabled}
             >
                 <Save class="size-4" aria-hidden="true" />
                 <span data-save-label>{submitLabel}</span>
-            </button>
+            </Button>
         </div>
     </div>
 </form>

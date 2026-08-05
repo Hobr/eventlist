@@ -4,8 +4,11 @@ import {
     ChevronLeftOutline as ChevronLeft,
     ChevronRightOutline as ChevronRight
 } from "flowbite-svelte-icons";
+import { PaginationItem } from "flowbite-svelte";
 import FilterBar from "../../components/FilterBar.svelte";
 import EventCard from "../../components/EventCard.astro";
+import Alert from "../../components/ui/alert.svelte";
+import Button from "../../components/ui/button.svelte";
 import Layout from "../../layouts/Layout.astro";
 import {
     combinePublicDataCacheStates,
@@ -164,23 +167,17 @@ try {
 
         {
             cacheWarning ? (
-                <div
-                    class="rounded-md bg-warning-subtle p-5 text-sm font-semibold text-warning"
-                    role="status"
-                >
+                <Alert tone="warning" class="p-5 font-semibold" role="status">
                     {cacheWarning}
-                </div>
+                </Alert>
             ) : null
         }
 
         {
             errorMessage ? (
-                <div
-                    class="rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
-                    role="alert"
-                >
+                <Alert tone="danger" class="p-5 font-semibold">
                     {errorMessage}
-                </div>
+                </Alert>
             ) : events.length > 0 ? (
                 <>
                     <section aria-label="活动结果" class="border-t border-border/80">
@@ -193,23 +190,25 @@ try {
                         aria-label="活动分页"
                     >
                         {filters.page && filters.page > 1 ? (
-                            <a
-                                class="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-subtle px-4 text-xs font-semibold text-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-primary active:scale-[0.98]"
+                            <PaginationItem
                                 href={nextHref(filters.page - 1)}
+                                rel="prev"
+                                class="h-9 gap-1.5 rounded-md border-border-strong bg-surface px-4 text-xs font-semibold text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:border-border-strong! dark:bg-surface! dark:text-muted-foreground! dark:hover:bg-surface-subtle! dark:hover:text-foreground!"
                             >
                                 <ChevronLeft class="size-4" aria-hidden="true" />
                                 上一页
-                            </a>
+                            </PaginationItem>
                         ) : null}
                         <span class="font-medium text-muted-foreground">第 {filters.page} 页</span>
                         {hasNext ? (
-                            <a
-                                class="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-subtle px-4 text-xs font-semibold text-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-primary active:scale-[0.98]"
+                            <PaginationItem
                                 href={nextHref((filters.page ?? 1) + 1)}
+                                rel="next"
+                                class="h-9 gap-1.5 rounded-md border-border-strong bg-surface px-4 text-xs font-semibold text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:border-border-strong! dark:bg-surface! dark:text-muted-foreground! dark:hover:bg-surface-subtle! dark:hover:text-foreground!"
                             >
                                 下一页
                                 <ChevronRight class="size-4" aria-hidden="true" />
-                            </a>
+                            </PaginationItem>
                         ) : null}
                     </nav>
                 </>
@@ -217,12 +216,12 @@ try {
                 <div class="border-y border-border/80 py-16 text-center">
                     <h2 class="text-xl font-bold text-foreground">{timingCopy.emptyTitle}</h2>
                     <p class="mt-2 text-sm text-muted-foreground">尝试移除部分筛选条件</p>
-                    <a
+                    <Button
                         href="/events"
-                        class="mt-6 inline-flex h-10 items-center rounded-full bg-foreground px-5 text-sm font-bold text-background transition-transform duration-300 ease-motion active:scale-[0.98]"
+                        class="mt-6 rounded-full bg-foreground px-5 font-bold text-background hover:bg-foreground/90 dark:bg-foreground! dark:text-background! dark:hover:bg-foreground/90!"
                     >
                         重置筛选
-                    </a>
+                    </Button>
                 </div>
             )
         }

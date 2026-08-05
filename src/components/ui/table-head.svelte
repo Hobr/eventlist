@@ -8,7 +8,10 @@
     }
     let { class: className = undefined, children }: Props = $props();
     let classes = $derived(
-        cn("h-11 px-3 text-left align-middle font-semibold text-muted-foreground", className)
+        cn(
+            "h-11 px-3 text-left align-middle font-semibold text-muted-foreground dark:text-muted-foreground!",
+            className
+        )
     );
 </script>
 

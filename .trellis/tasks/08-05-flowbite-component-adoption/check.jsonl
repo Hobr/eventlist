@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端规范索引和质量检查入口"}
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "验证 Flowbite 组件合同, 语义 token 和交互兼容性"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "检查重复控件实现和过度抽象"}
+{"file": ".trellis/tasks/08-05-flowbite-component-adoption/research/flowbite-coverage-audit.md", "reason": "核对迁移覆盖和原生例外"}

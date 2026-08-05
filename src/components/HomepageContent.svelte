@@ -7,6 +7,7 @@
     } from "../lib/public/homepage-client";
     import FeaturedEventCarousel from "./FeaturedEventCarousel.svelte";
     import HomepageIntentFeed from "./HomepageIntentFeed.svelte";
+    import Alert from "./ui/alert.svelte";
 
     interface Props {
         initialHomepage: PublicHomepageData;
@@ -61,12 +62,9 @@
     </div>
 
     {#if regionError || discoveryError}
-        <div
-            class="mt-8 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
-            role="alert"
-        >
+        <Alert tone="danger" class="mt-8 p-5 font-semibold">
             {regionError || discoveryError}
-        </div>
+        </Alert>
     {/if}
 
     <HomepageIntentFeed

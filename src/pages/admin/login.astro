@@ -4,6 +4,11 @@ import {
     LockOutline as LockKeyhole,
     ShieldCheckOutline as ShieldCheck
 } from "flowbite-svelte-icons";
+import Alert from "../../components/ui/alert.svelte";
+import Button from "../../components/ui/button.svelte";
+import Card from "../../components/ui/card.svelte";
+import Input from "../../components/ui/input.svelte";
+import Label from "../../components/ui/label.svelte";
 import "../../styles/app.css";
 import { verifyTokenValue } from "../../lib/auth/token";
 import { getAuthMode, getRuntimeEnv } from "../../lib/runtime/env";
@@ -60,7 +65,7 @@ if (Astro.request.method === "POST") {
                 返回公开站点
             </a>
 
-            <div class="rounded-md bg-surface p-6 shadow-elevated ring-1 ring-border/80 sm:p-8">
+            <Card class="p-6 shadow-elevated sm:p-8">
                 <div class="mb-7 flex items-center gap-3">
                     <span
                         class="inline-flex size-10 items-center justify-center rounded-md bg-foreground text-background"
@@ -89,55 +94,44 @@ if (Astro.request.method === "POST") {
                             <p class="mt-2 text-sm leading-6 text-muted-foreground">
                                 请从受保护的 Access 应用入口进入, 身份通过验证后, 后台会自动开放
                             </p>
-                            <div class="mt-5 rounded-md bg-accent-subtle px-4 py-3 text-sm font-semibold text-accent">
+                            <Alert tone="success" class="mt-5 px-4 py-3 font-semibold">
                                 当前页面不需要本地 Token
-                            </div>
+                            </Alert>
                             {errorMessage ? (
-                                <p class="mt-4 text-sm font-semibold text-danger" role="alert">
+                                <Alert tone="danger" class="mt-4 font-semibold">
                                     {errorMessage}
-                                </p>
+                                </Alert>
                             ) : null}
                         </section>
                     ) : (
                         <form class="flex flex-col gap-4" method="post">
                             <div>
-                                <label
-                                    class="text-sm font-semibold text-muted-foreground"
-                                    for="token"
-                                >
-                                    管理员 Token
-                                </label>
-                                <input
+                                <Label for="token">管理员 Token</Label>
+                                <Input
                                     id="token"
                                     name="token"
                                     type="password"
                                     autocomplete="current-password"
                                     required
                                     autofocus
-                                    class="mt-1.5 flex h-11 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                                    class="mt-1.5 h-11"
                                 />
                                 <p class="mt-1.5 text-xs text-muted">
                                     Token 仅用于建立本机管理会话
                                 </p>
                             </div>
                             {errorMessage ? (
-                                <p
-                                    class="rounded-md bg-danger-subtle px-3 py-2 text-sm font-semibold text-danger"
-                                    role="alert"
-                                >
+                                <Alert tone="danger" class="px-3 py-2 font-semibold">
                                     {errorMessage}
-                                </p>
+                                </Alert>
                             ) : null}
-                            <button
-                                class="inline-flex h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-                                type="submit"
-                            >
+                            <Button class="h-11 font-bold" type="submit">
                                 登录后台
-                            </button>
+                            </Button>
                         </form>
                     )
                 }
-            </div>
+            </Card>
 
             <p class="mt-6 text-xs leading-5 text-muted">
                 管理操作会写入审核记录, 请仅在可信设备上使用

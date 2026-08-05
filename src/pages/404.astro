@@ -4,6 +4,7 @@ import {
     CalendarMonthOutline as CalendarDays
 } from "flowbite-svelte-icons";
 import EventArtwork from "../components/EventArtwork.astro";
+import Button from "../components/ui/button.svelte";
 import Layout from "../layouts/Layout.astro";
 
 Astro.response.status = 404;
@@ -27,20 +28,23 @@ Astro.response.status = 404;
                 活动可能不存在, 也有可能被下架了
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
-                <a
+                <Button
                     href="/"
-                    class="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-black transition-transform duration-300 ease-motion active:scale-[0.98]"
+                    size="lg"
+                    class="h-11 rounded-full bg-white px-5 text-sm font-bold text-black hover:bg-white/90 dark:bg-white! dark:text-black! dark:hover:bg-white/90!"
                 >
                     <ArrowLeft class="size-4" aria-hidden="true" />
                     返回首页
-                </a>
-                <a
+                </Button>
+                <Button
                     href="/events"
-                    class="inline-flex h-11 items-center gap-2 rounded-full bg-white/14 px-5 text-sm font-bold text-white ring-1 ring-white/24 transition-transform duration-300 ease-motion active:scale-[0.98]"
+                    variant="outline"
+                    size="lg"
+                    class="h-11 rounded-full border-white/24 bg-white/14 px-5 text-sm font-bold text-white hover:bg-white/20 dark:border-white/24! dark:bg-white/14! dark:text-white! dark:hover:bg-white/20!"
                 >
                     <CalendarDays class="size-4" aria-hidden="true" />
                     浏览其他活动
-                </a>
+                </Button>
             </div>
         </div>
     </section>

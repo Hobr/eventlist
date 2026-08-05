@@ -1,6 +1,8 @@
 ---
 import { ShapesOutline, ScaleBalancedOutline, TagOutline } from "flowbite-svelte-icons";
+import { Listgroup, ListgroupItem } from "flowbite-svelte";
 import { waitUntil } from "cloudflare:workers";
+import Alert from "../components/ui/alert.svelte";
 import Layout from "../layouts/Layout.astro";
 import { publicDataCacheResponseHeaders } from "../lib/cache/public-data";
 import { loadCachedPublicEventTaxonomy } from "../lib/cache/public-routes";
@@ -69,23 +71,17 @@ const configuredScaleCount = EVENT_SCALES.length;
 
         {
             cacheWarning ? (
-                <div
-                    class="rounded-md bg-warning-subtle p-5 text-sm font-semibold text-warning"
-                    role="status"
-                >
+                <Alert tone="warning" class="p-5 font-semibold" role="status">
                     {cacheWarning}
-                </div>
+                </Alert>
             ) : null
         }
 
         {
             errorMessage ? (
-                <div
-                    class="rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
-                    role="alert"
-                >
+                <Alert tone="danger" class="p-5 font-semibold">
                     {errorMessage}
-                </div>
+                </Alert>
             ) : !hasTaxonomy ? (
                 <section class="border-y border-border/80 py-16 text-center" aria-label="分类状态">
                     <h2 class="text-xl font-bold text-foreground">暂时没有可浏览的分类</h2>
@@ -110,11 +106,15 @@ const configuredScaleCount = EVENT_SCALES.length;
                                     </h2>
                                 </div>
                             </div>
-                            <div class="mt-4 grid gap-2">
+                            <Listgroup
+                                border={false}
+                                rounded={false}
+                                class="mt-4 gap-2 divide-y-0 bg-transparent text-muted-foreground dark:bg-transparent! dark:text-muted-foreground!"
+                            >
                                 {taxonomy.tags.map((item) => (
-                                    <a
+                                    <ListgroupItem
                                         href={facetHref("tag", item.name)}
-                                        class="group flex min-h-12 items-center justify-between gap-3 rounded-md border border-border/80 bg-surface px-4 py-3 transition-[transform,background-color,border-color] duration-300 ease-motion hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                        class="group min-h-12 justify-between rounded-md border border-border/80 bg-surface px-4 py-3 text-muted-foreground transition-[transform,background-color,border-color] duration-300 ease-motion hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none dark:border-border/80! dark:bg-surface! dark:text-muted-foreground! dark:hover:border-primary/50! dark:hover:bg-surface-subtle!"
                                     >
                                         <span class="min-w-0 truncate text-sm font-semibold text-foreground group-hover:text-primary">
                                             {item.name}
@@ -122,9 +122,9 @@ const configuredScaleCount = EVENT_SCALES.length;
                                         <span class="shrink-0 font-mono text-xs text-muted tabular-nums">
                                             {item.event_count} 场
                                         </span>
-                                    </a>
+                                    </ListgroupItem>
                                 ))}
-                            </div>
+                            </Listgroup>
                         </section>
                     ) : null}
 
@@ -143,11 +143,15 @@ const configuredScaleCount = EVENT_SCALES.length;
                                     </h2>
                                 </div>
                             </div>
-                            <div class="mt-4 grid gap-2">
+                            <Listgroup
+                                border={false}
+                                rounded={false}
+                                class="mt-4 gap-2 divide-y-0 bg-transparent text-muted-foreground dark:bg-transparent! dark:text-muted-foreground!"
+                            >
                                 {typeItems.map((item) => (
-                                    <a
+                                    <ListgroupItem
                                         href={facetHref("type", item.name)}
-                                        class="group flex min-h-12 items-center justify-between gap-3 rounded-md border border-border/80 bg-surface px-4 py-3 transition-[transform,background-color,border-color] duration-300 ease-motion hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                        class="group min-h-12 justify-between rounded-md border border-border/80 bg-surface px-4 py-3 text-muted-foreground transition-[transform,background-color,border-color] duration-300 ease-motion hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none dark:border-border/80! dark:bg-surface! dark:text-muted-foreground! dark:hover:border-primary/50! dark:hover:bg-surface-subtle!"
                                     >
                                         <span class="min-w-0 text-sm font-semibold text-foreground group-hover:text-primary">
                                             {item.label}
@@ -155,9 +159,9 @@ const configuredScaleCount = EVENT_SCALES.length;
                                         <span class="shrink-0 font-mono text-xs text-muted tabular-nums">
                                             {item.event_count} 场
                                         </span>
-                                    </a>
+                                    </ListgroupItem>
                                 ))}
-                            </div>
+                            </Listgroup>
                         </section>
                     ) : null}
 
@@ -176,11 +180,15 @@ const configuredScaleCount = EVENT_SCALES.length;
                                     </h2>
                                 </div>
                             </div>
-                            <div class="mt-4 grid gap-2">
+                            <Listgroup
+                                border={false}
+                                rounded={false}
+                                class="mt-4 gap-2 divide-y-0 bg-transparent text-muted-foreground dark:bg-transparent! dark:text-muted-foreground!"
+                            >
                                 {scaleItems.map((item) => (
-                                    <a
+                                    <ListgroupItem
                                         href={facetHref("scale", item.name)}
-                                        class="group flex min-h-12 items-center justify-between gap-3 rounded-md border border-border/80 bg-surface px-4 py-3 transition-[transform,background-color,border-color] duration-300 ease-motion hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                        class="group min-h-12 justify-between rounded-md border border-border/80 bg-surface px-4 py-3 text-muted-foreground transition-[transform,background-color,border-color] duration-300 ease-motion hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none dark:border-border/80! dark:bg-surface! dark:text-muted-foreground! dark:hover:border-primary/50! dark:hover:bg-surface-subtle!"
                                     >
                                         <span class="min-w-0 text-sm font-semibold text-foreground group-hover:text-primary">
                                             {item.label}
@@ -188,9 +196,9 @@ const configuredScaleCount = EVENT_SCALES.length;
                                         <span class="shrink-0 font-mono text-xs text-muted tabular-nums">
                                             {item.event_count} 场
                                         </span>
-                                    </a>
+                                    </ListgroupItem>
                                 ))}
-                            </div>
+                            </Listgroup>
                         </section>
                     ) : null}
                 </div>

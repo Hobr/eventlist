@@ -12,7 +12,9 @@ import {
     TicketOutline as Ticket
 } from "flowbite-svelte-icons";
 import EventArtwork from "../../components/EventArtwork.astro";
+import Alert from "../../components/ui/alert.svelte";
 import Badge from "../../components/ui/badge.svelte";
+import Button from "../../components/ui/button.svelte";
 import Layout from "../../layouts/Layout.astro";
 import { publicDataCacheResponseHeaders } from "../../lib/cache/public-data";
 import { loadCachedPublicEventDetail } from "../../lib/cache/public-routes";
@@ -109,16 +111,16 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
 >
     {
         !event ? (
-            <div class="border-y border-border/80 py-16 text-center" data-reveal>
+            <Alert tone="danger" class="p-8 text-center" data-reveal>
                 <h1 class="text-2xl font-black text-foreground">{errorMessage}</h1>
-                <a
+                <Button
                     href="/events"
-                    class="mt-6 inline-flex h-10 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-bold text-background transition-transform duration-300 ease-motion active:scale-[0.98]"
+                    class="mt-6 rounded-full bg-foreground px-5 font-bold text-background hover:bg-foreground/90 dark:bg-foreground! dark:text-background! dark:hover:bg-foreground/90!"
                 >
                     <ArrowLeft class="size-4" aria-hidden="true" />
                     返回活动列表
-                </a>
-            </div>
+                </Button>
+            </Alert>
         ) : (
             <article
                 class="flex flex-col gap-10"
@@ -136,18 +138,15 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                 </a>
 
                 {cacheWarning ? (
-                    <div
-                        class="rounded-md bg-warning-subtle px-4 py-3 text-sm font-semibold text-warning"
-                        role="status"
-                    >
+                    <Alert tone="warning" class="px-4 py-3 font-semibold" role="status">
                         {cacheWarning}
-                    </div>
+                    </Alert>
                 ) : null}
 
                 {event.status === STATUS.OFFLINE ? (
-                    <div class="rounded-md bg-warning-subtle px-4 py-3 text-sm font-semibold text-warning">
+                    <Alert tone="warning" class="px-4 py-3 font-semibold" role="status">
                         该活动已下线, 页面仅作为历史信息保留
-                    </div>
+                    </Alert>
                 ) : null}
 
                 <header class="relative min-h-[25rem] overflow-hidden rounded-md shadow-elevated ring-1 ring-black/10 sm:min-h-[34rem]">
@@ -286,11 +285,12 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                                     <h2 class="text-base font-black text-foreground">参加活动</h2>
                                 ) : null}
                                 {ticketUrl ? (
-                                    <a
+                                    <Button
                                         href={ticketUrl}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
-                                        class="group inline-flex h-12 items-center justify-between gap-3 rounded-full bg-primary py-1 pr-1 pl-5 text-sm font-bold text-primary-foreground transition-transform duration-300 ease-motion active:scale-[0.98]"
+                                        size="lg"
+                                        class="group h-12 w-full justify-between rounded-full py-1 pr-1 pl-5 text-sm font-bold"
                                     >
                                         购票/预约入口
                                         <span class="flex size-10 items-center justify-center rounded-full bg-white/18">
@@ -299,14 +299,16 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                                                 aria-hidden="true"
                                             />
                                         </span>
-                                    </a>
+                                    </Button>
                                 ) : null}
                                 {sourceUrl ? (
-                                    <a
+                                    <Button
                                         href={sourceUrl}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
-                                        class="group inline-flex h-12 items-center justify-between gap-3 rounded-full bg-surface-subtle py-1 pr-1 pl-5 text-sm font-bold text-foreground transition-transform duration-300 ease-motion active:scale-[0.98]"
+                                        variant="tonal"
+                                        size="lg"
+                                        class="group h-12 w-full justify-between rounded-full bg-surface-subtle py-1 pr-1 pl-5 text-sm font-bold text-foreground hover:bg-surface-subtle/80 dark:bg-surface-subtle! dark:text-foreground! dark:hover:bg-surface-subtle/80!"
                                     >
                                         活动来源
                                         <span class="flex size-10 items-center justify-center rounded-full bg-surface">
@@ -315,7 +317,7 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                                                 aria-hidden="true"
                                             />
                                         </span>
-                                    </a>
+                                    </Button>
                                 ) : null}
                                 {hasDetailFacts ? (
                                     <dl

@@ -10,6 +10,7 @@ import { formatEventSchedule } from "../lib/events/datetime";
 import { getEventScaleLabel, getEventTypeLabel } from "../lib/events/options";
 import { toPublicEventRow } from "../lib/public/homepage";
 import Badge from "./ui/badge.svelte";
+import Card from "./ui/card.svelte";
 import EventArtwork from "./EventArtwork.astro";
 import EventRow from "./EventRow.svelte";
 
@@ -31,9 +32,9 @@ const href = `/events/${event.id}`;
 
 {
     variant === "featured" ? (
-        <a
+        <Card
             href={href}
-            class="group grid min-w-0 overflow-hidden rounded-md bg-surface shadow-elevated ring-1 ring-border/80 transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.995] md:grid-cols-[minmax(13rem,0.82fr)_minmax(0,1.18fr)]"
+            class="group grid min-w-0 overflow-hidden rounded-md bg-surface shadow-elevated ring-1 ring-border/80 transition-transform duration-300 ease-motion hover:bg-surface focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none active:scale-[0.995] md:grid-cols-[minmax(13rem,0.82fr)_minmax(0,1.18fr)]"
         >
             <EventArtwork
                 src={event.cover_url}
@@ -69,7 +70,7 @@ const href = `/events/${event.id}`;
                     </span>
                 </span>
             </div>
-        </a>
+        </Card>
     ) : variant === "compact" ? (
         <a
             href={href}
@@ -97,9 +98,9 @@ const href = `/events/${event.id}`;
     ) : variant === "row" ? (
         <EventRow event={toPublicEventRow(event)} {priority} />
     ) : (
-        <a
+        <Card
             href={href}
-            class="group flex flex-col overflow-hidden rounded-md bg-surface shadow-elevated ring-1 ring-border/80 transition-transform duration-300 ease-motion hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
+            class="group flex flex-col overflow-hidden rounded-md bg-surface shadow-elevated ring-1 ring-border/80 transition-transform duration-300 ease-motion hover:-translate-y-1 hover:bg-surface focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
         >
             <EventArtwork
                 src={event.cover_url}
@@ -119,6 +120,6 @@ const href = `/events/${event.id}`;
                     {divisionLabel} · {event.venue}
                 </p>
             </div>
-        </a>
+        </Card>
     )
 }

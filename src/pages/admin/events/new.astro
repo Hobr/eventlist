@@ -4,6 +4,11 @@ import {
     FileImportOutline as FileImport
 } from "flowbite-svelte-icons";
 import AdminEventForm from "../../../components/admin/AdminEventForm.astro";
+import Alert from "../../../components/ui/alert.svelte";
+import Button from "../../../components/ui/button.svelte";
+import Checkbox from "../../../components/ui/checkbox.svelte";
+import Input from "../../../components/ui/input.svelte";
+import Label from "../../../components/ui/label.svelte";
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import {
     BilibiliImportError,
@@ -62,12 +67,9 @@ const importedFieldCount = importPreview
 <AdminLayout title="增加活动" description="录入后立即发布到公开活动目录">
     {
         pageError ? (
-            <div
-                class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15"
-                role="alert"
-            >
+            <Alert tone="danger" class="p-6 text-center font-semibold">
                 {pageError}
-            </div>
+            </Alert>
         ) : (
             <div>
                 <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
@@ -102,9 +104,11 @@ const importedFieldCount = importPreview
                             action="/admin/events/new"
                             class="flex w-full flex-col gap-2 sm:flex-row lg:max-w-lg"
                         >
-                            <label class="min-w-0 flex-1" for="bilibili_id">
-                                <span class="sr-only">会员购活动 ID</span>
-                                <input
+                            <div class="min-w-0 flex-1">
+                                <Label class="sr-only" for="bilibili_id">
+                                    会员购活动 ID
+                                </Label>
+                                <Input
                                     id="bilibili_id"
                                     name="bilibili_id"
                                     type="number"
@@ -115,23 +119,16 @@ const importedFieldCount = importPreview
                                     required
                                     value={requestedBilibiliId ?? ""}
                                     placeholder="会员购活动 ID"
-                                    class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
                                 />
-                            </label>
-                            <button
-                                type="submit"
-                                class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-                            >
+                            </div>
+                            <Button type="submit">
                                 <FileImport class="size-4" aria-hidden="true" />
                                 导入
-                            </button>
+                            </Button>
                         </form>
                     </div>
                     {importError ? (
-                        <div
-                            class="mt-4 rounded-md bg-danger-subtle p-4 text-sm text-danger ring-1 ring-danger/15"
-                            role="alert"
-                        >
+                        <Alert tone="danger" class="mt-4">
                             <p class="font-semibold">{importError}</p>
                             {importErrorDetails ? (
                                 <p class="mt-2 font-mono text-xs leading-5 break-words text-danger/85">
@@ -139,7 +136,7 @@ const importedFieldCount = importPreview
                                 </p>
                             ) : null}
                             <p class="mt-1 text-danger/85">下方表单仍可手动录入活动</p>
-                        </div>
+                        </Alert>
                     ) : null}
                 </section>
 
@@ -204,28 +201,23 @@ const importedFieldCount = importPreview
                                 </div>
 
                                 {missingFieldLabels.length > 0 ? (
-                                    <div class="mt-4" role="status">
-                                        <p class="text-sm font-semibold text-foreground">
+                                    <Alert tone="neutral" class="mt-4" role="status">
+                                        <p class="font-semibold">
                                             发布前需要补充：{missingFieldLabels.join("、")}
                                         </p>
-                                    </div>
+                                    </Alert>
                                 ) : null}
 
                                 {importPreview.warnings.length > 0 ? (
-                                    <div class="mt-4 space-y-2" role="alert">
+                                    <Alert tone="warning" class="mt-4 space-y-2">
                                         {importPreview.warnings.map((warning) => (
-                                            <p class="text-warning-foreground text-sm leading-6">
-                                                {warning.message}
-                                            </p>
+                                            <p>{warning.message}</p>
                                         ))}
-                                    </div>
+                                    </Alert>
                                 ) : null}
 
                                 {importPreview.exactDuplicate ? (
-                                    <div
-                                        class="mt-4 rounded-md bg-danger-subtle p-3 text-sm text-danger ring-1 ring-danger/15"
-                                        role="alert"
-                                    >
+                                    <Alert tone="danger" class="mt-4 p-3">
                                         <p class="font-semibold">该会员购活动已经导入</p>
                                         <a
                                             class="mt-1 inline-flex font-semibold underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
@@ -233,7 +225,7 @@ const importedFieldCount = importPreview
                                         >
                                             打开已有活动：{importPreview.exactDuplicate.title}
                                         </a>
-                                    </div>
+                                    </Alert>
                                 ) : null}
 
                                 <div
@@ -248,14 +240,13 @@ const importedFieldCount = importPreview
                                             </legend>
                                             {importPreview.duplicateCandidates.map(
                                                 ({ key, event }) => (
-                                                    <label class="flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80">
-                                                        <input
-                                                            type="checkbox"
-                                                            name="confirmed_warning_keys"
-                                                            value={key}
-                                                            class="mt-0.5 size-4 shrink-0 rounded border-border-strong text-primary focus:ring-ring/50"
-                                                            required
-                                                        />
+                                                    <Checkbox
+                                                        name="confirmed_warning_keys"
+                                                        value={key}
+                                                        class="mt-0.5 shrink-0"
+                                                        divClass="flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80"
+                                                        required
+                                                    >
                                                         <span class="min-w-0 text-foreground">
                                                             我已检查
                                                             <a
@@ -268,7 +259,7 @@ const importedFieldCount = importPreview
                                                             ({event.start_date}, {event.venue}
                                                             ), 仍要继续发布
                                                         </span>
-                                                    </label>
+                                                    </Checkbox>
                                                 )
                                             )}
                                         </fieldset>
@@ -331,6 +322,7 @@ const importedFieldCount = importPreview
             const label = document.createElement("label");
             label.className =
                 "flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80";
+            // This non-hydrated validation surface keeps native required checkbox behavior.
             const input = document.createElement("input");
             input.type = "checkbox";
             input.name = "confirmed_warning_keys";

@@ -1,15 +1,7 @@
 ---
-import {
-    ArrowUpRightFromSquareOutline as ArrowUpRight,
-    CheckCircleOutline as CircleCheck,
-    CloseCircleOutline as CircleOff,
-    FileCsvOutline as FileSpreadsheet,
-    InboxOutline as Inbox,
-    PlusOutline as Plus,
-    TagOutline as Tags
-} from "flowbite-svelte-icons";
+import { ArrowUpRightFromSquareOutline as ArrowUpRight } from "flowbite-svelte-icons";
+import AdminNavList from "../components/admin/AdminNavList.svelte";
 import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
-import { ADMIN_NAV_ITEMS, isAdminNavItemActive } from "../components/admin/navigation";
 import { SITE_NAME } from "../lib/site";
 import "../styles/app.css";
 
@@ -64,39 +56,7 @@ const pageTitle = `${title} - ${SITE_NAME}管理后台`;
                 </a>
 
                 <nav class="flex flex-1 flex-col gap-1 p-3" aria-label="管理后台导航">
-                    {
-                        ADMIN_NAV_ITEMS.map((item) => (
-                            <a
-                                href={item.href}
-                                aria-current={
-                                    isAdminNavItemActive(currentPath, item.href)
-                                        ? "page"
-                                        : undefined
-                                }
-                                class:list={[
-                                    "relative flex h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold transition-[transform,background-color,color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.99]",
-                                    isAdminNavItemActive(currentPath, item.href)
-                                        ? "bg-primary-subtle text-primary-subtle-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-primary"
-                                        : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
-                                ]}
-                            >
-                                {item.kind === "pending" ? (
-                                    <Inbox class="size-4" aria-hidden="true" />
-                                ) : item.kind === "create" ? (
-                                    <Plus class="size-4" aria-hidden="true" />
-                                ) : item.kind === "bulk" ? (
-                                    <FileSpreadsheet class="size-4" aria-hidden="true" />
-                                ) : item.kind === "published" ? (
-                                    <CircleCheck class="size-4" aria-hidden="true" />
-                                ) : item.kind === "offline" ? (
-                                    <CircleOff class="size-4" aria-hidden="true" />
-                                ) : (
-                                    <Tags class="size-4" aria-hidden="true" />
-                                )}
-                                {item.label}
-                            </a>
-                        ))
-                    }
+                    <AdminNavList {currentPath} />
                 </nav>
 
                 <div class="border-t border-border/80 p-4">

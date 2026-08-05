@@ -2,6 +2,9 @@
     import { untrack } from "svelte";
     import type { TagSummary } from "../lib/db/tags";
     import { CloseOutline as X } from "flowbite-svelte-icons";
+    import Button from "./ui/button.svelte";
+    import Input from "./ui/input.svelte";
+    import Label from "./ui/label.svelte";
 
     interface Props {
         name?: string;
@@ -96,28 +99,30 @@
 </script>
 
 <div class="flex flex-col gap-1.5">
-    <label for="tag-input" class="text-sm font-semibold text-muted-foreground">
+    <Label for="tag-input">
         {label}
         {#if showRequiredIndicator}
             <span class="ml-1 text-xs font-semibold text-danger">必填</span>
         {/if}
-    </label>
+    </Label>
     <input type="hidden" {name} value={serializedTags} />
     <div
         class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-strong bg-surface p-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40"
     >
         {#each tags as tag (tag)}
-            <button
+            <Button
                 type="button"
+                variant="tonal"
+                size="sm"
                 onclick={() => removeTag(tag)}
                 aria-label={`移除标签 ${tag}`}
-                class="inline-flex items-center gap-1 rounded-sm bg-surface-subtle px-2 py-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-surface-raised"
+                class="h-auto min-h-6 gap-1 rounded-sm px-2 py-0.5 text-xs text-muted-foreground hover:bg-surface-raised dark:text-muted-foreground! dark:hover:bg-surface-raised!"
             >
                 {tag}
                 <X class="size-3" aria-hidden="true" />
-            </button>
+            </Button>
         {/each}
-        <input
+        <Input
             id="tag-input"
             type="search"
             bind:value={draft}
@@ -127,7 +132,7 @@
             onblur={() => addTag()}
             autocomplete="off"
             placeholder="输入后按 Enter 添加"
-            class="flex-1 bg-transparent px-1.5 py-1 text-sm text-foreground outline-none placeholder:text-muted"
+            class="h-auto min-w-32 flex-1 border-0 bg-transparent px-1.5 py-1 shadow-none focus-visible:border-transparent focus-visible:ring-0"
         />
     </div>
     <datalist id="submit-tag-suggestions">

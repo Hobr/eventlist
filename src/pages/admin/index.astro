@@ -1,6 +1,7 @@
 ---
 import EventTable from "../../components/admin/EventTable.astro";
 import Pagination from "../../components/admin/Pagination.astro";
+import Alert from "../../components/ui/alert.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { listEventsByStatus } from "../../lib/db/admin-events";
 import { getDB, STATUS } from "../../lib/db";
@@ -27,9 +28,9 @@ events = events.slice(0, PAGE_SIZE);
 <AdminLayout title="待审核投稿" description="逐条核对来源、时间、地点与公开信息">
     {
         errorMessage ? (
-            <div class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15">
+            <Alert tone="danger" class="p-6 text-center font-semibold">
                 {errorMessage}
-            </div>
+            </Alert>
         ) : (
             <div class="flex flex-col gap-4">
                 <p class="font-mono text-xs text-muted-foreground tabular-nums">

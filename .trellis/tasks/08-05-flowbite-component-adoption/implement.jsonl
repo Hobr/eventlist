@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端规范索引和 Flowbite 设计系统入口"}
+{"file": ".trellis/spec/frontend/design-system.md", "reason": "当前 Flowbite Svelte + Tailwind v4 合同和业务行为边界"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "共享适配器和管理导航去重边界"}
+{"file": ".trellis/tasks/08-05-flowbite-component-adoption/research/flowbite-coverage-audit.md", "reason": "当前覆盖证据, 迁移目标和批准的原生例外"}

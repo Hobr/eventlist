@@ -9,7 +9,7 @@
     let { class: className = undefined, children }: Props = $props();
     let classes = $derived(
         cn(
-            "border-b border-border transition-colors duration-300 ease-motion hover:bg-surface-subtle/60",
+            "border-b border-border bg-surface transition-colors duration-300 ease-motion hover:bg-surface-subtle/60 dark:border-border! dark:bg-surface! dark:hover:bg-surface-subtle/60!",
             className
         )
     );

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Spinner } from "flowbite-svelte";
+    import { ButtonGroup, Spinner } from "flowbite-svelte";
     import { onDestroy, onMount, untrack } from "svelte";
     import { POPULARITY_WINDOWS, type PopularityWindow } from "../lib/events/popularity";
     import type { PublicHomepagePopularity } from "../lib/public/homepage";
@@ -11,6 +11,8 @@
         readPopularityResponse
     } from "../lib/public/homepage-client";
     import HomepageRankedList from "./HomepageRankedList.svelte";
+    import Alert from "./ui/alert.svelte";
+    import Button from "./ui/button.svelte";
 
     interface Props {
         initialPopularity: PublicHomepagePopularity;
@@ -227,84 +229,72 @@
                 活动发现
             </h2>
         </div>
-        <div
-            class="grid h-10 w-full grid-cols-3 overflow-hidden rounded-full bg-surface-subtle p-1 sm:w-60"
-            aria-label="热度统计时间范围"
-            role="tablist"
-        >
-            {#each POPULARITY_WINDOWS as trend, trendIndex}
-                {@const selected = popularity.window === trend}
-                <a
-                    id={`intent-window-${trend}`}
-                    href={trendHref(trend)}
-                    role="tab"
-                    aria-selected={selected}
-                    aria-controls="intent-results"
-                    aria-busy={pendingWindow === trend}
-                    tabindex={hydrated && !selected ? -1 : 0}
-                    class:bg-primary={selected}
-                    class:text-primary-foreground={selected}
-                    class:text-muted-foreground={!selected}
-                    class:hover:text-foreground={!selected}
-                    class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 text-sm font-bold transition-[transform,background-color,color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-                    onclick={(event) => void selectWindow(event, trend)}
-                    onkeydown={(event) => handleTabKeydown(event, trendIndex)}
-                >
-                    {#if pendingWindow === trend}
-                        <Spinner
-                            size="4"
-                            class="size-3.5"
-                            aria-label={`正在加载近 ${trend} 日活动榜单`}
-                        />
-                    {/if}
-                    {trend} 日
-                </a>
-            {/each}
+        <div class="h-10 w-full sm:w-60" aria-label="热度统计时间范围" role="tablist">
+            <ButtonGroup class="flex size-full rounded-full bg-surface-subtle p-1 shadow-none">
+                {#each POPULARITY_WINDOWS as trend, trendIndex}
+                    {@const selected = popularity.window === trend}
+                    <Button
+                        id={`intent-window-${trend}`}
+                        href={trendHref(trend)}
+                        role="tab"
+                        aria-selected={selected}
+                        aria-controls="intent-results"
+                        aria-busy={pendingWindow === trend}
+                        tabindex={hydrated && !selected ? -1 : 0}
+                        variant={selected ? "default" : "ghost"}
+                        size="sm"
+                        class="h-full flex-1 rounded-full border-transparent px-3 text-sm font-bold"
+                        onclick={(event) => void selectWindow(event, trend)}
+                        onkeydown={(event) => handleTabKeydown(event, trendIndex)}
+                    >
+                        {#if pendingWindow === trend}
+                            <Spinner
+                                size="4"
+                                class="size-3.5"
+                                aria-label={`正在加载近 ${trend} 日活动榜单`}
+                            />
+                        {/if}
+                        {trend} 日
+                    </Button>
+                {/each}
+            </ButtonGroup>
         </div>
     </header>
 
     {#if errorMessage}
-        <div
-            class="mt-5 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
-            role="alert"
-        >
+        <Alert tone="danger" class="mt-5 p-5 font-semibold">
             {errorMessage}
-        </div>
+        </Alert>
     {/if}
 
-    <div
-        class:pointer-events-none={!hydrated}
-        class:invisible={!hydrated}
-        class="mt-8 grid h-10 grid-cols-2 rounded-full bg-surface-subtle p-1 lg:hidden"
-        role="group"
+    <ButtonGroup
+        class={`mt-8 flex h-10 w-full rounded-full bg-surface-subtle p-1 shadow-none lg:hidden ${
+            hydrated ? "" : "pointer-events-none invisible"
+        }`}
         aria-label="活动场景"
         aria-hidden={!hydrated}
     >
-        <button
-            type="button"
+        <Button
             aria-pressed={mobileScene === "unended"}
             tabindex={hydrated ? 0 : -1}
-            class:bg-primary={mobileScene === "unended"}
-            class:text-primary-foreground={mobileScene === "unended"}
-            class:text-muted-foreground={mobileScene !== "unended"}
-            class="rounded-full px-3 text-sm font-bold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            variant={mobileScene === "unended" ? "default" : "ghost"}
+            size="sm"
+            class="h-full flex-1 rounded-full border-transparent px-3 text-sm font-bold"
             onclick={() => (mobileScene = "unended")}
         >
             未结束
-        </button>
-        <button
-            type="button"
+        </Button>
+        <Button
             aria-pressed={mobileScene === "unopened"}
             tabindex={hydrated ? 0 : -1}
-            class:bg-primary={mobileScene === "unopened"}
-            class:text-primary-foreground={mobileScene === "unopened"}
-            class:text-muted-foreground={mobileScene !== "unopened"}
-            class="rounded-full px-3 text-sm font-bold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            variant={mobileScene === "unopened" ? "default" : "ghost"}
+            size="sm"
+            class="h-full flex-1 rounded-full border-transparent px-3 text-sm font-bold"
             onclick={() => (mobileScene = "unopened")}
         >
             未开票
-        </button>
-    </div>
+        </Button>
+    </ButtonGroup>
 
     <div
         id="intent-results"

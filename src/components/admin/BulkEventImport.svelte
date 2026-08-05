@@ -16,6 +16,17 @@
         type BulkPreviewData
     } from "../../lib/admin/bulk-events";
     import { EVENT_SCALES, EVENT_TYPES } from "../../lib/events/options";
+    import Alert from "../ui/alert.svelte";
+    import Button from "../ui/button.svelte";
+    import Checkbox from "../ui/checkbox.svelte";
+    import FileUpload from "../ui/file-upload.svelte";
+    import Label from "../ui/label.svelte";
+    import Table from "../ui/table.svelte";
+    import TableBody from "../ui/table-body.svelte";
+    import TableCell from "../ui/table-cell.svelte";
+    import TableHead from "../ui/table-head.svelte";
+    import TableHeader from "../ui/table-header.svelte";
+    import TableRow from "../ui/table-row.svelte";
 
     interface CreatedEvent {
         id: number;
@@ -42,6 +53,7 @@
     let createdEvents: CreatedEvent[] = $state([]);
     let errorMessage = $state("");
     let confirmedWarningKeys = $state<string[]>([]);
+    let selectedFiles = $state<FileList | null>();
     let fileInput = $state<HTMLInputElement>();
     let resultHeading = $state<HTMLHeadingElement>();
 
@@ -70,6 +82,7 @@
 
     function reset() {
         setFile(null);
+        selectedFiles = undefined;
         if (fileInput) fileInput.value = "";
         fileInput?.focus();
     }
@@ -181,27 +194,20 @@
 <div class="flex flex-col gap-8">
     <section class="grid gap-6 border-b border-border/80 pb-8 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div class="min-w-0">
-            <label class="text-sm font-semibold text-foreground" for="bulk-event-file"
-                >CSV 文件</label
-            >
+            <Label class="text-foreground" for="bulk-event-file">CSV 文件</Label>
             <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <input
-                    bind:this={fileInput}
+                <FileUpload
+                    bind:files={selectedFiles}
+                    bind:elementRef={fileInput}
                     id="bulk-event-file"
-                    type="file"
                     accept=".csv,text/csv"
-                    class="min-h-10 min-w-0 flex-1 rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion file:mr-3 file:rounded-sm file:border-0 file:bg-surface-subtle file:px-3 file:py-1 file:text-xs file:font-semibold file:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                    class="min-w-0 flex-1"
                     onchange={(event) => {
                         const input = event.currentTarget;
                         setFile(input.files?.[0] ?? null);
                     }}
                 />
-                <button
-                    type="button"
-                    class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100"
-                    disabled={!file || pending}
-                    onclick={previewFile}
-                >
+                <Button type="button" disabled={!file || pending} onclick={previewFile}>
                     {#if state === "previewing"}
                         <LoaderCircle class="size-4 animate-spin" aria-hidden="true" />
                         预览中
@@ -209,7 +215,7 @@
                         <Upload class="size-4" aria-hidden="true" />
                         预览 CSV
                     {/if}
-                </button>
+                </Button>
             </div>
             <p class="mt-2 text-xs text-muted-foreground">
                 UTF-8 CSV · 1 至 20 条活动 · 最大 1 MiB
@@ -217,13 +223,10 @@
         </div>
 
         <div class="border-l-0 border-border xl:border-l xl:pl-6">
-            <a
-                href="/api/admin/events/bulk/template"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-surface-subtle px-4 text-sm font-semibold text-foreground transition-[transform,background-color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-            >
+            <Button href="/api/admin/events/bulk/template" variant="outline">
                 <Download class="size-4" aria-hidden="true" />
                 下载 CSV 模板
-            </a>
+            </Button>
             <dl class="mt-4 grid gap-3 text-xs">
                 <div>
                     <dt class="font-semibold text-muted">活动类型</dt>
@@ -260,14 +263,10 @@
                         活动已发布, 并已写入独立审计记录
                     </p>
                 </div>
-                <button
-                    type="button"
-                    class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-surface-subtle px-3 text-sm font-semibold text-foreground transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-                    onclick={reset}
-                >
+                <Button type="button" variant="outline" size="sm" class="h-9" onclick={reset}>
                     <RotateCcw class="size-4" aria-hidden="true" />
                     导入下一批
-                </button>
+                </Button>
             </div>
             <ul class="divide-y divide-border" aria-label="已创建活动">
                 {#each createdEvents as event (event.id)}
@@ -303,24 +302,20 @@
                         {preview?.valid ? `预览 ${preview.rows.length} 条活动` : "CSV 校验结果"}
                     </h2>
                     {#if errorMessage}
-                        <p class="mt-2 text-sm font-semibold text-danger" role="alert">
+                        <Alert tone="danger" class="mt-3 py-2 font-semibold">
                             {errorMessage}
-                        </p>
+                        </Alert>
                     {/if}
                 </div>
-                <button
-                    type="button"
-                    class="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-surface-subtle px-3 text-sm font-semibold text-foreground transition-transform duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
-                    onclick={reset}
-                >
+                <Button type="button" variant="outline" size="sm" class="h-9" onclick={reset}>
                     <RotateCcw class="size-4" aria-hidden="true" />
                     重置
-                </button>
+                </Button>
             </div>
 
             {#if preview?.errors.length}
-                <div class="mt-5 border-l-4 border-danger bg-danger-subtle px-4 py-3" role="alert">
-                    <h3 class="text-sm font-black text-danger">
+                <Alert tone="danger" class="mt-5 border-l-4 px-4 py-3">
+                    <h3 class="font-black">
                         发现 {preview.errors.length} 个错误
                     </h3>
                     <ul class="mt-2 space-y-1 text-sm text-danger">
@@ -332,30 +327,24 @@
                             </li>
                         {/each}
                     </ul>
-                </div>
+                </Alert>
             {/if}
 
             {#if preview?.warnings.length}
-                <div class="mt-5 border-l-4 border-warning bg-warning-subtle px-4 py-3">
-                    <h3 class="flex items-center gap-2 text-sm font-black text-warning">
+                <Alert tone="warning" class="mt-5 border-l-4 px-4 py-3">
+                    <h3 class="flex items-center gap-2 font-black">
                         <AlertTriangle class="size-4" aria-hidden="true" />
                         疑似重复活动
                     </h3>
                     <div class="mt-3 divide-y divide-warning/25">
                         {#each preview.warnings as warning (warning.key)}
-                            <label
-                                class="flex cursor-pointer items-start gap-3 py-3 text-sm text-warning"
+                            <Checkbox
+                                divClass="flex cursor-pointer items-start gap-3 py-3 text-sm text-warning"
+                                class="mt-0.5 shrink-0"
+                                checked={confirmedWarningKeys.includes(warning.key)}
+                                onchange={(event) =>
+                                    setWarningConfirmed(warning.key, event.currentTarget.checked)}
                             >
-                                <input
-                                    type="checkbox"
-                                    class="mt-0.5 size-4 shrink-0 rounded border-border-strong text-primary focus:ring-ring"
-                                    checked={confirmedWarningKeys.includes(warning.key)}
-                                    onchange={(event) =>
-                                        setWarningConfirmed(
-                                            warning.key,
-                                            event.currentTarget.checked
-                                        )}
-                                />
                                 <span>
                                     <strong>第 {warning.row} 行</strong>
                                     {warning.source === "csv"
@@ -372,32 +361,33 @@
                                         >确认仍要创建此活动</span
                                     >
                                 </span>
-                            </label>
+                            </Checkbox>
                         {/each}
                     </div>
-                </div>
+                </Alert>
             {/if}
 
             {#if preview?.rows.length}
                 <div class="mt-6 overflow-x-auto rounded-md ring-1 ring-border/80">
-                    <table class="w-full min-w-[58rem] border-collapse text-left text-sm">
-                        <thead class="bg-surface-subtle text-xs text-muted-foreground">
-                            <tr>
-                                <th class="px-3 py-3 font-semibold">行</th>
-                                <th class="px-3 py-3 font-semibold">状态</th>
-                                <th class="px-3 py-3 font-semibold">活动名称</th>
-                                <th class="px-3 py-3 font-semibold">类型 / 规模</th>
-                                <th class="px-3 py-3 font-semibold">日期</th>
-                                <th class="px-3 py-3 font-semibold">场馆</th>
-                                <th class="px-3 py-3 font-semibold">标签</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-border">
+                    <Table class="min-w-[58rem] border-collapse text-left">
+                        <TableHeader class="bg-surface-subtle text-xs text-muted-foreground">
+                            <TableRow class="hover:bg-surface-subtle">
+                                <TableHead>行</TableHead>
+                                <TableHead>状态</TableHead>
+                                <TableHead>活动名称</TableHead>
+                                <TableHead>类型 / 规模</TableHead>
+                                <TableHead>日期</TableHead>
+                                <TableHead>场馆</TableHead>
+                                <TableHead>标签</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody class="divide-y divide-border">
                             {#each preview.rows as row (row.row)}
-                                <tr class="bg-surface">
-                                    <td class="px-3 py-3 font-mono text-xs text-muted">{row.row}</td
+                                <TableRow class="bg-surface hover:bg-surface">
+                                    <TableCell class="font-mono text-xs text-muted"
+                                        >{row.row}</TableCell
                                     >
-                                    <td class="px-3 py-3">
+                                    <TableCell>
                                         <span
                                             class={row.valid
                                                 ? "font-semibold text-accent"
@@ -405,26 +395,26 @@
                                         >
                                             {row.valid ? "有效" : "有误"}
                                         </span>
-                                    </td>
-                                    <td class="max-w-64 px-3 py-3 font-semibold text-foreground"
-                                        >{row.title || "-"}</td
-                                    >
-                                    <td class="px-3 py-3 text-muted-foreground"
-                                        >{row.type || "-"} / {row.scale || "-"}</td
-                                    >
-                                    <td class="px-3 py-3 whitespace-nowrap text-muted-foreground">
+                                    </TableCell>
+                                    <TableCell class="max-w-64 font-semibold text-foreground">
+                                        {row.title || "-"}
+                                    </TableCell>
+                                    <TableCell class="text-muted-foreground">
+                                        {row.type || "-"} / {row.scale || "-"}
+                                    </TableCell>
+                                    <TableCell class="whitespace-nowrap text-muted-foreground">
                                         {row.startDate || "-"} 至 {row.endDate || "-"}
-                                    </td>
-                                    <td class="max-w-56 px-3 py-3 text-muted-foreground"
-                                        >{row.venue || "-"}</td
-                                    >
-                                    <td class="max-w-64 px-3 py-3 text-muted-foreground">
+                                    </TableCell>
+                                    <TableCell class="max-w-56 text-muted-foreground">
+                                        {row.venue || "-"}
+                                    </TableCell>
+                                    <TableCell class="max-w-64 text-muted-foreground">
                                         {row.tags.join("、") || "-"}
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             {/each}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             {/if}
 
@@ -442,9 +432,9 @@
                         请修正 CSV 后重新预览
                     {/if}
                 </p>
-                <button
+                <Button
                     type="button"
-                    class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100"
+                    class="px-5"
                     disabled={!canSubmit || pending}
                     onclick={submitEvents}
                 >
@@ -455,7 +445,7 @@
                         <FileSpreadsheet class="size-4" aria-hidden="true" />
                         创建 {preview?.rows.length ?? 0} 条活动
                     {/if}
-                </button>
+                </Button>
             </div>
         </section>
     {/if}

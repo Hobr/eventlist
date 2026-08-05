@@ -15,6 +15,7 @@
     import { formatEventSchedule } from "../lib/events/datetime";
     import { getEventScaleLabel } from "../lib/events/options";
     import type { PublicFeaturedEvent } from "../lib/public/homepage";
+    import Button from "./ui/button.svelte";
 
     interface Props {
         events: PublicFeaturedEvent[];
@@ -228,21 +229,23 @@
                         <div
                             class="absolute top-4 right-4 z-30 flex items-center gap-2 sm:top-6 sm:right-6"
                         >
-                            <button
-                                type="button"
-                                aria-label="上一张"
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                ariaLabel="上一张"
                                 title="上一张"
-                                class="flex size-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-[transform,background-color] duration-300 ease-motion hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-95"
+                                class="rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/75 focus-visible:ring-white/70 active:scale-95 dark:bg-black/55! dark:text-white! dark:hover:bg-black/75!"
                                 onclick={() => changeSlide(false)}
                             >
                                 <ChevronLeft class="size-5" aria-hidden="true" />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label={userPaused ? "恢复自动播放" : "暂停自动播放"}
+                            </Button>
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                ariaLabel={userPaused ? "恢复自动播放" : "暂停自动播放"}
                                 aria-pressed={userPaused}
                                 title={userPaused ? "恢复自动播放" : "暂停自动播放"}
-                                class="flex size-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-[transform,background-color] duration-300 ease-motion hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-95"
+                                class="rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/75 focus-visible:ring-white/70 active:scale-95 dark:bg-black/55! dark:text-white! dark:hover:bg-black/75!"
                                 onclick={() => (userPaused = !userPaused)}
                             >
                                 {#if userPaused}
@@ -250,16 +253,17 @@
                                 {:else}
                                     <Pause class="size-5" aria-hidden="true" />
                                 {/if}
-                            </button>
-                            <button
-                                type="button"
-                                aria-label="下一张"
+                            </Button>
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                ariaLabel="下一张"
                                 title="下一张"
-                                class="flex size-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-[transform,background-color] duration-300 ease-motion hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:scale-95"
+                                class="rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/75 focus-visible:ring-white/70 active:scale-95 dark:bg-black/55! dark:text-white! dark:hover:bg-black/75!"
                                 onclick={() => changeSlide(true)}
                             >
                                 <ChevronRight class="size-5" aria-hidden="true" />
-                            </button>
+                            </Button>
                         </div>
                     {/snippet}
                 </Controls>
