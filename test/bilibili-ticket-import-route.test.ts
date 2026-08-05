@@ -16,6 +16,7 @@ test("管理员新增页保留单一活动表单并提供服务端会员购预�
     assert.match(source, /name="bilibili_project_id"/);
     assert.match(source, /name="confirmed_warning_keys"/);
     assert.match(source, /id="bilibili-submit-warnings"[\s\S]*aria-live="polite"/);
+    assert.match(source, /错误详情: \{importErrorDetails\}/);
     assert.match(source, /input\.checked = confirmedKeys\.has\(warning\.key\)/);
     assert.match(source, /if \(!exactDuplicateConflict\) saveButton\.disabled = false/);
     assert.equal(source.match(/<AdminEventForm/g)?.length, 1);

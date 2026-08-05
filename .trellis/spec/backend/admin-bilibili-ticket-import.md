@@ -67,7 +67,7 @@ createBilibiliImportedPublishedEvent(
 | 条件 | 页面/API 结果 | D1 写入 |
 | --- | --- | --- |
 | ID 不是安全正整数 | 页面显示稳定中文错误；提交返回 `400` | 无 |
-| 上游超时、非 2xx、非 JSON、过大或结构漂移 | 页面保留手动录入表单 | 无 |
+| 上游超时, 非 2xx, 非 JSON, 过大或结构漂移 | 页面保留手动录入表单; 连接异常同时显示长度受限的异常类型, 消息和 cause 链 | 无 |
 | `source_url` 与项目 ID 的规范 URL 不一致 | `400` | 无 |
 | 出现未确认的疑似重复 | `409`，`details.warnings` 返回完整当前集合 | 无 |
 | 规范来源已存在 | `409`，`details.existingEvent` 提供已有活动 | 无 |

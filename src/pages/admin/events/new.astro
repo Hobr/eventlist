@@ -23,6 +23,7 @@ const requestedBilibiliId = Astro.url.searchParams.get("bilibili_id");
 let canonicalTags: TagSummary[] = [];
 let pageError = "";
 let importError = "";
+let importErrorDetails = "";
 let importPreview: BilibiliEventImportPreview | null = null;
 
 try {
@@ -35,10 +36,12 @@ try {
                 submitterContact: Astro.locals.admin?.email
             });
         } catch (error) {
-            importError =
-                error instanceof BilibiliImportError
-                    ? error.message
-                    : "会员购活动暂时无法导入, 请手动录入";
+            if (error instanceof BilibiliImportError) {
+                importError = error.message;
+                importErrorDetails = error.details ?? "";
+            } else {
+                importError = "会员购活动暂时无法导入, 请手动录入";
+            }
         }
     }
 } catch (error) {
@@ -130,6 +133,11 @@ const importedFieldCount = importPreview
                             role="alert"
                         >
                             <p class="font-semibold">{importError}</p>
+                            {importErrorDetails ? (
+                                <p class="mt-2 font-mono text-xs leading-5 break-words text-danger/85">
+                                    错误详情: {importErrorDetails}
+                                </p>
+                            ) : null}
                             <p class="mt-1 text-danger/85">下方表单仍可手动录入活动</p>
                         </div>
                     ) : null}

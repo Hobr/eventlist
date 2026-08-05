@@ -234,6 +234,29 @@ test("上游超时、过大、非 JSON、业务失败和结构漂移返回稳定
     );
 });
 
+test("上游连接异常保留异常类型, 消息和 cause 供管理员排查", async () => {
+    const connectionError = new TypeError("fetch failed", {
+        cause: new Error("TLS handshake failed")
+    });
+    const failedFetch: typeof fetch = async () => {
+        throw connectionError;
+    };
+
+    await assert.rejects(
+        () => fetchBilibiliTicketPreview(1004224, { fetchImpl: failedFetch }),
+        (error: unknown) => {
+            assert.ok(error instanceof BilibiliImportError);
+            assert.equal(error.message, "暂时无法连接会员购, 请稍后重试或手动录入");
+            assert.equal(
+                error.details,
+                "TypeError: fetch failed | cause: Error: TLS handshake failed"
+            );
+            assert.equal(error.cause, connectionError);
+            return true;
+        }
+    );
+});
+
 test("提交元数据重新生成规范来源并使用稳定的疑似重复警告键", () => {
     const formData = new FormData();
     formData.set("import_provider", BILIBILI_TICKET_PROVIDER);

@@ -48,10 +48,38 @@ export interface BilibiliImportSubmission {
 }
 
 export class BilibiliImportError extends Error {
-    constructor(message: string) {
-        super(message);
+    readonly details?: string;
+
+    constructor(message: string, options: { details?: string; cause?: unknown } = {}) {
+        super(message, { cause: options.cause });
         this.name = "BilibiliImportError";
+        this.details = options.details;
     }
+}
+
+function describeConnectionError(error: unknown) {
+    const parts: string[] = [];
+    const seen = new Set<unknown>();
+    let current: unknown = error;
+
+    for (let depth = 0; depth < 4 && current !== null && current !== undefined; depth += 1) {
+        if (seen.has(current)) break;
+        seen.add(current);
+
+        if (current instanceof Error) {
+            const name = current.name.trim() || "Error";
+            const message = current.message.replace(/\s+/g, " ").trim();
+            parts.push(message ? `${name}: ${message}` : name);
+            current = current.cause;
+            continue;
+        }
+
+        const value = String(current).replace(/\s+/g, " ").trim();
+        if (value) parts.push(value);
+        break;
+    }
+
+    return (parts.join(" | cause: ") || "未知连接错误").slice(0, 1_000);
 }
 
 function asObject(value: unknown): JsonObject | null {
@@ -450,7 +478,10 @@ export async function fetchBilibiliTicketPreview(
         if (controller.signal.aborted) {
             throw new BilibiliImportError("会员购请求超时, 请稍后重试或手动录入");
         }
-        throw new BilibiliImportError("暂时无法连接会员购, 请稍后重试或手动录入");
+        throw new BilibiliImportError("暂时无法连接会员购, 请稍后重试或手动录入", {
+            details: describeConnectionError(error),
+            cause: error
+        });
     } finally {
         clearTimeout(timeout);
     }
