@@ -824,3 +824,24 @@ Reconciled the parent requirements with both archived child tasks, removed stale
 ### Status
 
 [OK] **Completed**
+
+
+## Session 30: 新增公开活动分类导航页
+
+**Date**: 2026-08-05
+**Task**: 新增公开活动分类导航页
+**Branch**: `dev`
+
+### Summary
+
+新增 /categories 单页，聚合全部已发布活动的规范标签、类型和规模计数，使用 status=all 跳转到活动筛选；接入 tags scope 缓存、桌面/移动导航和 sitemap，补充 SQLite、缓存与页面契约测试并通过全量质量检查。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `267103b` | (see git log) |
+
+### Status
+
+[OK] **Completed**
