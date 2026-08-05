@@ -803,3 +803,24 @@ Reconciled the parent requirements with both archived child tasks, removed stale
 ### Status
 
 [OK] **Completed**
+
+
+## Session 29: 会员购活动导入
+
+**Date**: 2026-08-05
+**Task**: 会员购活动导入
+**Branch**: `dev`
+
+### Summary
+
+实现管理员按 bilibili 会员购活动 ID 服务端预填、人工补齐、重复保护与原子发布；新增脱敏 fixture、跨层规范和 155 项回归验证。应用内浏览器因控制桥配置缺失未完成三视口验证。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `941ef3d` | (see git log) |
+
+### Status
+
+[OK] **Completed**
