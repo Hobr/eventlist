@@ -1,0 +1,35 @@
+{
+    "success": true,
+    "code": 0,
+    "data": {
+        "id": 1004224,
+        "name": "上海·芳文社同人ONLY展2.0~街角兔屋",
+        "start_time": 1786852800,
+        "end_time": 1786885200,
+        "cover": "//i0.hdslb.com/bfs/openplatform/sample-cover.png",
+        "price_low": 7800,
+        "price_high": 13800,
+        "is_free": false,
+        "sale_begin": 1784736000,
+        "venue_info": {
+            "name": "交运智慧湾科创园25号楼",
+            "address_detail": "呼青路158号",
+            "province_name": "上海",
+            "city_name": "上海",
+            "district_name": "宝山"
+        },
+        "merchant": {
+            "company": "上海樱动研文化传媒有限公司"
+        },
+        "screen_list": [
+            {
+                "start_time": 1786852800,
+                "ticket_list": [{ "price": 8800 }]
+            },
+            {
+                "start_time": 1786874400,
+                "ticket_list": [{ "price": 7800 }]
+            }
+        ]
+    }
+}

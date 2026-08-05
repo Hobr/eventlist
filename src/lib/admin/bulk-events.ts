@@ -1,10 +1,6 @@
 import { parse } from "csv-parse/browser/esm/sync";
 import type { D1Database } from "../../types/cloudflare";
-import {
-    findBulkEventDuplicateCandidates,
-    type AdminEventInput,
-    type BulkEventDuplicateCandidate
-} from "../db/admin-events";
+import type { AdminEventInput } from "../events/input";
 import {
     EVENT_ADMISSION_METHODS,
     EVENT_SCALES,
@@ -18,6 +14,12 @@ import {
     type AdminEventField,
     type AdminEventRawInput
 } from "./form";
+import {
+    eventDuplicateKey,
+    findEventDuplicateCandidates,
+    normalizeEventDuplicatePart,
+    type EventDuplicateCandidate
+} from "./event-duplicates";
 
 export const MAX_BULK_EVENT_FILE_BYTES = 1024 * 1024;
 export const MAX_BULK_EVENT_ROWS = 20;
@@ -209,17 +211,13 @@ function displayTags(value: string | null | undefined) {
 }
 
 export function normalizeBulkDuplicatePart(value: string) {
-    return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("zh-CN");
+    return normalizeEventDuplicatePart(value);
 }
 
 export function bulkEventDuplicateKey(
     event: Pick<AdminEventInput, "title" | "start_date" | "venue">
 ) {
-    return JSON.stringify([
-        normalizeBulkDuplicatePart(event.title),
-        event.start_date,
-        normalizeBulkDuplicatePart(event.venue)
-    ]);
+    return eventDuplicateKey(event);
 }
 
 function serializeCsvRow(values: readonly string[]) {
@@ -312,7 +310,7 @@ export async function parseBulkEventCsv(file: File): Promise<ParsedBulkEventCsv>
 
 export function findBulkEventWarnings(
     events: ParsedBulkEvent[],
-    candidates: BulkEventDuplicateCandidate[]
+    candidates: EventDuplicateCandidate[]
 ): BulkEventWarning[] {
     const warnings: BulkEventWarning[] = [];
     const csvGroups = new Map<string, ParsedBulkEvent[]>();
@@ -363,7 +361,7 @@ export async function buildBulkEventPreview(
     const parsed = await parseBulkEventCsv(file);
     if (!parsed.preview.valid) return parsed;
 
-    const candidates = await findBulkEventDuplicateCandidates(
+    const candidates = await findEventDuplicateCandidates(
         db,
         parsed.events.map(({ event }) => event.start_date)
     );

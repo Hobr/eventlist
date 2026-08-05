@@ -6,6 +6,10 @@ import type {
     EventType
 } from "../events/options";
 import type { AdminEventInput } from "../events/input";
+import {
+    findEventDuplicateCandidates,
+    type EventDuplicateCandidate
+} from "../admin/event-duplicates";
 import { requireD1Success, STATUS, type EventStatus } from "./index";
 
 export type { AdminEventInput } from "../events/input";
@@ -80,12 +84,7 @@ export interface AdminCreateAuditMeta {
     email?: string;
 }
 
-export interface BulkEventDuplicateCandidate {
-    id: number;
-    title: string;
-    start_date: string;
-    venue: string;
-}
+export type BulkEventDuplicateCandidate = EventDuplicateCandidate;
 
 export interface BulkPublishedEventInput {
     row: number;
@@ -110,6 +109,16 @@ export class BulkEventIdConflictError extends Error {
     constructor() {
         super("活动 ID 已被其他请求占用, 请重新预览后再提交");
         this.name = "BulkEventIdConflictError";
+    }
+}
+
+export class BilibiliExactDuplicateError extends Error {
+    readonly existingEvent: { id: number; title: string };
+
+    constructor(existingEvent: { id: number; title: string }) {
+        super("该会员购活动已经导入");
+        this.name = "BilibiliExactDuplicateError";
+        this.existingEvent = existingEvent;
     }
 }
 
@@ -313,23 +322,20 @@ async function nextEventId(db: D1Database) {
 }
 
 export async function findBulkEventDuplicateCandidates(db: D1Database, startDates: string[]) {
-    const dates = [...new Set(startDates)];
-    if (dates.length === 0) return [];
+    return findEventDuplicateCandidates(db, startDates);
+}
 
-    const result = await db
+export async function findEventBySourceUrl(db: D1Database, sourceUrl: string) {
+    return db
         .prepare(
-            `SELECT id, title, start_date, venue
+            `SELECT id, title
              FROM events
-             WHERE start_date IN (
-                 SELECT CAST(value AS TEXT)
-                 FROM json_each(?)
-             )
-             ORDER BY id ASC`
+             WHERE source_url = ?
+             ORDER BY id ASC
+             LIMIT 1`
         )
-        .bind(JSON.stringify(dates))
-        .all<BulkEventDuplicateCandidate>();
-
-    return requireD1Success(result, "Failed to find duplicate event candidates").results ?? [];
+        .bind(sourceUrl)
+        .first<{ id: number; title: string }>();
 }
 
 export async function createBulkPublishedEvents(
@@ -534,6 +540,141 @@ export async function createPublishedEvent(
             }
             return eventId;
         } catch (error) {
+            if (attempt < 2 && isEventIdConflict(error)) continue;
+            throw error;
+        }
+    }
+
+    throw new Error("Failed to allocate event id");
+}
+
+export async function createBilibiliImportedPublishedEvent(
+    db: D1Database,
+    input: AdminEventInput,
+    auditMeta: AdminCreateAuditMeta & {
+        projectId: number;
+        confirmedWarningKeys: string[];
+    }
+) {
+    const normalizedTags = [...new Set(input.tags.map((tag) => tag.trim()).filter(Boolean))];
+    if (normalizedTags.length === 0) throw new Error("请至少选择或新增一个规范标签");
+    const tagsJson = JSON.stringify(normalizedTags);
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        const eventId = await nextEventId(db);
+        const statements = [
+            db
+                .prepare(
+                    `INSERT OR IGNORE INTO tags(name)
+                     SELECT CAST(value AS TEXT)
+                     FROM json_each(?)
+                     WHERE NOT EXISTS (
+                         SELECT 1 FROM events WHERE source_url = ?
+                     )`
+                )
+                .bind(tagsJson, input.source_url),
+            db
+                .prepare(
+                    `INSERT INTO events(
+                         id, title, type, scale, division_code, venue, address,
+                         start_date, end_date, start_time, end_time, cover_url, description,
+                         qq_group, ticket_url, source_url, organizer, schedule_status,
+                         admission_method, price_range, admission_start_date, admission_start_time,
+                         submitter_contact, status, published_at
+                     )
+                     SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')
+                     WHERE NOT EXISTS (
+                         SELECT 1 FROM events WHERE source_url = ?
+                     )`
+                )
+                .bind(
+                    eventId,
+                    input.title,
+                    input.type,
+                    input.scale,
+                    input.division_code,
+                    input.venue,
+                    input.address,
+                    input.start_date,
+                    input.end_date,
+                    input.start_time,
+                    input.end_time,
+                    input.cover_url,
+                    input.description,
+                    input.qq_group,
+                    input.ticket_url,
+                    input.source_url,
+                    input.organizer,
+                    input.schedule_status,
+                    input.admission_method,
+                    input.price_range,
+                    input.admission_start_date,
+                    input.admission_start_time,
+                    input.submitter_contact,
+                    STATUS.PUBLISHED,
+                    input.source_url
+                ),
+            db
+                .prepare(
+                    `INSERT INTO audit_logs(action, target_id, meta, at)
+                     SELECT 'create', ?, ?, datetime('now')
+                     WHERE changes() > 0`
+                )
+                .bind(
+                    eventId,
+                    JSON.stringify({
+                        source: "admin-bilibili-import",
+                        project_id: auditMeta.projectId,
+                        confirmed_warning_keys: auditMeta.confirmedWarningKeys,
+                        tags: normalizedTags,
+                        auth_mode: auditMeta.authMode,
+                        ...(auditMeta.email ? { email: auditMeta.email } : {})
+                    })
+                ),
+            db
+                .prepare(
+                    `INSERT OR IGNORE INTO event_tags(event_id, tag_id)
+                     SELECT DISTINCT ?, COALESCE(tags.alias_of_id, tags.id)
+                     FROM json_each(?) AS requested_tags
+                     JOIN tags
+                       ON tags.name = CAST(requested_tags.value AS TEXT) COLLATE NOCASE
+                     WHERE EXISTS (
+                         SELECT 1 FROM events WHERE id = ? AND source_url = ?
+                     )`
+                )
+                .bind(eventId, tagsJson, eventId, input.source_url),
+            db
+                .prepare(
+                    `SELECT id, title
+                     FROM events
+                     WHERE source_url = ?
+                     ORDER BY id ASC
+                     LIMIT 1`
+                )
+                .bind(input.source_url)
+        ];
+
+        try {
+            const results = await db.batch<{ id: number; title: string }>(statements);
+            for (const result of results) {
+                requireD1Success(result, "Failed to create bilibili imported event");
+            }
+
+            const insertChanges = results[1]?.meta.changes ?? 0;
+            const auditChanges = results[2]?.meta.changes ?? 0;
+            const existingEvent = results[4]?.results?.[0];
+            if (insertChanges === 0) {
+                if (!existingEvent) {
+                    throw new Error("Failed to inspect bilibili import duplicate");
+                }
+                throw new BilibiliExactDuplicateError(existingEvent);
+            }
+            if (insertChanges !== 1 || auditChanges !== 1 || existingEvent?.id !== eventId) {
+                throw new Error("Bilibili import batch result was inconsistent");
+            }
+            return eventId;
+        } catch (error) {
+            if (error instanceof BilibiliExactDuplicateError) throw error;
             if (attempt < 2 && isEventIdConflict(error)) continue;
             throw error;
         }

@@ -18,6 +18,7 @@ This directory contains guidelines for backend development. Fill in each file wi
 | [Database Guidelines](./database-guidelines.md) | D1 patterns, queries, migrations    | Filled  |
 | [Public Data Cache](./public-data-cache.md) | Cache API public DTO contracts and rollout gates | Filled |
 | [管理员批量导入活动](./admin-bulk-event-import.md) | CSV 预览、API、D1 原子写入 | 已填写 |
+| [会员购活动导入](./admin-bilibili-ticket-import.md) | 固定上游预填、重复确认、D1 原子写入 | 已填写 |
 | [Error Handling](./error-handling.md)           | Error types, handling strategies    | Filled  |
 | [Quality Guidelines](./quality-guidelines.md)   | Code standards, forbidden patterns  | To fill |
 | [Logging Guidelines](./logging-guidelines.md)   | Structured logging, log levels      | To fill |

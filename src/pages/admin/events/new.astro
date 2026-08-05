@@ -1,36 +1,73 @@
 ---
-import { ArrowLeftOutline as ArrowLeft } from "flowbite-svelte-icons";
+import {
+    ArrowLeftOutline as ArrowLeft,
+    FileImportOutline as FileImport
+} from "flowbite-svelte-icons";
 import AdminEventForm from "../../../components/admin/AdminEventForm.astro";
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import {
+    BilibiliImportError,
+    buildBilibiliEventImportPreview,
+    missingBilibiliFieldLabels,
+    parseBilibiliProjectId,
+    type BilibiliEventImportPreview
+} from "../../../lib/admin/bilibili-ticket";
 import { getDB } from "../../../lib/db";
-import { listTags } from "../../../lib/db/tags";
+import { listTags, type TagSummary } from "../../../lib/db/tags";
 import { getRuntimeEnv } from "../../../lib/runtime/env";
 
 export const prerender = false;
 
 const runtimeEnv = getRuntimeEnv();
-let canonicalTags = [];
-let errorMessage = "";
+const requestedBilibiliId = Astro.url.searchParams.get("bilibili_id");
+let canonicalTags: TagSummary[] = [];
+let pageError = "";
+let importError = "";
+let importPreview: BilibiliEventImportPreview | null = null;
 
 try {
-    canonicalTags = await listTags(await getDB(runtimeEnv));
+    const db = await getDB(runtimeEnv);
+    canonicalTags = await listTags(db);
+    if (requestedBilibiliId !== null) {
+        try {
+            const projectId = parseBilibiliProjectId(requestedBilibiliId);
+            importPreview = await buildBilibiliEventImportPreview(db, projectId, {
+                submitterContact: Astro.locals.admin?.email
+            });
+        } catch (error) {
+            importError =
+                error instanceof BilibiliImportError
+                    ? error.message
+                    : "会员购活动暂时无法导入，请手动录入";
+        }
+    }
 } catch (error) {
-    errorMessage = error instanceof Error ? error.message : "无法加载标签库";
+    pageError = error instanceof Error ? error.message : "无法加载标签库";
 }
+
+const missingFieldLabels = importPreview
+    ? missingBilibiliFieldLabels(importPreview.missingRequiredFields)
+    : [];
+const hasExactDuplicate = importPreview?.exactDuplicate !== null && importPreview !== null;
+const importedFieldCount = importPreview
+    ? Object.values(importPreview.values).filter(
+          (value) => typeof value === "string" && value !== ""
+      ).length
+    : 0;
 ---
 
 <AdminLayout title="增加活动" description="录入后立即发布到公开活动目录">
     {
-        errorMessage ? (
+        pageError ? (
             <div
                 class="rounded-md bg-danger-subtle p-6 text-center text-sm font-semibold text-danger ring-1 ring-danger/15"
                 role="alert"
             >
-                {errorMessage}
+                {pageError}
             </div>
         ) : (
             <div>
-                <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
+                <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
                     <a
                         href="/admin"
                         class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
@@ -41,6 +78,63 @@ try {
                     <p class="text-xs font-semibold text-muted-foreground">管理员创建后立即公开</p>
                 </div>
 
+                <section
+                    class="mb-8 border-b border-border/80 pb-8"
+                    aria-labelledby="bilibili-import-heading"
+                >
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <h2
+                                id="bilibili-import-heading"
+                                class="text-base font-black text-foreground"
+                            >
+                                从会员购导入
+                            </h2>
+                            <p class="mt-1 text-sm text-muted-foreground">
+                                输入活动 ID 后读取可用字段，发布前仍可检查和修改。
+                            </p>
+                        </div>
+                        <form
+                            method="get"
+                            action="/admin/events/new"
+                            class="flex w-full flex-col gap-2 sm:flex-row lg:max-w-lg"
+                        >
+                            <label class="min-w-0 flex-1" for="bilibili_id">
+                                <span class="sr-only">会员购活动 ID</span>
+                                <input
+                                    id="bilibili_id"
+                                    name="bilibili_id"
+                                    type="number"
+                                    inputmode="numeric"
+                                    min="1"
+                                    max="9007199254740991"
+                                    step="1"
+                                    required
+                                    value={requestedBilibiliId ?? ""}
+                                    placeholder="会员购活动 ID"
+                                    class="flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                                />
+                            </label>
+                            <button
+                                type="submit"
+                                class="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]"
+                            >
+                                <FileImport class="size-4" aria-hidden="true" />
+                                导入
+                            </button>
+                        </form>
+                    </div>
+                    {importError ? (
+                        <div
+                            class="mt-4 rounded-md bg-danger-subtle p-4 text-sm text-danger ring-1 ring-danger/15"
+                            role="alert"
+                        >
+                            <p class="font-semibold">{importError}</p>
+                            <p class="mt-1 text-danger/85">下方表单仍可手动录入活动。</p>
+                        </div>
+                    ) : null}
+                </section>
+
                 <AdminEventForm
                     canonicalTags={canonicalTags}
                     formId="create-event-form"
@@ -48,20 +142,213 @@ try {
                     submitButtonId="create-save-button"
                     statusId="create-save-status"
                     submitLabel="发布活动"
-                    statusText="请至少选择一个规范标签, 新标签会在发布时加入标签库"
-                    defaultDivisionCode={runtimeEnv.DEFAULT_DIVISION_CODE}
+                    statusText={
+                        hasExactDuplicate
+                            ? "该会员购活动已经存在，不能重复发布"
+                            : "请至少选择一个规范标签, 新标签会在发布时加入标签库"
+                    }
+                    defaultDivisionCode={importPreview ? "" : runtimeEnv.DEFAULT_DIVISION_CODE}
+                    initialValues={importPreview?.values}
+                    sourceReadOnly={Boolean(importPreview)}
+                    submitDisabled={hasExactDuplicate}
                     showRequiredIndicators
-                />
+                >
+                    {importPreview ? (
+                        <Fragment slot="metadata">
+                            <input
+                                type="hidden"
+                                name="import_provider"
+                                value={importPreview.provider}
+                            />
+                            <input
+                                type="hidden"
+                                name="bilibili_project_id"
+                                value={importPreview.projectId}
+                            />
+                            <section
+                                class="rounded-md bg-surface-subtle p-4 ring-1 ring-border/80 sm:p-5"
+                                aria-labelledby="bilibili-result-heading"
+                                aria-live="polite"
+                            >
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <h2
+                                            id="bilibili-result-heading"
+                                            class="text-base font-black break-words text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                            tabindex="-1"
+                                            data-import-result
+                                        >
+                                            已读取 {importPreview.values.title}
+                                        </h2>
+                                        <p class="mt-1 text-sm text-muted-foreground">
+                                            已填入 {importedFieldCount} 项，来源 ID{" "}
+                                            {importPreview.projectId}
+                                        </p>
+                                    </div>
+                                    <a
+                                        href={importPreview.canonicalSourceUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        class="text-sm font-semibold break-all text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                    >
+                                        打开会员购页面
+                                    </a>
+                                </div>
+
+                                {missingFieldLabels.length > 0 ? (
+                                    <div class="mt-4" role="status">
+                                        <p class="text-sm font-semibold text-foreground">
+                                            发布前需要补充：{missingFieldLabels.join("、")}
+                                        </p>
+                                    </div>
+                                ) : null}
+
+                                {importPreview.warnings.length > 0 ? (
+                                    <div class="mt-4 space-y-2" role="alert">
+                                        {importPreview.warnings.map((warning) => (
+                                            <p class="text-warning-foreground text-sm leading-6">
+                                                {warning.message}
+                                            </p>
+                                        ))}
+                                    </div>
+                                ) : null}
+
+                                {importPreview.exactDuplicate ? (
+                                    <div
+                                        class="mt-4 rounded-md bg-danger-subtle p-3 text-sm text-danger ring-1 ring-danger/15"
+                                        role="alert"
+                                    >
+                                        <p class="font-semibold">该会员购活动已经导入。</p>
+                                        <a
+                                            class="mt-1 inline-flex font-semibold underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                            href={`/admin/events/${importPreview.exactDuplicate.id}/edit`}
+                                        >
+                                            打开已有活动：{importPreview.exactDuplicate.title}
+                                        </a>
+                                    </div>
+                                ) : null}
+
+                                <div
+                                    id="bilibili-submit-warnings"
+                                    class="mt-4 space-y-3"
+                                    aria-live="polite"
+                                >
+                                    {importPreview.duplicateCandidates.length > 0 ? (
+                                        <fieldset class="space-y-3">
+                                            <legend class="text-sm font-semibold text-foreground">
+                                                发现疑似重复活动，确认后才能发布
+                                            </legend>
+                                            {importPreview.duplicateCandidates.map(
+                                                ({ key, event }) => (
+                                                    <label class="flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80">
+                                                        <input
+                                                            type="checkbox"
+                                                            name="confirmed_warning_keys"
+                                                            value={key}
+                                                            class="mt-0.5 size-4 shrink-0 rounded border-border-strong text-primary focus:ring-ring/50"
+                                                            required
+                                                        />
+                                                        <span class="min-w-0 text-foreground">
+                                                            我已检查
+                                                            <a
+                                                                href={`/admin/events/${event.id}/edit`}
+                                                                class="mx-1 font-semibold break-words text-primary hover:underline"
+                                                                target="_blank"
+                                                            >
+                                                                {event.title}
+                                                            </a>
+                                                            （{event.start_date}，{event.venue}
+                                                            ），仍要继续发布。
+                                                        </span>
+                                                    </label>
+                                                )
+                                            )}
+                                        </fieldset>
+                                    ) : null}
+                                </div>
+                            </section>
+                        </Fragment>
+                    ) : null}
+                </AdminEventForm>
             </div>
         )
     }
 </AdminLayout>
 
 <script>
+    interface DuplicateWarning {
+        key: string;
+        event: { id: number; title: string; start_date: string; venue: string };
+    }
+
+    interface CreateResponseBody {
+        error?: string;
+        data?: { id?: number };
+        details?: {
+            warnings?: DuplicateWarning[];
+            existingEvent?: { id: number; title: string };
+        };
+    }
+
     const form = document.querySelector("#create-event-form");
     const saveButton = document.querySelector("#create-save-button");
     const saveLabel = saveButton?.querySelector("[data-save-label]");
     const saveStatus = document.querySelector("#create-save-status");
+    const warningContainer = document.querySelector("#bilibili-submit-warnings");
+    const importResult = document.querySelector("[data-import-result]");
+
+    if (importResult instanceof HTMLElement) {
+        requestAnimationFrame(() => importResult.focus());
+    }
+
+    function renderDuplicateWarnings(warnings: DuplicateWarning[]) {
+        if (!(warningContainer instanceof HTMLElement) || warnings.length === 0) return;
+        const confirmedKeys = new Set(
+            Array.from(
+                form?.querySelectorAll<HTMLInputElement>(
+                    'input[name="confirmed_warning_keys"]:checked'
+                ) ?? []
+            ).map((input) => input.value)
+        );
+        warningContainer.setAttribute("role", "alert");
+        warningContainer.replaceChildren();
+        const fieldset = document.createElement("fieldset");
+        fieldset.className = "space-y-3";
+        const legend = document.createElement("legend");
+        legend.className = "text-sm font-semibold text-foreground";
+        legend.textContent = "发现新的疑似重复活动，确认后才能发布";
+        fieldset.append(legend);
+
+        for (const warning of warnings) {
+            const label = document.createElement("label");
+            label.className =
+                "flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80";
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.name = "confirmed_warning_keys";
+            input.value = warning.key;
+            input.required = true;
+            input.checked = confirmedKeys.has(warning.key);
+            input.className =
+                "mt-0.5 size-4 shrink-0 rounded border-border-strong text-primary focus:ring-ring/50";
+            const text = document.createElement("span");
+            text.className = "min-w-0 text-foreground";
+            text.append("我已检查 ");
+            const link = document.createElement("a");
+            link.href = `/admin/events/${warning.event.id}/edit`;
+            link.target = "_blank";
+            link.rel = "noreferrer";
+            link.className = "font-semibold break-words text-primary hover:underline";
+            link.textContent = warning.event.title;
+            text.append(
+                link,
+                `（${warning.event.start_date}，${warning.event.venue}），仍要继续发布。`
+            );
+            label.append(input, text);
+            fieldset.append(label);
+        }
+        warningContainer.append(fieldset);
+    }
 
     if (
         form instanceof HTMLFormElement &&
@@ -71,6 +358,7 @@ try {
     ) {
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+            let exactDuplicateConflict = false;
             saveButton.disabled = true;
             saveButton.setAttribute("aria-busy", "true");
             saveLabel.textContent = "发布中";
@@ -82,22 +370,37 @@ try {
                     method: "POST",
                     body: new FormData(form)
                 });
-                const body = (await response.json().catch(() => null)) as {
-                    error?: string;
-                    data?: { id?: number };
-                } | null;
-                if (!response.ok) throw new Error(body?.error ?? "发布失败, 请重试");
+                const body = (await response.json().catch(() => null)) as CreateResponseBody | null;
+                if (!response.ok) {
+                    renderDuplicateWarnings(body?.details?.warnings ?? []);
+                    const existingEvent = body?.details?.existingEvent;
+                    if (existingEvent) {
+                        exactDuplicateConflict = true;
+                        saveStatus.replaceChildren(
+                            document.createTextNode(`${body?.error ?? "该活动已经存在"}：`),
+                            Object.assign(document.createElement("a"), {
+                                href: `/admin/events/${existingEvent.id}/edit`,
+                                textContent: existingEvent.title,
+                                className: "font-semibold underline underline-offset-2"
+                            })
+                        );
+                    }
+                    throw new Error(body?.error ?? "发布失败, 请重试");
+                }
                 if (!body?.data?.id) throw new Error("发布成功但未返回活动 ID");
 
                 saveStatus.textContent = "发布成功, 正在打开活动编辑页…";
                 window.location.assign(`/admin/events/${body.data.id}/edit`);
             } catch (error) {
-                saveStatus.textContent =
-                    error instanceof Error ? error.message : "发布失败, 请重试";
+                if (saveStatus.textContent === "正在保存活动、标签和审计记录…") {
+                    saveStatus.textContent =
+                        error instanceof Error ? error.message : "发布失败, 请重试";
+                }
                 saveStatus.classList.add("text-danger");
-                saveButton.disabled = false;
+                if (!exactDuplicateConflict) saveButton.disabled = false;
                 saveButton.removeAttribute("aria-busy");
                 saveLabel.textContent = "发布活动";
+                saveStatus.focus();
             }
         });
     }

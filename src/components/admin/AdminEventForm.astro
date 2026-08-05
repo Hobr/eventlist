@@ -3,6 +3,7 @@ import { FloppyDiskOutline as Save } from "flowbite-svelte-icons";
 import DivisionPicker from "../DivisionPicker.svelte";
 import SelectField from "../SelectField.svelte";
 import TagInput from "../TagInput.svelte";
+import type { AdminEventField, AdminEventRawInput } from "../../lib/admin/form";
 import type { EventRecord } from "../../lib/db/admin-events";
 import type { TagSummary } from "../../lib/db/tags";
 import {
@@ -23,6 +24,9 @@ interface Props {
     statusText: string;
     defaultDivisionCode?: string;
     showRequiredIndicators?: boolean;
+    initialValues?: AdminEventRawInput;
+    sourceReadOnly?: boolean;
+    submitDisabled?: boolean;
 }
 
 const {
@@ -35,7 +39,10 @@ const {
     submitLabel,
     statusText,
     defaultDivisionCode = "",
-    showRequiredIndicators = false
+    showRequiredIndicators = false,
+    initialValues = {},
+    sourceReadOnly = false,
+    submitDisabled = false
 } = Astro.props;
 
 const typeOptions = EVENT_TYPES.map((type) => ({ value: type.name, label: type.label }));
@@ -49,9 +56,11 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
     label: method.label
 }));
 const headingId = (name: string) => `${formId}-${name}-heading`;
-const value = (name: keyof EventRecord) => {
+const value = (name: AdminEventField) => {
     const current = eventRecord?.[name];
-    return typeof current === "string" ? current : "";
+    if (typeof current === "string") return current;
+    const initial = initialValues[name];
+    return typeof initial === "string" ? initial : "";
 };
 const fieldCls =
     "flex h-10 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion placeholder:text-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40";
@@ -64,6 +73,8 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
     data-return-href={cancelHref}
     class="flex flex-col gap-9"
 >
+    <slot name="metadata" />
+
     <section
         class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
         aria-labelledby={headingId("identity")}
@@ -123,7 +134,9 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
         <div class="sm:col-span-2">
             <DivisionPicker
                 name="division_code"
-                value={eventRecord?.division_code ?? defaultDivisionCode}
+                value={eventRecord?.division_code ??
+                    initialValues.division_code ??
+                    defaultDivisionCode}
                 label="地区"
                 mode="county"
                 required
@@ -240,8 +253,17 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                 type="url"
                 required
                 value={value("source_url")}
+                readonly={sourceReadOnly}
+                aria-describedby={sourceReadOnly ? `${formId}-source-note` : undefined}
                 class={`mt-1.5 ${fieldCls}`}
             />
+            {
+                sourceReadOnly ? (
+                    <p id={`${formId}-source-note`} class="mt-1.5 text-xs text-muted-foreground">
+                        由会员购活动 ID 生成，作为重复检测和审计标识，不能修改。
+                    </p>
+                ) : null
+            }
         </div>
         <div class="sm:col-span-2">
             <label class={labelCls} for="organizer">主办方</label>
@@ -363,7 +385,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             ) : null
         }
         <TagInput
-            initial={eventRecord?.tags ?? ""}
+            initial={eventRecord?.tags ?? initialValues.tags ?? ""}
             label="规范标签（至少一个）"
             available={canonicalTags}
             showRequiredIndicator={showRequiredIndicators}
@@ -388,6 +410,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
             class="min-h-5 text-sm text-muted-foreground"
             role="status"
             aria-live="polite"
+            tabindex="-1"
         >
             {statusText}
         </p>
@@ -402,6 +425,7 @@ const labelCls = "text-sm font-semibold text-muted-foreground";
                 id={submitButtonId}
                 class="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-[transform,background-color] duration-300 ease-motion hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100 sm:flex-none"
                 type="submit"
+                disabled={submitDisabled}
             >
                 <Save class="size-4" aria-hidden="true" />
                 <span data-save-label>{submitLabel}</span>
