@@ -845,3 +845,24 @@ Reconciled the parent requirements with both archived child tasks, removed stale
 ### Status
 
 [OK] **Completed**
+
+
+## Session 31: Implement homepage dual-intent feed
+
+**Date**: 2026-08-05
+**Task**: Implement homepage dual-intent feed
+**Branch**: `dev`
+
+### Summary
+
+Replaced the homepage popularity and today sections with unopened and unended intent rankings, added strict four-list DTO/cache contracts and D1 coverage, synchronized Trellis specs, and verified tests, build, types, and local HTTP responses.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3e8f7fd` | (see git log) |
+
+### Status
+
+[OK] **Completed**
