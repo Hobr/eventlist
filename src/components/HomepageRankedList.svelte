@@ -9,12 +9,11 @@
     interface Props {
         headingId: string;
         title: string;
-        scope: string;
         scene: "unopened" | "unended";
         events: PublicHomepageRankedEvent[];
     }
 
-    let { headingId, title, scope, scene, events }: Props = $props();
+    let { headingId, title, scene, events }: Props = $props();
 
     const numberFormat = new Intl.NumberFormat("zh-CN");
     const clockParts = Object.fromEntries(
@@ -75,7 +74,6 @@
     <header class="flex items-end justify-between gap-4 pb-3">
         <div class="min-w-0">
             <h4 id={headingId} class="text-base font-black text-foreground sm:text-lg">{title}</h4>
-            <p class="mt-1 truncate text-xs text-muted">{scope}</p>
         </div>
     </header>
 

@@ -325,14 +325,12 @@
                 <HomepageRankedList
                     headingId="unended-local-heading"
                     title="本地热门"
-                    scope={`${divisionLabel}, 近 ${popularity.window} 日`}
                     scene="unended"
                     events={popularity.unended.local}
                 />
                 <HomepageRankedList
                     headingId="unended-nationwide-heading"
                     title="全国热门"
-                    scope={`全国, 近 ${popularity.window} 日`}
                     scene="unended"
                     events={popularity.unended.nationwide}
                 />
@@ -352,14 +350,12 @@
                 <HomepageRankedList
                     headingId="unopened-local-heading"
                     title="本地热门"
-                    scope={`${divisionLabel}, 近 ${popularity.window} 日`}
                     scene="unopened"
                     events={popularity.unopened.local}
                 />
                 <HomepageRankedList
                     headingId="unopened-nationwide-heading"
                     title="全国热门"
-                    scope={`全国, 近 ${popularity.window} 日`}
                     scene="unopened"
                     events={popularity.unopened.nationwide}
                 />
