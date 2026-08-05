@@ -37,11 +37,11 @@ let regionError = "";
 let discoveryError = "";
 let popularityError = "";
 let cacheWarning = "";
-let discovery: PublicHomepageDiscovery = { featuredEvents: [], today: [] };
+let discovery: PublicHomepageDiscovery = { featuredEvents: [] };
 let popularity: PublicHomepagePopularity = {
     window: trendWindow,
-    local: [],
-    nationwide: []
+    unopened: { local: [], nationwide: [] },
+    unended: { local: [], nationwide: [] }
 };
 const cacheStates: PublicDataCacheState[] = [];
 
@@ -60,8 +60,8 @@ try {
               : "默认城市";
 } catch (error) {
     regionError = error instanceof Error ? error.message : "无法识别当前地区";
-    discoveryError = "无法确定地区, 暂时不能加载今日活动";
-    popularityError = "无法确定地区, 暂时不能加载本地热门活动";
+    discoveryError = "无法确定地区, 暂时不能加载精选活动";
+    popularityError = "无法确定地区, 暂时不能加载活动榜单";
 }
 
 const homepageDivision =
@@ -110,7 +110,7 @@ if (selectedDivision) {
             discoveryError =
                 discoveryResult.reason instanceof Error
                     ? discoveryResult.reason.message
-                    : "无法加载今日活动";
+                    : "无法加载精选活动";
         }
 
         if (popularityResult.status === "fulfilled") {

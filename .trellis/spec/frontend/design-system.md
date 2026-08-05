@@ -131,13 +131,13 @@
   its `showRequiredIndicators` prop; the default remains `false` for edit.
 - `EventCard.astro` and `admin/EventTable.astro` / `admin/Pagination.astro`
   consume `ui/` primitives, not raw Tailwind long-class strings.
-- `HomepageContent.svelte` is the single hydrated owner of the featured, popularity, and today snapshot. `NavLocationPicker.svelte` may commit only one validated `HOMEPAGE_DATA_EVENT`; do not add independent per-section requests or an SSR-visible module-level store.
-- `HomepageContent.svelte` and `NavLocationPicker.svelte` treat Astro props as one-time initial state. Wrap those `$state` initializers in `untrack(() => initialProp)` so the intent is explicit and the Svelte dev compiler does not emit `state_referenced_locally`; components that receive live parent updates, such as `HomepagePopularity.svelte`, must keep their prop-sync effect instead.
-- `FeaturedEventCarousel.svelte` and `HomepagePopularity.svelte` receive only explicit homepage public DTOs from `src/lib/public/homepage.ts`; never pass hydrated components a full `EventRecord` or `PopularEvent` because Astro serializes client-island props.
+- `HomepageContent.svelte` is the single hydrated owner of the featured Hero and dual-intent popularity snapshot. `NavLocationPicker.svelte` may commit only one validated `HOMEPAGE_DATA_EVENT`; do not add independent per-section requests or an SSR-visible module-level store.
+- `HomepageContent.svelte` and `NavLocationPicker.svelte` treat Astro props as one-time initial state. Wrap those `$state` initializers in `untrack(() => initialProp)` so the intent is explicit and the Svelte dev compiler does not emit `state_referenced_locally`; `HomepageIntentFeed.svelte` receives live parent snapshots and must retain its prop-signature sync effect.
+- `FeaturedEventCarousel.svelte`, `HomepageIntentFeed.svelte`, and `HomepageRankedList.svelte` receive only explicit homepage public DTOs from `src/lib/public/homepage.ts`; never pass hydrated components a complete D1 event row or internal ranking type because Astro serializes client-island props.
 - `FeaturedEventCarousel.svelte` owns the whole Hero surface. Multiple candidates use Flowbite Svelte Carousel/Controls/Indicators; one or zero candidates render no carousel controls. A changed division/candidate snapshot resets index, pause state, and the previous autoplay lifecycle.
 - Flowbite Carousel ships its own `xl` / `2xl` height utilities, so the homepage Hero must explicitly override both breakpoints instead of relying only on an `lg` height. A native shell owns hover/focus/keyboard listeners, and each autoplay tick also checks `:hover` plus `document.activeElement` so component prop forwarding or programmatic focus cannot bypass the pause contract.
-- `HomepagePopularity.svelte` progressively enhances real `3 / 7 / 30` links. It may import Flowbite `Spinner` as a stateless leaf, while project Tailwind tokens own the three-segment layout. Successful snapshots are cached only by `city:window`; a division prop change aborts/invalidates the previous request before committing the new snapshot.
-- `EventRow.svelte` is the shared public row contract. `EventCard.astro variant="row"` projects through `toPublicEventRow()` and renders it for the catalogue, while `HomepageToday.svelte` renders the same component from the public homepage snapshot.
+- `HomepageIntentFeed.svelte` progressively enhances one real-link `3 / 7 / 30` control for all four lists. It may import Flowbite `Spinner` as a stateless leaf, while project Tailwind tokens own the segmented layout. Successful snapshots are cached only by `city:window`; a division prop change aborts/invalidates the previous request before committing the new snapshot.
+- `HomepageRankedList.svelte` owns one compact local or nationwide ordered list and accepts only `PublicHomepageRankedEvent[]`. `EventRow.svelte` remains the shared catalogue row contract through `EventCard.astro variant="row"`; do not reuse it for the intent ranking where timing emphasis and heat columns differ.
 - Keep action buttons icon+text where the icon clarifies the command
   (Flowbite Svelte Icons).
 
@@ -195,8 +195,8 @@
 - Homepage first viewport is discovery-first: up to five ranked local recommendations, a
   compact homepage-only location trigger in the public navigation, and a
   catalogue action. Do not restore the large in-page location block, a separate
-  nearby section, or redundant popular/today anchor buttons below the hero.
-- 首页地区侧栏中的省、市、区县只修改待应用值。有效“应用地区”成功后，导航标签、Hero、热门、今日、URL、history 元数据和地区偏好才一起提交；加载/失败期间继续显示旧快照，并提供目标 URL 的普通导航回退。
+  nearby section, or the old independent popularity/today sections below the Hero.
+- 首页地区侧栏中的省, 市, 区县只修改待应用值. 有效 `应用地区` 成功后, 导航标签, Hero, 未开票/未结束四榜, URL, history 元数据和地区偏好才一起提交; 加载或失败期间继续显示旧快照, 并提供目标 URL 的普通导航回退.
 - 主动地区切换使用 `history.pushState`，已保存地区恢复和热门窗口切换使用 `replaceState`，且必须合并保留已有 `history.state` 字段。`popstate` 无刷新请求对应完整快照；恢复失败时使用普通导航重新建立 URL 与内容一致性。
 - At `sm` and wider, the public navigation capsule uses three balanced columns:
   brand at the left, `首页 / 活动 / 分类 / 投稿` geometrically centered, and the
@@ -211,22 +211,29 @@
   user pause, or `prefers-reduced-motion`; one candidate has no timer or carousel
   controls. Cover failure falls back to `/images/event-fallback.webp` without
   changing Hero dimensions.
-- Homepage sections render in this order: featured hero, popularity, then at
-  most ten published local events whose date range covers the current
-  China-local date. Today rows use `EventCard variant="row"`, preserve stable
-  query order, and may repeat the featured event. The list or empty-state bottom
-  border is the only separator before the catalogue CTA; do not add a second
-  CTA top border.
-- Popularity uses one stable three-segment `3 / 7 / 30` control, defaults to
-  seven days, preserves the selected city, and updates local and nationwide
-  lists together. The initial window is server-rendered. Hydrated clicks fetch
-  uncached `city:window` combinations from `/api/popularity`, cache successful snapshots for the
-  page lifetime without crossing division boundaries, retain the current list while loading/failing, and update
-  `city`, `trend`, and `#popular` with `history.replaceState` only after success.
-  Real hrefs preserve full-navigation behavior without JavaScript. Abort or
-  ignore stale requests so rapid selection cannot commit an older response.
-  Each list renders at most five rows; use two equal columns on wide screens and
-  a vertical flow on narrow screens.
+- Homepage sections render in this order: featured Hero, then one unframed
+  dual-intent feed. Do not render the deleted standalone popularity or today
+  sections after it.
+- At `lg` and wider, the intent feed always uses two stable columns: `未开票` on
+  the left and `未结束` on the right, separated by one vertical rule. Each scene
+  stacks `本地热门` and `全国热门`; do not create four narrow columns or nested
+  cards.
+- Below `lg`, the hydrated segmented control order is `未结束 / 未开票`, defaults
+  to `未结束`, and changes only local UI state. Before hydration and without
+  JavaScript, both scene sections remain in normal document flow and every event
+  link stays reachable.
+- One stable `3 / 7 / 30` control defaults to seven days, preserves the selected
+  city, and updates all four lists together. The initial window is server-rendered.
+  Hydrated clicks fetch uncached `city:window` combinations from `/api/popularity`,
+  cache successful snapshots for the page lifetime without crossing division
+  boundaries, retain the current four-list snapshot while loading/failing, and
+  update `city`, `trend`, and `#intent-feed` with `history.replaceState` only after
+  success. Real hrefs preserve full-navigation behavior without JavaScript.
+  Abort or ignore stale requests so rapid selection cannot commit an older response.
+- Each local/nationwide list renders at most five compact rows with stable rank,
+  title, scene timing/status, region, activity schedule, and tabular heat columns.
+  `未开票` emphasizes known admission date/time or `时间待定`; `未结束` shows
+  `进行中` for started activities and the start schedule otherwise.
 - Do not lead with statistics, feature marketing, or narrative copy
   ("command / dossier / radar / LIVE PREVIEW").
 - Event browsing uses compact cover-led rows. Keep common filters directly
@@ -434,5 +441,10 @@ function handlePanelKeydown(event: KeyboardEvent) {
   dimensions, focusable disclosure/dialog controls, and visible workflow
   states. For normal text, token foreground/background pairs must reach at
   least 4.5:1 in both color schemes.
+- For homepage intent-feed changes, verify SSR contains both scene headings,
+  `/api/homepage` and `/api/popularity` expose the same nested four-list shape,
+  repeated requests remain 200, and a seeded Hero response includes only
+  requested-region `division_code` values. Do not introduce Playwright solely
+  for this check.
 - For visual-only frontend work, verify the diff does not include backend
   data, API, or database changes unless the task explicitly requested them.

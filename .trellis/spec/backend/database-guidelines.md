@@ -309,17 +309,17 @@ await db
 
 ---
 
-## Scenario: Homepage Discovery And Anonymous Popularity
+## Scenario: Homepage Discovery And Dual-Intent Anonymous Popularity
 
 ### 1. Scope / Trigger
 
-- Trigger: homepage featured/today discovery, event detail view deduplication, or 3/7/30-day popularity ranking changes.
+- Trigger: homepage featured discovery, unopened/unended intent ranking, event detail view deduplication, or 3/7/30-day popularity changes.
 - D1 remains the only event and popularity source of truth. Do not add a KV mirror, Analytics Engine projection, or third-party recommendation store.
 
 ### 2. Signatures
 
-- `listHomepageDiscovery(db, divisionCode) -> Promise<HomepageDiscovery>` returns `featuredEvents` with at most five ranked candidates and at most ten published local events whose date range covers the current China-local date.
-- `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns local and nationwide rankings from one `db.batch()` call.
+- `listHomepageDiscovery(db, divisionCode, asOfDate?) -> Promise<HomepageDiscovery>` returns only `featuredEvents`, with at most five ranked local candidates. A supplied `asOfDate` must be canonical `YYYY-MM-DD` and binds the query to the cache key date.
+- `listHomepagePopularity(db, divisionCode, window: 3 | 7 | 30) -> Promise<HomepagePopularity>` returns `{ window, unopened, unended }`; each scene contains independent `local` and `nationwide` lists from one four-statement `db.batch()` call.
 - `recordEventView(db, eventId, visitorKey) -> Promise<"changed" | "already-current" | "ignored">` inserts or refreshes one event-scoped visitor row and probes the final state in one D1 batch.
 - `deleteExpiredEventVisitors(db) -> Promise<number>` deletes rows older than the retained 30-day window and returns the number removed; the Worker scheduled handler owns this cleanup.
 - `hashEventVisitor(eventId, ip, secret) -> Promise<string>` returns a 64-character lowercase HMAC-SHA-256 key.
@@ -337,15 +337,18 @@ await db
 - Featured candidates use `NOT EVENT_ENDED_CLAUSE`, match the selected division, and have `start_date <= China-local today + 14 days`; there is no start-date lower bound, so an earlier-started activity remains eligible while it has not ended.
 - Featured ranking is deterministic: already-started events first, then scale descending, start date ascending, cover presence descending, and event ID ascending. “Already started” means a date before today, or today with no `start_time` / a `start_time` that has arrived in China local time.
 - `HomepageDiscovery.featuredEvents` applies `LIMIT 5` and returns the successful result array without collapsing it to one record.
-- `HomepageDiscovery.today` requires `start_date <= today <= end_date`, does not use `EVENT_ENDED_CLAUSE`, and applies `LIMIT 10` after the stable homepage ordering. An activity that ended earlier today remains eligible for the capped daily list.
-- Today ordering places cross-day activities first, then same-day activities with known start times, followed by scale and event ID. A featured activity starting today also remains in `today`; do not deduplicate across these two presentation roles.
-- Popularity counts visitor rows whose `last_seen_date` is within the selected inclusive window. Local and nationwide lists each return at most five published, not-ended events.
+- Popularity counts visitor rows whose `last_seen_date` is within the selected inclusive China-local window. Qualified activities `LEFT JOIN recent_visitors`; `COALESCE(unique_visitors, 0)` keeps zero-heat fallback candidates instead of dropping them.
+- `unopened` contains only published, not-ended activities with a non-null `admission_start_date` from today through `today + 14 days`, inclusive. A future date qualifies; today qualifies only when `admission_start_time` is null or later than the current China-local time.
+- `unended` contains every published activity that does not satisfy `EVENT_ENDED_CLAUSE`, including already-started activities and date-only activities through their entire end date.
+- Each scene runs one local and one nationwide statement with its own `LIMIT 5`. Local uses the existing division prefix/exact matching contract. Nationwide has no location exclusion, so the same activity may appear in both scopes.
+- Every list orders heat descending first. `unopened` then orders earlier admission date/time, scale, and ID; `unended` then orders already-started activities first, earlier start date/time, scale, and ID.
 - The homepage catalogue CTA carries only `city`. Catalogue support for `starts=date` and `active=date` remains unchanged, but the homepage does not preselect either filter.
 
 ### 4. Validation & Error Matrix
 
 - Missing or empty homepage division code -> reject before running popularity statements.
-- Any failed D1 batch result -> throw a query-specific error; callers render homepage discovery and popularity failures independently.
+- Invalid explicit homepage `asOfDate` -> throw `RangeError` before preparing the discovery query.
+- Any failed result in the four-statement popularity batch -> throw a query-specific error; never return a mixed or partial scene snapshot.
 - Invalid popularity URL value -> parse to the default 7-day window.
 - Invalid `starts` / `active` URL value -> ignore it through the shared date parser.
 - Invalid visitor key length or characters -> SQL CHECK failure.
@@ -355,11 +358,12 @@ await db
 
 - Good: two requests for one event and one address store one row; the same address visiting another event stores an unrelated key.
 - Good: a date-only event remains eligible through its end date and never receives an invented time-based order.
-- Base: an empty `event_visitors` table returns two empty popularity lists while featured/today discovery still renders.
-- Good: an activity that started yesterday and is still active can appear in `featuredEvents`; an activity that ended earlier today is absent from `featuredEvents` but remains in `today`.
-- Bad: reusing `listPublishedEvents()` for the complete today list; its page size is capped at 50.
+- Base: an empty `event_visitors` table still returns up to five qualified zero-heat candidates in each local/nationwide scene list.
+- Good: an activity that started yesterday and is still active can appear in both `featuredEvents` and the `unended` ranking.
+- Good: an activity opening today with no admission time stays in `unopened` for the whole China-local day; one with a known admission time leaves at that time.
+- Bad: using an inner join to `recent_visitors`; it removes qualified zero-heat activities and leaves short lists even when fallback candidates exist.
 - Bad: `COUNT(*)` over raw request logs or a cross-event IP hash; both violate the event-scoped privacy boundary.
-- Bad: excluding the featured ID from `today`; that makes the daily list incomplete.
+- Bad: removing local IDs from the nationwide ranking; nationwide means all regions, not non-local regions.
 
 ### 6. Tests Required
 
@@ -367,7 +371,9 @@ await db
 - Apply `docs/dev/seed-public-site.sql`; assert 120 same-date events, six ongoing events, 90 visitor rows, 64-character keys, and aggregate 3/7/30-day counts of 15/35/90.
 - Assert featured selection has no start-date lower bound, limits future starts to China-local today + 14 days, still excludes ended activities, ranks already-started candidates first, and uses `LIMIT 5`.
 - Assert `HomepageDiscovery.featuredEvents` returns the complete candidate array in stable query order.
-- Assert the today SQL uses `LIMIT 10` after its stable ordering, has no `EVENT_ENDED_CLAUSE`, returns only date-covering published local events, and does not explicitly remove a featured-today event from the result.
+- Assert discovery prepares exactly one Hero statement and `HomepageDiscovery` has no `today` field.
+- Execute popularity against SQLite fixtures and assert one four-statement batch, four independent `LIMIT 5` clauses, local prefix matching, nationwide inclusion of local events, and rejection of pending/ended activities.
+- Cover the inclusive 14-day admission boundary, today with future/passed/null admission time, ongoing-first `unended` ties, zero-heat fallback, heat/scale/ID stability, and complete scene result mapping.
 - Assert one event-scoped key for repeated views, separate keys for different IPs or events, 30-day purge behavior, and no raw-IP column or value.
 - Assert the request path contains no visitor cleanup, the daily scheduled handler invokes cleanup, and popularity/cleanup query plans use `idx_event_visitors_recent`.
 - Compare direct indexed date/order queries with the legacy `date(...)`/`time(...)` expressions on the seeded catalogue for listing order, pagination, and 3/7/30-day popularity.
@@ -387,4 +393,19 @@ await db.prepare("INSERT INTO event_visitors(event_id, ip) VALUES (?, ?)").bind(
 ```ts
 const visitorKey = await hashEventVisitor(eventId, ip, env.VIEW_HASH_SECRET);
 await recordEventView(db, eventId, visitorKey);
+```
+
+#### Wrong: zero-heat candidates disappear
+
+```sql
+FROM events
+JOIN recent_visitors ON recent_visitors.event_id = events.id
+```
+
+#### Correct: qualified activities own the candidate set
+
+```sql
+FROM events
+LEFT JOIN recent_visitors ON recent_visitors.event_id = events.id
+ORDER BY COALESCE(recent_visitors.unique_visitors, 0) DESC
 ```

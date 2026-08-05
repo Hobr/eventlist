@@ -1,36 +1,35 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { D1Database } from "../src/types/cloudflare";
 import { listHomepageDiscovery } from "../src/lib/db/homepage";
 import type { PublicEventDatabaseRow } from "../src/lib/db/public-events";
+import type { D1Database } from "../src/types/cloudflare";
 
 class FakeStatement {
     values: unknown[] = [];
 
-    constructor(readonly sql: string) {}
+    constructor(
+        readonly sql: string,
+        private readonly results: PublicEventDatabaseRow[]
+    ) {}
 
     bind(...values: unknown[]) {
         this.values = values;
         return this;
     }
+
+    async all() {
+        return { success: true, results: this.results, meta: {} };
+    }
 }
 
 class FakeDatabase {
     prepared: FakeStatement[] = [];
-    batchResults: PublicEventDatabaseRow[][] = [];
+    results: PublicEventDatabaseRow[] = [];
 
     prepare(sql: string) {
-        const statement = new FakeStatement(sql);
+        const statement = new FakeStatement(sql, this.results);
         this.prepared.push(statement);
         return statement;
-    }
-
-    async batch(statements: FakeStatement[]) {
-        return statements.map((_, index) => ({
-            success: true,
-            results: this.batchResults[index] ?? [],
-            meta: {}
-        }));
     }
 }
 
@@ -68,15 +67,13 @@ function event(id: number): PublicEventDatabaseRow {
     };
 }
 
-test("首页发现查询返回最多五条进行中优先候选, 并将今日活动限制为 10 条", async () => {
+test("首页发现只查询最多五条进行中优先候选", async () => {
     const db = new FakeDatabase();
-    const featuredEvents = [event(1), event(2), event(3)];
-    const today = [featuredEvents[0], event(4)];
-    db.batchResults = [featuredEvents, today];
+    db.results = [event(1), event(2), event(3)];
 
     const result = await listHomepageDiscovery(asD1(db), "11");
 
-    assert.equal(db.prepared.length, 2);
+    assert.equal(db.prepared.length, 1);
     const featuredSql = db.prepared[0]?.sql ?? "";
     assert.match(featuredSql, /AND NOT \(/);
     assert.match(featuredSql, /events\.start_date <= date\('now', '\+8 hours', '\+14 days'\)/);
@@ -87,26 +84,11 @@ test("首页发现查询返回最多五条进行中优先候选, 并将今日活
     assert.match(featuredSql, /events\.start_time <= time\('now', '\+8 hours'\)/);
     assert.match(featuredSql, /CASE events\.scale[\s\S]*END DESC,[\s\S]*events\.start_date ASC/);
     assert.match(featuredSql, /cover_url[\s\S]*DESC,[\s\S]*events\.id ASC\s+LIMIT 5\s*$/);
-    const todaySql = db.prepared[1]?.sql ?? "";
-    assert.match(todaySql, /events\.division_code LIKE \?/);
-    assert.match(todaySql, /events\.start_date <=/);
-    assert.match(todaySql, /events\.end_date >=/);
-    assert.match(todaySql, /ORDER BY CASE/);
-    assert.match(todaySql, /WHEN events\.start_date < date\('now', '\+8 hours'\) THEN 0/);
-    assert.match(todaySql, /WHEN events\.start_date = date\('now', '\+8 hours'\)/);
-    assert.match(todaySql, /CASE events\.scale/);
-    assert.match(todaySql, /events\.id ASC\s+LIMIT 10\s*$/);
-    assert.equal(todaySql.match(/\bLIMIT\b/g)?.length, 1);
-    assert.doesNotMatch(todaySql, /events\.end_time IS NOT NULL/);
+    assert.doesNotMatch(featuredSql, /today/);
     assert.deepEqual(db.prepared[0]?.values, ["published", "11%"]);
-    assert.deepEqual(db.prepared[1]?.values, ["published", "11%"]);
     assert.deepEqual(
         result.featuredEvents.map((item) => item.id),
         [1, 2, 3]
-    );
-    assert.deepEqual(
-        result.today.map((item) => item.id),
-        [1, 4]
     );
 });
 
@@ -115,12 +97,11 @@ test("首页发现可以固定同一次缓存加载使用的中国日期", async
 
     await listHomepageDiscovery(asD1(db), "11", "2026-08-01");
 
-    assert.equal(db.prepared.length, 2);
-    for (const statement of db.prepared) {
-        assert.match(statement.sql, /WITH cache_clock\(as_of_date\) AS \(VALUES \(\?\)\)/);
-        assert.match(statement.sql, /SELECT as_of_date FROM cache_clock/);
-        assert.deepEqual(statement.values, ["2026-08-01", "published", "11%"]);
-    }
+    assert.equal(db.prepared.length, 1);
+    const statement = db.prepared[0]!;
+    assert.match(statement.sql, /WITH cache_clock\(as_of_date\) AS \(VALUES \(\?\)\)/);
+    assert.match(statement.sql, /SELECT as_of_date FROM cache_clock/);
+    assert.deepEqual(statement.values, ["2026-08-01", "published", "11%"]);
     await assert.rejects(
         listHomepageDiscovery(asD1(new FakeDatabase()), "11", "2026-02-30"),
         /canonical date/

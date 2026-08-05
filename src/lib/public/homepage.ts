@@ -1,4 +1,4 @@
-import type { HomepageDiscovery, HomepagePopularity, PopularEvent } from "../db/homepage";
+import type { HomepageDiscovery, HomepagePopularity, RankedHomepageEvent } from "../db/homepage";
 import type { PublicEventRow as DatabasePublicEventRow } from "../db/public-events";
 import type { RegionOption } from "../divisions";
 import type { EventScale } from "../events/options";
@@ -14,6 +14,7 @@ export interface PublicFeaturedEvent {
     id: number;
     title: string;
     scale: EventScale;
+    division_code: string;
     start_date: string;
     end_date: string;
     start_time: string | null;
@@ -21,31 +22,39 @@ export interface PublicFeaturedEvent {
     cover_url: string | null;
 }
 
-export interface PublicPopularEvent {
+export interface PublicHomepageRankedEvent {
     id: number;
     title: string;
     division_code: string;
     start_date: string;
+    end_date: string;
+    start_time: string | null;
+    end_time: string | null;
+    admission_start_date: string | null;
+    admission_start_time: string | null;
     unique_visitors: number;
+}
+
+export interface PublicHomepageRankedScene {
+    local: PublicHomepageRankedEvent[];
+    nationwide: PublicHomepageRankedEvent[];
 }
 
 export interface PublicHomepagePopularity {
     window: PopularityWindow;
-    local: PublicPopularEvent[];
-    nationwide: PublicPopularEvent[];
+    unopened: PublicHomepageRankedScene;
+    unended: PublicHomepageRankedScene;
 }
 
 export type PublicEventRow = DatabasePublicEventRow;
 
 export interface PublicHomepageDiscovery {
     featuredEvents: PublicFeaturedEvent[];
-    today: PublicEventRow[];
 }
 
 export interface PublicHomepageData {
     division: PublicHomepageDivision;
     featuredEvents: PublicFeaturedEvent[];
-    today: PublicEventRow[];
     popularity: PublicHomepagePopularity;
 }
 
@@ -54,6 +63,7 @@ function toPublicFeaturedEvent(event: DatabasePublicEventRow): PublicFeaturedEve
         id: event.id,
         title: event.title,
         scale: event.scale,
+        division_code: event.division_code,
         start_date: event.start_date,
         end_date: event.end_date,
         start_time: event.start_time,
@@ -62,13 +72,27 @@ function toPublicFeaturedEvent(event: DatabasePublicEventRow): PublicFeaturedEve
     };
 }
 
-function toPublicPopularEvent(event: PopularEvent): PublicPopularEvent {
+function toPublicHomepageRankedEvent(event: RankedHomepageEvent): PublicHomepageRankedEvent {
     return {
         id: event.id,
         title: event.title,
         division_code: event.division_code,
         start_date: event.start_date,
+        end_date: event.end_date,
+        start_time: event.start_time,
+        end_time: event.end_time,
+        admission_start_date: event.admission_start_date,
+        admission_start_time: event.admission_start_time,
         unique_visitors: event.unique_visitors
+    };
+}
+
+function toPublicHomepageRankedScene(
+    scene: HomepagePopularity["unopened"]
+): PublicHomepageRankedScene {
+    return {
+        local: scene.local.map(toPublicHomepageRankedEvent),
+        nationwide: scene.nationwide.map(toPublicHomepageRankedEvent)
     };
 }
 
@@ -96,10 +120,7 @@ export function toPublicFeaturedEvents(
 }
 
 export function toPublicHomepageDiscovery(discovery: HomepageDiscovery): PublicHomepageDiscovery {
-    return {
-        featuredEvents: toPublicFeaturedEvents(discovery.featuredEvents),
-        today: discovery.today.map(toPublicEventRow)
-    };
+    return { featuredEvents: toPublicFeaturedEvents(discovery.featuredEvents) };
 }
 
 export function toPublicHomepagePopularity(
@@ -107,8 +128,8 @@ export function toPublicHomepagePopularity(
 ): PublicHomepagePopularity {
     return {
         window: popularity.window,
-        local: popularity.local.map(toPublicPopularEvent),
-        nationwide: popularity.nationwide.map(toPublicPopularEvent)
+        unopened: toPublicHomepageRankedScene(popularity.unopened),
+        unended: toPublicHomepageRankedScene(popularity.unended)
     };
 }
 

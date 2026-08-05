@@ -89,8 +89,8 @@ return jsonError("Unauthorized", 401);
 ### 2. Signatures
 
 - `GET /api/tags?q=<query>` -> `{ ok: true, data: { tags } }`.
-- `GET /api/popularity?city=<region>&trend=<3|7|30>` -> `{ ok: true, data: { popularity } }` with one local and one nationwide public ranking.
-- `GET /api/homepage?city=<region>&trend=<3|7|30>` -> `{ ok: true, data: { homepage } }` with one division, featured candidate list, today list, and popularity snapshot.
+- `GET /api/popularity?city=<region>&trend=<3|7|30>` -> `{ ok: true, data: { popularity } }`, where popularity is `{ window, unopened: { local, nationwide }, unended: { local, nationwide } }`.
+- `GET /api/homepage?city=<region>&trend=<3|7|30>` -> `{ ok: true, data: { homepage } }` with one division, one featured candidate list, and the complete four-list popularity snapshot.
 - `POST /api/submit` accepts `FormData` and returns `201 { ok: true, data: { id } }` after a pending insert.
 - Turnstile wrapper: `verifyTurnstile(token, secret, remoteIp?)` returns `{ success, errors }` or throws a setup/upstream error.
 - Turnstile reset event: unsuccessful AJAX submissions dispatch `turnstile-reset` on `#submit-form`; `Turnstile.svelte` clears its hidden token and calls `turnstile.reset(widgetId)`.
@@ -99,9 +99,9 @@ return jsonError("Unauthorized", 401);
 
 - Public APIs never redirect. They return JSON via `jsonOk` / `jsonError`.
 - The popularity API validates `city` with the shared region catalogue and accepts only the exact windows `3`, `7`, and `30`.
-- Popularity responses use the shared homepage public projection and expose only `id`, `title`, `division_code`, `start_date`, and `unique_visitors` for each event. They must never serialize `submitter_contact`, `source_url`, `tag_suggestions`, moderation fields, or an expanded `EventRecord` / `PopularEvent`.
+- Popularity responses use the shared homepage public projection. Each ranked event exposes only `id`, `title`, `division_code`, `start_date`, `end_date`, `start_time`, `end_time`, `admission_start_date`, `admission_start_time`, and non-negative integer `unique_visitors`. They must never serialize `scale`, `submitter_contact`, `source_url`, `tag_suggestions`, moderation fields, or an expanded D1 event row.
 - The homepage API applies the same strict `city` / `trend` validation, then runs `listHomepageDiscovery()` and `listHomepagePopularity()` as one all-or-nothing request. It never returns a partial new division snapshot.
-- Homepage responses use `toPublicHomepageData()` and explicit field projections. They expose only division labels, featured display fields, today row fields, and the public popularity DTO; they never serialize contact, source, suggestion, moderation, status, description, or complete D1 records.
+- Homepage responses use `toPublicHomepageData()` and explicit field projections. The featured DTO adds `division_code` so cache admission can bind every Hero candidate to the requested region; there is no `today` field. The response never serializes contact, source, suggestion, moderation, status, description, or complete D1 records.
 - `TURNSTILE_SECRET` is required for `POST /api/submit` but must not be committed to `wrangler.jsonc`; use `wrangler secret put TURNSTILE_SECRET` for deployed envs and `.dev.vars` for local dev.
 - `TURNSTILE_SITE_KEY` may be public and is declared in `wrangler.jsonc` vars.
 - `verifyTurnstile()` posts only to `https://challenges.cloudflare.com/turnstile/v0/siteverify` with `Content-Type: application/x-www-form-urlencoded`; the body contains `secret`, `response`, and optional `remoteip` from `CF-Connecting-IP`.
@@ -122,7 +122,7 @@ return jsonError("Unauthorized", 401);
 - Invalid or missing popularity `city` / `trend` -> 400 JSON.
 - Popularity D1/setup failure -> 500 JSON with a stable Chinese message; do not return the internal exception string.
 - Invalid or missing homepage `city` / `trend` -> 400 JSON.
-- Any homepage discovery/popularity D1 or runtime failure -> 500 `{ ok: false, error: "首页活动暂时无法加载，请稍后重试" }`; do not return partial data or the internal exception string.
+- Any homepage discovery/popularity D1 or runtime failure -> 500 `{ ok: false, error: "首页活动暂时无法加载, 请稍后重试" }`; do not return partial data or the internal exception string.
 
 ### 5. Good/Base/Bad Cases
 
@@ -130,8 +130,10 @@ return jsonError("Unauthorized", 401);
 - Good: `.dev.vars.example` declares `TURNSTILE_SECRET=` without a value; real local and deployed secrets remain outside version control.
 - Good: a failed AJAX response dispatches `turnstile-reset`, which clears the owned hidden field before resetting the widget ID.
 - Base: Astro dev may block curl form posts without an `Origin` header; include same-origin `Origin` when testing with curl.
-- Good: the homepage initial popularity props and `/api/popularity` response are produced by the same explicit field projection.
-- Bad: returning `{ ...event }` or a raw `PopularEvent[]` from the popularity API; inherited event fields include non-public submission data.
+- Good: the homepage initial popularity props, `/api/homepage`, and `/api/popularity` are produced by the same explicit nested projection, so all four lists share one window contract.
+- Base: any of the four lists may be empty while the response still contains both scenes and both scope keys.
+- Bad: returning `{ ...event }` or a raw `RankedHomepageEvent[]` from the popularity API; inherited fields include `scale` and future database additions outside the public contract.
+- Bad: returning discovery and popularity from separate region/window snapshots; the client must never commit a mixed homepage.
 - Bad: letting workerd internal Turnstile/TLS references escape to users as 400 validation errors.
 - Bad: adding a development bypass that accepts fake Turnstile tokens in application code.
 - Bad: enabling Turnstile's automatic response field while also rendering an application-owned hidden field; duplicate form keys make token ownership ambiguous.
@@ -143,9 +145,9 @@ return jsonError("Unauthorized", 401);
 - Assert the widget DOM action, explicit render action, disabled automatic response field, and failure reset event contract.
 - With a valid local Turnstile secret and network trust chain, a test submission writes `pending`.
 - If local workerd rejects the Turnstile TLS certificate chain, verify the route returns a clear 502 and document the environment limit.
-- Popularity invalid region/window checks return 400 JSON; valid requests return both lists and no non-display event fields.
+- Popularity invalid region/window checks return 400 JSON; valid requests return both scenes, all four list keys, the requested window, and no non-display event fields.
 - Popularity D1 failure returns the stable 500 envelope without leaking binding or SQL details.
-- Homepage invalid region/window checks return 400 JSON; valid requests return one unified public snapshot with no non-display event fields.
+- Homepage invalid region/window checks return 400 JSON; valid requests return one unified public snapshot with no `today` or non-display event fields.
 - Homepage failure in either underlying query returns the stable 500 envelope and no `data.homepage`.
 - `corepack pnpm lint`, `corepack pnpm exec tsc --noEmit`, and production build must pass.
 
@@ -163,6 +165,21 @@ for Turnstile upstream failures.
 
 ```ts
 return jsonError("Turnstile verification request failed", 502);
+```
+
+#### Wrong: serialize the database ranking type
+
+```ts
+return jsonOk({ popularity: await listHomepagePopularity(db, city, window) });
+```
+
+#### Correct: project the exact public contract
+
+```ts
+const popularity = toPublicHomepagePopularity(
+    await listHomepagePopularity(db, city, window)
+);
+return jsonOk({ popularity });
 ```
 
 ---

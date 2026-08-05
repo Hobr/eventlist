@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/design-system.md","reason":"首页 Flowbite/Tailwind 视觉、组件、地区快照与响应式合同"}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"D1 首页发现、匿名热度、日期时间与公开准入合同"}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"公开 DTO strict guard、规范键、TTL 与失效合同"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"首页与热门公开 API 的稳定响应和 all-or-nothing 错误合同"}

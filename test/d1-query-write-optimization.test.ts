@@ -186,6 +186,22 @@ function expectedPublicDetail(id = 42): PublicEventDetail {
     };
 }
 
+function expectedRankedEvent(id: number, visitors: number) {
+    return {
+        id,
+        title: `活动 ${id}`,
+        scale: "large",
+        division_code: "110101",
+        start_date: "2026-07-28",
+        end_date: "2026-07-29",
+        start_time: "09:00",
+        end_time: "18:00",
+        admission_start_date: "2026-07-20",
+        admission_start_time: "09:30",
+        unique_visitors: visitors
+    };
+}
+
 function assertJsonRoundTrip(value: unknown) {
     assert.deepEqual(JSON.parse(JSON.stringify(value)), value);
 }
@@ -229,17 +245,10 @@ test("public loaders whitelist list, homepage, popularity, and detail DTOs", asy
     assert.deepEqual(detail, expectedPublicDetail(2));
 
     const discoveryDb = new FakeDatabase();
-    discoveryDb.batchResults = [
-        { success: true, results: [databaseEvent(3)], meta: {} },
-        { success: true, results: [databaseEvent(4)], meta: {} }
-    ];
+    discoveryDb.allResult.results = [databaseEvent(3)];
     const discovery = await listHomepageDiscovery(asD1(discoveryDb), "110101");
-    assert.deepEqual(discovery, {
-        featuredEvents: [expectedPublicRow(3)],
-        today: [expectedPublicRow(4)]
-    });
-    assert.equal(discoveryDb.batches.length, 1);
-    assert.equal(discoveryDb.batches[0]?.length, 2);
+    assert.deepEqual(discovery, { featuredEvents: [expectedPublicRow(3)] });
+    assert.equal(discoveryDb.batches.length, 0);
 
     const popularityDb = new FakeDatabase();
     popularityDb.batchResults = [
@@ -252,16 +261,32 @@ test("public loaders whitelist list, homepage, popularity, and detail DTOs", asy
             success: true,
             results: [{ ...databaseEvent(6), unique_visitors: 34 }],
             meta: {}
+        },
+        {
+            success: true,
+            results: [{ ...databaseEvent(7), unique_visitors: 56 }],
+            meta: {}
+        },
+        {
+            success: true,
+            results: [{ ...databaseEvent(8), unique_visitors: 78 }],
+            meta: {}
         }
     ];
     const popularity = await listHomepagePopularity(asD1(popularityDb), "110101", 7);
     assert.deepEqual(popularity, {
         window: 7,
-        local: [{ ...expectedPublicRow(5), unique_visitors: 12 }],
-        nationwide: [{ ...expectedPublicRow(6), unique_visitors: 34 }]
+        unopened: {
+            local: [expectedRankedEvent(5, 12)],
+            nationwide: [expectedRankedEvent(6, 34)]
+        },
+        unended: {
+            local: [expectedRankedEvent(7, 56)],
+            nationwide: [expectedRankedEvent(8, 78)]
+        }
     });
     assert.equal(popularityDb.batches.length, 1);
-    assert.equal(popularityDb.batches[0]?.length, 2);
+    assert.equal(popularityDb.batches[0]?.length, 4);
 
     for (const value of [page, detail, discovery, popularity]) {
         assertJsonRoundTrip(value);
@@ -289,22 +314,23 @@ test("public SQL uses explicit safe projections and detail filters public status
     assert.match(listSql, /ORDER BY events\.end_date DESC, events\.id DESC/);
 
     const discoveryDb = new FakeDatabase();
-    discoveryDb.batchResults = [
-        { success: true, results: [], meta: {} },
-        { success: true, results: [], meta: {} }
-    ];
     await listHomepageDiscovery(asD1(discoveryDb), "110101");
 
     const popularityDb = new FakeDatabase();
     popularityDb.batchResults = [
+        { success: true, results: [], meta: {} },
+        { success: true, results: [], meta: {} },
         { success: true, results: [], meta: {} },
         { success: true, results: [], meta: {} }
     ];
     await listHomepagePopularity(asD1(popularityDb), "110101", 7);
     for (const statement of popularityDb.prepared) {
         assert.match(statement.sql, /WHERE last_seen_date BETWEEN date\('now', '\+8 hours', \?\)/);
-        assert.match(statement.sql, /events\.start_date ASC/);
+        assert.match(statement.sql, /LEFT JOIN recent_visitors/);
+        assert.match(statement.sql, /COALESCE\(recent_visitors\.unique_visitors, 0\)/);
     }
+    assert.match(popularityDb.prepared[0]?.sql ?? "", /events\.admission_start_date ASC/);
+    assert.match(popularityDb.prepared[2]?.sql ?? "", /events\.start_date ASC/);
 
     const detailDb = new FakeDatabase();
     await getPublicEvent(asD1(detailDb), 42);

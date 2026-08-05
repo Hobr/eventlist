@@ -20,7 +20,8 @@ import type {
     PublicFeaturedEvent,
     PublicHomepageDiscovery,
     PublicHomepagePopularity,
-    PublicPopularEvent
+    PublicHomepageRankedEvent,
+    PublicHomepageRankedScene
 } from "../public/homepage";
 import { openPublicDataCacheStore } from "./cloudflare";
 import {
@@ -145,6 +146,7 @@ function isPublicFeaturedEvent(value: unknown): value is PublicFeaturedEvent {
             "id",
             "title",
             "scale",
+            "division_code",
             "start_date",
             "end_date",
             "start_time",
@@ -155,6 +157,8 @@ function isPublicFeaturedEvent(value: unknown): value is PublicFeaturedEvent {
         typeof event.title === "string" &&
         typeof event.scale === "string" &&
         isEventScale(event.scale) &&
+        typeof event.division_code === "string" &&
+        isRegionCode(event.division_code) &&
         typeof event.start_date === "string" &&
         isCanonicalDate(event.start_date) &&
         typeof event.end_date === "string" &&
@@ -165,18 +169,48 @@ function isPublicFeaturedEvent(value: unknown): value is PublicFeaturedEvent {
     );
 }
 
-function isPublicPopularEvent(value: unknown): value is PublicPopularEvent {
+function isPublicHomepageRankedEvent(value: unknown): value is PublicHomepageRankedEvent {
     if (!value || typeof value !== "object" || Array.isArray(value)) return false;
     const event = value as Record<string, unknown>;
     return (
-        hasOnlyKeys(event, ["id", "title", "division_code", "start_date", "unique_visitors"]) &&
+        hasOnlyKeys(event, [
+            "id",
+            "title",
+            "division_code",
+            "start_date",
+            "end_date",
+            "start_time",
+            "end_time",
+            "admission_start_date",
+            "admission_start_time",
+            "unique_visitors"
+        ]) &&
         isPositiveSafeInteger(event.id) &&
         typeof event.title === "string" &&
         typeof event.division_code === "string" &&
         isRegionCode(event.division_code) &&
         typeof event.start_date === "string" &&
         isCanonicalDate(event.start_date) &&
+        typeof event.end_date === "string" &&
+        isCanonicalDate(event.end_date) &&
+        isNullableCanonicalTime(event.start_time) &&
+        isNullableCanonicalTime(event.end_time) &&
+        isNullableCanonicalDate(event.admission_start_date) &&
+        isNullableCanonicalTime(event.admission_start_time) &&
+        (event.admission_start_time === null || event.admission_start_date !== null) &&
         isNonNegativeSafeInteger(event.unique_visitors)
+    );
+}
+
+function isPublicHomepageRankedScene(value: unknown): value is PublicHomepageRankedScene {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const scene = value as Record<string, unknown>;
+    return (
+        hasOnlyKeys(scene, ["local", "nationwide"]) &&
+        Array.isArray(scene.local) &&
+        scene.local.every(isPublicHomepageRankedEvent) &&
+        Array.isArray(scene.nationwide) &&
+        scene.nationwide.every(isPublicHomepageRankedEvent)
     );
 }
 
@@ -184,11 +218,9 @@ export function isPublicHomepageDiscovery(value: unknown): value is PublicHomepa
     if (!value || typeof value !== "object" || Array.isArray(value)) return false;
     const discovery = value as Record<string, unknown>;
     return (
-        hasOnlyKeys(discovery, ["featuredEvents", "today"]) &&
+        hasOnlyKeys(discovery, ["featuredEvents"]) &&
         Array.isArray(discovery.featuredEvents) &&
-        discovery.featuredEvents.every(isPublicFeaturedEvent) &&
-        Array.isArray(discovery.today) &&
-        discovery.today.every(isPublicEventRow)
+        discovery.featuredEvents.every(isPublicFeaturedEvent)
     );
 }
 
@@ -196,12 +228,10 @@ export function isPublicHomepagePopularity(value: unknown): value is PublicHomep
     if (!value || typeof value !== "object" || Array.isArray(value)) return false;
     const popularity = value as Record<string, unknown>;
     return (
-        hasOnlyKeys(popularity, ["window", "local", "nationwide"]) &&
+        hasOnlyKeys(popularity, ["window", "unopened", "unended"]) &&
         (popularity.window === 3 || popularity.window === 7 || popularity.window === 30) &&
-        Array.isArray(popularity.local) &&
-        popularity.local.every(isPublicPopularEvent) &&
-        Array.isArray(popularity.nationwide) &&
-        popularity.nationwide.every(isPublicPopularEvent)
+        isPublicHomepageRankedScene(popularity.unopened) &&
+        isPublicHomepageRankedScene(popularity.unended)
     );
 }
 
@@ -402,7 +432,7 @@ export async function loadCachedHomepageDiscovery(
 
     const isRequestedDiscovery = (value: unknown): value is PublicHomepageDiscovery =>
         isPublicHomepageDiscovery(value) &&
-        value.today.every((event) =>
+        value.featuredEvents.every((event) =>
             matchesDivisionCode(event.division_code, options.divisionCode)
         );
 
@@ -439,7 +469,10 @@ export async function loadCachedHomepagePopularity(
     const isRequestedPopularity = (value: unknown): value is PublicHomepagePopularity =>
         isPublicHomepagePopularity(value) &&
         value.window === options.window &&
-        value.local.every((event) =>
+        value.unopened.local.every((event) =>
+            matchesDivisionCode(event.division_code, options.divisionCode)
+        ) &&
+        value.unended.local.every((event) =>
             matchesDivisionCode(event.division_code, options.divisionCode)
         );
 

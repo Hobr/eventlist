@@ -581,10 +581,6 @@ test("date-sensitive public queries use the cache key's captured China date", as
             [1]
         );
         assert.deepEqual(
-            discovery.today.map(({ id }) => id),
-            [2]
-        );
-        assert.deepEqual(
             discovery.featuredEvents.map(({ id }) => id),
             [2, 3]
         );
@@ -630,13 +626,29 @@ test("seeded indexed reads preserve legacy listing, pagination, and popularity s
 
         for (const window of [3, 7, 30] as const) {
             const current = await listHomepagePopularity(database.binding, "3101", window);
+            const expectedLocal = legacyPopularity(database, window, "3101");
+            const expectedNationwide = legacyPopularity(database, window);
             assert.deepEqual(
-                current.local.map(({ id, unique_visitors }) => ({ id, unique_visitors })),
-                legacyPopularity(database, window, "3101")
+                current.unended.local
+                    .slice(0, expectedLocal.length)
+                    .map(({ id, unique_visitors }) => ({ id, unique_visitors })),
+                expectedLocal
             );
             assert.deepEqual(
-                current.nationwide.map(({ id, unique_visitors }) => ({ id, unique_visitors })),
-                legacyPopularity(database, window)
+                current.unended.nationwide
+                    .slice(0, expectedNationwide.length)
+                    .map(({ id, unique_visitors }) => ({ id, unique_visitors })),
+                expectedNationwide
+            );
+            assert.ok(
+                current.unended.local
+                    .slice(expectedLocal.length)
+                    .every(({ unique_visitors }) => unique_visitors === 0)
+            );
+            assert.ok(
+                current.unended.nationwide
+                    .slice(expectedNationwide.length)
+                    .every(({ unique_visitors }) => unique_visitors === 0)
             );
         }
     } finally {

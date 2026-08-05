@@ -1,13 +1,14 @@
 import { isRegionCode } from "../divisions";
-import { isEventScale, isEventType } from "../events/options";
+import { isCanonicalDate } from "../events/datetime";
+import { isEventScale } from "../events/options";
 import { isPopularityWindow, type PopularityWindow } from "../events/popularity";
 import type {
-    PublicEventRow,
     PublicFeaturedEvent,
     PublicHomepageData,
     PublicHomepageDivision,
     PublicHomepagePopularity,
-    PublicPopularEvent
+    PublicHomepageRankedEvent,
+    PublicHomepageRankedScene
 } from "./homepage";
 
 export const HOMEPAGE_DATA_EVENT = "eventlist:homepage-data";
@@ -27,12 +28,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]) {
+    const actualKeys = Object.keys(value);
+    return actualKeys.length === keys.length && keys.every((key) => actualKeys.includes(key));
+}
+
 function isNullableString(value: unknown): value is string | null {
     return value === null || typeof value === "string";
 }
 
+function isNullableCanonicalDate(value: unknown): value is string | null {
+    return value === null || (typeof value === "string" && isCanonicalDate(value));
+}
+
+function isNullableCanonicalTime(value: unknown): value is string | null {
+    return (
+        value === null || (typeof value === "string" && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value))
+    );
+}
+
 function readHomepageDivision(value: unknown): PublicHomepageDivision | null {
-    if (!isRecord(value)) return null;
+    if (!isRecord(value) || !hasOnlyKeys(value, ["code", "name", "label"])) return null;
     const { code, name, label } = value;
     if (
         typeof code !== "string" ||
@@ -47,17 +63,47 @@ function readHomepageDivision(value: unknown): PublicHomepageDivision | null {
 }
 
 function readFeaturedEvent(value: unknown): PublicFeaturedEvent | null {
-    if (!isRecord(value)) return null;
-    const { id, title, scale, start_date, end_date, start_time, end_time, cover_url } = value;
+    if (
+        !isRecord(value) ||
+        !hasOnlyKeys(value, [
+            "id",
+            "title",
+            "scale",
+            "division_code",
+            "start_date",
+            "end_date",
+            "start_time",
+            "end_time",
+            "cover_url"
+        ])
+    ) {
+        return null;
+    }
+    const {
+        id,
+        title,
+        scale,
+        division_code,
+        start_date,
+        end_date,
+        start_time,
+        end_time,
+        cover_url
+    } = value;
     if (
         !Number.isSafeInteger(id) ||
+        (id as number) <= 0 ||
         typeof title !== "string" ||
         typeof scale !== "string" ||
         !isEventScale(scale) ||
+        typeof division_code !== "string" ||
+        !isRegionCode(division_code) ||
         typeof start_date !== "string" ||
+        !isCanonicalDate(start_date) ||
         typeof end_date !== "string" ||
-        !isNullableString(start_time) ||
-        !isNullableString(end_time) ||
+        !isCanonicalDate(end_date) ||
+        !isNullableCanonicalTime(start_time) ||
+        !isNullableCanonicalTime(end_time) ||
         !isNullableString(cover_url)
     ) {
         return null;
@@ -67,6 +113,7 @@ function readFeaturedEvent(value: unknown): PublicFeaturedEvent | null {
         id: id as number,
         title,
         scale,
+        division_code,
         start_date,
         end_date,
         start_time,
@@ -75,38 +122,53 @@ function readFeaturedEvent(value: unknown): PublicFeaturedEvent | null {
     };
 }
 
-function readEventRow(value: unknown): PublicEventRow | null {
-    if (!isRecord(value)) return null;
+function readRankedEvent(value: unknown): PublicHomepageRankedEvent | null {
+    if (
+        !isRecord(value) ||
+        !hasOnlyKeys(value, [
+            "id",
+            "title",
+            "division_code",
+            "start_date",
+            "end_date",
+            "start_time",
+            "end_time",
+            "admission_start_date",
+            "admission_start_time",
+            "unique_visitors"
+        ])
+    ) {
+        return null;
+    }
     const {
         id,
         title,
-        type,
-        scale,
         division_code,
-        venue,
         start_date,
         end_date,
         start_time,
         end_time,
-        cover_url,
-        tags
+        admission_start_date,
+        admission_start_time,
+        unique_visitors
     } = value;
     if (
         !Number.isSafeInteger(id) ||
+        (id as number) <= 0 ||
         typeof title !== "string" ||
-        typeof type !== "string" ||
-        !isEventType(type) ||
-        typeof scale !== "string" ||
-        !isEventScale(scale) ||
         typeof division_code !== "string" ||
         !isRegionCode(division_code) ||
-        typeof venue !== "string" ||
         typeof start_date !== "string" ||
+        !isCanonicalDate(start_date) ||
         typeof end_date !== "string" ||
-        !isNullableString(start_time) ||
-        !isNullableString(end_time) ||
-        !isNullableString(cover_url) ||
-        !isNullableString(tags)
+        !isCanonicalDate(end_date) ||
+        !isNullableCanonicalTime(start_time) ||
+        !isNullableCanonicalTime(end_time) ||
+        !isNullableCanonicalDate(admission_start_date) ||
+        !isNullableCanonicalTime(admission_start_time) ||
+        (admission_start_time !== null && admission_start_date === null) ||
+        !Number.isSafeInteger(unique_visitors) ||
+        (unique_visitors as number) < 0
     ) {
         return null;
     }
@@ -114,40 +176,14 @@ function readEventRow(value: unknown): PublicEventRow | null {
     return {
         id: id as number,
         title,
-        type,
-        scale,
         division_code,
-        venue,
         start_date,
         end_date,
         start_time,
         end_time,
-        cover_url,
-        tags
-    };
-}
-
-function readPopularEvent(value: unknown): PublicPopularEvent | null {
-    if (!isRecord(value)) return null;
-    const { id, title, division_code, start_date, unique_visitors } = value;
-    if (
-        !Number.isSafeInteger(id) ||
-        typeof title !== "string" ||
-        typeof division_code !== "string" ||
-        !isRegionCode(division_code) ||
-        typeof start_date !== "string" ||
-        typeof unique_visitors !== "number" ||
-        !Number.isFinite(unique_visitors)
-    ) {
-        return null;
-    }
-
-    return {
-        id: id as number,
-        title,
-        division_code,
-        start_date,
-        unique_visitors
+        admission_start_date,
+        admission_start_time,
+        unique_visitors: unique_visitors as number
     };
 }
 
@@ -162,23 +198,29 @@ function readArray<T>(value: unknown, readItem: (item: unknown) => T | null): T[
     return items;
 }
 
+function readRankedScene(value: unknown): PublicHomepageRankedScene | null {
+    if (!isRecord(value) || !hasOnlyKeys(value, ["local", "nationwide"])) return null;
+    const local = readArray(value.local, readRankedEvent);
+    const nationwide = readArray(value.nationwide, readRankedEvent);
+    return local && nationwide ? { local, nationwide } : null;
+}
+
 export function readPublicHomepagePopularity(
     value: unknown,
     expectedWindow: PopularityWindow
 ): PublicHomepagePopularity | null {
-    if (!isRecord(value)) return null;
-    const { window, local, nationwide } = value;
-    if (!isPopularityWindow(window) || window !== expectedWindow) return null;
+    if (
+        !isRecord(value) ||
+        !hasOnlyKeys(value, ["window", "unopened", "unended"]) ||
+        !isPopularityWindow(value.window) ||
+        value.window !== expectedWindow
+    ) {
+        return null;
+    }
 
-    const parsedLocal = readArray(local, readPopularEvent);
-    const parsedNationwide = readArray(nationwide, readPopularEvent);
-    if (!parsedLocal || !parsedNationwide) return null;
-
-    return {
-        window,
-        local: parsedLocal,
-        nationwide: parsedNationwide
-    };
+    const unopened = readRankedScene(value.unopened);
+    const unended = readRankedScene(value.unended);
+    return unopened && unended ? { window: value.window, unopened, unended } : null;
 }
 
 export function readPopularityResponse(
@@ -196,17 +238,16 @@ export function readHomepageResponse(
 ): PublicHomepageData | null {
     if (!isRecord(body) || body.ok !== true || !isRecord(body.data)) return null;
     const value = body.data.homepage;
-    if (!isRecord(value)) return null;
-
-    const division = readHomepageDivision(value.division);
-    const featuredEvents = readArray(value.featuredEvents, readFeaturedEvent);
-    const today = readArray(value.today, readEventRow);
-    const popularity = readPublicHomepagePopularity(value.popularity, expectedWindow);
-    if (!division || division.code !== expectedCity || !featuredEvents || !today || !popularity) {
+    if (!isRecord(value) || !hasOnlyKeys(value, ["division", "featuredEvents", "popularity"])) {
         return null;
     }
 
-    return { division, featuredEvents, today, popularity };
+    const division = readHomepageDivision(value.division);
+    const featuredEvents = readArray(value.featuredEvents, readFeaturedEvent);
+    const popularity = readPublicHomepagePopularity(value.popularity, expectedWindow);
+    if (!division || division.code !== expectedCity || !featuredEvents || !popularity) return null;
+
+    return { division, featuredEvents, popularity };
 }
 
 export function homepagePopularityCacheKey(city: string, window: PopularityWindow) {

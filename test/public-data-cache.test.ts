@@ -488,27 +488,31 @@ const homepageDiscovery = {
             id: publicEventRow.id,
             title: publicEventRow.title,
             scale: publicEventRow.scale,
+            division_code: publicEventRow.division_code,
             start_date: publicEventRow.start_date,
             end_date: publicEventRow.end_date,
             start_time: publicEventRow.start_time,
             end_time: publicEventRow.end_time,
             cover_url: publicEventRow.cover_url
         }
-    ],
-    today: [publicEventRow]
+    ]
+};
+const homepageRankedEvent = {
+    id: 42,
+    title: "测试活动",
+    division_code: "110101",
+    start_date: "2026-08-01",
+    end_date: "2026-08-02",
+    start_time: "09:00",
+    end_time: "18:00",
+    admission_start_date: "2026-08-01",
+    admission_start_time: "10:00",
+    unique_visitors: 12
 };
 const homepagePopularity = {
     window: 7 as const,
-    local: [
-        {
-            id: 42,
-            title: "测试活动",
-            division_code: "110101",
-            start_date: "2026-08-01",
-            unique_visitors: 12
-        }
-    ],
-    nationwide: []
+    unopened: { local: [homepageRankedEvent], nationwide: [] },
+    unended: { local: [homepageRankedEvent], nationwide: [] }
 };
 const publicEventPage = {
     events: [publicEventRow],
@@ -943,7 +947,9 @@ test("homepage, popularity, and list guards enforce exact public DTO projections
     assert.equal(
         isPublicHomepageDiscovery({
             ...homepageDiscovery,
-            today: [{ ...publicEventRow, submitter_contact: "private@example.com" }]
+            featuredEvents: [
+                { ...homepageDiscovery.featuredEvents[0], submitter_contact: "private@example.com" }
+            ]
         }),
         false
     );
@@ -951,7 +957,15 @@ test("homepage, popularity, and list guards enforce exact public DTO projections
     assert.equal(
         isPublicHomepagePopularity({
             ...homepagePopularity,
-            local: [{ ...homepagePopularity.local[0], source_url: "https://private.example" }]
+            unopened: {
+                ...homepagePopularity.unopened,
+                local: [
+                    {
+                        ...homepagePopularity.unopened.local[0],
+                        source_url: "https://private.example"
+                    }
+                ]
+            }
         }),
         false
     );
@@ -968,7 +982,23 @@ test("homepage, popularity, and list guards enforce exact public DTO projections
     assert.equal(
         isPublicHomepageDiscovery({
             ...homepageDiscovery,
-            today: [{ ...publicEventRow, start_time: "9:00" }]
+            featuredEvents: [{ ...homepageDiscovery.featuredEvents[0], start_time: "9:00" }]
+        }),
+        false
+    );
+    assert.equal(
+        isPublicHomepagePopularity({
+            ...homepagePopularity,
+            unended: {
+                ...homepagePopularity.unended,
+                local: [
+                    {
+                        ...homepagePopularity.unended.local[0],
+                        admission_start_date: null,
+                        admission_start_time: "10:00"
+                    }
+                ]
+            }
         }),
         false
     );
@@ -1158,7 +1188,7 @@ test("route adapters reject cached DTOs that do not match the requested key iden
     const discoveryStore = new FakeCacheStore();
     discoveryStore.response = cacheResponse({
         ...homepageDiscovery,
-        today: [{ ...publicEventRow, division_code: "310101" }]
+        featuredEvents: [{ ...homepageDiscovery.featuredEvents[0], division_code: "310101" }]
     });
     let discoveryLoads = 0;
     const discovery = await loadCachedHomepageDiscovery({

@@ -1,13 +1,8 @@
 <script lang="ts">
     import { Spinner } from "flowbite-svelte";
-    import {
-        ArrowUpRightFromSquareOutline as ArrowUpRight,
-        MapPinOutline as MapPin
-    } from "flowbite-svelte-icons";
     import { onDestroy, onMount, untrack } from "svelte";
-    import { getDivisionLabel } from "../lib/divisions";
     import { POPULARITY_WINDOWS, type PopularityWindow } from "../lib/events/popularity";
-    import type { PublicHomepagePopularity, PublicPopularEvent } from "../lib/public/homepage";
+    import type { PublicHomepagePopularity } from "../lib/public/homepage";
     import {
         buildHomepageUrl,
         homepagePopularityCacheKey,
@@ -15,6 +10,7 @@
         readHomepageHistoryState,
         readPopularityResponse
     } from "../lib/public/homepage-client";
+    import HomepageRankedList from "./HomepageRankedList.svelte";
 
     interface Props {
         initialPopularity: PublicHomepagePopularity;
@@ -25,7 +21,6 @@
 
     let { initialPopularity, divisionCode, divisionLabel, initialError = "" }: Props = $props();
 
-    const numberFormat = new Intl.NumberFormat("zh-CN");
     const initialSnapshot = untrack(() => initialPopularity);
     const initialErrorMessage = untrack(() => initialError);
     const initialDivisionCode = untrack(() => divisionCode);
@@ -41,6 +36,7 @@
     let pendingWindow = $state<PopularityWindow | null>(null);
     let errorMessage = $state(initialErrorMessage);
     let hydrated = $state(false);
+    let mobileScene = $state<"unended" | "unopened">("unended");
     let requestController: AbortController | null = null;
     let requestSequence = 0;
     let lastPropSignature = snapshotSignature(
@@ -52,6 +48,7 @@
     onMount(() => {
         hydrated = true;
     });
+
     onDestroy(() => {
         requestController?.abort();
         requestSequence += 1;
@@ -86,12 +83,17 @@
         snapshot: PublicHomepagePopularity,
         snapshotError: string
     ) {
-        const eventSignature = [snapshot.local, snapshot.nationwide]
+        const eventSignature = [
+            snapshot.unopened.local,
+            snapshot.unopened.nationwide,
+            snapshot.unended.local,
+            snapshot.unended.nationwide
+        ]
             .map((events) =>
                 events
                     .map(
                         (event) =>
-                            `${event.id}:${event.title}:${event.division_code}:${event.start_date}:${event.unique_visitors}`
+                            `${event.id}:${event.title}:${event.division_code}:${event.start_date}:${event.admission_start_date}:${event.unique_visitors}`
                     )
                     .join(",")
             )
@@ -104,12 +106,12 @@
             city: divisionCode,
             trend: String(trend)
         });
-        return `/?${searchParams.toString()}#popular`;
+        return `/?${searchParams.toString()}#intent-feed`;
     }
 
     function updateUrl(city: string, trend: PopularityWindow) {
         const url = buildHomepageUrl(new URL(window.location.href), city, trend);
-        url.hash = "popular";
+        url.hash = "intent-feed";
         const currentState = readHomepageHistoryState(history.state);
         const nextState = mergeHomepageHistoryState(history.state, {
             city,
@@ -169,12 +171,12 @@
                 const message =
                     body && typeof body === "object" && "error" in body
                         ? String(body.error)
-                        : "热门活动加载失败, 请稍后重试";
+                        : "活动榜单加载失败, 请稍后重试";
                 throw new Error(message);
             }
 
             const nextPopularity = readPopularityResponse(body, trend);
-            if (!nextPopularity) throw new Error("热门活动返回内容无效, 请稍后重试");
+            if (!nextPopularity) throw new Error("活动榜单返回内容无效, 请稍后重试");
             if (requestId !== requestSequence || requestCity !== divisionCode) return;
 
             cache.set(cacheKey, nextPopularity);
@@ -185,7 +187,7 @@
         } catch (error) {
             if (controller.signal.aborted || requestId !== requestSequence) return;
             pendingWindow = null;
-            errorMessage = error instanceof Error ? error.message : "热门活动加载失败, 请稍后重试";
+            errorMessage = error instanceof Error ? error.message : "活动榜单加载失败, 请稍后重试";
         } finally {
             if (requestController === controller) requestController = null;
         }
@@ -211,75 +213,9 @@
     }
 </script>
 
-{#snippet popularList(
-    headingId: string,
-    title: string,
-    scope: string,
-    events: PublicPopularEvent[]
-)}
-    <section aria-labelledby={headingId} class="min-w-0 border-t border-border/80 pt-5">
-        <header class="flex items-end justify-between gap-4 pb-3">
-            <div class="min-w-0">
-                <h3 id={headingId} class="text-lg font-black text-foreground">{title}</h3>
-                <p class="mt-1 text-xs text-muted">{scope}</p>
-            </div>
-        </header>
-
-        {#if events.length > 0}
-            <ol class="divide-y divide-border/75">
-                {#each events as event, index (event.id)}
-                    <li>
-                        <a
-                            href={`/events/${event.id}`}
-                            class="group grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 py-3 transition-[transform,background-color] duration-300 ease-motion hover:translate-x-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
-                        >
-                            <span class="font-mono text-lg font-black text-primary">
-                                {String(index + 1).padStart(2, "0")}
-                            </span>
-                            <span class="min-w-0">
-                                <strong
-                                    class="block truncate text-sm text-foreground transition-colors duration-300 ease-motion group-hover:text-primary sm:text-base"
-                                >
-                                    {event.title}
-                                </strong>
-                                <span
-                                    class="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted"
-                                >
-                                    <MapPin class="size-3.5 shrink-0" aria-hidden="true" />
-                                    <span class="truncate">
-                                        {getDivisionLabel(event.division_code) ?? "未知地区"}
-                                    </span>
-                                    <span class="shrink-0">{event.start_date}</span>
-                                </span>
-                            </span>
-                            <span class="flex shrink-0 items-center gap-2 text-right">
-                                <span>
-                                    <strong class="block font-mono text-sm text-foreground">
-                                        {numberFormat.format(event.unique_visitors)}
-                                    </strong>
-                                    <span class="block text-[0.65rem] text-muted">热度</span>
-                                </span>
-                                <ArrowUpRight
-                                    class="size-4 text-muted transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
-                                    aria-hidden="true"
-                                />
-                            </span>
-                        </a>
-                    </li>
-                {/each}
-            </ol>
-        {:else}
-            <div class="border-t border-border py-8">
-                <p class="text-sm font-semibold text-muted-foreground">暂无足够浏览数据</p>
-                <p class="mt-1 text-xs text-muted">详情页产生访问后会显示排行</p>
-            </div>
-        {/if}
-    </section>
-{/snippet}
-
 <section
-    id="popular"
-    aria-labelledby="popular-heading"
+    id="intent-feed"
+    aria-labelledby="intent-feed-heading"
     data-reveal
     class="scroll-mt-28 py-20 sm:py-24"
 >
@@ -287,8 +223,8 @@
         class="flex flex-col gap-5 border-t border-border/80 pt-6 sm:flex-row sm:items-end sm:justify-between"
     >
         <div>
-            <h2 id="popular-heading" class="mt-3 text-3xl font-black text-foreground sm:text-4xl">
-                热门活动
+            <h2 id="intent-feed-heading" class="text-3xl font-black text-foreground sm:text-4xl">
+                活动发现
             </h2>
         </div>
         <div
@@ -299,11 +235,11 @@
             {#each POPULARITY_WINDOWS as trend, trendIndex}
                 {@const selected = popularity.window === trend}
                 <a
-                    id={`popular-window-${trend}`}
+                    id={`intent-window-${trend}`}
                     href={trendHref(trend)}
                     role="tab"
                     aria-selected={selected}
-                    aria-controls="popular-results-panel"
+                    aria-controls="intent-results"
                     aria-busy={pendingWindow === trend}
                     tabindex={hydrated && !selected ? -1 : 0}
                     class:bg-primary={selected}
@@ -318,7 +254,7 @@
                         <Spinner
                             size="4"
                             class="size-3.5"
-                            aria-label={`正在加载近 ${trend} 日热门活动`}
+                            aria-label={`正在加载近 ${trend} 日活动榜单`}
                         />
                     {/if}
                     {trend} 日
@@ -337,24 +273,97 @@
     {/if}
 
     <div
-        id="popular-results-panel"
-        role="tabpanel"
-        aria-labelledby={`popular-window-${popularity.window}`}
+        class:pointer-events-none={!hydrated}
+        class:invisible={!hydrated}
+        class="mt-8 grid h-10 grid-cols-2 rounded-full bg-surface-subtle p-1 lg:hidden"
+        role="group"
+        aria-label="活动场景"
+        aria-hidden={!hydrated}
+    >
+        <button
+            type="button"
+            aria-pressed={mobileScene === "unended"}
+            tabindex={hydrated ? 0 : -1}
+            class:bg-primary={mobileScene === "unended"}
+            class:text-primary-foreground={mobileScene === "unended"}
+            class:text-muted-foreground={mobileScene !== "unended"}
+            class="rounded-full px-3 text-sm font-bold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            onclick={() => (mobileScene = "unended")}
+        >
+            未结束
+        </button>
+        <button
+            type="button"
+            aria-pressed={mobileScene === "unopened"}
+            tabindex={hydrated ? 0 : -1}
+            class:bg-primary={mobileScene === "unopened"}
+            class:text-primary-foreground={mobileScene === "unopened"}
+            class:text-muted-foreground={mobileScene !== "unopened"}
+            class="rounded-full px-3 text-sm font-bold focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+            onclick={() => (mobileScene = "unopened")}
+        >
+            未开票
+        </button>
+    </div>
+
+    <div
+        id="intent-results"
         aria-live="polite"
         aria-busy={pendingWindow !== null}
-        class="mt-10 grid gap-12 lg:grid-cols-2"
+        class="mt-10 grid gap-14 lg:grid-cols-2 lg:gap-0"
     >
-        {@render popularList(
-            "local-popular-heading",
-            "本地热门",
-            `${divisionLabel}, 近 ${popularity.window} 日`,
-            popularity.local
-        )}
-        {@render popularList(
-            "nationwide-popular-heading",
-            "全国热门",
-            `全国范围, 近 ${popularity.window} 日`,
-            popularity.nationwide
-        )}
+        <section
+            aria-labelledby="unended-heading"
+            class:hidden={hydrated && mobileScene !== "unended"}
+            class="order-1 min-w-0 lg:order-2 lg:block lg:border-l lg:border-border/80 lg:pl-10"
+        >
+            <header class="mb-8">
+                <h3 id="unended-heading" class="text-2xl font-black text-foreground">未结束</h3>
+                <p class="mt-2 text-sm text-muted-foreground">正在进行和即将开始</p>
+            </header>
+            <div class="grid gap-10">
+                <HomepageRankedList
+                    headingId="unended-local-heading"
+                    title="本地热门"
+                    scope={`${divisionLabel}, 近 ${popularity.window} 日`}
+                    scene="unended"
+                    events={popularity.unended.local}
+                />
+                <HomepageRankedList
+                    headingId="unended-nationwide-heading"
+                    title="全国热门"
+                    scope={`全国, 近 ${popularity.window} 日`}
+                    scene="unended"
+                    events={popularity.unended.nationwide}
+                />
+            </div>
+        </section>
+
+        <section
+            aria-labelledby="unopened-heading"
+            class:hidden={hydrated && mobileScene !== "unopened"}
+            class="order-2 min-w-0 lg:order-1 lg:block lg:pr-10"
+        >
+            <header class="mb-8">
+                <h3 id="unopened-heading" class="text-2xl font-black text-foreground">未开票</h3>
+                <p class="mt-2 text-sm text-muted-foreground">未来 14 日内开始售票</p>
+            </header>
+            <div class="grid gap-10">
+                <HomepageRankedList
+                    headingId="unopened-local-heading"
+                    title="本地热门"
+                    scope={`${divisionLabel}, 近 ${popularity.window} 日`}
+                    scene="unopened"
+                    events={popularity.unopened.local}
+                />
+                <HomepageRankedList
+                    headingId="unopened-nationwide-heading"
+                    title="全国热门"
+                    scope={`全国, 近 ${popularity.window} 日`}
+                    scene="unopened"
+                    events={popularity.unopened.nationwide}
+                />
+            </div>
+        </section>
     </div>
 </section>

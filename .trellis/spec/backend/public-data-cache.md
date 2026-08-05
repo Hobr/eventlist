@@ -32,8 +32,9 @@
 - `match` 异常、非 2xx、损坏 envelope 或 DTO guard 失败按 miss 处理；`put` 异常返回 `error`，不得改变原 D1 成功结果；非法或已过期 envelope 返回 `skipped`。
 - Cache-Tag 只能来自代码常量，必须是去重后的 printable ASCII。固定 scope tag 为 `eventlist-homepage`、`eventlist-popularity`、`eventlist-tags`、`eventlist-detail`、`eventlist-sitemap`、`eventlist-list`；不得包含用户输入、原始查询字符串、secret 或 Unicode。
 - `event-taxonomy` 是无参数的公开 DTO 资源，复用 `tags` scope、`eventlist-tags` Cache-Tag 和标签/公开活动变更失效路径；其 payload 只包含规范标签、已知类型/规模代码及非零 `event_count`，fresh/normal 为 30 分钟、故障兜底为 48 小时。
-- 缓存值只能使用逐字段公开 DTO，不得保存投稿联系方式、建议标签、驳回原因、审计数据、访客键或完整管理记录。
-- 路由 DTO guard 除逐字段校验外，还必须把 payload 身份绑定到规范键：详情 ID、热门窗口与本地地区、列表页码与 pageSize 不匹配时按 miss 回源；首页今日活动必须属于请求地区。不得只验证 DTO 形状后接受其他键的合法对象。
+- 缓存值只能使用逐字段公开 DTO, 不得保存投稿联系方式, 建议标签, 驳回原因, 审计数据, 访客键或完整管理记录. `home-discovery` 只包含 `{ featuredEvents }`; `popularity` 必须是 `{ window, unopened: { local, nationwide }, unended: { local, nationwide } }`.
+- 路由 DTO guard 除逐字段校验外, 还必须把 payload 身份绑定到规范键: 详情 ID, 热门窗口与两个场景的本地地区, 列表页码与 pageSize 不匹配时按 miss 回源; 首页每个 Hero candidate 的 `division_code` 必须匹配请求地区. 不得只验证 DTO 形状后接受其他键的合法对象.
+- Hero DTO 仅包含 `id`, `title`, `scale`, `division_code`, 活动日期/时间和 `cover_url`. 榜单 DTO 仅包含 `id`, `title`, `division_code`, 活动日期/时间, 开票日期/时间和非负整数 `unique_visitors`. 旧 `{ featuredEvents, today }` 或 `{ window, local, nationwide }` payload 必须由 exact-shape guard 拒绝并回源.
 - `event-detail` 静态 DTO 包含主办方和入场字段；近 30 日热度必须独立查询，不能进入缓存 payload 或 validator。
 - 详情负结果不写 Cache API。任一已验证静态详情可用而独立热度读取失败时，保留静态详情、以 0 降级热度并显示提示；热度故障不得把可用详情改成 404。pending/rejected/不存在仍为 404，offline 仍为 200。
 - 热门榜 fresh 使用稳定键抖动 `45-55s`，normal 上限 `60s`，D1 故障兜底 `5m`。`/api/popularity` 浏览器缓存为 `private, max-age=5`，访问 POST 不主动 purge。
@@ -55,7 +56,8 @@
 | 非正安全整数详情 ID | 键生成抛出 `RangeError` |
 | 非规范中国日期 | 键生成抛出 `RangeError` |
 | TTL 为负数、非有限数、顺序倒置或加法溢出 | envelope 创建抛出 `RangeError` |
-| 缓存响应非 2xx、JSON 损坏、schema 不匹配或 DTO guard 失败 | miss，调用方回源 D1 |
+| 缓存响应非 2xx, JSON 损坏, schema 不匹配, 旧首页合同或 DTO guard 失败 | miss, 调用方回源 D1 |
+| Hero 地区, 热门窗口或任一场景本地榜地区与请求键不匹配 | miss, 调用方回源 D1 |
 | `store.match()` 抛错 | miss，调用方回源 D1 |
 | `store.put()` 抛错 | 返回 `error`，保留 D1 成功响应 |
 | 写入 envelope 非法或已过 `errorUntil` | 返回 `skipped`，不调用 `put` |
@@ -67,17 +69,20 @@
 
 ### 5. Good/Base/Bad Cases
 
-- Good：路由先完成现有参数守卫，再用结构化参数生成键；scope 关闭时直接执行现有 D1 loader。
-- Base：缓存命中返回已通过 envelope 与 DTO guard 的值；缓存未命中或不可用时透明回源 D1。
-- Bad：从 `Astro.request` 直接构造缓存键、把 Cookie 带入共享键、缓存完整 `EventRecord`，或因为 `cache.put()` 失败把成功页面改成 500。
-- Bad：在管理员路由中复制 purge URL/Header/body、把 token 写进 `wrangler.jsonc`，或因 purge 失败返回 500。
+- Good: 路由先完成现有参数守卫, 再用结构化参数生成键; scope 关闭时直接执行现有 D1 loader.
+- Good: `division=31` 的 discovery cache 只接受全部 `division_code` 以 `31` 开头的 Hero candidates.
+- Base: 缓存命中返回已通过 envelope, exact-shape 和 key identity guard 的值; 缓存未命中或不可用时透明回源 D1.
+- Bad: 从 `Astro.request` 直接构造缓存键, 把 Cookie 带入共享键, 缓存完整 `EventRecord`, 或因为 `cache.put()` 失败把成功页面改成 500.
+- Bad: 删除 `today` 后只保留 `isPublicHomepageDiscovery(value)` 形状校验; 这会让另一个地区的合法 Hero payload 进入当前地区的缓存键.
+- Bad: 在管理员路由中复制 purge URL/Header/body, 把 token 写进 `wrangler.jsonc`, 或因 purge 失败返回 500.
 
 ### 6. Tests Required
 
 - `test/public-data-cache.test.ts` 必须覆盖：默认关闭零调用、未知 scope fail closed、资源/地区/窗口/详情/筛选/分页/排序/标签键隔离、参数顺序归一化。
 - 必须覆盖 envelope 损坏、schema 错误、TTL 顺序与每个边界时刻，以及加法溢出。
 - 必须覆盖 `match` / `put` 异常、非法写入、过期写入和 DTO guard 失败。
-- 必须覆盖合法 DTO 放入错误详情 ID、热门窗口/地区或列表页码键时被拒绝，以及 whitespace-only 标签不进入列表缓存。
+- 必须覆盖合法 DTO 放入错误详情 ID, Hero 地区, 热门窗口/任一场景本地地区或列表页码键时被拒绝, 以及 whitespace-only 标签不进入列表缓存.
+- 必须覆盖旧 discovery/popularity payload, 额外私有字段, 非法日期/时间, 开票时间缺少日期和负热度被 exact-shape guard 拒绝.
 - 必须覆盖六类 TTL 边界、首页/列表跨日期键、每类固定 Cache-Tag、热门 45-55 秒稳定抖动、stale-if-error、同键并发合并、隐私字段和 subrequest 上限。
 - `test/public-data-cache-invalidation.test.ts` 必须覆盖：scope 关闭零调用、D1 成功后路由接入、delete/open/`waitUntil` 失败不影响成功、地区祖先展开、重复影响去重和 24 次硬上限。
 - 必须覆盖单次 mutation 至多一个 purge 请求、固定 endpoint、Bearer header、去重 tag body、六类/五类映射、pending 驳回零请求，以及缺配置、网络、429、非 2xx、无效 JSON、`success:false` 的安全降级和不泄密日志。
@@ -102,11 +107,14 @@ const request = buildPublicDataCacheRequest(Astro.url, {
 });
 
 const result = await readPublicDataCache({
-    scope: "detail",
+    scope: "homepage",
     scopes,
     store,
     request,
-    isValue: (value): value is PublicEventDetail =>
-        isPublicEventDetail(value) && value.id === eventId
+    isValue: (value): value is PublicHomepageDiscovery =>
+        isPublicHomepageDiscovery(value) &&
+        value.featuredEvents.every((event) =>
+            matchesDivisionCode(event.division_code, divisionCode)
+        )
 });
 ```

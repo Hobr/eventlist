@@ -6,8 +6,7 @@
         type HomepageDataEventDetail
     } from "../lib/public/homepage-client";
     import FeaturedEventCarousel from "./FeaturedEventCarousel.svelte";
-    import HomepagePopularity from "./HomepagePopularity.svelte";
-    import HomepageToday from "./HomepageToday.svelte";
+    import HomepageIntentFeed from "./HomepageIntentFeed.svelte";
 
     interface Props {
         initialHomepage: PublicHomepageData;
@@ -61,26 +60,19 @@
         {/key}
     </div>
 
-    {#if regionError}
+    {#if regionError || discoveryError}
         <div
             class="mt-8 rounded-md bg-danger-subtle p-5 text-sm font-semibold text-danger"
             role="alert"
         >
-            {regionError}
+            {regionError || discoveryError}
         </div>
     {/if}
 
-    <HomepagePopularity
+    <HomepageIntentFeed
         initialPopularity={homepage.popularity}
         divisionCode={homepage.division.code}
         divisionLabel={homepage.division.label}
         initialError={popularityError}
-    />
-
-    <HomepageToday
-        events={homepage.today}
-        divisionCode={homepage.division.code}
-        divisionLabel={homepage.division.label}
-        initialError={discoveryError}
     />
 </div>

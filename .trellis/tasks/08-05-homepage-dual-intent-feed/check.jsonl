@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/design-system.md","reason":"复核页面层级、无嵌套卡片、响应式、无障碍与交互状态"}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"复核查询边界、热度排序、零热度兜底与中国本地时间"}
+{"file":".trellis/spec/backend/public-data-cache.md","reason":"复核 DTO 精确形状、旧缓存拒绝、缓存键和 TTL 不退化"}
+{"file":".trellis/spec/backend/error-handling.md","reason":"复核 API 参数、稳定错误与完整快照提交"}
