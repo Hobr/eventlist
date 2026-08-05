@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 27
-- **Last Active**: 2026-08-03
+- **Total Sessions**: 28
+- **Last Active**: 2026-08-05
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~784 | Active |
+| `journal-1.md` | ~805 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -30,6 +30,7 @@
 
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 28 | 2026-08-05 | 修复活动详情页侧栏布局 | `2949b3a` | `dev` |
 | 27 | 2026-08-03 | 完成 Brooks 全仓质量清扫 | `0ad8d63`, `144afe3`, `5b7a7e3` | `dev` |
 | 26 | 2026-08-01 | Close D1 cache strategy parent task | `938a940` | `dev` |
 | 25 | 2026-08-01 | Complete D1 query and write optimization | `b963e4d`, `619d921`, `2de233d`, `d02e62b`, `d206d69`, `d85d3f4`, `ad371b2`, `58a7e7a` | `dev` |

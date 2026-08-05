@@ -782,3 +782,24 @@ Reconciled the parent requirements with both archived child tasks, removed stale
 ### Status
 
 [OK] **Completed**
+
+
+## Session 28: 修复活动详情页侧栏布局
+
+**Date**: 2026-08-05
+**Task**: 修复活动详情页侧栏布局
+**Branch**: `dev`
+
+### Summary
+
+修复无活动介绍时辅助信息栏落到左侧的问题，补充响应式网格回归测试，并通过完整测试、类型检查、ESLint 与构建。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2949b3a` | (see git log) |
+
+### Status
+
+[OK] **Completed**
