@@ -866,3 +866,24 @@ Replaced the homepage popularity and today sections with unopened and unended in
 ### Status
 
 [OK] **Completed**
+
+
+## Session 32: Flowbite component adoption
+
+**Date**: 2026-08-05
+**Task**: Flowbite component adoption
+**Branch**: `dev`
+
+### Summary
+
+Migrated shared adapters and high-value public/admin controls to Flowbite, preserved native semantic boundaries and SSR links, added coverage tests, and documented dark-token override rules.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7de103e` | (see git log) |
+
+### Status
+
+[OK] **Completed**
