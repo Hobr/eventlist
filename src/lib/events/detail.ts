@@ -50,7 +50,7 @@ function formatCanonicalDate(date: string) {
 }
 
 export function formatAdmissionStart(date: string, time: string | null) {
-    return `${formatCanonicalDate(date)}${time ? ` ${time}` : ""}（北京时间）`;
+    return `${formatCanonicalDate(date)}${time ? ` ${time}` : ""}`;
 }
 
 export function formatSqliteUpdatedAt(value: string) {

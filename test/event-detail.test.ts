@@ -84,7 +84,7 @@ test("活动详情在 URL 不同时保留购票与来源, 规范化后一致时�
         organizer: "测试主办方",
         admissionMethodLabel: "购票",
         priceRange: "80-280 元",
-        admissionStart: "2026年7月15日 20:00（北京时间）",
+        admissionStart: "2026年7月15日 20:00",
         hasAction: true,
         hasDetailFacts: true,
         hasAsideContent: true,
@@ -104,7 +104,7 @@ test("活动详情在 URL 不同时保留购票与来源, 规范化后一致时�
             organizer: "测试主办方",
             admissionMethodLabel: "购票",
             priceRange: "80-280 元",
-            admissionStart: "2026年7月15日 20:00（北京时间）",
+            admissionStart: "2026年7月15日 20:00",
             hasAction: true,
             hasDetailFacts: true,
             hasAsideContent: true,
@@ -182,8 +182,8 @@ test("活动用户状态按下线、取消、延期和北京时间日期边界�
 
 test("SQLite 更新时间和入场开始时间使用清晰的北京时间格式", () => {
     assert.equal(formatSqliteUpdatedAt("2026-07-31 00:05:06"), "2026年7月31日 08:05");
-    assert.equal(formatAdmissionStart("2026-08-01", null), "2026年8月1日（北京时间）");
-    assert.equal(formatAdmissionStart("2026-08-01", "09:30"), "2026年8月1日 09:30（北京时间）");
+    assert.equal(formatAdmissionStart("2026-08-01", null), "2026年8月1日");
+    assert.equal(formatAdmissionStart("2026-08-01", "09:30"), "2026年8月1日 09:30");
 });
 
 test("活动详情模板按可选内容模型移除空标题、容器和分隔线", async () => {
