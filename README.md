@@ -7,7 +7,6 @@
 ## 框架
 
 - 框架：Astro + Svelte
-- UI：Tailwind CSS + Flowbite
 - 部署：Cloudflare Workers
 - 数据库：Cloudflare D1
 - 安全：Cloudflare Turnstile + Cloudflare Access
