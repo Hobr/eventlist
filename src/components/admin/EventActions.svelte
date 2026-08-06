@@ -1,16 +1,14 @@
 <script lang="ts">
-    import { Spinner as LoaderCircle } from "flowbite-svelte";
-    import {
-        CheckOutline as Check,
-        CloseCircleOutline as CircleOff,
-        CloseOutline as X,
-        EditOutline as Pencil,
-        RefreshOutline as RotateCcw
-    } from "flowbite-svelte-icons";
+    import RotateCcw from "phosphor-svelte/lib/ArrowsClockwise";
+    import Check from "phosphor-svelte/lib/Check";
+    import Pencil from "phosphor-svelte/lib/PencilSimple";
+    import X from "phosphor-svelte/lib/X";
+    import CircleOff from "phosphor-svelte/lib/XCircle";
     import Button from "../ui/button.svelte";
     import ConfirmDialog from "../ui/confirm-dialog.svelte";
     import Label from "../ui/label.svelte";
     import Textarea from "../ui/textarea.svelte";
+    import LoaderCircle from "../ui/spinner.svelte";
 
     type Mode = "pending" | "published" | "offline";
     type Action = "approve" | "reject" | "offline" | "republish";
@@ -66,29 +64,32 @@
     }
 </script>
 
-<div class="flex min-w-32 flex-col gap-2">
+<div class="admin-actions">
     {#if mode === "pending"}
-        <Button href={`/admin/events/${eventId}/edit`} variant="outline" size="sm" class="w-full">
-            <Pencil class="size-3.5" aria-hidden="true" />
+        <Button
+            href={`/admin/events/${eventId}/edit`}
+            variant="outline"
+            size="sm"
+            class="admin-action-button"
+        >
+            <Pencil size={14} aria-hidden="true" />
             整理标签
         </Button>
         <Button
             size="sm"
-            class="w-full"
+            class="admin-action-button"
             disabled={busy || !hasTags}
             onclick={() => void submitAction("approve")}
         >
             {#if pendingAction === "approve"}
-                <LoaderCircle class="size-3.5 animate-spin" aria-hidden="true" />
+                <LoaderCircle />
             {:else}
-                <Check class="size-3.5" aria-hidden="true" />
+                <Check size={14} aria-hidden="true" />
             {/if}
             {pendingAction === "approve" ? "处理中" : "通过"}
         </Button>
         {#if !hasTags}
-            <p class="text-xs leading-5 font-semibold text-warning" role="status">
-                请先整理至少一个规范标签
-            </p>
+            <p class="admin-action-warning" role="status">请先整理至少一个规范标签</p>
         {/if}
 
         <ConfirmDialog
@@ -101,7 +102,7 @@
             onconfirm={rejectEvent}
         >
             {#snippet trigger()}
-                <X class="size-3.5" aria-hidden="true" />
+                <X size={14} aria-hidden="true" />
                 驳回
             {/snippet}
             {#snippet children()}
@@ -112,14 +113,19 @@
                     bind:value={rejectReason}
                     required
                     rows={3}
-                    class="mt-1.5 min-h-24"
+                    class="admin-reject-reason"
                     placeholder="例如：请补充官方来源链接"
                 />
             {/snippet}
         </ConfirmDialog>
     {:else if mode === "published"}
-        <Button href={`/admin/events/${eventId}/edit`} variant="outline" size="sm" class="w-full">
-            <Pencil class="size-3.5" aria-hidden="true" />
+        <Button
+            href={`/admin/events/${eventId}/edit`}
+            variant="outline"
+            size="sm"
+            class="admin-action-button"
+        >
+            <Pencil size={14} aria-hidden="true" />
             编辑
         </Button>
         <ConfirmDialog
@@ -131,37 +137,40 @@
             onconfirm={() => submitAction("offline")}
         >
             {#snippet trigger()}
-                <CircleOff class="size-3.5" aria-hidden="true" />
+                <CircleOff size={14} aria-hidden="true" />
                 下线
             {/snippet}
         </ConfirmDialog>
     {:else}
-        <Button href={`/admin/events/${eventId}/edit`} variant="outline" size="sm" class="w-full">
-            <Pencil class="size-3.5" aria-hidden="true" />
+        <Button
+            href={`/admin/events/${eventId}/edit`}
+            variant="outline"
+            size="sm"
+            class="admin-action-button"
+        >
+            <Pencil size={14} aria-hidden="true" />
             编辑
         </Button>
         <Button
             variant="tonal"
             size="sm"
-            class="w-full"
+            class="admin-action-button"
             disabled={busy || !hasTags}
             onclick={() => void submitAction("republish")}
         >
             {#if pendingAction === "republish"}
-                <LoaderCircle class="size-3.5 animate-spin" aria-hidden="true" />
+                <LoaderCircle />
             {:else}
-                <RotateCcw class="size-3.5" aria-hidden="true" />
+                <RotateCcw size={14} aria-hidden="true" />
             {/if}
             {pendingAction === "republish" ? "处理中" : "重新发布"}
         </Button>
         {#if !hasTags}
-            <p class="text-xs leading-5 font-semibold text-warning" role="status">
-                请先整理至少一个规范标签
-            </p>
+            <p class="admin-action-warning" role="status">请先整理至少一个规范标签</p>
         {/if}
     {/if}
 
     {#if errorMessage}
-        <p class="text-xs leading-5 font-semibold text-danger" role="alert">{errorMessage}</p>
+        <p class="admin-action-error" role="alert">{errorMessage}</p>
     {/if}
 </div>

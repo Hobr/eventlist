@@ -50,7 +50,7 @@
     });
 </script>
 
-<div class="flex flex-col">
+<div class="homepage-content">
     <div data-reveal>
         {#key carouselKey}
             <FeaturedEventCarousel
@@ -62,7 +62,7 @@
     </div>
 
     {#if regionError || discoveryError}
-        <Alert tone="danger" class="mt-8 p-5 font-semibold">
+        <Alert tone="danger" class="homepage-alert">
             {regionError || discoveryError}
         </Alert>
     {/if}

@@ -1,13 +1,11 @@
 <script lang="ts">
-    import { TableBody as FlowbiteTableBody } from "flowbite-svelte";
+    import type { HTMLAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
-
-    interface Props {
+    type Props = Omit<HTMLAttributes<HTMLTableSectionElement>, "children" | "class"> & {
         class?: string;
         children?: import("svelte").Snippet;
-    }
-    let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(cn("[&_tr:last-child]:border-0", className));
+    };
+    let { class: className = undefined, children, ...restProps }: Props = $props();
 </script>
 
-<FlowbiteTableBody class={classes}>{@render children?.()}</FlowbiteTableBody>
+<tbody {...restProps} class={cn("ui-table-body", className)}>{@render children?.()}</tbody>

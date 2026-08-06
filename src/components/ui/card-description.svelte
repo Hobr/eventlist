@@ -6,7 +6,7 @@
         children?: import("svelte").Snippet;
     }
     let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(cn("text-sm text-muted-foreground", className));
+    let classes = $derived(cn("ui-card-description", className));
 </script>
 
 <p class={classes}>{@render children?.()}</p>

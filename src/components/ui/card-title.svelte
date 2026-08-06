@@ -7,7 +7,7 @@
         children?: import("svelte").Snippet;
     }
     let { as: Tag = "h3", class: className = undefined, children }: Props = $props();
-    let classes = $derived(cn("text-base font-semibold leading-tight text-foreground", className));
+    let classes = $derived(cn("ui-card-title", className));
 </script>
 
 <Tag class={classes}>{@render children?.()}</Tag>

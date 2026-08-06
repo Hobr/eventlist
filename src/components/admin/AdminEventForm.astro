@@ -1,5 +1,5 @@
 ---
-import { FloppyDiskOutline as Save } from "flowbite-svelte-icons";
+import Save from "phosphor-svelte/lib/FloppyDisk";
 import DivisionPicker from "../DivisionPicker.svelte";
 import SelectField from "../SelectField.svelte";
 import TagInput from "../TagInput.svelte";
@@ -72,30 +72,27 @@ const value = (name: AdminEventField) => {
     id={formId}
     data-event-id={eventRecord?.id}
     data-return-href={cancelHref}
-    class="flex flex-col gap-9"
+    class="admin-event-form"
 >
     <slot name="metadata" />
 
-    <section
-        class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
-        aria-labelledby={headingId("identity")}
-    >
-        <div class="sm:col-span-2">
-            <h2 id={headingId("identity")} class="text-base font-black text-foreground">
-                活动识别
-            </h2>
-            <p class="mt-1 text-sm text-muted-foreground">用清晰、可检索的名称与分类描述活动</p>
+    <section class="admin-form-section" aria-labelledby={headingId("identity")}>
+        <div class="wide">
+            <h2 id={headingId("identity")} class="admin-section-title">活动识别</h2>
+            <p class="admin-section-note">用清晰、可检索的名称与分类描述活动</p>
         </div>
-        <div class="sm:col-span-2">
+        <div class="wide">
             <Label for="title">
                 活动名称
-                {
-                    showRequiredIndicators ? (
-                        <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-                    ) : null
-                }
+                {showRequiredIndicators ? <span class="required-indicator">必填</span> : null}
             </Label>
-            <Input id="title" name="title" required value={value("title")} class="mt-1.5" />
+            <Input
+                id="title"
+                name="title"
+                required
+                value={value("title")}
+                class="field-control-spacing"
+            />
         </div>
         <SelectField
             name="type"
@@ -117,16 +114,11 @@ const value = (name: AdminEventField) => {
         />
     </section>
 
-    <section
-        class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
-        aria-labelledby={headingId("schedule")}
-    >
-        <div class="sm:col-span-2">
-            <h2 id={headingId("schedule")} class="text-base font-black text-foreground">
-                时间与地点
-            </h2>
+    <section class="admin-form-section" aria-labelledby={headingId("schedule")}>
+        <div class="wide">
+            <h2 id={headingId("schedule")} class="admin-section-title">时间与地点</h2>
         </div>
-        <div class="sm:col-span-2">
+        <div class="wide">
             <DivisionPicker
                 name="division_code"
                 value={eventRecord?.division_code ??
@@ -143,26 +135,29 @@ const value = (name: AdminEventField) => {
         <div>
             <Label for="venue">
                 场馆
-                {
-                    showRequiredIndicators ? (
-                        <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-                    ) : null
-                }
+                {showRequiredIndicators ? <span class="required-indicator">必填</span> : null}
             </Label>
-            <Input id="venue" name="venue" required value={value("venue")} class="mt-1.5" />
+            <Input
+                id="venue"
+                name="venue"
+                required
+                value={value("venue")}
+                class="field-control-spacing"
+            />
         </div>
         <div>
             <Label for="address">详细地址</Label>
-            <Input id="address" name="address" value={value("address")} class="mt-1.5" />
+            <Input
+                id="address"
+                name="address"
+                value={value("address")}
+                class="field-control-spacing"
+            />
         </div>
         <div>
             <Label for="start_date">
                 开始日期
-                {
-                    showRequiredIndicators ? (
-                        <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-                    ) : null
-                }
+                {showRequiredIndicators ? <span class="required-indicator">必填</span> : null}
             </Label>
             <Input
                 id="start_date"
@@ -170,17 +165,13 @@ const value = (name: AdminEventField) => {
                 type="date"
                 required
                 value={value("start_date")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
             <Label for="end_date">
                 结束日期
-                {
-                    showRequiredIndicators ? (
-                        <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-                    ) : null
-                }
+                {showRequiredIndicators ? <span class="required-indicator">必填</span> : null}
             </Label>
             <Input
                 id="end_date"
@@ -188,7 +179,7 @@ const value = (name: AdminEventField) => {
                 type="date"
                 required
                 value={value("end_date")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
@@ -198,7 +189,7 @@ const value = (name: AdminEventField) => {
                 name="start_time"
                 type="time"
                 value={value("start_time")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
@@ -208,28 +199,19 @@ const value = (name: AdminEventField) => {
                 name="end_time"
                 type="time"
                 value={value("end_time")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
     </section>
 
-    <section
-        class="grid gap-4 border-b border-border/80 pb-8 sm:grid-cols-2"
-        aria-labelledby={headingId("links")}
-    >
-        <div class="sm:col-span-2">
-            <h2 id={headingId("links")} class="text-base font-black text-foreground">
-                来源与参与信息
-            </h2>
+    <section class="admin-form-section" aria-labelledby={headingId("links")}>
+        <div class="wide">
+            <h2 id={headingId("links")} class="admin-section-title">来源与参与信息</h2>
         </div>
-        <div class="sm:col-span-2">
+        <div class="wide">
             <Label for="source_url">
                 来源链接
-                {
-                    showRequiredIndicators ? (
-                        <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-                    ) : null
-                }
+                {showRequiredIndicators ? <span class="required-indicator">必填</span> : null}
             </Label>
             <Input
                 id="source_url"
@@ -239,24 +221,24 @@ const value = (name: AdminEventField) => {
                 value={value("source_url")}
                 readonly={sourceReadOnly}
                 aria-describedby={sourceReadOnly ? `${formId}-source-note` : undefined}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
             {
                 sourceReadOnly ? (
-                    <p id={`${formId}-source-note`} class="mt-1.5 text-xs text-muted-foreground">
+                    <p id={`${formId}-source-note`} class="field-note">
                         由会员购活动 ID 生成, 作为重复检测和审计标识, 不能修改
                     </p>
                 ) : null
             }
         </div>
-        <div class="sm:col-span-2">
+        <div class="wide">
             <Label for="organizer">主办方</Label>
             <Input
                 id="organizer"
                 name="organizer"
                 maxlength="200"
                 value={value("organizer")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <SelectField
@@ -275,14 +257,14 @@ const value = (name: AdminEventField) => {
             placeholder="选择入场方式"
             client:load
         />
-        <div class="sm:col-span-2">
+        <div class="wide">
             <Label for="price_range">票价区间</Label>
             <Input
                 id="price_range"
                 name="price_range"
                 maxlength="120"
                 value={value("price_range")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
@@ -292,7 +274,7 @@ const value = (name: AdminEventField) => {
                 name="admission_start_date"
                 type="date"
                 value={value("admission_start_date")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
@@ -302,24 +284,20 @@ const value = (name: AdminEventField) => {
                 name="admission_start_time"
                 type="time"
                 value={value("admission_start_time")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
             <Label for="submitter_contact">
                 投稿联系方式
-                {
-                    showRequiredIndicators ? (
-                        <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-                    ) : null
-                }
+                {showRequiredIndicators ? <span class="required-indicator">必填</span> : null}
             </Label>
             <Input
                 id="submitter_contact"
                 name="submitter_contact"
                 required
                 value={value("submitter_contact")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
@@ -329,12 +307,17 @@ const value = (name: AdminEventField) => {
                 name="ticket_url"
                 type="url"
                 value={value("ticket_url")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
         <div>
             <Label for="qq_group">官方交流群</Label>
-            <Input id="qq_group" name="qq_group" value={value("qq_group")} class="mt-1.5" />
+            <Input
+                id="qq_group"
+                name="qq_group"
+                value={value("qq_group")}
+                class="field-control-spacing"
+            />
         </div>
         <div>
             <Label for="cover_url">封面 URL</Label>
@@ -344,22 +327,23 @@ const value = (name: AdminEventField) => {
                 type="url"
                 pattern="https://.*"
                 value={value("cover_url")}
-                class="mt-1.5"
+                class="field-control-spacing"
             />
         </div>
     </section>
 
-    <section class="grid gap-4" aria-labelledby={headingId("content")}>
+    <section
+        class="admin-form-section admin-content-section"
+        aria-labelledby={headingId("content")}
+    >
         <div>
-            <h2 id={headingId("content")} class="text-base font-black text-foreground">公开内容</h2>
+            <h2 id={headingId("content")} class="admin-section-title">公开内容</h2>
         </div>
         {
             eventRecord?.tag_suggestions ? (
-                <div class="rounded-md bg-surface-subtle p-4 ring-1 ring-border/70">
-                    <p class="text-xs font-semibold text-muted">投稿标签建议</p>
-                    <p class="mt-1.5 text-sm whitespace-pre-wrap text-foreground">
-                        {eventRecord.tag_suggestions}
-                    </p>
+                <div class="admin-tag-suggestion">
+                    <p>投稿标签建议</p>
+                    <p>{eventRecord.tag_suggestions}</p>
                 </div>
             ) : null
         }
@@ -376,32 +360,19 @@ const value = (name: AdminEventField) => {
                 id="description"
                 name="description"
                 value={value("description")}
-                class="mt-1.5 min-h-36 leading-6"
+                class="admin-description-field"
             />
         </div>
     </section>
 
-    <div
-        class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-md bg-surface-raised/96 p-3 shadow-popover ring-1 ring-border/80 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between"
-    >
-        <p
-            id={statusId}
-            class="min-h-5 text-sm text-muted-foreground"
-            role="status"
-            aria-live="polite"
-            tabindex="-1"
-        >
+    <div class="admin-form-actions">
+        <p id={statusId} class="admin-form-status" role="status" aria-live="polite" tabindex="-1">
             {statusText}
         </p>
-        <div class="flex gap-2">
-            <Button class="flex-1 sm:flex-none" href={cancelHref} variant="outline"> 取消 </Button>
-            <Button
-                id={submitButtonId}
-                class="flex-1 px-5 sm:flex-none"
-                type="submit"
-                disabled={submitDisabled}
-            >
-                <Save class="size-4" aria-hidden="true" />
+        <div class="admin-form-buttons">
+            <Button href={cancelHref} variant="outline"> 取消 </Button>
+            <Button id={submitButtonId} type="submit" disabled={submitDisabled}>
+                <Save size={17} aria-hidden="true" />
                 <span data-save-label>{submitLabel}</span>
             </Button>
         </div>

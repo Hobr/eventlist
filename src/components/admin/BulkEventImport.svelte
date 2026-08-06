@@ -1,13 +1,10 @@
 <script lang="ts">
-    import { Spinner as LoaderCircle } from "flowbite-svelte";
-    import {
-        CheckCircleOutline as CheckCircle2,
-        DownloadOutline as Download,
-        ExclamationCircleOutline as AlertTriangle,
-        FileCsvOutline as FileSpreadsheet,
-        RefreshOutline as RotateCcw,
-        UploadOutline as Upload
-    } from "flowbite-svelte-icons";
+    import RotateCcw from "phosphor-svelte/lib/ArrowsClockwise";
+    import CheckCircle2 from "phosphor-svelte/lib/CheckCircle";
+    import Download from "phosphor-svelte/lib/DownloadSimple";
+    import FileSpreadsheet from "phosphor-svelte/lib/FileCsv";
+    import Upload from "phosphor-svelte/lib/UploadSimple";
+    import AlertTriangle from "phosphor-svelte/lib/WarningCircle";
     import { tick } from "svelte";
     import {
         BulkEventCsvError,
@@ -27,6 +24,7 @@
     import TableHead from "../ui/table-head.svelte";
     import TableHeader from "../ui/table-header.svelte";
     import TableRow from "../ui/table-row.svelte";
+    import LoaderCircle from "../ui/spinner.svelte";
 
     interface CreatedEvent {
         id: number;
@@ -191,17 +189,17 @@
     }
 </script>
 
-<div class="flex flex-col gap-8">
-    <section class="grid gap-6 border-b border-border/80 pb-8 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div class="min-w-0">
-            <Label class="text-foreground" for="bulk-event-file">CSV 文件</Label>
-            <div class="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+<div class="bulk-import">
+    <section class="bulk-upload-section">
+        <div class="bulk-upload-main">
+            <Label for="bulk-event-file">CSV 文件</Label>
+            <div class="bulk-file-row">
                 <FileUpload
                     bind:files={selectedFiles}
                     bind:elementRef={fileInput}
                     id="bulk-event-file"
                     accept=".csv,text/csv"
-                    class="min-w-0 flex-1"
+                    class="bulk-file-input"
                     onchange={(event) => {
                         const input = event.currentTarget;
                         setFile(input.files?.[0] ?? null);
@@ -209,34 +207,32 @@
                 />
                 <Button type="button" disabled={!file || pending} onclick={previewFile}>
                     {#if state === "previewing"}
-                        <LoaderCircle class="size-4 animate-spin" aria-hidden="true" />
+                        <LoaderCircle label="预览中" />
                         预览中
                     {:else}
-                        <Upload class="size-4" aria-hidden="true" />
+                        <Upload size={17} aria-hidden="true" />
                         预览 CSV
                     {/if}
                 </Button>
             </div>
-            <p class="mt-2 text-xs text-muted-foreground">
-                UTF-8 CSV · 1 至 20 条活动 · 最大 1 MiB
-            </p>
+            <p class="bulk-help">UTF-8 CSV · 1 至 20 条活动 · 最大 1 MiB</p>
         </div>
 
-        <div class="border-l-0 border-border xl:border-l xl:pl-6">
+        <div class="bulk-template-help">
             <Button href="/api/admin/events/bulk/template" variant="outline">
-                <Download class="size-4" aria-hidden="true" />
+                <Download size={17} aria-hidden="true" />
                 下载 CSV 模板
             </Button>
-            <dl class="mt-4 grid gap-3 text-xs">
+            <dl class="bulk-option-help">
                 <div>
-                    <dt class="font-semibold text-muted">活动类型</dt>
-                    <dd class="mt-1 leading-5 text-muted-foreground">
+                    <dt>活动类型</dt>
+                    <dd>
                         {EVENT_TYPES.map(({ name, label }) => `${label} (${name})`).join("、")}
                     </dd>
                 </div>
                 <div>
-                    <dt class="font-semibold text-muted">活动规模</dt>
-                    <dd class="mt-1 leading-5 text-muted-foreground">
+                    <dt>活动规模</dt>
+                    <dd>
                         {EVENT_SCALES.map(({ name, label }) => `${label} (${name})`).join("、")}
                     </dd>
                 </div>
@@ -246,41 +242,34 @@
 
     {#if state === "success"}
         <section aria-labelledby="bulk-result-heading">
-            <div
-                class="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5"
-            >
+            <div class="bulk-result-header">
                 <div>
                     <h2
                         bind:this={resultHeading}
                         id="bulk-result-heading"
-                        class="flex items-center gap-2 text-base font-black text-foreground focus:outline-none"
+                        class="bulk-result-title"
                         tabindex="-1"
                     >
-                        <CheckCircle2 class="size-5 text-accent" aria-hidden="true" />
+                        <CheckCircle2 size={20} aria-hidden="true" />
                         已创建 {createdEvents.length} 条活动
                     </h2>
-                    <p class="mt-1 text-sm text-muted-foreground">
-                        活动已发布, 并已写入独立审计记录
-                    </p>
+                    <p>活动已发布, 并已写入独立审计记录</p>
                 </div>
-                <Button type="button" variant="outline" size="sm" class="h-9" onclick={reset}>
-                    <RotateCcw class="size-4" aria-hidden="true" />
+                <Button type="button" variant="outline" size="sm" onclick={reset}>
+                    <RotateCcw size={17} aria-hidden="true" />
                     导入下一批
                 </Button>
             </div>
-            <ul class="divide-y divide-border" aria-label="已创建活动">
+            <ul class="bulk-created-list" aria-label="已创建活动">
                 {#each createdEvents as event (event.id)}
-                    <li class="flex flex-wrap items-center justify-between gap-3 py-4">
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-foreground">
+                    <li>
+                        <div>
+                            <p>
                                 {event.title}
                             </p>
-                            <p class="mt-1 text-xs text-muted">ID {event.id}</p>
+                            <small>ID {event.id}</small>
                         </div>
-                        <a
-                            href={`/admin/events/${event.id}/edit`}
-                            class="text-sm font-semibold text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                        >
+                        <a href={`/admin/events/${event.id}/edit`} class="bulk-edit-link">
                             编辑活动
                         </a>
                     </li>
@@ -289,36 +278,34 @@
         </section>
     {:else if preview || errorMessage}
         <section aria-labelledby="bulk-result-heading">
-            <div
-                class="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-5"
-            >
+            <div class="bulk-result-header">
                 <div>
                     <h2
                         bind:this={resultHeading}
                         id="bulk-result-heading"
-                        class="text-base font-black text-foreground focus:outline-none"
+                        class="bulk-result-title"
                         tabindex="-1"
                     >
                         {preview?.valid ? `预览 ${preview.rows.length} 条活动` : "CSV 校验结果"}
                     </h2>
                     {#if errorMessage}
-                        <Alert tone="danger" class="mt-3 py-2 font-semibold">
+                        <Alert tone="danger" class="bulk-inline-alert">
                             {errorMessage}
                         </Alert>
                     {/if}
                 </div>
-                <Button type="button" variant="outline" size="sm" class="h-9" onclick={reset}>
-                    <RotateCcw class="size-4" aria-hidden="true" />
+                <Button type="button" variant="outline" size="sm" onclick={reset}>
+                    <RotateCcw size={17} aria-hidden="true" />
                     重置
                 </Button>
             </div>
 
             {#if preview?.errors.length}
-                <Alert tone="danger" class="mt-5 border-l-4 px-4 py-3">
-                    <h3 class="font-black">
+                <Alert tone="danger" class="bulk-result-alert">
+                    <h3>
                         发现 {preview.errors.length} 个错误
                     </h3>
-                    <ul class="mt-2 space-y-1 text-sm text-danger">
+                    <ul class="bulk-error-list">
                         {#each preview.errors as error}
                             <li>
                                 {error.row ? `第 ${error.row} 行` : "文件"}{error.field
@@ -331,19 +318,18 @@
             {/if}
 
             {#if preview?.warnings.length}
-                <Alert tone="warning" class="mt-5 border-l-4 px-4 py-3">
-                    <h3 class="flex items-center gap-2 font-black">
-                        <AlertTriangle class="size-4" aria-hidden="true" />
+                <Alert tone="warning" class="bulk-result-alert">
+                    <h3 class="bulk-warning-title">
+                        <AlertTriangle size={17} aria-hidden="true" />
                         疑似重复活动
                     </h3>
-                    <div class="mt-3 divide-y divide-warning/25">
+                    <div class="bulk-warning-list">
                         {#each preview.warnings as warning (warning.key)}
                             <Checkbox
-                                divClass="flex cursor-pointer items-start gap-3 py-3 text-sm text-warning"
-                                class="mt-0.5 shrink-0"
+                                class="bulk-warning-checkbox"
                                 checked={confirmedWarningKeys.includes(warning.key)}
-                                onchange={(event) =>
-                                    setWarningConfirmed(warning.key, event.currentTarget.checked)}
+                                onCheckedChange={(checked) =>
+                                    setWarningConfirmed(warning.key, checked)}
                             >
                                 <span>
                                     <strong>第 {warning.row} 行</strong>
@@ -357,9 +343,7 @@
                                                 : `${match.title} (第 ${match.row} 行)`
                                         )
                                         .join("、")}
-                                    <span class="mt-1 block text-xs font-semibold"
-                                        >确认仍要创建此活动</span
-                                    >
+                                    <span class="bulk-warning-confirm">确认仍要创建此活动</span>
                                 </span>
                             </Checkbox>
                         {/each}
@@ -368,10 +352,10 @@
             {/if}
 
             {#if preview?.rows.length}
-                <div class="mt-6 overflow-x-auto rounded-md ring-1 ring-border/80">
-                    <Table class="min-w-[58rem] border-collapse text-left">
-                        <TableHeader class="bg-surface-subtle text-xs text-muted-foreground">
-                            <TableRow class="hover:bg-surface-subtle">
+                <div class="bulk-preview-table">
+                    <Table class="bulk-table">
+                        <TableHeader>
+                            <TableRow>
                                 <TableHead>行</TableHead>
                                 <TableHead>状态</TableHead>
                                 <TableHead>活动名称</TableHead>
@@ -381,34 +365,28 @@
                                 <TableHead>标签</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody class="divide-y divide-border">
+                        <TableBody>
                             {#each preview.rows as row (row.row)}
-                                <TableRow class="bg-surface hover:bg-surface">
-                                    <TableCell class="font-mono text-xs text-muted"
-                                        >{row.row}</TableCell
-                                    >
+                                <TableRow>
+                                    <TableCell class="bulk-row-number">{row.row}</TableCell>
                                     <TableCell>
-                                        <span
-                                            class={row.valid
-                                                ? "font-semibold text-accent"
-                                                : "font-semibold text-danger"}
-                                        >
+                                        <span class={row.valid ? "bulk-valid" : "bulk-invalid"}>
                                             {row.valid ? "有效" : "有误"}
                                         </span>
                                     </TableCell>
-                                    <TableCell class="max-w-64 font-semibold text-foreground">
+                                    <TableCell class="bulk-title-cell">
                                         {row.title || "-"}
                                     </TableCell>
-                                    <TableCell class="text-muted-foreground">
+                                    <TableCell>
                                         {row.type || "-"} / {row.scale || "-"}
                                     </TableCell>
-                                    <TableCell class="whitespace-nowrap text-muted-foreground">
+                                    <TableCell class="bulk-date-cell">
                                         {row.startDate || "-"} 至 {row.endDate || "-"}
                                     </TableCell>
-                                    <TableCell class="max-w-56 text-muted-foreground">
+                                    <TableCell>
                                         {row.venue || "-"}
                                     </TableCell>
-                                    <TableCell class="max-w-64 text-muted-foreground">
+                                    <TableCell>
                                         {row.tags.join("、") || "-"}
                                     </TableCell>
                                 </TableRow>
@@ -418,10 +396,8 @@
                 </div>
             {/if}
 
-            <div
-                class="mt-6 flex flex-col items-stretch justify-between gap-3 border-t border-border/80 pt-5 sm:flex-row sm:items-center"
-            >
-                <p class="text-sm text-muted-foreground" role="status" aria-live="polite">
+            <div class="bulk-submit-row">
+                <p role="status" aria-live="polite">
                     {#if state === "submitting"}
                         正在重新校验并创建活动…
                     {:else if preview?.warnings.length && !allWarningsConfirmed}
@@ -432,17 +408,12 @@
                         请修正 CSV 后重新预览
                     {/if}
                 </p>
-                <Button
-                    type="button"
-                    class="px-5"
-                    disabled={!canSubmit || pending}
-                    onclick={submitEvents}
-                >
+                <Button type="button" disabled={!canSubmit || pending} onclick={submitEvents}>
                     {#if state === "submitting"}
-                        <LoaderCircle class="size-4 animate-spin" aria-hidden="true" />
+                        <LoaderCircle label="创建中" />
                         创建中
                     {:else}
-                        <FileSpreadsheet class="size-4" aria-hidden="true" />
+                        <FileSpreadsheet size={17} aria-hidden="true" />
                         创建 {preview?.rows.length ?? 0} 条活动
                     {/if}
                 </Button>

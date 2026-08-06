@@ -1,16 +1,11 @@
 <script lang="ts">
-    import { TableBodyCell as FlowbiteTableCell } from "flowbite-svelte";
+    import type { HTMLTdAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
-
-    interface Props {
+    type Props = Omit<HTMLTdAttributes, "children" | "class"> & {
         class?: string;
-        dataLabel?: string;
         children?: import("svelte").Snippet;
-    }
-    let { class: className = undefined, dataLabel = undefined, children }: Props = $props();
-    let classes = $derived(cn("p-3 align-top text-sm", className));
+    };
+    let { class: className = undefined, children, ...restProps }: Props = $props();
 </script>
 
-<FlowbiteTableCell class={classes} data-label={dataLabel}>
-    {@render children?.()}
-</FlowbiteTableCell>
+<td {...restProps} class={cn("ui-table-cell", className)}>{@render children?.()}</td>

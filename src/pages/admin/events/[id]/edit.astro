@@ -1,5 +1,5 @@
 ---
-import { ArrowLeftOutline as ArrowLeft } from "flowbite-svelte-icons";
+import ArrowLeft from "phosphor-svelte/lib/ArrowLeft";
 import AdminEventForm from "../../../../components/admin/AdminEventForm.astro";
 import Alert from "../../../../components/ui/alert.svelte";
 import Badge from "../../../../components/ui/badge.svelte";
@@ -56,17 +56,14 @@ const returnHref =
 >
     {
         errorMessage || !eventRecord ? (
-            <Alert tone="danger" class="p-6 text-center font-semibold">
+            <Alert tone="danger" class="admin-page-error">
                 {errorMessage}
             </Alert>
         ) : (
             <div>
-                <div class="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
-                    <a
-                        href={returnHref}
-                        class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                    >
-                        <ArrowLeft class="size-4" aria-hidden="true" />
+                <div class="admin-return-row">
+                    <a href={returnHref} class="admin-return-link">
+                        <ArrowLeft size={17} aria-hidden="true" />
                         返回活动队列
                     </a>
                     <Badge tone={statusTones[eventRecord.status] ?? "default"}>
@@ -109,7 +106,7 @@ const returnHref =
             saveButton.setAttribute("aria-busy", "true");
             saveLabel.textContent = "保存中";
             saveStatus.textContent = "正在保存修改…";
-            saveStatus.classList.remove("text-danger");
+            saveStatus.classList.remove("is-danger");
 
             try {
                 const response = await fetch(`/api/admin/events/${eventId}`, {
@@ -128,7 +125,7 @@ const returnHref =
             } catch (error) {
                 saveStatus.textContent =
                     error instanceof Error ? error.message : "保存失败, 请重试";
-                saveStatus.classList.add("text-danger");
+                saveStatus.classList.add("is-danger");
                 saveButton.disabled = false;
                 saveButton.removeAttribute("aria-busy");
                 saveLabel.textContent = "保存修改";

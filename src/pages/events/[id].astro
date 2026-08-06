@@ -1,16 +1,14 @@
 ---
 import { waitUntil } from "cloudflare:workers";
-import {
-    ArrowLeftOutline as ArrowLeft,
-    ArrowUpRightFromSquareOutline as ExternalLink,
-    CalendarMonthOutline as CalendarDays,
-    ClockOutline as Clock,
-    FireOutline as Fire,
-    MapPinOutline as MapPin,
-    RefreshOutline as Refresh,
-    StoreOutline as Store,
-    TicketOutline as Ticket
-} from "flowbite-svelte-icons";
+import ArrowLeft from "phosphor-svelte/lib/ArrowLeft";
+import Refresh from "phosphor-svelte/lib/ArrowsClockwise";
+import ExternalLink from "phosphor-svelte/lib/ArrowUpRight";
+import CalendarDays from "phosphor-svelte/lib/CalendarDots";
+import Clock from "phosphor-svelte/lib/Clock";
+import Fire from "phosphor-svelte/lib/Fire";
+import MapPin from "phosphor-svelte/lib/MapPin";
+import Store from "phosphor-svelte/lib/Storefront";
+import Ticket from "phosphor-svelte/lib/Ticket";
 import EventArtwork from "../../components/EventArtwork.astro";
 import Alert from "../../components/ui/alert.svelte";
 import Badge from "../../components/ui/badge.svelte";
@@ -111,71 +109,59 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
 >
     {
         !event ? (
-            <Alert tone="danger" class="p-8 text-center" data-reveal>
-                <h1 class="text-2xl font-black text-foreground">{errorMessage}</h1>
-                <Button
-                    href="/events"
-                    class="mt-6 rounded-full bg-foreground px-5 font-bold text-background hover:bg-foreground/90 dark:bg-foreground! dark:text-background! dark:hover:bg-foreground/90!"
-                >
-                    <ArrowLeft class="size-4" aria-hidden="true" />
+            <Alert tone="danger" class="detail-missing" data-reveal>
+                <h1>{errorMessage}</h1>
+                <Button href="/events" variant="outline">
+                    <ArrowLeft size={17} aria-hidden="true" />
                     返回活动列表
                 </Button>
             </Alert>
         ) : (
             <article
-                class="flex flex-col gap-10"
+                class="event-detail"
                 data-reveal
                 data-event-view-endpoint={
                     event.status === STATUS.PUBLISHED ? `/api/events/${event.id}/view` : undefined
                 }
             >
-                <a
-                    href="/events"
-                    class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                >
-                    <ArrowLeft class="size-4" aria-hidden="true" />
+                <a href="/events" class="detail-back">
+                    <ArrowLeft size={17} aria-hidden="true" />
                     活动列表
                 </a>
 
                 {cacheWarning ? (
-                    <Alert tone="warning" class="px-4 py-3 font-semibold" role="status">
+                    <Alert tone="warning" role="status">
                         {cacheWarning}
                     </Alert>
                 ) : null}
 
                 {event.status === STATUS.OFFLINE ? (
-                    <Alert tone="warning" class="px-4 py-3 font-semibold" role="status">
+                    <Alert tone="warning" role="status">
                         该活动已下线, 页面仅作为历史信息保留
                     </Alert>
                 ) : null}
 
-                <header class="relative min-h-[25rem] overflow-hidden rounded-md shadow-elevated ring-1 ring-black/10 sm:min-h-[34rem]">
+                <header class="detail-hero">
                     <EventArtwork
                         src={event.cover_url}
                         alt={`${event.title} 封面`}
                         loading="eager"
                         fill
-                        class="rounded-none"
+                        class="detail-hero-art"
                     />
-                    <div class="absolute inset-0 bg-black/55" aria-hidden="true" />
-                    <div class="absolute inset-x-0 bottom-0 p-5 text-white sm:p-8 lg:p-10">
-                        <div class="flex flex-wrap gap-1.5">
-                            <Badge tone="primary" class="border-white/15 bg-primary text-white">
-                                {getEventTypeLabel(event.type)}
-                            </Badge>
-                            <Badge class="border-white/20 bg-black/35 text-white">
-                                {getEventScaleLabel(event.scale)}
-                            </Badge>
+                    <div class="detail-hero-shade" aria-hidden="true" />
+                    <div class="detail-hero-copy">
+                        <div class="detail-badges">
+                            <Badge tone="primary">{getEventTypeLabel(event.type)}</Badge>
+                            <Badge>{getEventScaleLabel(event.scale)}</Badge>
                         </div>
-                        <h1 class="mt-4 max-w-4xl text-3xl leading-tight font-black text-balance sm:text-5xl">
-                            {event.title}
-                        </h1>
+                        <h1>{event.title}</h1>
                         {tags.length > 0 ? (
-                            <div class="mt-5 flex flex-wrap gap-2">
+                            <div class="detail-tags">
                                 {tags.map((tag) => (
                                     <a
                                         href={`/events?tag=${encodeURIComponent(tag)}`}
-                                        class="rounded-sm bg-black/45 px-2.5 py-1 text-xs font-semibold text-white transition-colors duration-300 ease-motion hover:bg-white/18"
+                                        class="detail-tag"
                                     >
                                         # {tag}
                                     </a>
@@ -185,66 +171,50 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                     </div>
                 </header>
 
-                <section
-                    class="grid overflow-hidden rounded-md bg-surface ring-1 ring-border/80 sm:grid-cols-3"
-                    aria-label="活动信息"
-                >
-                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
-                        <CalendarDays class="size-5 shrink-0 text-primary" aria-hidden="true" />
+                <section class="detail-facts" aria-label="活动信息">
+                    <div class="detail-fact">
+                        <CalendarDays size={20} aria-hidden="true" />
                         <div>
-                            <p class="text-xs font-semibold text-muted">日期</p>
-                            <strong class="mt-1 block text-sm text-foreground">
-                                {formatEventSchedule(event)}
-                            </strong>
+                            <p>日期</p>
+                            <strong>{formatEventSchedule(event)}</strong>
                         </div>
                     </div>
-                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
-                        <MapPin class="size-5 shrink-0 text-accent" aria-hidden="true" />
+                    <div class="detail-fact">
+                        <MapPin size={20} aria-hidden="true" />
                         <div>
-                            <p class="text-xs font-semibold text-muted">地区</p>
-                            <strong class="mt-1 block text-sm text-foreground">
-                                {divisionLabel ?? "未知地区"}
-                            </strong>
+                            <p>地区</p>
+                            <strong>{divisionLabel ?? "未知地区"}</strong>
                         </div>
                     </div>
-                    <div class="flex gap-3 p-5">
-                        <Store class="size-5 shrink-0 text-warning" aria-hidden="true" />
+                    <div class="detail-fact">
+                        <Store size={20} aria-hidden="true" />
                         <div>
-                            <p class="text-xs font-semibold text-muted">场地</p>
-                            <strong class="mt-1 block text-sm text-foreground">
-                                {event.venue}
-                            </strong>
+                            <p>场地</p>
+                            <strong>{event.venue}</strong>
                         </div>
                     </div>
                 </section>
 
-                <section
-                    class="grid overflow-hidden rounded-md bg-surface ring-1 ring-border/80 sm:grid-cols-3"
-                    aria-label="活动当前信息"
-                >
-                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
-                        <Clock class="size-5 shrink-0 text-primary" aria-hidden="true" />
+                <section class="detail-facts" aria-label="活动当前信息">
+                    <div class="detail-fact">
+                        <Clock size={20} aria-hidden="true" />
                         <div>
-                            <p class="text-xs font-semibold text-muted">当前状态</p>
-                            <strong class="mt-1 block text-sm text-foreground">
-                                {eventStatus}
-                            </strong>
+                            <p>当前状态</p>
+                            <strong>{eventStatus}</strong>
                         </div>
                     </div>
-                    <div class="flex gap-3 border-b border-border/75 p-5 sm:border-r sm:border-b-0">
-                        <Refresh class="size-5 shrink-0 text-accent" aria-hidden="true" />
+                    <div class="detail-fact">
+                        <Refresh size={20} aria-hidden="true" />
                         <div>
-                            <p class="text-xs font-semibold text-muted">最后更新时间</p>
-                            <strong class="mt-1 block text-sm text-foreground">{updatedAt}</strong>
+                            <p>最后更新时间</p>
+                            <strong>{updatedAt}</strong>
                         </div>
                     </div>
-                    <div class="flex gap-3 p-5">
-                        <Fire class="size-5 shrink-0 text-warning" aria-hidden="true" />
+                    <div class="detail-fact">
+                        <Fire size={20} aria-hidden="true" />
                         <div>
-                            <p class="text-xs font-semibold text-muted">近 30 日热度</p>
-                            <strong class="mt-1 block text-sm text-foreground tabular-nums">
-                                {recentVisitorCount}
-                            </strong>
+                            <p>近 30 日热度</p>
+                            <strong>{recentVisitorCount}</strong>
                         </div>
                     </div>
                 </section>
@@ -252,52 +222,40 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                 {hasOptionalContent ? (
                     <div
                         class:list={[
-                            "gap-12",
+                            "detail-optional",
                             hasAsideContent
-                                ? "grid lg:grid-cols-[minmax(0,1fr)_21rem]"
-                                : "flex flex-col"
+                                ? "detail-optional-with-aside"
+                                : "detail-optional-main-only"
                         ]}
                     >
                         {description ? (
                             <section aria-labelledby="event-description-heading">
-                                <h2
-                                    id="event-description-heading"
-                                    class="text-xl font-black text-foreground"
-                                >
+                                <h2 id="event-description-heading" class="detail-section-title">
                                     活动介绍
                                 </h2>
-                                <p class="mt-5 max-w-[68ch] text-base leading-8 text-pretty whitespace-pre-line text-foreground">
-                                    {description}
-                                </p>
+                                <p class="detail-description">{description}</p>
                             </section>
                         ) : null}
 
                         {hasAsideContent ? (
                             <aside
                                 class:list={[
-                                    "flex h-fit flex-col gap-4",
-                                    description
-                                        ? "border-t border-border/80 pt-7 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
-                                        : "max-w-[21rem] lg:col-start-2"
+                                    "detail-aside",
+                                    description ? "detail-aside-bordered" : "detail-aside-only"
                                 ]}
                             >
-                                {hasAction ? (
-                                    <h2 class="text-base font-black text-foreground">参加活动</h2>
-                                ) : null}
+                                {hasAction ? <h2>参加活动</h2> : null}
                                 {ticketUrl ? (
                                     <Button
                                         href={ticketUrl}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
                                         size="lg"
-                                        class="group h-12 w-full justify-between rounded-full py-1 pr-1 pl-5 text-sm font-bold"
+                                        class="detail-action"
                                     >
                                         购票/预约入口
-                                        <span class="flex size-10 items-center justify-center rounded-full bg-white/18">
-                                            <Ticket
-                                                class="size-4 transition-transform duration-300 ease-motion group-hover:scale-105"
-                                                aria-hidden="true"
-                                            />
+                                        <span>
+                                            <Ticket size={17} aria-hidden="true" />
                                         </span>
                                     </Button>
                                 ) : null}
@@ -308,78 +266,55 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
                                         rel="nofollow noopener noreferrer"
                                         variant="tonal"
                                         size="lg"
-                                        class="group h-12 w-full justify-between rounded-full bg-surface-subtle py-1 pr-1 pl-5 text-sm font-bold text-foreground hover:bg-surface-subtle/80 dark:bg-surface-subtle! dark:text-foreground! dark:hover:bg-surface-subtle/80!"
+                                        class="detail-action"
                                     >
                                         活动来源
-                                        <span class="flex size-10 items-center justify-center rounded-full bg-surface">
-                                            <ExternalLink
-                                                class="size-4 transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                                                aria-hidden="true"
-                                            />
+                                        <span>
+                                            <ExternalLink size={17} aria-hidden="true" />
                                         </span>
                                     </Button>
                                 ) : null}
                                 {hasDetailFacts ? (
                                     <dl
                                         class:list={[
-                                            "flex flex-col gap-4 text-sm",
-                                            hasAction ? "mt-2 border-t border-border pt-5" : ""
+                                            "detail-fact-list",
+                                            hasAction ? "detail-fact-list-separated" : ""
                                         ]}
                                     >
                                         {address ? (
                                             <div>
-                                                <dt class="text-xs font-semibold text-muted">
-                                                    详细地址
-                                                </dt>
-                                                <dd class="mt-1 text-foreground">{address}</dd>
+                                                <dt>详细地址</dt>
+                                                <dd>{address}</dd>
                                             </div>
                                         ) : null}
                                         {qqGroup ? (
                                             <div>
-                                                <dt class="text-xs font-semibold text-muted">
-                                                    官方交流群
-                                                </dt>
-                                                <dd class="mt-1 text-foreground">{qqGroup}</dd>
+                                                <dt>官方交流群</dt>
+                                                <dd>{qqGroup}</dd>
                                             </div>
                                         ) : null}
                                         {organizer ? (
                                             <div>
-                                                <dt class="text-xs font-semibold text-muted">
-                                                    主办方
-                                                </dt>
-                                                <dd class="mt-1 break-words text-foreground">
-                                                    {organizer}
-                                                </dd>
+                                                <dt>主办方</dt>
+                                                <dd>{organizer}</dd>
                                             </div>
                                         ) : null}
                                         {admissionMethodLabel ? (
                                             <div>
-                                                <dt class="text-xs font-semibold text-muted">
-                                                    入场方式
-                                                </dt>
-                                                <dd class="mt-1 text-foreground">
-                                                    {admissionMethodLabel}
-                                                </dd>
+                                                <dt>入场方式</dt>
+                                                <dd>{admissionMethodLabel}</dd>
                                             </div>
                                         ) : null}
                                         {priceRange ? (
                                             <div>
-                                                <dt class="text-xs font-semibold text-muted">
-                                                    票价区间
-                                                </dt>
-                                                <dd class="mt-1 [overflow-wrap:anywhere] break-words text-foreground">
-                                                    {priceRange}
-                                                </dd>
+                                                <dt>票价区间</dt>
+                                                <dd>{priceRange}</dd>
                                             </div>
                                         ) : null}
                                         {admissionStart ? (
                                             <div>
-                                                <dt class="text-xs font-semibold text-muted">
-                                                    开始购票/预约/申请
-                                                </dt>
-                                                <dd class="mt-1 text-foreground">
-                                                    {admissionStart}
-                                                </dd>
+                                                <dt>开始购票/预约/申请</dt>
+                                                <dd>{admissionStart}</dd>
                                             </div>
                                         ) : null}
                                     </dl>

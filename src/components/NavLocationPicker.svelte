@@ -1,9 +1,6 @@
 <script lang="ts">
-    import { Spinner } from "flowbite-svelte";
-    import {
-        ChevronDownOutline as ChevronDown,
-        MapPinAltOutline as MapPin
-    } from "flowbite-svelte-icons";
+    import ChevronDown from "phosphor-svelte/lib/CaretDown";
+    import MapPin from "phosphor-svelte/lib/MapPin";
     import { onMount, untrack } from "svelte";
     import { isRegionCode } from "../lib/divisions";
     import { parsePopularityWindow, type PopularityWindow } from "../lib/events/popularity";
@@ -21,6 +18,7 @@
     import Alert from "./ui/alert.svelte";
     import SidePanel from "./ui/side-panel.svelte";
     import CitySelector from "./CitySelector.svelte";
+    import Spinner from "./ui/spinner.svelte";
 
     interface Props {
         selectedDivisionCode: string;
@@ -258,45 +256,42 @@
         ? `当前：${currentDivision.label} · ${currentSourceLabel}`
         : `当前：${currentDivision.label}`}
     triggerAriaLabel={`更改地区, 当前为${currentDivision.label}`}
-    triggerClass="h-9 max-w-[8.5rem] gap-1.5 rounded-full border-border/80 bg-surface/88 px-2.5 text-xs text-foreground shadow-none hover:bg-surface-subtle sm:h-10 sm:max-w-[10rem] sm:px-3 sm:text-sm"
-    contentClass="max-w-sm"
+    triggerClass="location-trigger"
+    contentClass="location-sheet"
 >
     {#snippet trigger()}
-        <MapPin class="size-3.5 shrink-0 text-primary sm:size-4" aria-hidden="true" />
-        <span class="min-w-0 truncate">{currentDivision.name}</span>
+        <MapPin size={16} aria-hidden="true" />
+        <span class="location-name">{currentDivision.name}</span>
         {#if pendingDivisionCode}
-            <Spinner size="4" class="size-3 shrink-0" aria-label="正在切换地区" />
+            <Spinner label="正在切换地区" />
         {:else}
-            <ChevronDown
-                class="size-3 shrink-0 text-muted transition-transform duration-300 ease-motion group-aria-expanded:rotate-180"
-                aria-hidden="true"
-            />
+            <ChevronDown size={13} aria-hidden="true" />
         {/if}
     {/snippet}
 
     {#snippet footer()}
-        <div class="flex flex-col gap-3">
+        <div class="location-footer">
             <Button
-                class="w-full justify-center"
+                class="location-apply"
                 disabled={!isRegionCode(draftDivisionCode) || pendingDivisionCode !== null}
                 onclick={applyDraftDivision}
             >
                 {#if pendingDivisionCode}
-                    <Spinner size="4" class="size-4" aria-hidden="true" />
+                    <Spinner label="正在应用地区" />
                     正在应用
                 {:else}
                     应用地区
                 {/if}
             </Button>
             {#if pendingDivisionCode}
-                <p class="text-center text-xs text-muted" aria-live="polite">
+                <p class="location-status" aria-live="polite">
                     正在加载所选地区, 当前内容仍可继续浏览
                 </p>
             {/if}
         </div>
     {/snippet}
 
-    <div class="flex flex-col gap-5">
+    <div class="location-content">
         <CitySelector
             selectedDivisionCode={draftDivisionCode}
             label="选择省、市和区县"
@@ -305,13 +300,10 @@
         />
 
         {#if errorMessage}
-            <Alert tone="danger" class="p-4">
-                <p class="font-semibold">{errorMessage}</p>
+            <Alert tone="danger">
+                <p class="location-error">{errorMessage}</p>
                 {#if fallbackHref}
-                    <a
-                        href={fallbackHref}
-                        class="mt-2 inline-flex font-semibold text-link underline decoration-link/40 underline-offset-4"
-                    >
+                    <a href={fallbackHref} class="location-fallback">
                         使用普通页面导航打开该地区
                     </a>
                 {/if}

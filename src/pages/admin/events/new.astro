@@ -1,8 +1,6 @@
 ---
-import {
-    ArrowLeftOutline as ArrowLeft,
-    FileImportOutline as FileImport
-} from "flowbite-svelte-icons";
+import ArrowLeft from "phosphor-svelte/lib/ArrowLeft";
+import FileImport from "phosphor-svelte/lib/FileArrowDown";
 import AdminEventForm from "../../../components/admin/AdminEventForm.astro";
 import Alert from "../../../components/ui/alert.svelte";
 import Button from "../../../components/ui/button.svelte";
@@ -67,44 +65,31 @@ const importedFieldCount = importPreview
 <AdminLayout title="增加活动" description="录入后立即发布到公开活动目录">
     {
         pageError ? (
-            <Alert tone="danger" class="p-6 text-center font-semibold">
+            <Alert tone="danger" class="admin-page-error">
                 {pageError}
             </Alert>
         ) : (
             <div>
-                <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-5">
-                    <a
-                        href="/admin"
-                        class="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                    >
-                        <ArrowLeft class="size-4" aria-hidden="true" />
+                <div class="admin-return-row">
+                    <a href="/admin" class="admin-return-link">
+                        <ArrowLeft size={16} aria-hidden="true" />
                         返回活动队列
                     </a>
-                    <p class="text-xs font-semibold text-muted-foreground">管理员创建后立即公开</p>
+                    <p class="admin-return-note">管理员创建后立即公开</p>
                 </div>
 
-                <section
-                    class="mb-8 border-b border-border/80 pb-8"
-                    aria-labelledby="bilibili-import-heading"
-                >
-                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <section class="admin-import-section" aria-labelledby="bilibili-import-heading">
+                    <div class="admin-import-header">
                         <div>
-                            <h2
-                                id="bilibili-import-heading"
-                                class="text-base font-black text-foreground"
-                            >
+                            <h2 id="bilibili-import-heading" class="admin-section-title">
                                 从会员购导入
                             </h2>
-                            <p class="mt-1 text-sm text-muted-foreground">
+                            <p class="admin-section-note">
                                 输入活动 ID 后读取可用字段, 发布前仍可检查和修改
                             </p>
                         </div>
-                        <form
-                            method="get"
-                            action="/admin/events/new"
-                            class="flex w-full flex-col gap-2 sm:flex-row lg:max-w-lg"
-                        >
-                            <div class="min-w-0 flex-1">
+                        <form method="get" action="/admin/events/new" class="admin-import-form">
+                            <div class="admin-import-input">
                                 <Label class="sr-only" for="bilibili_id">
                                     会员购活动 ID
                                 </Label>
@@ -122,20 +107,20 @@ const importedFieldCount = importPreview
                                 />
                             </div>
                             <Button type="submit">
-                                <FileImport class="size-4" aria-hidden="true" />
+                                <FileImport size={16} aria-hidden="true" />
                                 导入
                             </Button>
                         </form>
                     </div>
                     {importError ? (
-                        <Alert tone="danger" class="mt-4">
-                            <p class="font-semibold">{importError}</p>
+                        <Alert tone="danger" class="admin-import-alert">
+                            <p class="admin-import-error">{importError}</p>
                             {importErrorDetails ? (
-                                <p class="mt-2 font-mono text-xs leading-5 break-words text-danger/85">
+                                <p class="admin-import-error-detail">
                                     错误详情: {importErrorDetails}
                                 </p>
                             ) : null}
-                            <p class="mt-1 text-danger/85">下方表单仍可手动录入活动</p>
+                            <p class="admin-import-error-note">下方表单仍可手动录入活动</p>
                         </Alert>
                     ) : null}
                 </section>
@@ -171,21 +156,21 @@ const importedFieldCount = importPreview
                                 value={importPreview.projectId}
                             />
                             <section
-                                class="rounded-md bg-surface-subtle p-4 ring-1 ring-border/80 sm:p-5"
+                                class="admin-import-preview"
                                 aria-labelledby="bilibili-result-heading"
                                 aria-live="polite"
                             >
-                                <div class="flex flex-wrap items-start justify-between gap-3">
-                                    <div class="min-w-0">
+                                <div class="admin-import-preview-header">
+                                    <div>
                                         <h2
                                             id="bilibili-result-heading"
-                                            class="text-base font-black break-words text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                            class="admin-import-result-title"
                                             tabindex="-1"
                                             data-import-result
                                         >
                                             已读取 {importPreview.values.title}
                                         </h2>
-                                        <p class="mt-1 text-sm text-muted-foreground">
+                                        <p class="admin-import-result-note">
                                             已填入 {importedFieldCount} 项, 来源 ID{" "}
                                             {importPreview.projectId}
                                         </p>
@@ -194,22 +179,24 @@ const importedFieldCount = importPreview
                                         href={importPreview.canonicalSourceUrl}
                                         target="_blank"
                                         rel="noreferrer"
-                                        class="text-sm font-semibold break-all text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                        class="admin-import-link"
                                     >
                                         打开会员购页面
                                     </a>
                                 </div>
 
                                 {missingFieldLabels.length > 0 ? (
-                                    <Alert tone="neutral" class="mt-4" role="status">
-                                        <p class="font-semibold">
-                                            发布前需要补充：{missingFieldLabels.join("、")}
-                                        </p>
+                                    <Alert
+                                        tone="neutral"
+                                        class="admin-import-message"
+                                        role="status"
+                                    >
+                                        <p>发布前需要补充: {missingFieldLabels.join(", ")}</p>
                                     </Alert>
                                 ) : null}
 
                                 {importPreview.warnings.length > 0 ? (
-                                    <Alert tone="warning" class="mt-4 space-y-2">
+                                    <Alert tone="warning" class="admin-import-message">
                                         {importPreview.warnings.map((warning) => (
                                             <p>{warning.message}</p>
                                         ))}
@@ -217,10 +204,10 @@ const importedFieldCount = importPreview
                                 ) : null}
 
                                 {importPreview.exactDuplicate ? (
-                                    <Alert tone="danger" class="mt-4 p-3">
-                                        <p class="font-semibold">该会员购活动已经导入</p>
+                                    <Alert tone="danger" class="admin-import-message">
+                                        <p>该会员购活动已经导入</p>
                                         <a
-                                            class="mt-1 inline-flex font-semibold underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                                            class="admin-import-link"
                                             href={`/admin/events/${importPreview.exactDuplicate.id}/edit`}
                                         >
                                             打开已有活动：{importPreview.exactDuplicate.title}
@@ -230,12 +217,12 @@ const importedFieldCount = importPreview
 
                                 <div
                                     id="bilibili-submit-warnings"
-                                    class="mt-4 space-y-3"
+                                    class="admin-duplicate-warnings"
                                     aria-live="polite"
                                 >
                                     {importPreview.duplicateCandidates.length > 0 ? (
-                                        <fieldset class="space-y-3">
-                                            <legend class="text-sm font-semibold text-foreground">
+                                        <fieldset class="admin-warning-fieldset">
+                                            <legend class="admin-warning-legend">
                                                 发现疑似重复活动, 确认后才能发布
                                             </legend>
                                             {importPreview.duplicateCandidates.map(
@@ -243,15 +230,15 @@ const importedFieldCount = importPreview
                                                     <Checkbox
                                                         name="confirmed_warning_keys"
                                                         value={key}
-                                                        class="mt-0.5 shrink-0"
-                                                        divClass="flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80"
+                                                        wrapperClass="admin-warning-option"
                                                         required
+                                                        client:load
                                                     >
-                                                        <span class="min-w-0 text-foreground">
+                                                        <span class="admin-warning-copy">
                                                             我已检查
                                                             <a
                                                                 href={`/admin/events/${event.id}/edit`}
-                                                                class="mx-1 font-semibold break-words text-primary hover:underline"
+                                                                class="admin-warning-link"
                                                                 target="_blank"
                                                             >
                                                                 {event.title}
@@ -312,16 +299,15 @@ const importedFieldCount = importPreview
         warningContainer.setAttribute("role", "alert");
         warningContainer.replaceChildren();
         const fieldset = document.createElement("fieldset");
-        fieldset.className = "space-y-3";
+        fieldset.className = "admin-warning-fieldset";
         const legend = document.createElement("legend");
-        legend.className = "text-sm font-semibold text-foreground";
+        legend.className = "admin-warning-legend";
         legend.textContent = "发现新的疑似重复活动, 确认后才能发布";
         fieldset.append(legend);
 
         for (const warning of warnings) {
             const label = document.createElement("label");
-            label.className =
-                "flex items-start gap-3 rounded-md bg-surface p-3 text-sm ring-1 ring-border/80";
+            label.className = "admin-warning-option";
             // This non-hydrated validation surface keeps native required checkbox behavior.
             const input = document.createElement("input");
             input.type = "checkbox";
@@ -329,16 +315,15 @@ const importedFieldCount = importPreview
             input.value = warning.key;
             input.required = true;
             input.checked = confirmedKeys.has(warning.key);
-            input.className =
-                "mt-0.5 size-4 shrink-0 rounded border-border-strong text-primary focus:ring-ring/50";
+            input.className = "admin-native-checkbox";
             const text = document.createElement("span");
-            text.className = "min-w-0 text-foreground";
+            text.className = "admin-warning-copy";
             text.append("我已检查 ");
             const link = document.createElement("a");
             link.href = `/admin/events/${warning.event.id}/edit`;
             link.target = "_blank";
             link.rel = "noreferrer";
-            link.className = "font-semibold break-words text-primary hover:underline";
+            link.className = "admin-warning-link";
             link.textContent = warning.event.title;
             text.append(
                 link,
@@ -363,7 +348,7 @@ const importedFieldCount = importPreview
             saveButton.setAttribute("aria-busy", "true");
             saveLabel.textContent = "发布中";
             saveStatus.textContent = "正在保存活动、标签和审计记录…";
-            saveStatus.classList.remove("text-danger");
+            saveStatus.classList.remove("is-danger");
 
             try {
                 const response = await fetch("/api/admin/events", {
@@ -381,7 +366,7 @@ const importedFieldCount = importPreview
                             Object.assign(document.createElement("a"), {
                                 href: `/admin/events/${existingEvent.id}/edit`,
                                 textContent: existingEvent.title,
-                                className: "font-semibold underline underline-offset-2"
+                                className: "admin-status-link"
                             })
                         );
                     }
@@ -396,7 +381,7 @@ const importedFieldCount = importPreview
                     saveStatus.textContent =
                         error instanceof Error ? error.message : "发布失败, 请重试";
                 }
-                saveStatus.classList.add("text-danger");
+                saveStatus.classList.add("is-danger");
                 if (!exactDuplicateConflict) saveButton.disabled = false;
                 saveButton.removeAttribute("aria-busy");
                 saveLabel.textContent = "发布活动";

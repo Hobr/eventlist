@@ -1,110 +1,96 @@
-@import "tailwindcss";
 @import "@fontsource-variable/geist/wght.css";
 @import "./tokens.css";
-@plugin "flowbite/plugin";
-@custom-variant dark (@media (prefers-color-scheme: dark));
-@source "../../node_modules/flowbite-svelte/dist";
-@source "../../node_modules/flowbite-svelte-icons/dist";
+@import "./components.css";
 
-/* Bridges the semantic tokens defined in tokens.css (with prefers-color-scheme
-   dark values) into Tailwind v4 utilities. `inline` keeps the var reference in
-   generated utilities so dark-mode overrides apply at runtime. */
-@theme inline {
-    --color-background: var(--color-background);
-    --color-foreground: var(--color-foreground);
-    --color-muted: var(--color-muted);
-    --color-muted-foreground: var(--color-muted-foreground);
-    --color-surface: var(--color-surface);
-    --color-surface-subtle: var(--color-surface-subtle);
-    --color-surface-raised: var(--color-surface-raised);
-    --color-border: var(--color-border);
-    --color-border-strong: var(--color-border-strong);
-    --color-ring: var(--color-ring);
-    --color-primary: var(--color-primary);
-    --color-primary-foreground: var(--color-primary-foreground);
-    --color-primary-subtle: var(--color-primary-subtle);
-    --color-primary-subtle-foreground: var(--color-primary-subtle-foreground);
-    --color-accent: var(--color-accent);
-    --color-accent-subtle: var(--color-accent-subtle);
-    --color-warning: var(--color-warning);
-    --color-warning-subtle: var(--color-warning-subtle);
-    --color-danger: var(--color-danger);
-    --color-danger-foreground: var(--color-danger-foreground);
-    --color-danger-subtle: var(--color-danger-subtle);
-    --color-link: var(--color-link);
-
-    --radius-xs: var(--radius-xs);
-    --radius-sm: var(--radius-sm);
-    --radius-md: var(--radius-md);
-    --radius-full: var(--radius-full);
-
-    --font-sans: var(--font-sans);
-    --font-mono: var(--font-mono);
-
-    --shadow-popover: var(--shadow-popover);
-    --shadow-elevated: var(--shadow-elevated);
-    --shadow-focus: var(--shadow-focus);
-    --ease-motion: var(--ease-standard);
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
-@layer base {
-    * {
-        box-sizing: border-box;
-    }
-    html {
-        background: var(--color-background);
-        color: var(--color-foreground);
-        font-family: var(--font-sans);
-        letter-spacing: 0;
-        scroll-behavior: smooth;
-    }
-    body {
-        margin: 0;
-        min-width: 320px;
-        line-height: 1.5;
-        text-rendering: optimizeLegibility;
-        font-synthesis: none;
-    }
-    button,
-    input,
-    select,
-    textarea {
-        font: inherit;
-    }
-    button {
-        color: inherit;
-    }
-    a {
-        color: var(--color-link);
-        text-underline-offset: 3px;
-    }
-    img {
-        display: block;
-        max-width: 100%;
-    }
-    details > summary {
-        list-style: none;
-    }
-    details > summary::-webkit-details-marker {
-        display: none;
-    }
-    ::selection {
-        background: var(--color-primary-subtle);
-        color: var(--color-primary-subtle-foreground);
-    }
-    :focus-visible {
-        outline: 0;
-        box-shadow: var(--shadow-focus);
-    }
+html {
+    min-width: 320px;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    scroll-behavior: smooth;
 }
 
-@layer utilities {
-    .text-balance {
-        text-wrap: balance;
-    }
-    .text-pretty {
-        text-wrap: pretty;
-    }
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100dvh;
+    overflow-x: clip;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    color: inherit;
+}
+
+a {
+    color: var(--color-link);
+    text-underline-offset: 3px;
+}
+
+img,
+svg {
+    display: block;
+}
+
+img {
+    max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-block-start: 0;
+}
+
+details > summary {
+    list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+::selection {
+    background: var(--color-brand-muted);
+    color: var(--color-primary-subtle-foreground);
+}
+
+:focus-visible {
+    outline: 0;
+    box-shadow: var(--shadow-focus);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+[hidden] {
+    display: none !important;
 }
 
 [data-reveal] {
@@ -130,9 +116,11 @@
     *::before,
     *::after {
         animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
         scroll-behavior: auto !important;
         transition-duration: 1ms !important;
     }
+
     [data-reveal] {
         opacity: 1 !important;
         transform: none !important;

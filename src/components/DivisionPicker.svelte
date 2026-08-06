@@ -146,15 +146,15 @@
     }
 </script>
 
-<div class="flex min-w-0 flex-col gap-1.5">
-    <span class="text-sm font-semibold text-muted-foreground">
+<div class="division-picker">
+    <span class="division-picker-label">
         {label}
         {#if showRequiredIndicator}
-            <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+            <span class="required-indicator">必填</span>
         {/if}
     </span>
     <input type="hidden" {name} value={selectedValue} {required} />
-    <div class={wide ? "grid grid-cols-1 gap-2" : "grid grid-cols-3 gap-2"}>
+    <div class="division-picker-grid" data-wide={wide || undefined}>
         <SelectField
             label="省"
             value={selectedProvinceCode}

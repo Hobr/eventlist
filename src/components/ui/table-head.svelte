@@ -1,18 +1,11 @@
 <script lang="ts">
-    import { TableHeadCell as FlowbiteTableHeadCell } from "flowbite-svelte";
+    import type { HTMLThAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
-
-    interface Props {
+    type Props = Omit<HTMLThAttributes, "children" | "class"> & {
         class?: string;
         children?: import("svelte").Snippet;
-    }
-    let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(
-        cn(
-            "h-11 px-3 text-left align-middle font-semibold text-muted-foreground dark:text-muted-foreground!",
-            className
-        )
-    );
+    };
+    let { class: className = undefined, children, ...restProps }: Props = $props();
 </script>
 
-<FlowbiteTableHeadCell class={classes}>{@render children?.()}</FlowbiteTableHeadCell>
+<th {...restProps} class={cn("ui-table-head", className)}>{@render children?.()}</th>

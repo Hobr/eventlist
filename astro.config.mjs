@@ -3,8 +3,51 @@ import { defineConfig } from "astro/config";
 
 import cloudflare from "@astrojs/cloudflare";
 import svelte from "@astrojs/svelte";
-import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
+
+const phosphorIcons = [
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUpRight",
+    "ArrowsClockwise",
+    "CalendarDots",
+    "CaretDown",
+    "CaretLeft",
+    "CaretRight",
+    "CaretUpDown",
+    "Check",
+    "CheckCircle",
+    "Clock",
+    "Compass",
+    "DownloadSimple",
+    "FileArrowDown",
+    "FileCsv",
+    "Fire",
+    "FloppyDisk",
+    "Funnel",
+    "GitFork",
+    "Intersect",
+    "List",
+    "LockKey",
+    "MapPin",
+    "PaperPlaneTilt",
+    "Pause",
+    "PencilSimple",
+    "Play",
+    "Plus",
+    "Scales",
+    "Shapes",
+    "ShieldCheck",
+    "SlidersHorizontal",
+    "Storefront",
+    "Tag",
+    "Ticket",
+    "Tray",
+    "UploadSimple",
+    "WarningCircle",
+    "X",
+    "XCircle"
+].map((icon) => `phosphor-svelte/lib/${icon}`);
 
 // https://astro.build/config
 export default defineConfig({
@@ -25,6 +68,9 @@ export default defineConfig({
         })
     ],
     vite: {
-        plugins: [tailwindcss()]
+        optimizeDeps: {
+            include: ["astro/logger/json"],
+            exclude: phosphorIcons
+        }
     }
 });

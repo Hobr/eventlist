@@ -1,50 +1,27 @@
 ---
-import {
-    ArrowLeftOutline as ArrowLeft,
-    CalendarMonthOutline as CalendarDays
-} from "flowbite-svelte-icons";
+import ArrowLeft from "phosphor-svelte/lib/ArrowLeft";
+import CalendarDays from "phosphor-svelte/lib/CalendarDots";
 import EventArtwork from "../components/EventArtwork.astro";
 import Button from "../components/ui/button.svelte";
 import Layout from "../layouts/Layout.astro";
-
 Astro.response.status = 404;
 ---
 
 <Layout title="页面不存在" description="无法找到请求的页面">
-    <section
-        class="relative isolate overflow-hidden rounded-md bg-foreground text-white shadow-elevated ring-1 ring-black/10"
-        data-reveal
-    >
-        <EventArtwork src={null} alt="同频点活动封面" loading="eager" fill class="rounded-none" />
-        <div class="absolute inset-0 bg-black/68"></div>
-        <div
-            class="relative flex min-h-[30rem] flex-col justify-end p-6 sm:min-h-[34rem] sm:p-10 lg:p-14"
-        >
-            <p class="font-mono text-sm font-semibold text-white/70 tabular-nums">404</p>
-            <h1 class="mt-3 text-4xl font-black text-balance text-white sm:text-6xl">
-                果咩纳塞, 页面不存在
-            </h1>
-            <p class="mt-4 max-w-xl text-base leading-7 text-white/78">
-                活动可能不存在, 也有可能被下架了
-            </p>
-            <div class="mt-7 flex flex-wrap gap-3">
-                <Button
-                    href="/"
-                    size="lg"
-                    class="h-11 rounded-full bg-white px-5 text-sm font-bold text-black hover:bg-white/90 dark:bg-white! dark:text-black! dark:hover:bg-white/90!"
+    <section class="not-found" data-reveal>
+        <EventArtwork src={null} alt="同频点活动封面" loading="eager" fill class="not-found-art" />
+        <div class="not-found-shade"></div>
+        <div class="not-found-copy">
+            <p>404</p>
+            <h1>果咩纳塞, 页面不存在</h1>
+            <p>活动可能不存在, 也有可能被下架了</p>
+            <div>
+                <Button href="/" size="lg"
+                    ><ArrowLeft size={17} aria-hidden="true" />返回首页</Button
                 >
-                    <ArrowLeft class="size-4" aria-hidden="true" />
-                    返回首页
-                </Button>
-                <Button
-                    href="/events"
-                    variant="outline"
-                    size="lg"
-                    class="h-11 rounded-full border-white/24 bg-white/14 px-5 text-sm font-bold text-white hover:bg-white/20 dark:border-white/24! dark:bg-white/14! dark:text-white! dark:hover:bg-white/20!"
+                <Button href="/events" variant="outline" size="lg"
+                    ><CalendarDays size={17} aria-hidden="true" />浏览活动</Button
                 >
-                    <CalendarDays class="size-4" aria-hidden="true" />
-                    浏览其他活动
-                </Button>
             </div>
         </div>
     </section>

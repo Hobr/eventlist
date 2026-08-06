@@ -196,7 +196,7 @@ test("活动详情模板按可选内容模型移除空标题、容器和分隔�
     assert.match(source, /\{hasOptionalContent \? \(/);
     assert.match(source, /\{description \? \([\s\S]*活动介绍[\s\S]*\{description\}/);
     assert.match(source, /\{hasAsideContent \? \(/);
-    assert.match(source, /\{hasAction \? \([\s\S]*参加活动[\s\S]*\) : null\}/);
+    assert.match(source, /\{hasAction \? <h2>参加活动<\/h2> : null\}/);
     assert.match(source, /\{hasDetailFacts \? \(/);
     assert.match(source, /\{address \? \([\s\S]*详细地址[\s\S]*\{address\}/);
     assert.match(source, /\{qqGroup \? \([\s\S]*官方交流群[\s\S]*\{qqGroup\}/);
@@ -204,7 +204,7 @@ test("活动详情模板按可选内容模型移除空标题、容器和分隔�
         source,
         /\{ticketUrl \? \([\s\S]*购票\/预约入口[\s\S]*\) : null\}[\s\S]*\{sourceUrl \? \([\s\S]*活动来源[\s\S]*\) : null\}/
     );
-    assert.match(source, /hasAction \? "mt-2 border-t border-border pt-5" : ""/);
+    assert.match(source, /hasAction \? "detail-fact-list-separated" : ""/);
     assert.match(
         source,
         /description=\{event \? \(description \?\? undefined\) : "活动不存在或尚未公开"\}/
@@ -221,11 +221,11 @@ test("活动详情模板在无介绍但有侧栏时保持桌面第二列和移�
 
     assert.match(
         source,
-        /<div\s+class:list=\{\[\s*"gap-12",\s*hasAsideContent\s*\?\s*"grid lg:grid-cols-\[minmax\(0,1fr\)_21rem\]"\s*:\s*"flex flex-col"\s*\]\}\s*>/
+        /<div\s+class:list=\{\[\s*"detail-optional",\s*hasAsideContent\s*\?\s*"detail-optional-with-aside"\s*:\s*"detail-optional-main-only"\s*\]\}\s*>/
     );
     assert.match(
         source,
-        /<aside\s+class:list=\{\[\s*"flex h-fit flex-col gap-4",\s*description\s*\?\s*"border-t border-border\/80 pt-7 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"\s*:\s*"max-w-\[21rem\] lg:col-start-2"\s*\]\}\s*>/
+        /<aside\s+class:list=\{\[\s*"detail-aside",\s*description\s*\?\s*"detail-aside-bordered"\s*:\s*"detail-aside-only"\s*\]\}\s*>/
     );
 });
 

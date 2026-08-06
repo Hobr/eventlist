@@ -1,17 +1,14 @@
 <script lang="ts">
-    import { Table as FlowbiteTable } from "flowbite-svelte";
+    import type { HTMLTableAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
 
-    interface Props {
+    type Props = Omit<HTMLTableAttributes, "children" | "class"> & {
         class?: string;
         children?: import("svelte").Snippet;
-    }
-    let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(
-        cn("w-full caption-bottom text-sm text-foreground dark:text-foreground!", className)
-    );
+    };
+    let { class: className = undefined, children, ...restProps }: Props = $props();
 </script>
 
-<FlowbiteTable border={false} classes={{ div: "contents" }} class={classes}>
-    {@render children?.()}
-</FlowbiteTable>
+<div class="ui-table-wrap">
+    <table {...restProps} class={cn("ui-table", className)}>{@render children?.()}</table>
+</div>

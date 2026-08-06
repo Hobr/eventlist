@@ -1,14 +1,20 @@
 <script lang="ts">
-    import { Hr as FlowbiteHr } from "flowbite-svelte";
-    import type { HrProps } from "flowbite-svelte";
+    import { Separator } from "bits-ui";
+    import type { HTMLAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
 
-    type Props = Omit<HrProps, "children" | "class" | "classes"> & {
+    type Props = Omit<HTMLAttributes<HTMLDivElement>, "children" | "class"> & {
+        orientation?: "horizontal" | "vertical";
+        decorative?: boolean;
         class?: string;
     };
 
-    let { class: className = undefined, ...restProps }: Props = $props();
-    let classes = $derived(cn("my-0 h-px w-full border-0", className));
+    let {
+        orientation = "horizontal",
+        decorative = true,
+        class: className = undefined,
+        ...restProps
+    }: Props = $props();
 </script>
 
-<FlowbiteHr {...restProps} classes={{ bg: "bg-border dark:bg-border!" }} class={classes} />
+<Separator.Root {...restProps} {orientation} {decorative} class={cn("ui-separator", className)} />

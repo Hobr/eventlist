@@ -1,9 +1,7 @@
 <script lang="ts">
-    import {
-        ArrowUpRightFromSquareOutline as ArrowUpRight,
-        CalendarMonthOutline as CalendarDays,
-        MapPinOutline as MapPin
-    } from "flowbite-svelte-icons";
+    import ArrowUpRight from "phosphor-svelte/lib/ArrowUpRight";
+    import CalendarDays from "phosphor-svelte/lib/CalendarDots";
+    import MapPin from "phosphor-svelte/lib/MapPin";
     import { getDivisionLabel } from "../lib/divisions";
     import { getDisplayCoverUrl } from "../lib/events/cover";
     import { formatEventSchedule } from "../lib/events/datetime";
@@ -38,19 +36,12 @@
         if (!coverUrl) return "";
 
         // Keep the failure fallback working for both hydrated homepage rows and SSR-only catalogue rows.
-        return `<img src="${escapeAttribute(coverUrl)}" alt="" width="1200" height="900" loading="${priority ? "eager" : "lazy"}" decoding="async" fetchpriority="${priority ? "high" : "auto"}" referrerpolicy="no-referrer" class="absolute inset-0 size-full object-cover" onerror="this.remove()" />`;
+        return `<img src="${escapeAttribute(coverUrl)}" alt="" width="1200" height="900" loading="${priority ? "eager" : "lazy"}" decoding="async" fetchpriority="${priority ? "high" : "auto"}" referrerpolicy="no-referrer" class="event-row-image" onerror="this.remove()" />`;
     });
 </script>
 
-<a
-    href={`/events/${event.id}`}
-    class="group grid min-w-0 grid-cols-[6.5rem_minmax(0,1fr)] gap-4 border-b border-border/75 py-4 transition-[transform,background-color] duration-300 ease-motion hover:translate-x-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995] sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center"
->
-    <div
-        class="relative isolate aspect-[4/3] w-full overflow-hidden rounded-md bg-surface-subtle"
-        role="img"
-        aria-label={`${event.title} 封面`}
-    >
+<a href={`/events/${event.id}`} class="event-row">
+    <div class="event-row-artwork" role="img" aria-label={`${event.title} 封面`}>
         <img
             src={fallbackUrl}
             alt=""
@@ -58,40 +49,35 @@
             height="900"
             loading={priority ? "eager" : "lazy"}
             decoding="async"
-            class="absolute inset-0 size-full object-cover"
+            class="event-row-image"
         />
         {@html coverImageHtml}
     </div>
-    <div class="min-w-0">
-        <div class="mb-2 flex flex-wrap gap-1.5">
+    <div class="event-row-content">
+        <div class="event-row-badges">
             <Badge tone="primary">{typeLabel}</Badge>
             <Badge>{scaleLabel}</Badge>
         </div>
-        <h3 class="text-base leading-tight font-bold text-foreground sm:text-lg">
+        <h3>
             {event.title}
         </h3>
-        <div
-            class="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-4 sm:text-sm"
-        >
-            <span class="inline-flex items-center gap-1.5">
-                <CalendarDays class="size-3.5" aria-hidden="true" />
+        <div class="event-row-meta">
+            <span>
+                <CalendarDays size={15} aria-hidden="true" />
                 {dateLabel}
             </span>
-            <span class="inline-flex min-w-0 items-center gap-1.5">
-                <MapPin class="size-3.5 shrink-0" aria-hidden="true" />
-                <span class="truncate">{divisionLabel} · {event.venue}</span>
+            <span>
+                <MapPin size={15} aria-hidden="true" />
+                <span>{divisionLabel} · {event.venue}</span>
             </span>
         </div>
         {#if tags.length > 0}
-            <div class="mt-3 hidden flex-wrap gap-1.5 sm:flex">
+            <div class="event-row-tags">
                 {#each tags as tag}
                     <Badge>{tag}</Badge>
                 {/each}
             </div>
         {/if}
     </div>
-    <ArrowUpRight
-        class="hidden size-5 text-muted transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105 sm:block"
-        aria-hidden="true"
-    />
+    <ArrowUpRight size={20} class="event-row-arrow" aria-hidden="true" />
 </a>

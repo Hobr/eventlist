@@ -1,5 +1,5 @@
 ---
-import { ArrowUpRightFromSquareOutline as ArrowUpRight } from "flowbite-svelte-icons";
+import ArrowUpRight from "phosphor-svelte/lib/ArrowUpRight";
 import AdminNavList from "../components/admin/AdminNavList.svelte";
 import AdminMobileNav from "../components/admin/AdminMobileNav.svelte";
 import { SITE_NAME } from "../lib/site";
@@ -9,7 +9,6 @@ interface Props {
     title: string;
     description?: string;
 }
-
 const { title, description = undefined } = Astro.props;
 const currentPath = Astro.url.pathname;
 const adminLabel =
@@ -30,85 +29,30 @@ const pageTitle = `${title} - ${SITE_NAME}管理后台`;
         <link rel="icon" href="/favicon.ico" />
         <title>{pageTitle}</title>
     </head>
-    <body class="min-h-[100dvh] bg-background text-foreground antialiased">
-        <a
-            href="#admin-main"
-            class="fixed top-2 left-2 z-50 -translate-y-20 rounded-md bg-foreground px-4 py-2 text-sm font-semibold text-background transition-transform duration-300 ease-motion focus:translate-y-0"
-        >
-            跳至主要内容
-        </a>
-        <div class="min-h-[100dvh] lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
-            <aside
-                class="sticky top-0 hidden h-[100dvh] flex-col border-r border-border/80 bg-surface/72 lg:flex"
-            >
-                <a
-                    href="/admin"
-                    class="flex h-16 items-center gap-3 border-b border-border/80 px-5 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                >
-                    <span
-                        class="flex size-9 items-center justify-center rounded-md bg-primary text-sm font-black text-primary-foreground"
-                        aria-hidden="true">同</span
-                    >
-                    <span class="min-w-0">
-                        <strong class="block text-sm text-foreground">{SITE_NAME}</strong>
-                        <span class="block text-xs text-muted">管理工作台</span>
-                    </span>
+    <body class="admin-body admin-density">
+        <a href="#admin-main" class="skip-link">跳至主要内容</a>
+        <header class="admin-shell">
+            <div class="admin-brand-row">
+                <a href="/admin" class="admin-brand">
+                    <span aria-hidden="true">同</span>
+                    <strong>{SITE_NAME}<small>管理工作台</small></strong>
                 </a>
-
-                <nav class="flex flex-1 flex-col gap-1 p-3" aria-label="管理后台导航">
-                    <AdminNavList {currentPath} />
-                </nav>
-
-                <div class="border-t border-border/80 p-4">
-                    <p class="truncate text-xs font-semibold text-muted">{adminLabel}</p>
-                    <a
-                        href="/"
-                        class="group mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors duration-300 ease-motion hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                    >
-                        查看公开站点
-                        <ArrowUpRight
-                            class="size-3.5 transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                            aria-hidden="true"
-                        />
-                    </a>
-                </div>
-            </aside>
-
-            <div class="flex min-w-0 flex-col">
-                <header
-                    class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/80 bg-background/92 px-4 shadow-[0_8px_28px_rgba(52,35,45,0.06)] backdrop-blur-xl lg:hidden"
-                >
-                    <a
-                        href="/admin"
-                        class="flex min-w-0 items-center focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-                    >
-                        <span class="truncate text-sm font-bold text-foreground">{title}</span>
-                    </a>
+                <div class="admin-mobile">
                     <AdminMobileNav {currentPath} {title} {adminLabel} client:load />
-                </header>
-
-                <header
-                    class="sticky top-0 z-20 hidden min-h-16 items-center justify-between border-b border-border/80 bg-background/92 px-8 shadow-[0_8px_28px_rgba(52,35,45,0.05)] backdrop-blur-xl lg:flex"
-                >
-                    <div class="py-3">
-                        <h1 class="text-lg font-bold text-foreground">{title}</h1>
-                        {
-                            description ? (
-                                <p class="mt-0.5 text-xs text-muted-foreground">{description}</p>
-                            ) : null
-                        }
-                    </div>
-                    <span
-                        class="rounded-full bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted-foreground"
-                    >
-                        {adminLabel}
-                    </span>
-                </header>
-
-                <main id="admin-main" class="mx-auto w-full max-w-[96rem] flex-1 p-4 sm:p-6 lg:p-8">
-                    <slot />
-                </main>
+                </div>
+                <div class="admin-identity">
+                    <span>{adminLabel}</span>
+                    <a href="/">公开站点 <ArrowUpRight size={15} aria-hidden="true" /></a>
+                </div>
             </div>
+            <nav class="admin-route-nav" aria-label="管理后台导航">
+                <AdminNavList {currentPath} />
+            </nav>
+        </header>
+        <div class="admin-page-heading">
+            <h1>{title}</h1>
+            {description ? <p>{description}</p> : null}
         </div>
+        <main id="admin-main" class="admin-main"><slot /></main>
     </body>
 </html>

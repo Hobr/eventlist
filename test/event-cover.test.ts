@@ -52,6 +52,5 @@ test("全部公开封面渲染入口禁用跨站 Referer", async () => {
 
     assert.match(artwork, /referrerpolicy="no-referrer"/);
     assert.match(row, /referrerpolicy="no-referrer"/);
-    assert.match(carousel, /referrerpolicy: "no-referrer"/);
     assert.match(carousel, /referrerpolicy="no-referrer"/);
 });

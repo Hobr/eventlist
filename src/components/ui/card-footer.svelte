@@ -6,7 +6,7 @@
         children?: import("svelte").Snippet;
     }
     let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(cn("flex items-center p-5 pt-0", className));
+    let classes = $derived(cn("ui-card-footer", className));
 </script>
 
 <div class={classes}>{@render children?.()}</div>

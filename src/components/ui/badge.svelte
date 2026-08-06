@@ -1,60 +1,30 @@
 <script lang="ts">
-    import { Badge as FlowbiteBadge } from "flowbite-svelte";
+    import type { HTMLAnchorAttributes, HTMLAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
 
     type Tone = "default" | "primary" | "accent" | "warning" | "outline" | "danger";
-
-    interface Props {
-        tone?: Tone;
-        href?: string;
-        class?: string;
-        children?: import("svelte").Snippet;
-    }
+    type Shared = { tone?: Tone; class?: string; children?: import("svelte").Snippet };
+    type Props = Shared &
+        (
+            | ({ href: string } & Omit<HTMLAnchorAttributes, "children" | "class" | "href">)
+            | ({ href?: undefined } & Omit<HTMLAttributes<HTMLSpanElement>, "children" | "class">)
+        );
 
     let {
         tone = "default",
         href = undefined,
         class: className = undefined,
-        children
+        children,
+        ...restProps
     }: Props = $props();
-
-    const colors = {
-        default: "gray",
-        primary: "primary",
-        accent: "pink",
-        warning: "yellow",
-        outline: "gray",
-        danger: "red"
-    } as const;
-
-    const tones: Record<Tone, string> = {
-        default:
-            "border border-border bg-surface-subtle text-muted-foreground dark:border-border! dark:bg-surface-subtle! dark:text-muted-foreground!",
-        primary:
-            "border border-transparent bg-primary-subtle text-primary-subtle-foreground dark:border-transparent! dark:bg-primary-subtle! dark:text-primary-subtle-foreground!",
-        accent: "border border-transparent bg-accent-subtle text-accent dark:border-transparent! dark:bg-accent-subtle! dark:text-accent!",
-        warning:
-            "border border-transparent bg-warning-subtle text-warning dark:border-transparent! dark:bg-warning-subtle! dark:text-warning!",
-        outline:
-            "border border-border-strong bg-surface text-foreground dark:border-border-strong! dark:bg-surface! dark:text-foreground!",
-        danger: "border border-transparent bg-danger-subtle text-danger dark:border-transparent! dark:bg-danger-subtle! dark:text-danger!"
-    };
-
-    let classes = $derived(
-        cn(
-            "inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold",
-            tones[tone],
-            className
-        )
-    );
 </script>
 
-<FlowbiteBadge
-    color={colors[tone]}
-    border={tone === "outline"}
-    rounded={false}
-    {href}
-    class={classes}
->
-    {@render children?.()}
-</FlowbiteBadge>
+{#if href}
+    <a {...restProps} {href} class={cn("ui-badge", className)} data-tone={tone}>
+        {@render children?.()}
+    </a>
+{:else}
+    <span {...restProps} class={cn("ui-badge", className)} data-tone={tone}>
+        {@render children?.()}
+    </span>
+{/if}

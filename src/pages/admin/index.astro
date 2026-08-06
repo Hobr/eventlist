@@ -28,14 +28,12 @@ events = events.slice(0, PAGE_SIZE);
 <AdminLayout title="待审核投稿" description="逐条核对来源、时间、地点与公开信息">
     {
         errorMessage ? (
-            <Alert tone="danger" class="p-6 text-center font-semibold">
+            <Alert tone="danger" class="admin-page-error">
                 {errorMessage}
             </Alert>
         ) : (
-            <div class="flex flex-col gap-4">
-                <p class="font-mono text-xs text-muted-foreground tabular-nums">
-                    本页 {events.length} 条待处理投稿
-                </p>
+            <div class="admin-queue">
+                <p class="admin-queue-count">本页 {events.length} 条待处理投稿</p>
                 <EventTable events={events} mode="pending" />
                 <Pagination page={page} hasNext={hasNext} />
             </div>

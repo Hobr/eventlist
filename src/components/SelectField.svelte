@@ -1,5 +1,7 @@
 <script lang="ts">
-    import { Select } from "flowbite-svelte";
+    import { Select } from "bits-ui";
+    import CaretUpDown from "phosphor-svelte/lib/CaretUpDown";
+    import Check from "phosphor-svelte/lib/Check";
     import { untrack } from "svelte";
 
     export interface SelectOption {
@@ -42,38 +44,53 @@
     const items = $derived(
         options.map((option) => ({
             value: option.value,
-            name: option.label,
+            label: option.label,
             disabled: option.disabled
         }))
     );
 
-    function handleChange(event: Event) {
-        const select = event.currentTarget;
-        if (!(select instanceof HTMLSelectElement)) return;
-        selectedValue = select.value;
-        onchange?.(select.value);
+    function updateValue(nextValue: string) {
+        selectedValue = nextValue;
+        onchange?.(nextValue);
     }
 </script>
 
-<div class={wide ? "flex w-full min-w-0 flex-col gap-1.5" : "flex min-w-0 flex-col gap-1.5"}>
-    <span class="text-sm font-semibold text-muted-foreground">
+<div class:wide class="ui-select-field">
+    <span class="ui-label">
         {label}
-        {#if showRequiredIndicator}
-            <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-        {/if}
+        {#if showRequiredIndicator}<span class="required-indicator">必填</span>{/if}
     </span>
-    <Select
+    <Select.Root
+        type="single"
         {name}
         {items}
-        {placeholder}
         required={required && !disabled}
         {disabled}
-        bind:value={selectedValue}
-        onchange={handleChange}
-        aria-label={label}
-        class="w-full"
-        classes={{
-            select: "h-10 rounded-md border-border-strong bg-surface px-3 py-2 text-foreground transition-[border-color,background-color,box-shadow] duration-300 ease-motion focus:border-ring focus:ring-ring/40 dark:border-border-strong dark:bg-surface dark:text-foreground dark:focus:border-ring dark:focus:ring-ring/40"
-        }}
-    />
+        value={selectedValue}
+        onValueChange={updateValue}
+    >
+        <Select.Trigger class="ui-select-trigger" aria-label={label}>
+            <Select.Value {placeholder} />
+            <CaretUpDown size={17} aria-hidden="true" />
+        </Select.Trigger>
+        <Select.Portal>
+            <Select.Content class="ui-select-content" sideOffset={6}>
+                <Select.Viewport class="ui-select-viewport">
+                    {#each options as option (option.value)}
+                        <Select.Item
+                            value={option.value}
+                            label={option.label}
+                            disabled={option.disabled}
+                            class="ui-select-item"
+                        >
+                            {#snippet children({ selected })}
+                                <span>{option.label}</span>
+                                {#if selected}<Check size={16} aria-hidden="true" />{/if}
+                            {/snippet}
+                        </Select.Item>
+                    {/each}
+                </Select.Viewport>
+            </Select.Content>
+        </Select.Portal>
+    </Select.Root>
 </div>

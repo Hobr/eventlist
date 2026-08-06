@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { Button, Modal, Spinner } from "flowbite-svelte";
-    import { CloseOutline } from "flowbite-svelte-icons";
+    import { AlertDialog } from "bits-ui";
+    import Spinner from "./spinner.svelte";
     import { cn } from "../../lib/utils";
 
     interface Props {
@@ -36,49 +36,6 @@
     }: Props = $props();
 
     let open = $state(false);
-    let triggerElement: HTMLButtonElement | null = null;
-    const MODAL_TRANSITION_MS = 300;
-    const modalTransition = { duration: MODAL_TRANSITION_MS };
-    let hasOpened = false;
-    let focusRestoreTimer: ReturnType<typeof setTimeout> | undefined;
-    let focusRestoreFrame: number | undefined;
-    const color = $derived(tone === "danger" ? "red" : "primary");
-
-    $effect(() => {
-        if (open) {
-            hasOpened = true;
-            return;
-        }
-
-        if (!hasOpened) return;
-        hasOpened = false;
-        focusRestoreTimer = setTimeout(() => {
-            focusRestoreTimer = undefined;
-            focusRestoreFrame = requestAnimationFrame(() => {
-                // Svelte may start the outro on the first frame; the next frame follows dialog cleanup.
-                focusRestoreFrame = requestAnimationFrame(() => {
-                    focusRestoreFrame = undefined;
-                    if (!open && triggerElement?.isConnected) triggerElement.focus();
-                });
-            });
-        }, MODAL_TRANSITION_MS);
-
-        return () => {
-            if (focusRestoreTimer !== undefined) {
-                clearTimeout(focusRestoreTimer);
-                focusRestoreTimer = undefined;
-            }
-            if (focusRestoreFrame !== undefined) {
-                cancelAnimationFrame(focusRestoreFrame);
-                focusRestoreFrame = undefined;
-            }
-        };
-    });
-
-    function openDialog(event: MouseEvent) {
-        triggerElement = event.currentTarget as HTMLButtonElement;
-        open = true;
-    }
 
     async function handleConfirm(event: MouseEvent) {
         event.preventDefault();
@@ -87,84 +44,44 @@
     }
 </script>
 
-<Button
-    type="button"
-    {color}
-    size="xs"
-    {disabled}
-    aria-haspopup="dialog"
-    aria-expanded={open}
-    onclick={openDialog}
-    class={cn(
-        "h-8 w-full rounded-md px-3 text-xs font-semibold transition-[transform,background-color,color] duration-300 ease-motion active:scale-[0.98]",
-        triggerClass
-    )}
->
-    {@render trigger()}
-</Button>
-
-<Modal
-    bind:open
-    size="xs"
-    role="alertdialog"
-    aria-label={title}
-    dismissable={false}
-    outsideclose={!pending}
-    focustrap
-    permanent={pending}
-    transitionParams={modalTransition}
-    class={cn(
-        "border border-border bg-surface-raised text-foreground shadow-popover dark:border-border dark:bg-surface-raised dark:text-foreground",
-        contentClass
-    )}
-    classes={{
-        header: "border-b-0 p-5 pb-0 sm:p-6 sm:pb-0",
-        body: "space-y-0 p-5 sm:p-6",
-        footer: "border-t-0 p-5 pt-0 sm:p-6 sm:pt-0"
-    }}
->
-    {#snippet header()}
-        <h2 class="pr-4 text-lg font-bold text-foreground">{title}</h2>
-        <Button
-            type="button"
-            color="alternative"
-            size="xs"
-            disabled={pending}
-            aria-label="关闭"
-            onclick={() => (open = false)}
-            class="size-9 rounded-md p-0 text-muted-foreground transition-transform duration-300 ease-motion active:scale-[0.96]"
-        >
-            <CloseOutline class="size-4" />
-        </Button>
-    {/snippet}
-
-    <p class="text-sm leading-6 text-muted-foreground">{description}</p>
-    {#if children}
-        <div class="mt-5">{@render children()}</div>
-    {/if}
-
-    {#snippet footer()}
-        <Button
-            type="button"
-            color="alternative"
-            disabled={pending}
-            onclick={() => (open = false)}
-            class="h-10 rounded-md px-4 text-sm font-semibold"
-        >
-            {cancelLabel}
-        </Button>
-        <Button
-            type="button"
-            {color}
-            disabled={pending || confirmDisabled}
-            aria-busy={pending}
-            onclick={handleConfirm}
-            class="h-10 rounded-md px-4 text-sm font-semibold"
-        >
-            {#if pending}
-                <Spinner size="4" />
-            {/if}
-            {pending ? "处理中" : confirmLabel}
-        </Button>
-    {/snippet}
-</Modal>
+<AlertDialog.Root bind:open>
+    <AlertDialog.Trigger
+        class={cn("ui-button", triggerClass)}
+        data-variant={tone === "danger" ? "destructive" : "default"}
+        data-size="sm"
+        {disabled}
+    >
+        {@render trigger()}
+    </AlertDialog.Trigger>
+    <AlertDialog.Portal>
+        <AlertDialog.Overlay class="ui-dialog-overlay" />
+        <AlertDialog.Content class={cn("ui-dialog-content ui-alert-dialog", contentClass)}>
+            <AlertDialog.Title class="ui-dialog-title">{title}</AlertDialog.Title>
+            <AlertDialog.Description class="ui-dialog-description">
+                {description}
+            </AlertDialog.Description>
+            {#if children}<div class="ui-dialog-extra">{@render children()}</div>{/if}
+            <div class="ui-dialog-actions">
+                <AlertDialog.Cancel
+                    class="ui-button"
+                    data-variant="outline"
+                    data-size="md"
+                    disabled={pending}
+                >
+                    {cancelLabel}
+                </AlertDialog.Cancel>
+                <AlertDialog.Action
+                    class="ui-button"
+                    data-variant={tone === "danger" ? "destructive" : "default"}
+                    data-size="md"
+                    disabled={pending || confirmDisabled}
+                    aria-busy={pending}
+                    onclick={handleConfirm}
+                >
+                    {#if pending}<Spinner />{/if}
+                    {pending ? "处理中" : confirmLabel}
+                </AlertDialog.Action>
+            </div>
+        </AlertDialog.Content>
+    </AlertDialog.Portal>
+</AlertDialog.Root>

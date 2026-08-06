@@ -95,7 +95,7 @@
     });
 </script>
 
-<div class="flex flex-col gap-1.5">
+<div class="turnstile-field">
     <input type="hidden" name="cf-turnstile-response" value={token} />
     {#if siteKey}
         <div
@@ -105,9 +105,9 @@
             bind:this={container}
         ></div>
     {:else}
-        <p class="text-sm font-semibold text-danger">投稿保护未配置</p>
+        <p class="turnstile-error">投稿保护未配置</p>
     {/if}
     {#if errorMessage}
-        <p class="text-sm font-semibold text-danger">{errorMessage}</p>
+        <p class="turnstile-error">{errorMessage}</p>
     {/if}
 </div>

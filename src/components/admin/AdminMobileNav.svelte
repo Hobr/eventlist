@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { BarsOutline as Menu } from "flowbite-svelte-icons";
+    import Menu from "phosphor-svelte/lib/List";
     import SidePanel from "../ui/side-panel.svelte";
     import AdminNavList from "./AdminNavList.svelte";
 
@@ -12,18 +12,23 @@
     let { currentPath, title, adminLabel }: Props = $props();
 </script>
 
-<SidePanel title="管理导航" description={title} triggerClass="h-9 px-3" contentClass="max-w-xs">
+<SidePanel
+    title="管理导航"
+    description={title}
+    triggerClass="admin-menu-trigger"
+    contentClass="admin-menu-panel"
+>
     {#snippet trigger()}
-        <Menu class="size-4" aria-hidden="true" />
+        <Menu size={17} aria-hidden="true" />
         菜单
     {/snippet}
 
-    <nav class="flex flex-col gap-1" aria-label="移动端管理导航">
+    <nav class="admin-mobile-nav" aria-label="移动端管理导航">
         <AdminNavList {currentPath} variant="mobile" />
     </nav>
 
-    <div class="mt-6 border-t border-border/80 pt-5">
-        <p class="text-xs font-semibold text-muted">当前管理员</p>
-        <p class="mt-1 truncate text-sm font-semibold text-foreground">{adminLabel}</p>
+    <div class="admin-mobile-identity">
+        <p>当前管理员</p>
+        <strong>{adminLabel}</strong>
     </div>
 </SidePanel>

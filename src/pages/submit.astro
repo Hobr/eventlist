@@ -1,9 +1,7 @@
 ---
-import {
-    ArrowLeftOutline as ArrowLeft,
-    CheckCircleOutline as CircleCheck,
-    PaperPlaneOutline as Send
-} from "flowbite-svelte-icons";
+import ArrowLeft from "phosphor-svelte/lib/ArrowLeft";
+import CircleCheck from "phosphor-svelte/lib/CheckCircle";
+import Send from "phosphor-svelte/lib/PaperPlaneTilt";
 import DivisionPicker from "../components/DivisionPicker.svelte";
 import SelectField from "../components/SelectField.svelte";
 import SubmissionSection from "../components/SubmissionSection.astro";
@@ -46,46 +44,32 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
 <Layout title="提交活动" description="提交 ACG 活动, 进入审核队列后再公开展示">
     {
         sent ? (
-            <section
-                class="mx-auto max-w-2xl border-y border-border/80 py-16 text-center"
-                data-reveal
-            >
-                <CircleCheck class="mx-auto size-10 text-accent" aria-hidden="true" />
-                <h1 class="mt-5 text-3xl font-black text-foreground">活动已进入审核队列</h1>
-                <p class="mt-3 text-sm text-muted-foreground">审核通过后会出现在公开活动列表中</p>
-                <div class="mt-6 flex flex-wrap justify-center gap-3">
-                    <Button href="/events" class="rounded-full px-5 font-bold">
-                        浏览活动
-                    </Button>
-                    <Button href="/submit" variant="outline" class="rounded-full px-5 font-bold">
+            <section class="submit-success" data-reveal>
+                <CircleCheck size={40} aria-hidden="true" />
+                <h1>活动已进入审核队列</h1>
+                <p>审核通过后会出现在公开活动列表中</p>
+                <div>
+                    <Button href="/events">浏览活动</Button>
+                    <Button href="/submit" variant="outline">
                         继续提交
                     </Button>
                 </div>
             </section>
         ) : (
-            <div class="mx-auto max-w-4xl" data-reveal>
-                <header class="border-t border-border/80 pt-6">
-                    <p class="font-mono text-xs font-semibold text-primary tabular-nums">
-                        公开投稿
-                    </p>
-                    <h1 class="mt-3 text-4xl font-black text-foreground sm:text-5xl">提交活动</h1>
-                    <p class="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-                        必填信息保持可见；封面、描述、交流群和购票信息可按需补充
-                    </p>
+            <div class="submit-page" data-reveal>
+                <header class="submit-header">
+                    <p>公开投稿</p>
+                    <h1>提交活动</h1>
+                    <p>必填信息保持可见; 封面, 描述, 交流群和购票信息可按需补充</p>
                 </header>
 
-                <form
-                    id="submit-form"
-                    class="mt-10 flex flex-col gap-10"
-                    action="/api/submit"
-                    method="post"
-                >
+                <form id="submit-form" class="submission-form" action="/api/submit" method="post">
                     <SubmissionSection title="活动基本信息">
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                        <div class="form-grid">
+                            <div class="field-group wide">
                                 <Label for="title">
                                     标题
-                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                    <span class="required-indicator">必填</span>
                                 </Label>
                                 <Input id="title" name="title" required maxlength="120" />
                             </div>
@@ -111,8 +95,8 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                     </SubmissionSection>
 
                     <SubmissionSection title="时间与地点">
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-2">
+                        <div class="form-grid">
+                            <div class="wide">
                                 <DivisionPicker
                                     name="division_code"
                                     label="地区"
@@ -122,32 +106,32 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                     client:load
                                 />
                             </div>
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="venue">
                                     地点
-                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                    <span class="required-indicator">必填</span>
                                 </Label>
                                 <Input id="venue" name="venue" required maxlength="120" />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="start-date">
                                     开始日期
-                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                    <span class="required-indicator">必填</span>
                                 </Label>
                                 <Input id="start-date" type="date" name="start_date" required />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="end-date">
                                     结束日期
-                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                    <span class="required-indicator">必填</span>
                                 </Label>
                                 <Input id="end-date" type="date" name="end_date" required />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="start-time">开始时间(选填)</Label>
                                 <Input id="start-time" type="time" name="start_time" />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="end-time">结束时间(选填)</Label>
                                 <Input id="end-time" type="time" name="end_time" />
                             </div>
@@ -159,25 +143,25 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                         description="这些内容会帮助访客判断是否参加活动"
                         optional
                     >
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                        <div class="form-grid">
+                            <div class="field-group wide">
                                 <Label for="tag-suggestions">标签描述</Label>
                                 <Textarea
                                     id="tag-suggestions"
                                     name="tag_suggestions"
                                     maxlength="240"
                                     placeholder="例如：东方 Project、同人展、舞台表演；管理员会整理为统一标签"
-                                    class="min-h-24"
+                                    class="submission-tag-suggestions"
                                 />
-                                <span class="text-xs text-muted">
+                                <span class="field-note">
                                     这里只需大概描述, 正式标签会在审核时统一整理
                                 </span>
                             </div>
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="address">详细地址</Label>
                                 <Input id="address" name="address" maxlength="240" />
                             </div>
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="organizer">主办方</Label>
                                 <Input id="organizer" name="organizer" maxlength="200" />
                             </div>
@@ -195,11 +179,11 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                 placeholder="选择入场方式"
                                 client:load
                             />
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="price-range">票价区间</Label>
                                 <Input id="price-range" name="price_range" maxlength="120" />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="admission-start-date">开始购票/预约/申请日期</Label>
                                 <Input
                                     id="admission-start-date"
@@ -207,7 +191,7 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                     name="admission_start_date"
                                 />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="admission-start-time">开始购票/预约/申请时间</Label>
                                 <Input
                                     id="admission-start-time"
@@ -215,7 +199,7 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                     name="admission_start_time"
                                 />
                             </div>
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="cover-url">封面 URL</Label>
                                 <Input
                                     id="cover-url"
@@ -225,15 +209,15 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                     placeholder="https://..."
                                 />
                             </div>
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="description">活动描述</Label>
                                 <Textarea id="description" name="description" maxlength="4000" />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="qq-group">官方交流群 QQ</Label>
                                 <Input id="qq-group" name="qq_group" maxlength="80" />
                             </div>
-                            <div class="flex flex-col gap-1.5">
+                            <div class="field-group">
                                 <Label for="ticket-url">购票地址</Label>
                                 <Input
                                     id="ticket-url"
@@ -249,11 +233,11 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                         title="审核与提交"
                         description="联系方式仅用于核对信息, 不会在前台公开"
                     >
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                        <div class="form-grid">
+                            <div class="field-group wide">
                                 <Label for="source-url">
                                     活动来源链接
-                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                    <span class="required-indicator">必填</span>
                                 </Label>
                                 <Input
                                     id="source-url"
@@ -263,10 +247,10 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                     required
                                 />
                             </div>
-                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <div class="field-group wide">
                                 <Label for="submitter-contact">
                                     投稿联系方式
-                                    <span class="ml-1 text-xs font-semibold text-danger">必填</span>
+                                    <span class="required-indicator">必填</span>
                                 </Label>
                                 <Input
                                     id="submitter-contact"
@@ -275,30 +259,22 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                                     maxlength="120"
                                 />
                             </div>
-                            <div class="sm:col-span-2">
+                            <div class="wide">
                                 <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
                             </div>
                             <p
                                 id="submit-result"
-                                class="hidden text-sm font-semibold text-danger sm:col-span-2"
+                                class="submission-result wide is-hidden"
                                 role="status"
                                 tabindex="-1"
                             />
-                            <div class="flex flex-wrap gap-3 border-t border-border/80 pt-6 sm:col-span-2">
-                                <Button
-                                    id="submit-button"
-                                    class="h-11 rounded-full px-6 font-bold"
-                                    type="submit"
-                                >
-                                    <Send class="size-4" aria-hidden="true" />
+                            <div class="submission-actions wide">
+                                <Button id="submit-button" type="submit">
+                                    <Send size={17} aria-hidden="true" />
                                     提交审核
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    class="h-11 rounded-full px-5 font-bold"
-                                    href="/events"
-                                >
-                                    <ArrowLeft class="size-4" aria-hidden="true" />
+                                <Button variant="outline" href="/events">
+                                    <ArrowLeft size={17} aria-hidden="true" />
                                     返回活动列表
                                 </Button>
                             </div>
@@ -330,7 +306,7 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
-            result.classList.add("hidden");
+            result.classList.add("is-hidden");
             let shouldResetTurnstile = true;
 
             if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
@@ -351,11 +327,11 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
                     error?: string;
                 } | null;
                 result.textContent = body?.error ?? "提交失败";
-                result.classList.remove("hidden");
+                result.classList.remove("is-hidden");
                 result.focus();
             } catch {
                 result.textContent = "网络连接失败, 请稍后重试";
-                result.classList.remove("hidden");
+                result.classList.remove("is-hidden");
                 result.focus();
             } finally {
                 if (shouldResetTurnstile) {

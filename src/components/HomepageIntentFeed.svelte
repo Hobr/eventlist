@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ButtonGroup, Spinner } from "flowbite-svelte";
+    import { Tabs, ToggleGroup } from "bits-ui";
     import { onDestroy, onMount, untrack } from "svelte";
     import { POPULARITY_WINDOWS, type PopularityWindow } from "../lib/events/popularity";
     import type { PublicHomepagePopularity } from "../lib/public/homepage";
@@ -13,6 +13,7 @@
     import HomepageRankedList from "./HomepageRankedList.svelte";
     import Alert from "./ui/alert.svelte";
     import Button from "./ui/button.svelte";
+    import Spinner from "./ui/spinner.svelte";
 
     interface Props {
         initialPopularity: PublicHomepagePopularity;
@@ -215,103 +216,80 @@
     }
 </script>
 
-<section
-    id="intent-feed"
-    aria-labelledby="intent-feed-heading"
-    data-reveal
-    class="scroll-mt-28 py-20 sm:py-24"
->
-    <header
-        class="flex flex-col gap-5 border-t border-border/80 pt-6 sm:flex-row sm:items-end sm:justify-between"
-    >
+<section id="intent-feed" aria-labelledby="intent-feed-heading" data-reveal class="intent-feed">
+    <header class="intent-feed-header">
         <div>
-            <h2 id="intent-feed-heading" class="text-3xl font-black text-foreground sm:text-4xl">
-                活动发现
-            </h2>
+            <h2 id="intent-feed-heading">活动发现</h2>
         </div>
-        <div class="h-10 w-full sm:w-60" aria-label="热度统计时间范围" role="tablist">
-            <ButtonGroup class="flex size-full rounded-full bg-surface-subtle p-1 shadow-none">
+        <Tabs.Root value={String(popularity.window)} class="popularity-tabs">
+            <Tabs.List aria-label="热度统计时间范围" class="segmented-control">
                 {#each POPULARITY_WINDOWS as trend, trendIndex}
                     {@const selected = popularity.window === trend}
-                    <Button
+                    <Tabs.Trigger
                         id={`intent-window-${trend}`}
-                        href={trendHref(trend)}
-                        role="tab"
-                        aria-selected={selected}
+                        value={String(trend)}
                         aria-controls="intent-results"
                         aria-busy={pendingWindow === trend}
-                        tabindex={hydrated && !selected ? -1 : 0}
-                        variant={selected ? "default" : "ghost"}
-                        size="sm"
-                        class="h-full flex-1 rounded-full border-transparent px-3 text-sm font-bold"
-                        onclick={(event) => void selectWindow(event, trend)}
-                        onkeydown={(event) => handleTabKeydown(event, trendIndex)}
+                        class="segmented-trigger"
                     >
-                        {#if pendingWindow === trend}
-                            <Spinner
-                                size="4"
-                                class="size-3.5"
-                                aria-label={`正在加载近 ${trend} 日活动榜单`}
-                            />
-                        {/if}
-                        {trend} 日
-                    </Button>
+                        {#snippet child({ props })}
+                            <a
+                                {...props}
+                                href={trendHref(trend)}
+                                tabindex={hydrated && !selected ? -1 : 0}
+                                onclick={(event) => void selectWindow(event, trend)}
+                                onkeydown={(event) => handleTabKeydown(event, trendIndex)}
+                            >
+                                {#if pendingWindow === trend}
+                                    <Spinner label={`正在加载近 ${trend} 日活动榜单`} />
+                                {/if}
+                                {trend} 日
+                            </a>
+                        {/snippet}
+                    </Tabs.Trigger>
                 {/each}
-            </ButtonGroup>
-        </div>
+            </Tabs.List>
+        </Tabs.Root>
     </header>
 
     {#if errorMessage}
-        <Alert tone="danger" class="mt-5 p-5 font-semibold">
+        <Alert tone="danger" class="intent-feed-alert">
             {errorMessage}
         </Alert>
     {/if}
 
-    <ButtonGroup
-        class={`mt-8 flex h-10 w-full rounded-full bg-surface-subtle p-1 shadow-none lg:hidden ${
-            hydrated ? "" : "pointer-events-none invisible"
-        }`}
+    <ToggleGroup.Root
+        type="single"
+        bind:value={mobileScene}
+        class="mobile-scene-toggle"
+        data-hydrated={hydrated}
         aria-label="活动场景"
         aria-hidden={!hydrated}
     >
-        <Button
-            aria-pressed={mobileScene === "unended"}
-            tabindex={hydrated ? 0 : -1}
-            variant={mobileScene === "unended" ? "default" : "ghost"}
-            size="sm"
-            class="h-full flex-1 rounded-full border-transparent px-3 text-sm font-bold"
-            onclick={() => (mobileScene = "unended")}
-        >
+        <ToggleGroup.Item value="unended" tabindex={hydrated ? 0 : -1} class="segmented-trigger">
             未结束
-        </Button>
-        <Button
-            aria-pressed={mobileScene === "unopened"}
-            tabindex={hydrated ? 0 : -1}
-            variant={mobileScene === "unopened" ? "default" : "ghost"}
-            size="sm"
-            class="h-full flex-1 rounded-full border-transparent px-3 text-sm font-bold"
-            onclick={() => (mobileScene = "unopened")}
-        >
+        </ToggleGroup.Item>
+        <ToggleGroup.Item value="unopened" tabindex={hydrated ? 0 : -1} class="segmented-trigger">
             未开票
-        </Button>
-    </ButtonGroup>
+        </ToggleGroup.Item>
+    </ToggleGroup.Root>
 
     <div
         id="intent-results"
         aria-live="polite"
         aria-busy={pendingWindow !== null}
-        class="mt-10 grid gap-14 lg:grid-cols-2 lg:gap-0"
+        class="intent-results"
     >
         <section
             aria-labelledby="unended-heading"
             class:hidden={hydrated && mobileScene !== "unended"}
-            class="order-1 min-w-0 lg:order-2 lg:block lg:border-l lg:border-border/80 lg:pl-10"
+            class="intent-scene intent-scene-unended"
         >
-            <header class="mb-8">
-                <h3 id="unended-heading" class="text-2xl font-black text-foreground">未结束</h3>
-                <p class="mt-2 text-sm text-muted-foreground">正在进行和即将开始</p>
+            <header class="intent-scene-header">
+                <h3 id="unended-heading">未结束</h3>
+                <p>正在进行和即将开始</p>
             </header>
-            <div class="grid gap-10">
+            <div class="intent-scene-lists">
                 <HomepageRankedList
                     headingId="unended-local-heading"
                     title="本地热门"
@@ -330,13 +308,13 @@
         <section
             aria-labelledby="unopened-heading"
             class:hidden={hydrated && mobileScene !== "unopened"}
-            class="order-2 min-w-0 lg:order-1 lg:block lg:pr-10"
+            class="intent-scene intent-scene-unopened"
         >
-            <header class="mb-8">
-                <h3 id="unopened-heading" class="text-2xl font-black text-foreground">未开票</h3>
-                <p class="mt-2 text-sm text-muted-foreground">未来 14 日内开始售票</p>
+            <header class="intent-scene-header">
+                <h3 id="unopened-heading">未开票</h3>
+                <p>未来 14 日内开始售票</p>
             </header>
-            <div class="grid gap-10">
+            <div class="intent-scene-lists">
                 <HomepageRankedList
                     headingId="unopened-local-heading"
                     title="本地热门"

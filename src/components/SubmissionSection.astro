@@ -1,42 +1,34 @@
 ---
-import { ChevronDownOutline as ChevronDown } from "flowbite-svelte-icons";
-
+import ChevronDown from "phosphor-svelte/lib/CaretDown";
 interface Props {
     title: string;
     description?: string;
     optional?: boolean;
 }
-
 const { title, description, optional = false } = Astro.props;
 ---
 
 {
     optional ? (
-        <details class="group border-y border-border/80 py-6" data-form-disclosure>
-            <summary class="flex cursor-pointer items-center justify-between gap-4 rounded-sm transition-colors duration-300 ease-motion hover:text-primary focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none">
+        <details class="form-disclosure" data-form-disclosure>
+            <summary>
                 <span>
-                    <strong class="block text-base font-bold text-foreground">{title}</strong>
-                    {description ? (
-                        <span class="mt-1 block text-sm text-muted-foreground">{description}</span>
-                    ) : null}
+                    <strong>{title}</strong>
+                    {description ? <small>{description}</small> : null}
                 </span>
-                <span class="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-muted">
-                    选填
-                    <ChevronDown
-                        class="size-4 transition-transform duration-300 ease-motion group-open:rotate-180"
-                        aria-hidden="true"
-                    />
+                <span>
+                    选填 <ChevronDown size={16} aria-hidden="true" />
                 </span>
             </summary>
-            <div class="pt-6">
+            <div class="form-section-content">
                 <slot />
             </div>
         </details>
     ) : (
-        <fieldset class="border-t border-border/80 pt-7">
-            <legend class="pr-4 text-base font-bold text-foreground">{title}</legend>
-            {description ? <p class="mt-1 text-sm text-muted-foreground">{description}</p> : null}
-            <div class="mt-5">
+        <fieldset class="form-section">
+            <legend>{title}</legend>
+            {description ? <p>{description}</p> : null}
+            <div class="form-section-content">
                 <slot />
             </div>
         </fieldset>

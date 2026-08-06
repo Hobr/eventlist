@@ -1,10 +1,7 @@
 ---
 import { waitUntil } from "cloudflare:workers";
-import {
-    ChevronLeftOutline as ChevronLeft,
-    ChevronRightOutline as ChevronRight
-} from "flowbite-svelte-icons";
-import { PaginationItem } from "flowbite-svelte";
+import ChevronLeft from "phosphor-svelte/lib/CaretLeft";
+import ChevronRight from "phosphor-svelte/lib/CaretRight";
 import FilterBar from "../../components/FilterBar.svelte";
 import EventCard from "../../components/EventCard.astro";
 import Alert from "../../components/ui/alert.svelte";
@@ -142,24 +139,22 @@ try {
 ---
 
 <Layout title="活动列表" description={timingCopy.description}>
-    <div class="flex flex-col gap-10" data-reveal>
-        <header
-            class="flex flex-col gap-5 border-t border-border/80 pt-6 sm:flex-row sm:items-end sm:justify-between"
-        >
+    <div class="catalogue-page" data-reveal>
+        <header class="catalogue-header">
             <div>
-                <p class="font-mono text-xs font-semibold text-primary tabular-nums">
+                <p class="catalogue-kicker">
                     {timingCopy.kicker}
                 </p>
-                <h1 class="mt-3 text-4xl font-black text-foreground sm:text-5xl">活动列表</h1>
-                <p class="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                <h1>活动列表</h1>
+                <p class="catalogue-intro">
                     {timingCopy.description}
                 </p>
             </div>
-            <div class="flex items-center gap-3">
-                <strong class="font-mono text-3xl font-black text-foreground tabular-nums">
+            <div class="catalogue-count">
+                <strong>
                     {String(events.length).padStart(2, "0")}
                 </strong>
-                <span class="max-w-20 text-xs leading-tight text-muted">本页活动</span>
+                <span>本页活动</span>
             </div>
         </header>
 
@@ -167,7 +162,7 @@ try {
 
         {
             cacheWarning ? (
-                <Alert tone="warning" class="p-5 font-semibold" role="status">
+                <Alert tone="warning" role="status">
                     {cacheWarning}
                 </Alert>
             ) : null
@@ -175,51 +170,45 @@ try {
 
         {
             errorMessage ? (
-                <Alert tone="danger" class="p-5 font-semibold">
-                    {errorMessage}
-                </Alert>
+                <Alert tone="danger">{errorMessage}</Alert>
             ) : events.length > 0 ? (
                 <>
-                    <section aria-label="活动结果" class="border-t border-border/80">
+                    <section aria-label="活动结果" class="catalogue-results">
                         {events.map((event, index) => (
                             <EventCard event={event} variant="row" priority={index < 3} />
                         ))}
                     </section>
-                    <nav
-                        class="flex items-center justify-center gap-3 py-4 text-sm text-muted"
-                        aria-label="活动分页"
-                    >
+                    <nav class="pagination" aria-label="活动分页">
                         {filters.page && filters.page > 1 ? (
-                            <PaginationItem
+                            <Button
                                 href={nextHref(filters.page - 1)}
                                 rel="prev"
-                                class="h-9 gap-1.5 rounded-md border-border-strong bg-surface px-4 text-xs font-semibold text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:border-border-strong! dark:bg-surface! dark:text-muted-foreground! dark:hover:bg-surface-subtle! dark:hover:text-foreground!"
+                                variant="outline"
+                                size="sm"
                             >
-                                <ChevronLeft class="size-4" aria-hidden="true" />
+                                <ChevronLeft size={16} aria-hidden="true" />
                                 上一页
-                            </PaginationItem>
+                            </Button>
                         ) : null}
-                        <span class="font-medium text-muted-foreground">第 {filters.page} 页</span>
+                        <span>第 {filters.page} 页</span>
                         {hasNext ? (
-                            <PaginationItem
+                            <Button
                                 href={nextHref((filters.page ?? 1) + 1)}
                                 rel="next"
-                                class="h-9 gap-1.5 rounded-md border-border-strong bg-surface px-4 text-xs font-semibold text-muted-foreground hover:bg-surface-subtle hover:text-foreground dark:border-border-strong! dark:bg-surface! dark:text-muted-foreground! dark:hover:bg-surface-subtle! dark:hover:text-foreground!"
+                                variant="outline"
+                                size="sm"
                             >
                                 下一页
-                                <ChevronRight class="size-4" aria-hidden="true" />
-                            </PaginationItem>
+                                <ChevronRight size={16} aria-hidden="true" />
+                            </Button>
                         ) : null}
                     </nav>
                 </>
             ) : (
-                <div class="border-y border-border/80 py-16 text-center">
-                    <h2 class="text-xl font-bold text-foreground">{timingCopy.emptyTitle}</h2>
-                    <p class="mt-2 text-sm text-muted-foreground">尝试移除部分筛选条件</p>
-                    <Button
-                        href="/events"
-                        class="mt-6 rounded-full bg-foreground px-5 font-bold text-background hover:bg-foreground/90 dark:bg-foreground! dark:text-background! dark:hover:bg-foreground/90!"
-                    >
+                <div class="catalogue-empty">
+                    <h2>{timingCopy.emptyTitle}</h2>
+                    <p>尝试移除部分筛选条件</p>
+                    <Button href="/events" variant="outline">
                         重置筛选
                     </Button>
                 </div>

@@ -1,9 +1,9 @@
 <script lang="ts">
+    import { Combobox } from "bits-ui";
+    import X from "phosphor-svelte/lib/X";
     import { untrack } from "svelte";
     import type { TagSummary } from "../lib/db/tags";
-    import { CloseOutline as X } from "flowbite-svelte-icons";
     import Button from "./ui/button.svelte";
-    import Input from "./ui/input.svelte";
     import Label from "./ui/label.svelte";
 
     interface Props {
@@ -29,6 +29,8 @@
     );
     let draft = $state("");
     let suggestions = $state<TagSummary[]>([]);
+    let selectedSuggestion = $state("");
+    let open = $state(false);
     let timer: ReturnType<typeof setTimeout> | undefined;
     let suggestionRequest = 0;
     let serializedTags = $derived.by(() => {
@@ -41,6 +43,8 @@
         if (!tag || tags.includes(tag) || tags.length >= 12) return;
         tags = [...tags, tag];
         draft = "";
+        selectedSuggestion = "";
+        open = false;
         suggestionRequest += 1;
         if (timer) clearTimeout(timer);
         suggestions = [];
@@ -51,11 +55,9 @@
     }
 
     function handleKeydown(event: KeyboardEvent) {
-        if (event.key !== "Enter" && event.key !== "," && event.key !== "，") {
-            return;
-        }
+        if (event.key !== "Enter" && event.key !== "," && event.key !== "，") return;
         event.preventDefault();
-        addTag();
+        addTag(selectedSuggestion || draft);
     }
 
     async function refreshSuggestions(value: string, requestId: number) {
@@ -87,28 +89,29 @@
     function handleInput(event: Event) {
         const input = event.currentTarget;
         if (!(input instanceof HTMLInputElement)) return;
-        draft = input.value;
+        draft = input.value.slice(0, 24);
         if (timer) clearTimeout(timer);
         const requestId = ++suggestionRequest;
+        open = Boolean(draft.trim());
         if (!draft.trim()) {
             suggestions = [];
             return;
         }
         timer = setTimeout(() => void refreshSuggestions(draft, requestId), 160);
     }
+
+    function handleSelection(value: string) {
+        selectedSuggestion = value;
+        if (value) addTag(value);
+    }
 </script>
 
-<div class="flex flex-col gap-1.5">
-    <Label for="tag-input">
-        {label}
-        {#if showRequiredIndicator}
-            <span class="ml-1 text-xs font-semibold text-danger">必填</span>
-        {/if}
-    </Label>
-    <input type="hidden" {name} value={serializedTags} />
-    <div
-        class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-strong bg-surface p-1.5 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40"
+<div class="tag-field">
+    <Label for="tag-input"
+        >{label}{#if showRequiredIndicator}<span class="required-indicator">必填</span>{/if}</Label
     >
+    <input type="hidden" {name} value={serializedTags} />
+    <div class="tag-control">
         {#each tags as tag (tag)}
             <Button
                 type="button"
@@ -116,28 +119,44 @@
                 size="sm"
                 onclick={() => removeTag(tag)}
                 aria-label={`移除标签 ${tag}`}
-                class="h-auto min-h-6 gap-1 rounded-sm px-2 py-0.5 text-xs text-muted-foreground hover:bg-surface-raised dark:text-muted-foreground! dark:hover:bg-surface-raised!"
+                class="tag-chip"
             >
-                {tag}
-                <X class="size-3" aria-hidden="true" />
+                {tag}<X size={13} aria-hidden="true" />
             </Button>
         {/each}
-        <Input
-            id="tag-input"
-            type="search"
-            bind:value={draft}
-            list="submit-tag-suggestions"
-            onkeydown={handleKeydown}
-            oninput={handleInput}
-            onblur={() => addTag()}
-            autocomplete="off"
-            placeholder="输入后按 Enter 添加"
-            class="h-auto min-w-32 flex-1 border-0 bg-transparent px-1.5 py-1 shadow-none focus-visible:border-transparent focus-visible:ring-0"
-        />
+        <Combobox.Root
+            type="single"
+            bind:open
+            inputValue={draft}
+            value={selectedSuggestion}
+            onValueChange={handleSelection}
+        >
+            <Combobox.Input
+                id="tag-input"
+                class="tag-input"
+                autocomplete="off"
+                placeholder="输入后按 Enter 添加"
+                oninput={handleInput}
+                onkeydown={handleKeydown}
+                onblur={() => addTag()}
+            />
+            <Combobox.Portal>
+                <Combobox.Content class="ui-select-content tag-suggestions" sideOffset={6}>
+                    <Combobox.Viewport class="ui-select-viewport">
+                        {#each suggestions as suggestion (suggestion.name)}
+                            <Combobox.Item
+                                value={suggestion.name}
+                                label={suggestion.name}
+                                class="ui-select-item"
+                            >
+                                <span>{suggestion.name}</span><small
+                                    >{suggestion.event_count} 场</small
+                                >
+                            </Combobox.Item>
+                        {/each}
+                    </Combobox.Viewport>
+                </Combobox.Content>
+            </Combobox.Portal>
+        </Combobox.Root>
     </div>
-    <datalist id="submit-tag-suggestions">
-        {#each suggestions as suggestion (suggestion.name)}
-            <option value={suggestion.name}>{suggestion.event_count} 个活动</option>
-        {/each}
-    </datalist>
 </div>

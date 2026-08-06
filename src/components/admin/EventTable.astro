@@ -1,25 +1,17 @@
 ---
-import { ArrowUpRightFromSquareOutline as ExternalLink } from "flowbite-svelte-icons";
-import EventActions from "./EventActions.svelte";
-import Badge from "../ui/badge.svelte";
-import Table from "../ui/table.svelte";
-import TableBody from "../ui/table-body.svelte";
-import TableCell from "../ui/table-cell.svelte";
-import TableHead from "../ui/table-head.svelte";
-import TableHeader from "../ui/table-header.svelte";
-import TableRow from "../ui/table-row.svelte";
+import ExternalLink from "phosphor-svelte/lib/ArrowUpRight";
 import type { EventRecord } from "../../lib/db/admin-events";
 import { getDivisionLabel } from "../../lib/divisions";
 import { formatEventSchedule } from "../../lib/events/datetime";
 import { getEventScaleLabel, getEventTypeLabel } from "../../lib/events/options";
+import Badge from "../ui/badge.svelte";
+import EventActions from "./EventActions.svelte";
 
 interface Props {
     events: EventRecord[];
     mode: "pending" | "published" | "offline";
 }
-
 const { events, mode } = Astro.props;
-
 const statusLabels: Record<string, string> = {
     pending: "待审核",
     published: "已发布",
@@ -32,19 +24,14 @@ const statusTones: Record<string, "default" | "accent" | "warning" | "danger"> =
     rejected: "danger",
     offline: "default"
 };
-
-const mobileCell =
-    "min-w-0 before:mb-1 before:block before:text-[0.6875rem] before:font-semibold before:text-muted before:content-[attr(data-label)] lg:before:hidden";
 ---
 
 {
     events.length === 0 ? (
-        <div class="flex min-h-44 items-center justify-center rounded-md bg-surface px-6 text-center text-sm text-muted-foreground ring-1 ring-border/80">
-            当前队列暂无活动
-        </div>
+        <div class="admin-empty">当前队列暂无活动</div>
     ) : (
-        <div class="lg:overflow-x-auto lg:rounded-md lg:bg-surface lg:ring-1 lg:ring-border/80">
-            <Table class="block w-full text-sm text-foreground lg:table lg:min-w-[70rem]">
+        <div class="admin-table-wrap">
+            <table class="admin-event-table">
                 <caption class="sr-only">
                     {mode === "pending"
                         ? "待审核活动"
@@ -52,108 +39,62 @@ const mobileCell =
                           ? "已发布活动"
                           : "已下线活动"}
                 </caption>
-                <TableHeader class="sr-only lg:not-sr-only lg:table-header-group">
-                    <TableRow class="border-b border-border hover:bg-transparent">
-                        <TableHead class="h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-                            活动
-                        </TableHead>
-                        <TableHead class="h-auto w-[18%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-                            时间地点
-                        </TableHead>
-                        <TableHead class="h-auto w-[13%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-                            分类
-                        </TableHead>
-                        <TableHead class="h-auto w-[17%] px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-                            来源与联系
-                        </TableHead>
-                        <TableHead class="h-auto px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-                            说明
-                        </TableHead>
-                        <TableHead class="h-auto w-36 px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
-                            操作
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody class="grid gap-3 lg:table-row-group [&_tr:last-child]:border lg:[&_tr:last-child]:border-0">
+                <thead>
+                    <tr>
+                        <>
+                            <th>活动</th>
+                            <th>时间地点</th>
+                            <th>分类</th>
+                            <th>来源与联系</th>
+                            <th>说明</th>
+                            <th>操作</th>
+                        </>
+                    </tr>
+                </thead>
+                <tbody>
                     {events.map((event) => (
-                        <TableRow class="grid grid-cols-2 gap-x-4 gap-y-4 rounded-md bg-surface p-4 ring-1 ring-border/80 hover:bg-surface lg:table-row lg:rounded-none lg:border-x-0 lg:border-t-0 lg:p-0 lg:ring-0 lg:hover:bg-surface-subtle/60">
-                            <TableCell class="col-span-2 border-b border-border p-0 pb-3 align-top lg:table-cell lg:border-b-0 lg:p-4">
-                                <div class="flex items-start justify-between gap-3 lg:block">
-                                    <div class="min-w-0">
-                                        <div class="leading-5 font-bold break-words text-foreground">
-                                            {event.title}
-                                        </div>
-                                        <div class="mt-1 text-xs text-muted">活动 #{event.id}</div>
-                                    </div>
-                                    <Badge
-                                        tone={statusTones[event.status] ?? "default"}
-                                        class="shrink-0"
-                                    >
-                                        {statusLabels[event.status] ?? event.status}
-                                    </Badge>
-                                </div>
-                            </TableCell>
-                            <TableCell
-                                class:list={[mobileCell, "align-top lg:table-cell lg:p-4"]}
-                                dataLabel="时间与地点"
-                            >
-                                <div class="font-semibold text-foreground">
-                                    {formatEventSchedule(event)}
-                                </div>
-                                <div class="mt-1 text-muted-foreground">
-                                    {getDivisionLabel(event.division_code) ?? "未设置地区"}
-                                </div>
-                                <div class="mt-0.5 text-xs text-muted">{event.venue}</div>
-                                {event.address ? (
-                                    <div class="mt-0.5 text-xs text-muted">{event.address}</div>
-                                ) : null}
-                            </TableCell>
-                            <TableCell
-                                class:list={[mobileCell, "align-top lg:table-cell lg:p-4"]}
-                                dataLabel="分类"
-                            >
-                                <div class="font-semibold text-foreground">
-                                    {getEventTypeLabel(event.type)}
-                                </div>
-                                <div class="mt-1 text-muted-foreground">
-                                    {getEventScaleLabel(event.scale)}
-                                </div>
-                                {event.tags ? (
-                                    <div class="mt-1 text-xs break-words text-muted">
-                                        {event.tags}
-                                    </div>
-                                ) : event.tag_suggestions ? (
-                                    <div class="mt-1 text-xs break-words text-warning">
-                                        投稿建议：{event.tag_suggestions}
-                                    </div>
-                                ) : null}
-                            </TableCell>
-                            <TableCell
-                                class:list={[
-                                    mobileCell,
-                                    "col-span-2 align-top sm:col-span-1 lg:table-cell lg:p-4"
-                                ]}
-                                dataLabel="来源与联系"
-                            >
-                                <div class="flex flex-wrap gap-x-3 gap-y-1">
+                        <tr>
+                            <td data-label="活动">
+                                <strong>{event.title}</strong>
+                                <small>活动 #{event.id}</small>
+                                <Badge tone={statusTones[event.status] ?? "default"}>
+                                    {statusLabels[event.status] ?? event.status}
+                                </Badge>
+                            </td>
+                            <td data-label="时间与地点">
+                                <strong>{formatEventSchedule(event)}</strong>
+                                <span>{getDivisionLabel(event.division_code) ?? "未设置地区"}</span>
+                                <small>
+                                    {event.venue}
+                                    {event.address ? ` · ${event.address}` : ""}
+                                </small>
+                            </td>
+                            <td data-label="分类">
+                                <strong>{getEventTypeLabel(event.type)}</strong>
+                                <span>{getEventScaleLabel(event.scale)}</span>
+                                <small>
+                                    {event.tags ||
+                                        (event.tag_suggestions
+                                            ? `投稿建议: ${event.tag_suggestions}`
+                                            : "无标签")}
+                                </small>
+                            </td>
+                            <td data-label="来源与联系">
+                                <div class="admin-source-links">
                                     <a
                                         href={event.source_url}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
-                                        class="inline-flex items-center gap-1 font-semibold text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                     >
-                                        来源
-                                        <ExternalLink class="size-3" aria-hidden="true" />
+                                        来源 <ExternalLink size={13} aria-hidden="true" />
                                     </a>
                                     {event.ticket_url ? (
                                         <a
                                             href={event.ticket_url}
                                             target="_blank"
                                             rel="nofollow noopener noreferrer"
-                                            class="inline-flex items-center gap-1 font-semibold text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                         >
-                                            购票
-                                            <ExternalLink class="size-3" aria-hidden="true" />
+                                            购票 <ExternalLink size={13} aria-hidden="true" />
                                         </a>
                                     ) : null}
                                     {event.cover_url ? (
@@ -161,51 +102,31 @@ const mobileCell =
                                             href={event.cover_url}
                                             target="_blank"
                                             rel="nofollow noopener noreferrer"
-                                            class="inline-flex items-center gap-1 font-semibold text-link underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
                                         >
-                                            封面
-                                            <ExternalLink class="size-3" aria-hidden="true" />
+                                            封面 <ExternalLink size={13} aria-hidden="true" />
                                         </a>
                                     ) : null}
                                 </div>
-                                <div class="mt-2 text-xs break-all text-muted">
-                                    {event.submitter_contact}
-                                </div>
-                            </TableCell>
-                            <TableCell
-                                class:list={[
-                                    mobileCell,
-                                    "col-span-2 align-top sm:col-span-1 lg:table-cell lg:max-w-xs lg:p-4"
-                                ]}
-                                dataLabel="补充说明"
-                            >
-                                <div class="line-clamp-3 leading-5 text-muted-foreground">
+                                <small>{event.submitter_contact}</small>
+                            </td>
+                            <td data-label="补充说明">
+                                <span class="admin-description">
                                     {event.description ?? "无活动说明"}
-                                </div>
-                                {event.qq_group ? (
-                                    <div class="mt-1 text-xs text-muted">
-                                        QQ群：{event.qq_group}
-                                    </div>
-                                ) : null}
-                            </TableCell>
-                            <TableCell
-                                class:list={[
-                                    mobileCell,
-                                    "col-span-2 border-t border-border pt-3 align-top lg:table-cell lg:border-t-0 lg:p-4"
-                                ]}
-                                dataLabel="操作"
-                            >
+                                </span>
+                                {event.qq_group ? <small>QQ群: {event.qq_group}</small> : null}
+                            </td>
+                            <td data-label="操作">
                                 <EventActions
                                     eventId={event.id}
                                     {mode}
                                     hasTags={Boolean(event.tags)}
                                     client:load
                                 />
-                            </TableCell>
-                        </TableRow>
+                            </td>
+                        </tr>
                     ))}
-                </TableBody>
-            </Table>
+                </tbody>
+            </table>
         </div>
     )
 }

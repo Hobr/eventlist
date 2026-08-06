@@ -27,58 +27,41 @@ const tagOptions = tags.map((tag) => ({
 <AdminLayout title="标签归并" description="将重复标签合并到统一名称, 保持活动检索整洁">
     {
         errorMessage ? (
-            <Alert tone="danger" class="p-6 text-center font-semibold">
+            <Alert tone="danger" class="admin-page-error">
                 {errorMessage}
             </Alert>
         ) : (
-            <div class="flex flex-col gap-8">
-                <section class="border-b border-border/80 pb-8" aria-labelledby="merge-heading">
-                    <div class="mb-5">
-                        <h2 id="merge-heading" class="text-base font-black text-foreground">
-                            归并重复标签
-                        </h2>
-                        <p class="mt-1 text-sm text-muted-foreground">
-                            源标签会被移除, 关联活动将改用目标标签
-                        </p>
+            <div class="tag-admin-page">
+                <section class="tag-merge-section" aria-labelledby="merge-heading">
+                    <div class="tag-section-heading">
+                        <h2 id="merge-heading">归并重复标签</h2>
+                        <p>源标签会被移除, 关联活动将改用目标标签</p>
                     </div>
                     <TagMergeForm options={tagOptions} client:load />
                 </section>
 
                 <section aria-labelledby="tag-inventory-heading">
-                    <div class="mb-4 flex items-end justify-between gap-4">
+                    <div class="tag-section-heading">
                         <div>
-                            <h2
-                                id="tag-inventory-heading"
-                                class="text-base font-black text-foreground"
-                            >
-                                标签目录
-                            </h2>
-                            <p class="mt-1 text-sm text-muted-foreground">
-                                当前共 {tags.length} 个规范标签
-                            </p>
+                            <h2 id="tag-inventory-heading">标签目录</h2>
+                            <p>当前共 {tags.length} 个规范标签</p>
                         </div>
                     </div>
 
                     {tags.length > 0 ? (
-                        <div class="divide-y divide-border/75 border-y border-border/80">
+                        <div class="tag-inventory">
                             {tags.map((tag) => (
-                                <div class="flex items-center justify-between gap-4 py-3">
-                                    <div class="min-w-0">
-                                        <p class="truncate text-sm font-bold text-foreground">
-                                            {tag.name}
-                                        </p>
-                                        <p class="mt-0.5 text-xs text-muted">标签 #{tag.id}</p>
+                                <div class="tag-inventory-row">
+                                    <div class="tag-inventory-copy">
+                                        <strong>{tag.name}</strong>
+                                        <small>标签 #{tag.id}</small>
                                     </div>
-                                    <span class="shrink-0 rounded-full bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted-foreground">
-                                        {tag.event_count} 个活动
-                                    </span>
+                                    <span class="tag-event-count">{tag.event_count} 个活动</span>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div class="rounded-md bg-surface p-8 text-center text-sm text-muted-foreground ring-1 ring-border/80">
-                            暂无标签
-                        </div>
+                        <div class="tag-empty">暂无标签</div>
                     )}
                 </section>
             </div>

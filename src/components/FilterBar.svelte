@@ -1,10 +1,8 @@
 <script lang="ts">
-    import {
-        AdjustmentsHorizontalOutline as SlidersHorizontal,
-        CloseOutline as X,
-        FilterOutline as Filter,
-        RefreshOutline as RotateCcw
-    } from "flowbite-svelte-icons";
+    import RotateCcw from "phosphor-svelte/lib/ArrowsClockwise";
+    import Filter from "phosphor-svelte/lib/Funnel";
+    import SlidersHorizontal from "phosphor-svelte/lib/SlidersHorizontal";
+    import X from "phosphor-svelte/lib/X";
     import type { EventSort, EventTiming, PublishedEventFilters } from "../lib/db/public-events";
     import type { TagSummary } from "../lib/db/tags";
     import { getDivisionLabel } from "../lib/divisions";
@@ -161,14 +159,9 @@
     }
 </script>
 
-<div class="flex flex-col gap-4">
-    <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <form
-            id="quick-event-filters"
-            class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(18rem,1.3fr)_minmax(9rem,0.65fr)_minmax(11rem,0.8fr)_minmax(10rem,0.7fr)_auto] lg:items-end"
-            action="/events"
-            method="GET"
-        >
+<div class="filter-bar">
+    <div class="filter-controls">
+        <form id="quick-event-filters" class="quick-filters" action="/events" method="GET">
             <DivisionPicker
                 name="city"
                 label="地区"
@@ -184,7 +177,7 @@
                 value={filters.type ?? ""}
                 options={typeOptions}
             />
-            <div class="flex flex-col gap-1.5">
+            <div class="field-group">
                 <Label for="event-filter-from">开始日期</Label>
                 <Input id="event-filter-from" type="date" name="from" value={filters.from ?? ""} />
             </div>
@@ -194,8 +187,8 @@
             {#if filters.starts}<input type="hidden" name="starts" value={filters.starts} />{/if}
             {#if filters.active}<input type="hidden" name="active" value={filters.active} />{/if}
             {#if filters.sort}<input type="hidden" name="sort" value={filters.sort} />{/if}
-            <Button type="submit" class="w-full lg:w-auto">
-                <Filter class="size-4" aria-hidden="true" />
+            <Button type="submit" class="filter-submit">
+                <Filter size={17} aria-hidden="true" />
                 筛选
             </Button>
         </form>
@@ -203,22 +196,20 @@
         <SidePanel
             title="高级筛选"
             description="规模、标签、排序与结束日期"
-            triggerClass="w-full lg:w-auto"
+            triggerClass="advanced-filter-trigger"
         >
             {#snippet trigger()}
-                <SlidersHorizontal class="size-4" aria-hidden="true" />
+                <SlidersHorizontal size={17} aria-hidden="true" />
                 高级筛选
                 {#if advancedCount > 0}
-                    <span
-                        class="inline-flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] text-primary-foreground"
-                    >
+                    <span class="filter-count">
                         {advancedCount}
                     </span>
                 {/if}
             {/snippet}
             <form
                 id="advanced-event-filters"
-                class="flex flex-col gap-5"
+                class="advanced-filter-form"
                 action="/events"
                 method="GET"
             >
@@ -244,11 +235,11 @@
                     options={scaleOptions}
                 />
                 <SelectField name="sort" label="排序" value={sortValue} options={sortOptions} />
-                <div class="flex flex-col gap-1.5">
+                <div class="field-group">
                     <Label for="event-filter-to">结束日期</Label>
                     <Input id="event-filter-to" type="date" name="to" value={filters.to ?? ""} />
                 </div>
-                <div class="flex flex-col gap-1.5">
+                <div class="field-group">
                     <Label for="event-filter-tag">标签</Label>
                     <Input
                         id="event-filter-tag"
@@ -264,10 +255,10 @@
                         {/each}
                     </datalist>
                 </div>
-                <div class="flex gap-3 border-t border-border pt-5">
-                    <Button type="submit" class="flex-1">应用筛选</Button>
+                <div class="filter-actions">
+                    <Button type="submit" class="filter-apply">应用筛选</Button>
                     <Button href="/events" variant="outline">
-                        <RotateCcw class="size-4" aria-hidden="true" />
+                        <RotateCcw size={17} aria-hidden="true" />
                         重置
                     </Button>
                 </div>
@@ -276,26 +267,20 @@
     </div>
 
     {#if activeFilters.length > 0}
-        <div
-            class="flex flex-wrap items-center gap-2 border-t border-border pt-4"
-            aria-label="已启用筛选"
-        >
-            <span class="text-xs font-semibold text-muted">已筛选</span>
+        <div class="active-filters" aria-label="已启用筛选">
+            <span>已筛选</span>
             {#each activeFilters as filter (filter.key)}
                 <a
                     href={hrefWithout(filter.key)}
-                    class="inline-flex items-center gap-1.5 rounded-sm bg-surface-subtle px-2.5 py-1 text-xs font-semibold text-muted-foreground transition-[transform,background-color,color] duration-300 ease-motion hover:text-foreground active:scale-[0.98]"
+                    class="active-filter"
                     aria-label={`移除筛选：${filter.label}`}
                 >
                     {filter.label}
-                    <X class="size-3" aria-hidden="true" />
+                    <X size={13} aria-hidden="true" />
                 </a>
             {/each}
-            <a
-                href="/events"
-                class="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-link"
-            >
-                <RotateCcw class="size-3" aria-hidden="true" />
+            <a href="/events" class="reset-filters">
+                <RotateCcw size={13} aria-hidden="true" />
                 全部重置
             </a>
         </div>

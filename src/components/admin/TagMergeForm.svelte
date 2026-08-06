@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { CodeMergeOutline as Merge } from "flowbite-svelte-icons";
+    import Merge from "phosphor-svelte/lib/Intersect";
     import SelectField, { type SelectOption } from "../SelectField.svelte";
     import ConfirmDialog from "../ui/confirm-dialog.svelte";
 
@@ -52,10 +52,7 @@
     }
 </script>
 
-<form
-    class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_10rem] lg:items-end"
-    onsubmit={(event) => event.preventDefault()}
->
+<form class="tag-merge-form" onsubmit={(event) => event.preventDefault()}>
     <SelectField
         name="from"
         label="源标签"
@@ -67,7 +64,7 @@
             errorMessage = "";
         }}
     />
-    <span class="hidden pb-3 text-sm font-semibold text-muted lg:block" aria-hidden="true">→</span>
+    <span class="tag-merge-arrow" aria-hidden="true">→</span>
     <SelectField
         name="to"
         label="目标标签"
@@ -86,17 +83,17 @@
         {pending}
         disabled={selectionInvalid || pending}
         onconfirm={mergeTags}
-        triggerClass="h-10 text-sm"
+        triggerClass="tag-merge-trigger"
     >
         {#snippet trigger()}
-            <Merge class="size-4" aria-hidden="true" />
+            <Merge size={17} aria-hidden="true" />
             归并
         {/snippet}
     </ConfirmDialog>
 </form>
 
 {#if sourceId && targetId && sourceId === targetId}
-    <p class="mt-3 text-sm font-semibold text-danger" role="alert">源标签和目标标签不能相同</p>
+    <p class="form-error" role="alert">源标签和目标标签不能相同</p>
 {:else if errorMessage}
-    <p class="mt-3 text-sm font-semibold text-danger" role="alert">{errorMessage}</p>
+    <p class="form-error" role="alert">{errorMessage}</p>
 {/if}

@@ -1,9 +1,7 @@
 ---
-import {
-    ArrowLeftOutline as ArrowLeft,
-    LockOutline as LockKeyhole,
-    ShieldCheckOutline as ShieldCheck
-} from "flowbite-svelte-icons";
+import ArrowLeft from "phosphor-svelte/lib/ArrowLeft";
+import LockKeyhole from "phosphor-svelte/lib/LockKey";
+import ShieldCheck from "phosphor-svelte/lib/ShieldCheck";
 import Alert from "../../components/ui/alert.svelte";
 import Button from "../../components/ui/button.svelte";
 import Card from "../../components/ui/card.svelte";
@@ -53,59 +51,51 @@ if (Astro.request.method === "POST") {
         <link rel="icon" href="/favicon.ico" />
         <title>管理员登录 - {SITE_NAME}</title>
     </head>
-    <body class="min-h-[100dvh] bg-background text-foreground antialiased">
-        <main
-            class="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col justify-center px-5 py-10"
-        >
-            <a
-                href="/"
-                class="mb-8 inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground transition-[transform,color] duration-300 ease-motion hover:-translate-x-1 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
-            >
-                <ArrowLeft class="size-4" aria-hidden="true" />
+    <body class="login-body">
+        <main class="login-shell">
+            <a href="/" class="login-back">
+                <ArrowLeft size={16} aria-hidden="true" />
                 返回公开站点
             </a>
 
-            <Card class="p-6 shadow-elevated sm:p-8">
-                <div class="mb-7 flex items-center gap-3">
-                    <span
-                        class="inline-flex size-10 items-center justify-center rounded-md bg-foreground text-background"
-                        aria-hidden="true"
-                    >
+            <Card class="login-card">
+                <div class="login-heading">
+                    <span class="login-icon" aria-hidden="true">
                         {
                             authMode === "access" ? (
-                                <ShieldCheck class="size-5" />
+                                <ShieldCheck size={20} />
                             ) : (
-                                <LockKeyhole class="size-5" />
+                                <LockKeyhole size={20} />
                             )
                         }
                     </span>
                     <div>
-                        <p class="text-xs font-semibold text-muted">{SITE_NAME}</p>
-                        <h1 class="text-xl font-black text-foreground">管理后台</h1>
+                        <p class="login-brand">{SITE_NAME}</p>
+                        <h1>管理后台</h1>
                     </div>
                 </div>
 
                 {
                     authMode === "access" ? (
                         <section aria-labelledby="access-heading">
-                            <h2 id="access-heading" class="text-base font-bold text-foreground">
+                            <h2 id="access-heading" class="login-section-title">
                                 Cloudflare Access 已启用
                             </h2>
-                            <p class="mt-2 text-sm leading-6 text-muted-foreground">
+                            <p class="login-copy">
                                 请从受保护的 Access 应用入口进入, 身份通过验证后, 后台会自动开放
                             </p>
-                            <Alert tone="success" class="mt-5 px-4 py-3 font-semibold">
+                            <Alert tone="success" class="login-alert">
                                 当前页面不需要本地 Token
                             </Alert>
                             {errorMessage ? (
-                                <Alert tone="danger" class="mt-4 font-semibold">
+                                <Alert tone="danger" class="login-alert">
                                     {errorMessage}
                                 </Alert>
                             ) : null}
                         </section>
                     ) : (
-                        <form class="flex flex-col gap-4" method="post">
-                            <div>
+                        <form class="login-form" method="post">
+                            <div class="login-field">
                                 <Label for="token">管理员 Token</Label>
                                 <Input
                                     id="token"
@@ -114,18 +104,16 @@ if (Astro.request.method === "POST") {
                                     autocomplete="current-password"
                                     required
                                     autofocus
-                                    class="mt-1.5 h-11"
+                                    class="login-input"
                                 />
-                                <p class="mt-1.5 text-xs text-muted">
-                                    Token 仅用于建立本机管理会话
-                                </p>
+                                <p class="login-field-note">Token 仅用于建立本机管理会话</p>
                             </div>
                             {errorMessage ? (
-                                <Alert tone="danger" class="px-3 py-2 font-semibold">
+                                <Alert tone="danger" class="login-form-alert">
                                     {errorMessage}
                                 </Alert>
                             ) : null}
-                            <Button class="h-11 font-bold" type="submit">
+                            <Button class="login-submit" type="submit">
                                 登录后台
                             </Button>
                         </form>
@@ -133,9 +121,7 @@ if (Astro.request.method === "POST") {
                 }
             </Card>
 
-            <p class="mt-6 text-xs leading-5 text-muted">
-                管理操作会写入审核记录, 请仅在可信设备上使用
-            </p>
+            <p class="login-footnote">管理操作会写入审核记录, 请仅在可信设备上使用</p>
         </main>
     </body>
 </html>

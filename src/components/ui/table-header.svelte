@@ -1,20 +1,11 @@
 <script lang="ts">
-    import { TableHead as FlowbiteTableHead } from "flowbite-svelte";
+    import type { HTMLAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
-
-    interface Props {
+    type Props = Omit<HTMLAttributes<HTMLTableSectionElement>, "children" | "class"> & {
         class?: string;
         children?: import("svelte").Snippet;
-    }
-    let { class: className = undefined, children }: Props = $props();
-    let classes = $derived(
-        cn(
-            "bg-surface-subtle text-muted-foreground dark:bg-surface-subtle! dark:text-muted-foreground! [&_tr]:border-b",
-            className
-        )
-    );
+    };
+    let { class: className = undefined, children, ...restProps }: Props = $props();
 </script>
 
-<FlowbiteTableHead defaultRow={false} class={classes}>
-    {@render children?.()}
-</FlowbiteTableHead>
+<thead {...restProps} class={cn("ui-table-header", className)}>{@render children?.()}</thead>

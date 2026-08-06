@@ -1,11 +1,9 @@
 ---
-import {
-    CalendarMonthOutline as CalendarDays,
-    CodeForkOutline as GitFork,
-    GlobeOutline as Compass,
-    PaperPlaneOutline as Send,
-    TagOutline as Tags
-} from "flowbite-svelte-icons";
+import CalendarDays from "phosphor-svelte/lib/CalendarDots";
+import Compass from "phosphor-svelte/lib/Compass";
+import GitFork from "phosphor-svelte/lib/GitFork";
+import Send from "phosphor-svelte/lib/PaperPlaneTilt";
+import Tags from "phosphor-svelte/lib/Tag";
 import PublicMobileNav from "../components/PublicMobileNav.svelte";
 import { SITE_NAME, SITE_SLOGAN } from "../lib/site";
 import "../styles/app.css";
@@ -24,15 +22,6 @@ const hasNavControl = Astro.slots.has("nav-control");
 function isCurrent(href: string) {
     if (href === "/") return currentPath === "/";
     return currentPath === href || currentPath.startsWith(`${href}/`);
-}
-
-function navClasses(href: string) {
-    return [
-        "group inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-[transform,background-color,color] duration-300 ease-motion focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.98]",
-        isCurrent(href)
-            ? "bg-foreground text-background"
-            : "text-muted-foreground hover:bg-surface-subtle hover:text-foreground"
-    ];
 }
 ---
 
@@ -56,109 +45,88 @@ function navClasses(href: string) {
             document.documentElement.classList.add("reveal-ready");
         </script>
     </head>
-    <body class="min-h-screen bg-background text-foreground antialiased">
-        <a
-            href="#main-content"
-            class="fixed top-2 left-2 z-50 -translate-y-20 rounded-md bg-foreground px-4 py-2 text-sm font-semibold text-background transition-transform duration-300 ease-motion focus:translate-y-0"
-        >
-            跳至主要内容
-        </a>
+    <body class="site-body">
+        <a href="#main-content" class="skip-link"> 跳至主要内容 </a>
 
-        <div class="flex min-h-screen flex-col">
-            <header class="sticky top-0 z-40 w-full px-4 pt-4 sm:px-6 lg:px-8">
-                <div
-                    class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center rounded-full border border-border/80 bg-background/88 px-2.5 shadow-elevated backdrop-blur-xl sm:h-16 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:px-3"
-                >
-                    <a
-                        href="/"
-                        class="flex min-w-0 shrink items-center rounded-full px-2 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none sm:px-3"
-                    >
-                        <span class="min-w-0 leading-none">
-                            <strong
-                                class="block truncate text-sm font-bold text-foreground sm:text-base"
-                                >{SITE_NAME}</strong
-                            >
-                            <span
-                                class="mt-1 hidden truncate text-[0.65rem] font-medium text-muted sm:block"
-                                >{SITE_SLOGAN}</span
-                            >
+        <div class="site-frame">
+            <header class="site-nav-shell">
+                <div class="site-nav">
+                    <a href="/" class="site-brand">
+                        <span>
+                            <strong>{SITE_NAME}</strong>
+                            <small>{SITE_SLOGAN}</small>
                         </span>
                     </a>
 
-                    <nav class="hidden items-center gap-1 sm:flex" aria-label="主导航">
+                    <nav class="site-nav-links" aria-label="主导航">
                         <a
                             href="/"
                             aria-current={isCurrent("/") ? "page" : undefined}
-                            class:list={navClasses("/")}
+                            class="site-nav-link"
                         >
-                            <Compass class="size-4" aria-hidden="true" />
+                            <Compass size={16} aria-hidden="true" />
                             首页
                         </a>
                         <a
                             href="/events"
                             aria-current={isCurrent("/events") ? "page" : undefined}
-                            class:list={navClasses("/events")}
+                            class="site-nav-link"
                         >
-                            <CalendarDays class="size-4" aria-hidden="true" />
+                            <CalendarDays size={16} aria-hidden="true" />
                             活动
                         </a>
                         <a
                             href="/categories"
                             aria-current={isCurrent("/categories") ? "page" : undefined}
-                            class:list={navClasses("/categories")}
+                            class="site-nav-link"
                         >
-                            <Tags class="size-4" aria-hidden="true" />
+                            <Tags size={16} aria-hidden="true" />
                             分类
                         </a>
                         <a
                             href="/submit"
                             aria-current={isCurrent("/submit") ? "page" : undefined}
-                            class:list={navClasses("/submit")}
+                            class="site-nav-link"
                         >
-                            <Send class="size-4" aria-hidden="true" />
+                            <Send size={16} aria-hidden="true" />
                             投稿
                         </a>
                     </nav>
 
-                    <div class="flex min-w-0 items-center gap-1.5 justify-self-end sm:gap-2">
+                    <div class="site-nav-actions">
                         {
                             hasNavControl ? (
-                                <div class="min-w-0">
+                                <div class="site-nav-control">
                                     <slot name="nav-control" />
                                 </div>
                             ) : null
                         }
 
-                        <div class="shrink-0 sm:hidden">
+                        <div class="site-mobile-nav">
                             <PublicMobileNav {currentPath} client:load />
                         </div>
                     </div>
                 </div>
             </header>
 
-            <main
-                id="main-content"
-                class="mx-auto w-full max-w-[90rem] flex-1 px-4 pt-7 pb-16 sm:px-6 sm:pt-10 sm:pb-20 lg:px-8"
-            >
+            <main id="main-content" class="site-main">
                 <slot />
             </main>
 
-            <footer class="border-t border-border/80 bg-surface/45">
-                <div
-                    class="mx-auto flex w-full max-w-[90rem] flex-col gap-5 px-4 py-8 text-xs text-muted sm:flex-row sm:items-end sm:justify-between sm:px-6 lg:px-8"
-                >
+            <footer class="site-footer">
+                <div class="site-footer-inner">
                     <div>
-                        <strong class="block text-sm text-foreground">{SITE_NAME}</strong>
+                        <strong>{SITE_NAME}</strong>
                     </div>
-                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <div>
                         <a
                             href="https://github.com/Hobr/eventlist"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="group inline-flex items-center gap-1.5 font-semibold text-muted-foreground transition-colors duration-300 ease-motion hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+                            class="site-footer-link"
                             aria-label="在 GitHub 上查看项目并参与开发"
                         >
-                            <GitFork class="size-3.5" aria-hidden="true" />
+                            <GitFork size={15} aria-hidden="true" />
                             <span>GitHub.com/Hobr/eventlist</span>
                         </a>
                     </div>

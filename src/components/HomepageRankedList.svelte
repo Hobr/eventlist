@@ -1,8 +1,6 @@
 <script lang="ts">
-    import {
-        ArrowUpRightFromSquareOutline as ArrowUpRight,
-        MapPinOutline as MapPin
-    } from "flowbite-svelte-icons";
+    import ArrowUpRight from "phosphor-svelte/lib/ArrowUpRight";
+    import MapPin from "phosphor-svelte/lib/MapPin";
     import { getDivisionLabel } from "../lib/divisions";
     import type { PublicHomepageRankedEvent } from "../lib/public/homepage";
 
@@ -70,67 +68,54 @@
     }
 </script>
 
-<section aria-labelledby={headingId} class="min-w-0 border-t border-border/80 pt-5">
-    <header class="flex items-end justify-between gap-4 pb-3">
-        <div class="min-w-0">
-            <h4 id={headingId} class="text-base font-black text-foreground sm:text-lg">{title}</h4>
+<section aria-labelledby={headingId} class="ranked-list">
+    <header class="ranked-list-header">
+        <div>
+            <h4 id={headingId}>{title}</h4>
         </div>
     </header>
 
     {#if events.length > 0}
-        <ol class="divide-y divide-border/75 border-b border-border/80">
+        <ol class="ranked-items">
             {#each events as event, index (event.id)}
                 <li>
-                    <a
-                        href={`/events/${event.id}`}
-                        class="group grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-3 py-3.5 transition-[transform,background-color] duration-300 ease-motion hover:translate-x-1 focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none active:scale-[0.995]"
-                    >
-                        <span class="text-sm font-black text-primary tabular-nums">
+                    <a href={`/events/${event.id}`} class="ranked-link">
+                        <span class="ranked-position">
                             {String(index + 1).padStart(2, "0")}
                         </span>
-                        <span class="min-w-0">
-                            <strong
-                                class="block truncate text-sm text-foreground transition-colors duration-300 ease-motion group-hover:text-primary sm:text-base"
-                                title={event.title}
-                            >
+                        <span class="ranked-copy">
+                            <strong class="ranked-title" title={event.title}>
                                 {event.title}
                             </strong>
-                            <span
-                                class="mt-1 block truncate text-xs font-semibold text-muted-foreground"
-                            >
+                            <span class="ranked-timing">
                                 {primaryTiming(event)}
                             </span>
-                            <span class="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted">
-                                <MapPin class="size-3.5 shrink-0" aria-hidden="true" />
-                                <span class="truncate">
+                            <span class="ranked-location">
+                                <MapPin size={14} aria-hidden="true" />
+                                <span>
                                     {getDivisionLabel(event.division_code) ?? "未知地区"}
                                 </span>
-                                <span class="shrink-0 tabular-nums"
-                                    >活动 {eventSchedule(event)}</span
-                                >
+                                <span>活动 {eventSchedule(event)}</span>
                             </span>
                         </span>
-                        <span class="flex shrink-0 items-center gap-2 text-right">
+                        <span class="ranked-heat">
                             <span
                                 aria-label={`近期开启详情页的独立访客 ${event.unique_visitors} 人`}
                             >
-                                <strong class="block text-sm text-foreground tabular-nums">
+                                <strong>
                                     {numberFormat.format(event.unique_visitors)}
                                 </strong>
-                                <span class="block text-[0.65rem] text-muted">热度</span>
+                                <span>热度</span>
                             </span>
-                            <ArrowUpRight
-                                class="size-4 text-muted transition-transform duration-300 ease-motion group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105"
-                                aria-hidden="true"
-                            />
+                            <ArrowUpRight size={16} aria-hidden="true" />
                         </span>
                     </a>
                 </li>
             {/each}
         </ol>
     {:else}
-        <div class="border-y border-border/80 py-8">
-            <p class="text-sm font-semibold text-muted-foreground">暂无符合条件的活动</p>
+        <div class="ranked-empty">
+            <p>暂无符合条件的活动</p>
         </div>
     {/if}
 </section>

@@ -7,7 +7,7 @@
         children?: import("svelte").Snippet;
     }
     let { as: Tag = "div", class: className = undefined, children }: Props = $props();
-    let classes = $derived(cn("flex flex-col space-y-1.5 p-5", className));
+    let classes = $derived(cn("ui-card-header", className));
 </script>
 
 <Tag class={classes}>{@render children?.()}</Tag>

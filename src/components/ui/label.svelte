@@ -1,22 +1,14 @@
 <script lang="ts">
-    import { Label as FlowbiteLabel } from "flowbite-svelte";
-    import type { LabelProps } from "flowbite-svelte";
+    import { Label } from "bits-ui";
+    import type { HTMLLabelAttributes } from "svelte/elements";
     import { cn } from "../../lib/utils";
 
-    type Props = Omit<LabelProps, "children" | "class" | "color"> & {
+    type Props = Omit<HTMLLabelAttributes, "children" | "class"> & {
         class?: string;
         children?: import("svelte").Snippet;
     };
 
     let { class: className = undefined, children, ...restProps }: Props = $props();
-    let classes = $derived(
-        cn(
-            "text-sm leading-tight font-semibold text-muted-foreground dark:text-muted-foreground!",
-            className
-        )
-    );
 </script>
 
-<FlowbiteLabel {...restProps} color="gray" class={classes}>
-    {@render children?.()}
-</FlowbiteLabel>
+<Label.Root {...restProps} class={cn("ui-label", className)}>{@render children?.()}</Label.Root>

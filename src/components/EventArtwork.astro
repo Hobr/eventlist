@@ -15,18 +15,14 @@ const {
     alt,
     loading = "lazy",
     fill = false,
-    class: className = "aspect-[16/9]"
+    class: className = "event-artwork-wide"
 } = Astro.props;
 const coverUrl = getDisplayCoverUrl(src);
 const fallbackUrl = "/images/event-fallback.webp";
 ---
 
 <div
-    class:list={[
-        "isolate overflow-hidden rounded-md bg-surface-subtle",
-        fill ? "absolute inset-0 size-full" : "relative",
-        className
-    ]}
+    class:list={["event-artwork", fill ? "event-artwork-fill" : "event-artwork-static", className]}
     role="img"
     aria-label={alt}
 >
@@ -37,7 +33,7 @@ const fallbackUrl = "/images/event-fallback.webp";
         height={675}
         loading={loading}
         decoding="async"
-        class="absolute inset-0 size-full object-cover"
+        class="event-artwork-image"
     />
     {
         coverUrl ? (
@@ -50,7 +46,7 @@ const fallbackUrl = "/images/event-fallback.webp";
                 decoding="async"
                 fetchpriority={loading === "eager" ? "high" : "auto"}
                 referrerpolicy="no-referrer"
-                class="absolute inset-0 size-full object-cover"
+                class="event-artwork-image"
                 onerror="this.remove()"
             />
         ) : null
