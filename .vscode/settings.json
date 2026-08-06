@@ -1,8 +1,5 @@
 {
     "eslint.validate": ["javascript", "javascriptreact", "astro", "typescript", "typescriptreact"],
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
     "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
     "nixEnvSelector.useFlakes": true,
     "nixEnvSelector.flakeShell": "default"

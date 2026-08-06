@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/08-06-bits-ui-interface-redesign/research/bits-ui-llms-notes.md","reason":"Verify the implementation uses documented Bits UI primitives, data attributes and intentional native boundaries."}
+{"file":".trellis/tasks/08-06-bits-ui-interface-redesign/research/current-ui-audit.md","reason":"Verify the redesign resolves the recorded visual issues without regressing current strengths or baseline behavior."}
+{"file":".trellis/spec/frontend/design-system.md","reason":"Verify the final implementation and updated project-wide frontend contract agree."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that repeated component and styling behavior is centralized rather than duplicated across routes."}

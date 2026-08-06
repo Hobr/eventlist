@@ -9,11 +9,6 @@
             "type": "http",
             "url": "https://mcp.docs.astro.build/mcp",
             "directTools": true
-        },
-        "flowbite": {
-            "command": "npx",
-            "args": ["-y", "flowbite-mcp"],
-            "directTools": true
         }
     }
 }
