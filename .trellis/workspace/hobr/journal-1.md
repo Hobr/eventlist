@@ -887,3 +887,25 @@ Migrated shared adapters and high-value public/admin controls to Flowbite, prese
 ### Status
 
 [OK] **Completed**
+
+
+## Session 33: Bits UI interface redesign
+
+**Date**: 2026-08-06
+**Task**: Bits UI interface redesign
+**Branch**: `dev`
+
+### Summary
+
+Replaced the Flowbite and Tailwind frontend with Bits UI primitives and a centralized vanilla CSS design system across public and admin routes; verified runtime routes, responsive browser layouts, lint, 168 tests, and production build.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a5df77d` | (see git log) |
+| `ab2a5f8` | (see git log) |
+
+### Status
+
+[OK] **Completed**
