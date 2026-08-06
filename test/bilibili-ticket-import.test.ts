@@ -95,12 +95,25 @@ test("服务端请求只发送 Accept 且不转发管理员认证信息", async 
 
     assert.equal(new URL(receivedUrl).hostname, "show.bilibili.com");
     assert.equal(receivedInit?.method, "GET");
-    assert.equal(receivedInit?.redirect, "error");
+    assert.equal(receivedInit?.redirect, "manual");
     assert.deepEqual(receivedInit?.headers, { Accept: "application/json" });
     const serialized = JSON.stringify(receivedInit).toLocaleLowerCase();
     for (const header of ["cookie", "authorization", "cf-access-jwt-assertion", "referer"]) {
         assert.doesNotMatch(serialized, new RegExp(header));
     }
+});
+
+test("服务端不跟随会员购重定向响应", async () => {
+    const redirectFetch: typeof fetch = async () =>
+        new Response(null, {
+            status: 302,
+            headers: { location: "https://example.com/redirected" }
+        });
+
+    await assert.rejects(
+        () => fetchBilibiliTicketPreview(1004224, { fetchImpl: redirectFetch }),
+        /HTTP 302/
+    );
 });
 
 test("图片、价格、类型和状态只做保守规范化", async () => {

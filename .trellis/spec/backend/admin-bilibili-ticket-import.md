@@ -43,7 +43,7 @@ createBilibiliImportedPublishedEvent(
 ### 上游请求与解析
 
 - 上游目标固定为 `https://show.bilibili.com/api/ticket/project/getV2`；scheme、host、path 和参数名都不能来自用户输入。
-- 请求只发送 `Accept: application/json`，使用 8 秒默认超时、`redirect: "error"` 和 512 KiB 正文上限；不得转发 Cookie、Authorization、Cloudflare Access 头或 HAR 请求头。
+- 请求只发送 `Accept: application/json`, 使用 8 秒默认超时, Cloudflare Workers 支持的 `redirect: "manual"` 和 512 KiB 正文上限; 任何 3xx 响应都必须按失败处理, 不得转发 Cookie, Authorization, Cloudflare Access 头或 HAR 请求头.
 - 解析从 `unknown` 开始。Unix 秒显式按 `Asia/Shanghai` 转换；多场次使用有效场次的最早开始和最晚结束，某一侧没有有效场次边界时才回退顶层时间。
 - 价格从分转换为人民币文本；`//` 和 `http:` 图片地址规范化为 HTTPS。活动说明、图片集合和其他不可信富文本不进入预填结果。
 

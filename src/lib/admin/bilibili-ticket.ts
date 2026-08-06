@@ -452,7 +452,7 @@ export async function fetchBilibiliTicketPreview(
         const response = await (options.fetchImpl ?? fetch)(createBilibiliTicketApiUrl(projectId), {
             method: "GET",
             headers: { Accept: "application/json" },
-            redirect: "error",
+            redirect: "manual",
             signal: controller.signal
         });
         if (!response.ok) {
