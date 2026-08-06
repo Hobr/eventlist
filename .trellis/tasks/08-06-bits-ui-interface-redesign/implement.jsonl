@@ -1,3 +1,4 @@
 {"file":".trellis/spec/frontend/design-system.md","reason":"Current frontend contract and behavior boundaries that this task must deliberately replace or preserve."}
 {"file":".trellis/tasks/08-06-bits-ui-interface-redesign/research/bits-ui-llms-notes.md","reason":"Official Bits UI styling model, primitive mapping, API constraints and icon research."}
 {"file":".trellis/tasks/08-06-bits-ui-interface-redesign/research/current-ui-audit.md","reason":"Current visual weaknesses, preserved strengths, baseline checks and runtime observation."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Centralize repeated wrapper and styling behavior instead of duplicating it across public and admin routes."}

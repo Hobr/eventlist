@@ -41,9 +41,9 @@
 
 ## Icon choice
 
-- Bits UI official examples use direct imports from `phosphor-svelte/lib/*`.
+- Bits UI official examples use direct imports from `phosphor-svelte/lib/*`. In this Astro setup, those imports must be listed in `astro.config.mjs` `optimizeDeps.exclude`; otherwise Vite may dependency-optimize an icon module and run its top-level `getIconContext()` outside Svelte component initialization.
 - `phosphor-svelte@3.1.0` supports Svelte 5 and Vite 5+.
-- The migration will use light or regular weights consistently and direct per-icon imports for tree shaking.
+- The migration uses per-icon `phosphor-svelte/lib/*` imports with the shared optimizer exclusion list so production and development use the same module boundary.
 
 ## Implementation cautions
 
