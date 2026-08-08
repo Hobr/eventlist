@@ -27,17 +27,17 @@
         "csv-parse": "^7.0.2",
         "phosphor-svelte": "3.1.0",
         "svelte": "^5.56.8",
-        "wrangler": "^4.119.0"
+        "wrangler": "^4.120.0"
     },
     "devDependencies": {
         "@eslint/css": "^1.4.0",
         "@eslint/js": "^10.0.1",
         "@eslint/json": "^2.0.1",
         "@eslint/markdown": "^8.0.3",
-        "@types/node": "^26.1.2",
+        "@types/node": "^26.2.0",
         "@typescript-eslint/parser": "^8.66.0",
         "@typescript/native": "npm:typescript@^7.0.2",
-        "eslint": "^10.8.0",
+        "eslint": "^10.8.1",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-astro": "^3.1.0",
         "eslint-plugin-svelte": "^3.22.0",
@@ -45,7 +45,7 @@
         "prettier": "^3.9.6",
         "prettier-plugin-astro": "0.14.1",
         "prettier-plugin-svelte": "^4.1.1",
-        "tsx": "^4.23.10",
+        "tsx": "^4.23.11",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
         "typescript-eslint": "^8.66.0"
     }
