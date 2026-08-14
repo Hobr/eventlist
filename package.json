@@ -20,14 +20,14 @@
         "@astrojs/sitemap": "^3.7.3",
         "@astrojs/svelte": "^9.0.1",
         "@fontsource-variable/geist": "^5.3.0",
-        "astro": "^7.2.1",
+        "astro": "^7.2.2",
         "bits-ui": "^2.18.1",
         "clsx": "^2.1.1",
         "cn-division": "^2026.0.0",
         "csv-parse": "^7.0.2",
         "phosphor-svelte": "3.1.0",
         "svelte": "^5.56.9",
-        "wrangler": "^4.122.0"
+        "wrangler": "^4.123.0"
     },
     "devDependencies": {
         "@eslint/css": "^1.4.0",
