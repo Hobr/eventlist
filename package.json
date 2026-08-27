@@ -16,28 +16,28 @@
         "format": "prettier --write ."
     },
     "dependencies": {
-        "@astrojs/cloudflare": "^14.2.3",
+        "@astrojs/cloudflare": "^14.2.5",
         "@astrojs/sitemap": "^3.7.3",
         "@astrojs/svelte": "^9.0.1",
         "@fontsource-variable/geist": "^5.3.0",
-        "astro": "^7.2.4",
+        "astro": "^7.2.8",
         "bits-ui": "^2.19.0",
         "clsx": "^2.1.1",
         "cn-division": "^2026.0.0",
         "csv-parse": "^7.0.2",
         "phosphor-svelte": "3.1.0",
         "svelte": "^5.56.10",
-        "wrangler": "^4.125.0"
+        "wrangler": "^4.127.0"
     },
     "devDependencies": {
         "@eslint/css": "^1.4.0",
         "@eslint/js": "^10.0.1",
         "@eslint/json": "^2.0.1",
         "@eslint/markdown": "^8.0.3",
-        "@types/node": "^26.2.0",
-        "@typescript-eslint/parser": "^8.67.0",
+        "@types/node": "^26.4.0",
+        "@typescript-eslint/parser": "^8.68.0",
         "@typescript/native": "npm:typescript@^7.0.2",
-        "eslint": "^10.9.0",
+        "eslint": "^10.9.1",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-astro": "^3.1.0",
         "eslint-plugin-svelte": "^3.23.0",
@@ -47,6 +47,6 @@
         "prettier-plugin-svelte": "^4.1.1",
         "tsx": "^4.23.12",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
-        "typescript-eslint": "^8.67.0"
+        "typescript-eslint": "^8.68.0"
     }
 }
