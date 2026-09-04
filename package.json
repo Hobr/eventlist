@@ -16,25 +16,25 @@
         "format": "prettier --write ."
     },
     "dependencies": {
-        "@astrojs/cloudflare": "^14.2.6",
+        "@astrojs/cloudflare": "^14.3.0",
         "@astrojs/sitemap": "^3.7.4",
         "@astrojs/svelte": "^9.0.1",
         "@fontsource-variable/geist": "^5.3.0",
-        "astro": "^7.2.10",
+        "astro": "^7.3.1",
         "bits-ui": "^2.19.0",
         "clsx": "^2.1.1",
-        "cn-division": "^2026.0.0",
+        "cn-division": "^2026.0.1",
         "csv-parse": "^7.0.2",
         "phosphor-svelte": "3.1.0",
         "svelte": "^5.57.0",
-        "wrangler": "^4.127.1"
+        "wrangler": "^4.129.0"
     },
     "devDependencies": {
-        "@eslint/css": "^1.4.0",
+        "@eslint/css": "^2.0.0",
         "@eslint/js": "^10.0.1",
         "@eslint/json": "^2.1.0",
         "@eslint/markdown": "^8.0.3",
-        "@types/node": "^26.4.0",
+        "@types/node": "^26.4.1",
         "@typescript-eslint/parser": "^8.69.0",
         "@typescript/native": "npm:typescript@^7.0.2",
         "eslint": "^10.9.1",
