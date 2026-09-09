@@ -26,17 +26,15 @@ events = events.slice(0, PAGE_SIZE);
 ---
 
 <AdminLayout title="已下线活动" description="查看历史记录, 并按需修订或重新发布">
-    {
-        errorMessage ? (
-            <Alert tone="danger" class="admin-page-error">
-                {errorMessage}
-            </Alert>
-        ) : (
-            <div class="admin-queue">
-                <p class="admin-queue-count">本页 {events.length} 条已下线活动</p>
-                <EventTable events={events} mode="offline" />
-                <Pagination page={page} hasNext={hasNext} />
-            </div>
-        )
-    }
+    {errorMessage ? (
+        <Alert tone="danger" class="admin-page-error">
+            {errorMessage}
+        </Alert>
+    ) : (
+        <div class="admin-queue">
+            <p class="admin-queue-count">本页 {events.length} 条已下线活动</p>
+            <EventTable events={events} mode="offline" />
+            <Pagination page={page} hasNext={hasNext} />
+        </div>
+    )}
 </AdminLayout>

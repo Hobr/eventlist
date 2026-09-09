@@ -8,29 +8,27 @@ interface Props {
 const { title, description, optional = false } = Astro.props;
 ---
 
-{
-    optional ? (
-        <details class="form-disclosure" data-form-disclosure>
-            <summary>
-                <span>
-                    <strong>{title}</strong>
-                    {description ? <small>{description}</small> : null}
-                </span>
-                <span>
-                    选填 <ChevronDown size={16} aria-hidden="true" />
-                </span>
-            </summary>
-            <div class="form-section-content">
-                <slot />
-            </div>
-        </details>
-    ) : (
-        <fieldset class="form-section">
-            <legend>{title}</legend>
-            {description ? <p>{description}</p> : null}
-            <div class="form-section-content">
-                <slot />
-            </div>
-        </fieldset>
-    )
-}
+{optional ? (
+    <details class="form-disclosure" data-form-disclosure>
+        <summary>
+            <span>
+                <strong>{title}</strong>
+                {description ? <small>{description}</small> : null}
+            </span>
+            <span>
+                选填 <ChevronDown size={16} aria-hidden="true" />
+            </span>
+        </summary>
+        <div class="form-section-content">
+            <slot />
+        </div>
+    </details>
+) : (
+    <fieldset class="form-section">
+        <legend>{title}</legend>
+        {description ? <p>{description}</p> : null}
+        <div class="form-section-content">
+            <slot />
+        </div>
+    </fieldset>
+)}

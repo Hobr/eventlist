@@ -61,13 +61,11 @@ if (Astro.request.method === "POST") {
             <Card class="login-card">
                 <div class="login-heading">
                     <span class="login-icon" aria-hidden="true">
-                        {
-                            authMode === "access" ? (
-                                <ShieldCheck size={20} />
-                            ) : (
-                                <LockKeyhole size={20} />
-                            )
-                        }
+                        {authMode === "access" ? (
+                            <ShieldCheck size={20} />
+                        ) : (
+                            <LockKeyhole size={20} />
+                        )}
                     </span>
                     <div>
                         <p class="login-brand">{SITE_NAME}</p>
@@ -75,50 +73,48 @@ if (Astro.request.method === "POST") {
                     </div>
                 </div>
 
-                {
-                    authMode === "access" ? (
-                        <section aria-labelledby="access-heading">
-                            <h2 id="access-heading" class="login-section-title">
-                                Cloudflare Access 已启用
-                            </h2>
-                            <p class="login-copy">
-                                请从受保护的 Access 应用入口进入, 身份通过验证后, 后台会自动开放
-                            </p>
-                            <Alert tone="success" class="login-alert">
-                                当前页面不需要本地 Token
+                {authMode === "access" ? (
+                    <section aria-labelledby="access-heading">
+                        <h2 id="access-heading" class="login-section-title">
+                            Cloudflare Access 已启用
+                        </h2>
+                        <p class="login-copy">
+                            请从受保护的 Access 应用入口进入, 身份通过验证后, 后台会自动开放
+                        </p>
+                        <Alert tone="success" class="login-alert">
+                            当前页面不需要本地 Token
+                        </Alert>
+                        {errorMessage ? (
+                            <Alert tone="danger" class="login-alert">
+                                {errorMessage}
                             </Alert>
-                            {errorMessage ? (
-                                <Alert tone="danger" class="login-alert">
-                                    {errorMessage}
-                                </Alert>
-                            ) : null}
-                        </section>
-                    ) : (
-                        <form class="login-form" method="post">
-                            <div class="login-field">
-                                <Label for="token">管理员 Token</Label>
-                                <Input
-                                    id="token"
-                                    name="token"
-                                    type="password"
-                                    autocomplete="current-password"
-                                    required
-                                    autofocus
-                                    class="login-input"
-                                />
-                                <p class="login-field-note">Token 仅用于建立本机管理会话</p>
-                            </div>
-                            {errorMessage ? (
-                                <Alert tone="danger" class="login-form-alert">
-                                    {errorMessage}
-                                </Alert>
-                            ) : null}
-                            <Button class="login-submit" type="submit">
-                                登录后台
-                            </Button>
-                        </form>
-                    )
-                }
+                        ) : null}
+                    </section>
+                ) : (
+                    <form class="login-form" method="post">
+                        <div class="login-field">
+                            <Label for="token">管理员 Token</Label>
+                            <Input
+                                id="token"
+                                name="token"
+                                type="password"
+                                autocomplete="current-password"
+                                required
+                                autofocus
+                                class="login-input"
+                            />
+                            <p class="login-field-note">Token 仅用于建立本机管理会话</p>
+                        </div>
+                        {errorMessage ? (
+                            <Alert tone="danger" class="login-form-alert">
+                                {errorMessage}
+                            </Alert>
+                        ) : null}
+                        <Button class="login-submit" type="submit">
+                            登录后台
+                        </Button>
+                    </form>
+                )}
             </Card>
 
             <p class="login-footnote">管理操作会写入审核记录, 请仅在可信设备上使用</p>

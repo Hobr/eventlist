@@ -40,13 +40,18 @@ function isCurrent(href: string) {
         <link rel="icon" href="/favicon.ico" />
         <link rel="sitemap" href="/sitemap-index.xml" />
         <title>{siteTitle}</title>
-        {jsonLd ? <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} /> : null}
+        {jsonLd ? (
+            <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+        ) : null}
         <script is:inline>
             document.documentElement.classList.add("reveal-ready");
         </script>
     </head>
     <body class="site-body">
-        <a href="#main-content" class="skip-link"> 跳至主要内容 </a>
+        <a href="#main-content" class="skip-link">
+            {" "}
+            跳至主要内容{" "}
+        </a>
 
         <div class="site-frame">
             <header class="site-nav-shell">
@@ -94,13 +99,11 @@ function isCurrent(href: string) {
                     </nav>
 
                     <div class="site-nav-actions">
-                        {
-                            hasNavControl ? (
-                                <div class="site-nav-control">
-                                    <slot name="nav-control" />
-                                </div>
-                            ) : null
-                        }
+                        {hasNavControl ? (
+                            <div class="site-nav-control">
+                                <slot name="nav-control" />
+                            </div>
+                        ) : null}
 
                         <div class="site-mobile-nav">
                             <PublicMobileNav {currentPath} client:load />

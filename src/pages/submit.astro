@@ -42,248 +42,246 @@ const admissionMethodOptions = EVENT_ADMISSION_METHODS.map((method) => ({
 ---
 
 <Layout title="提交活动" description="提交 ACG 活动, 进入审核队列后再公开展示">
-    {
-        sent ? (
-            <section class="submit-success" data-reveal>
-                <CircleCheck size={40} aria-hidden="true" />
-                <h1>活动已进入审核队列</h1>
-                <p>审核通过后会出现在公开活动列表中</p>
-                <div>
-                    <Button href="/events">浏览活动</Button>
-                    <Button href="/submit" variant="outline">
-                        继续提交
-                    </Button>
-                </div>
-            </section>
-        ) : (
-            <div class="submit-page" data-reveal>
-                <header class="submit-header">
-                    <p>公开投稿</p>
-                    <h1>提交活动</h1>
-                    <p>必填信息保持可见; 封面, 描述, 交流群和购票信息可按需补充</p>
-                </header>
-
-                <form id="submit-form" class="submission-form" action="/api/submit" method="post">
-                    <SubmissionSection title="活动基本信息">
-                        <div class="form-grid">
-                            <div class="field-group wide">
-                                <Label for="title">
-                                    标题
-                                    <span class="required-indicator">必填</span>
-                                </Label>
-                                <Input id="title" name="title" required maxlength="120" />
-                            </div>
-                            <SelectField
-                                name="type"
-                                label="类型"
-                                options={typeOptions}
-                                placeholder="选择类型"
-                                required
-                                showRequiredIndicator
-                                client:load
-                            />
-                            <SelectField
-                                name="scale"
-                                label="规模"
-                                options={scaleOptions}
-                                placeholder="选择规模"
-                                required
-                                showRequiredIndicator
-                                client:load
-                            />
-                        </div>
-                    </SubmissionSection>
-
-                    <SubmissionSection title="时间与地点">
-                        <div class="form-grid">
-                            <div class="wide">
-                                <DivisionPicker
-                                    name="division_code"
-                                    label="地区"
-                                    mode="county"
-                                    required
-                                    showRequiredIndicator
-                                    client:load
-                                />
-                            </div>
-                            <div class="field-group wide">
-                                <Label for="venue">
-                                    地点
-                                    <span class="required-indicator">必填</span>
-                                </Label>
-                                <Input id="venue" name="venue" required maxlength="120" />
-                            </div>
-                            <div class="field-group">
-                                <Label for="start-date">
-                                    开始日期
-                                    <span class="required-indicator">必填</span>
-                                </Label>
-                                <Input id="start-date" type="date" name="start_date" required />
-                            </div>
-                            <div class="field-group">
-                                <Label for="end-date">
-                                    结束日期
-                                    <span class="required-indicator">必填</span>
-                                </Label>
-                                <Input id="end-date" type="date" name="end_date" required />
-                            </div>
-                            <div class="field-group">
-                                <Label for="start-time">开始时间(选填)</Label>
-                                <Input id="start-time" type="time" name="start_time" />
-                            </div>
-                            <div class="field-group">
-                                <Label for="end-time">结束时间(选填)</Label>
-                                <Input id="end-time" type="time" name="end_time" />
-                            </div>
-                        </div>
-                    </SubmissionSection>
-
-                    <SubmissionSection
-                        title="补充公开信息"
-                        description="这些内容会帮助访客判断是否参加活动"
-                        optional
-                    >
-                        <div class="form-grid">
-                            <div class="field-group wide">
-                                <Label for="tag-suggestions">标签描述</Label>
-                                <Textarea
-                                    id="tag-suggestions"
-                                    name="tag_suggestions"
-                                    maxlength="240"
-                                    placeholder="例如：东方 Project、同人展、舞台表演；管理员会整理为统一标签"
-                                    class="submission-tag-suggestions"
-                                />
-                                <span class="field-note">
-                                    这里只需大概描述, 正式标签会在审核时统一整理
-                                </span>
-                            </div>
-                            <div class="field-group wide">
-                                <Label for="address">详细地址</Label>
-                                <Input id="address" name="address" maxlength="240" />
-                            </div>
-                            <div class="field-group wide">
-                                <Label for="organizer">主办方</Label>
-                                <Input id="organizer" name="organizer" maxlength="200" />
-                            </div>
-                            <SelectField
-                                name="schedule_status"
-                                label="活动异常状态"
-                                options={scheduleStatusOptions}
-                                placeholder="正常"
-                                client:load
-                            />
-                            <SelectField
-                                name="admission_method"
-                                label="入场方式"
-                                options={admissionMethodOptions}
-                                placeholder="选择入场方式"
-                                client:load
-                            />
-                            <div class="field-group wide">
-                                <Label for="price-range">票价区间</Label>
-                                <Input id="price-range" name="price_range" maxlength="120" />
-                            </div>
-                            <div class="field-group">
-                                <Label for="admission-start-date">开始购票/预约/申请日期</Label>
-                                <Input
-                                    id="admission-start-date"
-                                    type="date"
-                                    name="admission_start_date"
-                                />
-                            </div>
-                            <div class="field-group">
-                                <Label for="admission-start-time">开始购票/预约/申请时间</Label>
-                                <Input
-                                    id="admission-start-time"
-                                    type="time"
-                                    name="admission_start_time"
-                                />
-                            </div>
-                            <div class="field-group wide">
-                                <Label for="cover-url">封面 URL</Label>
-                                <Input
-                                    id="cover-url"
-                                    type="url"
-                                    name="cover_url"
-                                    pattern="https://.*"
-                                    placeholder="https://..."
-                                />
-                            </div>
-                            <div class="field-group wide">
-                                <Label for="description">活动描述</Label>
-                                <Textarea id="description" name="description" maxlength="4000" />
-                            </div>
-                            <div class="field-group">
-                                <Label for="qq-group">官方交流群 QQ</Label>
-                                <Input id="qq-group" name="qq_group" maxlength="80" />
-                            </div>
-                            <div class="field-group">
-                                <Label for="ticket-url">购票地址</Label>
-                                <Input
-                                    id="ticket-url"
-                                    type="url"
-                                    name="ticket_url"
-                                    placeholder="https://..."
-                                />
-                            </div>
-                        </div>
-                    </SubmissionSection>
-
-                    <SubmissionSection
-                        title="审核与提交"
-                        description="联系方式仅用于核对信息, 不会在前台公开"
-                    >
-                        <div class="form-grid">
-                            <div class="field-group wide">
-                                <Label for="source-url">
-                                    活动来源链接
-                                    <span class="required-indicator">必填</span>
-                                </Label>
-                                <Input
-                                    id="source-url"
-                                    type="url"
-                                    name="source_url"
-                                    placeholder="https://..."
-                                    required
-                                />
-                            </div>
-                            <div class="field-group wide">
-                                <Label for="submitter-contact">
-                                    投稿联系方式
-                                    <span class="required-indicator">必填</span>
-                                </Label>
-                                <Input
-                                    id="submitter-contact"
-                                    name="submitter_contact"
-                                    required
-                                    maxlength="120"
-                                />
-                            </div>
-                            <div class="wide">
-                                <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
-                            </div>
-                            <p
-                                id="submit-result"
-                                class="submission-result wide is-hidden"
-                                role="status"
-                                tabindex="-1"
-                            />
-                            <div class="submission-actions wide">
-                                <Button id="submit-button" type="submit">
-                                    <Send size={17} aria-hidden="true" />
-                                    提交审核
-                                </Button>
-                                <Button variant="outline" href="/events">
-                                    <ArrowLeft size={17} aria-hidden="true" />
-                                    返回活动列表
-                                </Button>
-                            </div>
-                        </div>
-                    </SubmissionSection>
-                </form>
+    {sent ? (
+        <section class="submit-success" data-reveal>
+            <CircleCheck size={40} aria-hidden="true" />
+            <h1>活动已进入审核队列</h1>
+            <p>审核通过后会出现在公开活动列表中</p>
+            <div>
+                <Button href="/events">浏览活动</Button>
+                <Button href="/submit" variant="outline">
+                    继续提交
+                </Button>
             </div>
-        )
-    }
+        </section>
+    ) : (
+        <div class="submit-page" data-reveal>
+            <header class="submit-header">
+                <p>公开投稿</p>
+                <h1>提交活动</h1>
+                <p>必填信息保持可见; 封面, 描述, 交流群和购票信息可按需补充</p>
+            </header>
+
+            <form id="submit-form" class="submission-form" action="/api/submit" method="post">
+                <SubmissionSection title="活动基本信息">
+                    <div class="form-grid">
+                        <div class="field-group wide">
+                            <Label for="title">
+                                标题
+                                <span class="required-indicator">必填</span>
+                            </Label>
+                            <Input id="title" name="title" required maxlength="120" />
+                        </div>
+                        <SelectField
+                            name="type"
+                            label="类型"
+                            options={typeOptions}
+                            placeholder="选择类型"
+                            required
+                            showRequiredIndicator
+                            client:load
+                        />
+                        <SelectField
+                            name="scale"
+                            label="规模"
+                            options={scaleOptions}
+                            placeholder="选择规模"
+                            required
+                            showRequiredIndicator
+                            client:load
+                        />
+                    </div>
+                </SubmissionSection>
+
+                <SubmissionSection title="时间与地点">
+                    <div class="form-grid">
+                        <div class="wide">
+                            <DivisionPicker
+                                name="division_code"
+                                label="地区"
+                                mode="county"
+                                required
+                                showRequiredIndicator
+                                client:load
+                            />
+                        </div>
+                        <div class="field-group wide">
+                            <Label for="venue">
+                                地点
+                                <span class="required-indicator">必填</span>
+                            </Label>
+                            <Input id="venue" name="venue" required maxlength="120" />
+                        </div>
+                        <div class="field-group">
+                            <Label for="start-date">
+                                开始日期
+                                <span class="required-indicator">必填</span>
+                            </Label>
+                            <Input id="start-date" type="date" name="start_date" required />
+                        </div>
+                        <div class="field-group">
+                            <Label for="end-date">
+                                结束日期
+                                <span class="required-indicator">必填</span>
+                            </Label>
+                            <Input id="end-date" type="date" name="end_date" required />
+                        </div>
+                        <div class="field-group">
+                            <Label for="start-time">开始时间(选填)</Label>
+                            <Input id="start-time" type="time" name="start_time" />
+                        </div>
+                        <div class="field-group">
+                            <Label for="end-time">结束时间(选填)</Label>
+                            <Input id="end-time" type="time" name="end_time" />
+                        </div>
+                    </div>
+                </SubmissionSection>
+
+                <SubmissionSection
+                    title="补充公开信息"
+                    description="这些内容会帮助访客判断是否参加活动"
+                    optional
+                >
+                    <div class="form-grid">
+                        <div class="field-group wide">
+                            <Label for="tag-suggestions">标签描述</Label>
+                            <Textarea
+                                id="tag-suggestions"
+                                name="tag_suggestions"
+                                maxlength="240"
+                                placeholder="例如：东方 Project、同人展、舞台表演；管理员会整理为统一标签"
+                                class="submission-tag-suggestions"
+                            />
+                            <span class="field-note">
+                                这里只需大概描述, 正式标签会在审核时统一整理
+                            </span>
+                        </div>
+                        <div class="field-group wide">
+                            <Label for="address">详细地址</Label>
+                            <Input id="address" name="address" maxlength="240" />
+                        </div>
+                        <div class="field-group wide">
+                            <Label for="organizer">主办方</Label>
+                            <Input id="organizer" name="organizer" maxlength="200" />
+                        </div>
+                        <SelectField
+                            name="schedule_status"
+                            label="活动异常状态"
+                            options={scheduleStatusOptions}
+                            placeholder="正常"
+                            client:load
+                        />
+                        <SelectField
+                            name="admission_method"
+                            label="入场方式"
+                            options={admissionMethodOptions}
+                            placeholder="选择入场方式"
+                            client:load
+                        />
+                        <div class="field-group wide">
+                            <Label for="price-range">票价区间</Label>
+                            <Input id="price-range" name="price_range" maxlength="120" />
+                        </div>
+                        <div class="field-group">
+                            <Label for="admission-start-date">开始购票/预约/申请日期</Label>
+                            <Input
+                                id="admission-start-date"
+                                type="date"
+                                name="admission_start_date"
+                            />
+                        </div>
+                        <div class="field-group">
+                            <Label for="admission-start-time">开始购票/预约/申请时间</Label>
+                            <Input
+                                id="admission-start-time"
+                                type="time"
+                                name="admission_start_time"
+                            />
+                        </div>
+                        <div class="field-group wide">
+                            <Label for="cover-url">封面 URL</Label>
+                            <Input
+                                id="cover-url"
+                                type="url"
+                                name="cover_url"
+                                pattern="https://.*"
+                                placeholder="https://..."
+                            />
+                        </div>
+                        <div class="field-group wide">
+                            <Label for="description">活动描述</Label>
+                            <Textarea id="description" name="description" maxlength="4000" />
+                        </div>
+                        <div class="field-group">
+                            <Label for="qq-group">官方交流群 QQ</Label>
+                            <Input id="qq-group" name="qq_group" maxlength="80" />
+                        </div>
+                        <div class="field-group">
+                            <Label for="ticket-url">购票地址</Label>
+                            <Input
+                                id="ticket-url"
+                                type="url"
+                                name="ticket_url"
+                                placeholder="https://..."
+                            />
+                        </div>
+                    </div>
+                </SubmissionSection>
+
+                <SubmissionSection
+                    title="审核与提交"
+                    description="联系方式仅用于核对信息, 不会在前台公开"
+                >
+                    <div class="form-grid">
+                        <div class="field-group wide">
+                            <Label for="source-url">
+                                活动来源链接
+                                <span class="required-indicator">必填</span>
+                            </Label>
+                            <Input
+                                id="source-url"
+                                type="url"
+                                name="source_url"
+                                placeholder="https://..."
+                                required
+                            />
+                        </div>
+                        <div class="field-group wide">
+                            <Label for="submitter-contact">
+                                投稿联系方式
+                                <span class="required-indicator">必填</span>
+                            </Label>
+                            <Input
+                                id="submitter-contact"
+                                name="submitter_contact"
+                                required
+                                maxlength="120"
+                            />
+                        </div>
+                        <div class="wide">
+                            <Turnstile siteKey={runtimeEnv.TURNSTILE_SITE_KEY} client:load />
+                        </div>
+                        <p
+                            id="submit-result"
+                            class="submission-result wide is-hidden"
+                            role="status"
+                            tabindex="-1"
+                        />
+                        <div class="submission-actions wide">
+                            <Button id="submit-button" type="submit">
+                                <Send size={17} aria-hidden="true" />
+                                提交审核
+                            </Button>
+                            <Button variant="outline" href="/events">
+                                <ArrowLeft size={17} aria-hidden="true" />
+                                返回活动列表
+                            </Button>
+                        </div>
+                    </div>
+                </SubmissionSection>
+            </form>
+        </div>
+    )}
 </Layout>
 
 <script>

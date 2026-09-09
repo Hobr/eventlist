@@ -107,225 +107,221 @@ const updatedAt = event ? formatSqliteUpdatedAt(event.updated_at) : null;
     description={event ? (description ?? undefined) : "活动不存在或尚未公开"}
     jsonLd={jsonLd}
 >
-    {
-        !event ? (
-            <Alert tone="danger" class="detail-missing" data-reveal>
-                <h1>{errorMessage}</h1>
-                <Button href="/events" variant="outline">
-                    <ArrowLeft size={17} aria-hidden="true" />
-                    返回活动列表
-                </Button>
-            </Alert>
-        ) : (
-            <article
-                class="event-detail"
-                data-reveal
-                data-event-view-endpoint={
-                    event.status === STATUS.PUBLISHED ? `/api/events/${event.id}/view` : undefined
-                }
-            >
-                <a href="/events" class="detail-back">
-                    <ArrowLeft size={17} aria-hidden="true" />
-                    活动列表
-                </a>
+    {!event ? (
+        <Alert tone="danger" class="detail-missing" data-reveal>
+            <h1>{errorMessage}</h1>
+            <Button href="/events" variant="outline">
+                <ArrowLeft size={17} aria-hidden="true" />
+                返回活动列表
+            </Button>
+        </Alert>
+    ) : (
+        <article
+            class="event-detail"
+            data-reveal
+            data-event-view-endpoint={
+                event.status === STATUS.PUBLISHED ? `/api/events/${event.id}/view` : undefined
+            }
+        >
+            <a href="/events" class="detail-back">
+                <ArrowLeft size={17} aria-hidden="true" />
+                活动列表
+            </a>
 
-                {cacheWarning ? (
-                    <Alert tone="warning" role="status">
-                        {cacheWarning}
-                    </Alert>
-                ) : null}
+            {cacheWarning ? (
+                <Alert tone="warning" role="status">
+                    {cacheWarning}
+                </Alert>
+            ) : null}
 
-                {event.status === STATUS.OFFLINE ? (
-                    <Alert tone="warning" role="status">
-                        该活动已下线, 页面仅作为历史信息保留
-                    </Alert>
-                ) : null}
+            {event.status === STATUS.OFFLINE ? (
+                <Alert tone="warning" role="status">
+                    该活动已下线, 页面仅作为历史信息保留
+                </Alert>
+            ) : null}
 
-                <header class="detail-hero">
-                    <EventArtwork
-                        src={event.cover_url}
-                        alt={`${event.title} 封面`}
-                        loading="eager"
-                        fill
-                        class="detail-hero-art"
-                    />
-                    <div class="detail-hero-shade" aria-hidden="true" />
-                    <div class="detail-hero-copy">
-                        <div class="detail-badges">
-                            <Badge tone="primary">{getEventTypeLabel(event.type)}</Badge>
-                            <Badge>{getEventScaleLabel(event.scale)}</Badge>
-                        </div>
-                        <h1>{event.title}</h1>
-                        {tags.length > 0 ? (
-                            <div class="detail-tags">
-                                {tags.map((tag) => (
-                                    <a
-                                        href={`/events?tag=${encodeURIComponent(tag)}`}
-                                        class="detail-tag"
-                                    >
-                                        # {tag}
-                                    </a>
-                                ))}
-                            </div>
-                        ) : null}
+            <header class="detail-hero">
+                <EventArtwork
+                    src={event.cover_url}
+                    alt={`${event.title} 封面`}
+                    loading="eager"
+                    fill
+                    class="detail-hero-art"
+                />
+                <div class="detail-hero-shade" aria-hidden="true" />
+                <div class="detail-hero-copy">
+                    <div class="detail-badges">
+                        <Badge tone="primary">{getEventTypeLabel(event.type)}</Badge>
+                        <Badge>{getEventScaleLabel(event.scale)}</Badge>
                     </div>
-                </header>
+                    <h1>{event.title}</h1>
+                    {tags.length > 0 ? (
+                        <div class="detail-tags">
+                            {tags.map((tag) => (
+                                <a
+                                    href={`/events?tag=${encodeURIComponent(tag)}`}
+                                    class="detail-tag"
+                                >
+                                    # {tag}
+                                </a>
+                            ))}
+                        </div>
+                    ) : null}
+                </div>
+            </header>
 
-                <section class="detail-facts" aria-label="活动信息">
-                    <div class="detail-fact">
-                        <CalendarDays size={20} aria-hidden="true" />
-                        <div>
-                            <p>日期</p>
-                            <strong>{formatEventSchedule(event)}</strong>
-                        </div>
+            <section class="detail-facts" aria-label="活动信息">
+                <div class="detail-fact">
+                    <CalendarDays size={20} aria-hidden="true" />
+                    <div>
+                        <p>日期</p>
+                        <strong>{formatEventSchedule(event)}</strong>
                     </div>
-                    <div class="detail-fact">
-                        <MapPin size={20} aria-hidden="true" />
-                        <div>
-                            <p>地区</p>
-                            <strong>{divisionLabel ?? "未知地区"}</strong>
-                        </div>
+                </div>
+                <div class="detail-fact">
+                    <MapPin size={20} aria-hidden="true" />
+                    <div>
+                        <p>地区</p>
+                        <strong>{divisionLabel ?? "未知地区"}</strong>
                     </div>
-                    <div class="detail-fact">
-                        <Store size={20} aria-hidden="true" />
-                        <div>
-                            <p>场地</p>
-                            <strong>{event.venue}</strong>
-                        </div>
+                </div>
+                <div class="detail-fact">
+                    <Store size={20} aria-hidden="true" />
+                    <div>
+                        <p>场地</p>
+                        <strong>{event.venue}</strong>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <section class="detail-facts" aria-label="活动当前信息">
-                    <div class="detail-fact">
-                        <Clock size={20} aria-hidden="true" />
-                        <div>
-                            <p>当前状态</p>
-                            <strong>{eventStatus}</strong>
-                        </div>
+            <section class="detail-facts" aria-label="活动当前信息">
+                <div class="detail-fact">
+                    <Clock size={20} aria-hidden="true" />
+                    <div>
+                        <p>当前状态</p>
+                        <strong>{eventStatus}</strong>
                     </div>
-                    <div class="detail-fact">
-                        <Refresh size={20} aria-hidden="true" />
-                        <div>
-                            <p>最后更新时间</p>
-                            <strong>{updatedAt}</strong>
-                        </div>
+                </div>
+                <div class="detail-fact">
+                    <Refresh size={20} aria-hidden="true" />
+                    <div>
+                        <p>最后更新时间</p>
+                        <strong>{updatedAt}</strong>
                     </div>
-                    <div class="detail-fact">
-                        <Fire size={20} aria-hidden="true" />
-                        <div>
-                            <p>近 30 日热度</p>
-                            <strong>{recentVisitorCount}</strong>
-                        </div>
+                </div>
+                <div class="detail-fact">
+                    <Fire size={20} aria-hidden="true" />
+                    <div>
+                        <p>近 30 日热度</p>
+                        <strong>{recentVisitorCount}</strong>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                {hasOptionalContent ? (
-                    <div
-                        class:list={[
-                            "detail-optional",
-                            hasAsideContent
-                                ? "detail-optional-with-aside"
-                                : "detail-optional-main-only"
-                        ]}
-                    >
-                        {description ? (
-                            <section aria-labelledby="event-description-heading">
-                                <h2 id="event-description-heading" class="detail-section-title">
-                                    活动介绍
-                                </h2>
-                                <p class="detail-description">{description}</p>
-                            </section>
-                        ) : null}
+            {hasOptionalContent ? (
+                <div
+                    class:list={[
+                        "detail-optional",
+                        hasAsideContent ? "detail-optional-with-aside" : "detail-optional-main-only"
+                    ]}
+                >
+                    {description ? (
+                        <section aria-labelledby="event-description-heading">
+                            <h2 id="event-description-heading" class="detail-section-title">
+                                活动介绍
+                            </h2>
+                            <p class="detail-description">{description}</p>
+                        </section>
+                    ) : null}
 
-                        {hasAsideContent ? (
-                            <aside
-                                class:list={[
-                                    "detail-aside",
-                                    description ? "detail-aside-bordered" : "detail-aside-only"
-                                ]}
-                            >
-                                {hasAction ? <h2>参加活动</h2> : null}
-                                {ticketUrl ? (
-                                    <Button
-                                        href={ticketUrl}
-                                        target="_blank"
-                                        rel="nofollow noopener noreferrer"
-                                        size="lg"
-                                        class="detail-action"
-                                    >
-                                        购票/预约入口
-                                        <span>
-                                            <Ticket size={17} aria-hidden="true" />
-                                        </span>
-                                    </Button>
-                                ) : null}
-                                {sourceUrl ? (
-                                    <Button
-                                        href={sourceUrl}
-                                        target="_blank"
-                                        rel="nofollow noopener noreferrer"
-                                        variant="tonal"
-                                        size="lg"
-                                        class="detail-action"
-                                    >
-                                        活动来源
-                                        <span>
-                                            <ExternalLink size={17} aria-hidden="true" />
-                                        </span>
-                                    </Button>
-                                ) : null}
-                                {hasDetailFacts ? (
-                                    <dl
-                                        class:list={[
-                                            "detail-fact-list",
-                                            hasAction ? "detail-fact-list-separated" : ""
-                                        ]}
-                                    >
-                                        {address ? (
-                                            <div>
-                                                <dt>详细地址</dt>
-                                                <dd>{address}</dd>
-                                            </div>
-                                        ) : null}
-                                        {qqGroup ? (
-                                            <div>
-                                                <dt>官方交流群</dt>
-                                                <dd>{qqGroup}</dd>
-                                            </div>
-                                        ) : null}
-                                        {organizer ? (
-                                            <div>
-                                                <dt>主办方</dt>
-                                                <dd>{organizer}</dd>
-                                            </div>
-                                        ) : null}
-                                        {admissionMethodLabel ? (
-                                            <div>
-                                                <dt>入场方式</dt>
-                                                <dd>{admissionMethodLabel}</dd>
-                                            </div>
-                                        ) : null}
-                                        {priceRange ? (
-                                            <div>
-                                                <dt>票价区间</dt>
-                                                <dd>{priceRange}</dd>
-                                            </div>
-                                        ) : null}
-                                        {admissionStart ? (
-                                            <div>
-                                                <dt>开始购票/预约/申请</dt>
-                                                <dd>{admissionStart}</dd>
-                                            </div>
-                                        ) : null}
-                                    </dl>
-                                ) : null}
-                            </aside>
-                        ) : null}
-                    </div>
-                ) : null}
-            </article>
-        )
-    }
+                    {hasAsideContent ? (
+                        <aside
+                            class:list={[
+                                "detail-aside",
+                                description ? "detail-aside-bordered" : "detail-aside-only"
+                            ]}
+                        >
+                            {hasAction ? <h2>参加活动</h2> : null}
+                            {ticketUrl ? (
+                                <Button
+                                    href={ticketUrl}
+                                    target="_blank"
+                                    rel="nofollow noopener noreferrer"
+                                    size="lg"
+                                    class="detail-action"
+                                >
+                                    购票/预约入口
+                                    <span>
+                                        <Ticket size={17} aria-hidden="true" />
+                                    </span>
+                                </Button>
+                            ) : null}
+                            {sourceUrl ? (
+                                <Button
+                                    href={sourceUrl}
+                                    target="_blank"
+                                    rel="nofollow noopener noreferrer"
+                                    variant="tonal"
+                                    size="lg"
+                                    class="detail-action"
+                                >
+                                    活动来源
+                                    <span>
+                                        <ExternalLink size={17} aria-hidden="true" />
+                                    </span>
+                                </Button>
+                            ) : null}
+                            {hasDetailFacts ? (
+                                <dl
+                                    class:list={[
+                                        "detail-fact-list",
+                                        hasAction ? "detail-fact-list-separated" : ""
+                                    ]}
+                                >
+                                    {address ? (
+                                        <div>
+                                            <dt>详细地址</dt>
+                                            <dd>{address}</dd>
+                                        </div>
+                                    ) : null}
+                                    {qqGroup ? (
+                                        <div>
+                                            <dt>官方交流群</dt>
+                                            <dd>{qqGroup}</dd>
+                                        </div>
+                                    ) : null}
+                                    {organizer ? (
+                                        <div>
+                                            <dt>主办方</dt>
+                                            <dd>{organizer}</dd>
+                                        </div>
+                                    ) : null}
+                                    {admissionMethodLabel ? (
+                                        <div>
+                                            <dt>入场方式</dt>
+                                            <dd>{admissionMethodLabel}</dd>
+                                        </div>
+                                    ) : null}
+                                    {priceRange ? (
+                                        <div>
+                                            <dt>票价区间</dt>
+                                            <dd>{priceRange}</dd>
+                                        </div>
+                                    ) : null}
+                                    {admissionStart ? (
+                                        <div>
+                                            <dt>开始购票/预约/申请</dt>
+                                            <dd>{admissionStart}</dd>
+                                        </div>
+                                    ) : null}
+                                </dl>
+                            ) : null}
+                        </aside>
+                    ) : null}
+                </div>
+            ) : null}
+        </article>
+    )}
 </Layout>
 
 <script>

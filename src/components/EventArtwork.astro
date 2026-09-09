@@ -35,20 +35,18 @@ const fallbackUrl = "/images/event-fallback.webp";
         decoding="async"
         class="event-artwork-image"
     />
-    {
-        coverUrl ? (
-            <Image
-                src={coverUrl}
-                alt=""
-                width={1200}
-                height={675}
-                loading={loading}
-                decoding="async"
-                fetchpriority={loading === "eager" ? "high" : "auto"}
-                referrerpolicy="no-referrer"
-                class="event-artwork-image"
-                onerror="this.remove()"
-            />
-        ) : null
-    }
+    {coverUrl ? (
+        <Image
+            src={coverUrl}
+            alt=""
+            width={1200}
+            height={675}
+            loading={loading}
+            decoding="async"
+            fetchpriority={loading === "eager" ? "high" : "auto"}
+            referrerpolicy="no-referrer"
+            class="event-artwork-image"
+            onerror="this.remove()"
+        />
+    ) : null}
 </div>

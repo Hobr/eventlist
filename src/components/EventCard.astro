@@ -25,51 +25,49 @@ const dateLabel = formatEventSchedule(event);
 const href = `/events/${event.id}`;
 ---
 
-{
-    variant === "row" ? (
-        <EventRow event={toPublicEventRow(event)} {priority} />
-    ) : variant === "compact" ? (
-        <a href={href} class="event-compact">
-            <time datetime={event.start_date}>{event.start_date.slice(5).replace("-", "/")}</time>
-            <span>
+{variant === "row" ? (
+    <EventRow event={toPublicEventRow(event)} {priority} />
+) : variant === "compact" ? (
+    <a href={href} class="event-compact">
+        <time datetime={event.start_date}>{event.start_date.slice(5).replace("-", "/")}</time>
+        <span>
+            <>
+                <strong>{event.title}</strong>
+                <small>
+                    {divisionLabel} · {event.venue}
+                </small>
+            </>
+        </span>
+        <ArrowUpRight size={17} aria-hidden="true" />
+    </a>
+) : (
+    <Card
+        href={href}
+        class={variant === "featured" ? "event-card event-card-featured" : "event-card"}
+    >
+        <EventArtwork
+            src={event.cover_url}
+            alt={`${event.title} 封面`}
+            loading={priority ? "eager" : "lazy"}
+            class={variant === "featured" ? "event-card-featured-art" : "event-card-art"}
+        />
+        <div class="event-card-copy">
+            <div class="event-card-badges">
                 <>
-                    <strong>{event.title}</strong>
-                    <small>
-                        {divisionLabel} · {event.venue}
-                    </small>
+                    <Badge tone="primary">{typeLabel}</Badge>
+                    <Badge>{scaleLabel}</Badge>
                 </>
-            </span>
-            <ArrowUpRight size={17} aria-hidden="true" />
-        </a>
-    ) : (
-        <Card
-            href={href}
-            class={variant === "featured" ? "event-card event-card-featured" : "event-card"}
-        >
-            <EventArtwork
-                src={event.cover_url}
-                alt={`${event.title} 封面`}
-                loading={priority ? "eager" : "lazy"}
-                class={variant === "featured" ? "event-card-featured-art" : "event-card-art"}
-            />
-            <div class="event-card-copy">
-                <div class="event-card-badges">
-                    <>
-                        <Badge tone="primary">{typeLabel}</Badge>
-                        <Badge>{scaleLabel}</Badge>
-                    </>
-                </div>
-                <h2>{event.title}</h2>
-                <p>
-                    <CalendarDays size={16} aria-hidden="true" /> {dateLabel}
-                </p>
-                <p>
-                    <MapPin size={16} aria-hidden="true" /> {divisionLabel} · {event.venue}
-                </p>
-                <span class="event-card-cta">
-                    查看活动 <ArrowUpRight size={17} aria-hidden="true" />
-                </span>
             </div>
-        </Card>
-    )
-}
+            <h2>{event.title}</h2>
+            <p>
+                <CalendarDays size={16} aria-hidden="true" /> {dateLabel}
+            </p>
+            <p>
+                <MapPin size={16} aria-hidden="true" /> {divisionLabel} · {event.venue}
+            </p>
+            <span class="event-card-cta">
+                查看活动 <ArrowUpRight size={17} aria-hidden="true" />
+            </span>
+        </div>
+    </Card>
+)}

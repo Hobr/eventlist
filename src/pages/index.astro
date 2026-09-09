@@ -163,13 +163,11 @@ const initialHomepage: PublicHomepageData = {
         client:load
     />
 
-    {
-        cacheWarning ? (
-            <Alert tone="warning" class="homepage-cache-alert" role="status">
-                {cacheWarning}
-            </Alert>
-        ) : null
-    }
+    {cacheWarning ? (
+        <Alert tone="warning" class="homepage-cache-alert" role="status">
+            {cacheWarning}
+        </Alert>
+    ) : null}
 
     <HomepageContent
         {initialHomepage}

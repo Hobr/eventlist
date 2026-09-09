@@ -26,107 +26,105 @@ const statusTones: Record<string, "default" | "accent" | "warning" | "danger"> =
 };
 ---
 
-{
-    events.length === 0 ? (
-        <div class="admin-empty">当前队列暂无活动</div>
-    ) : (
-        <div class="admin-table-wrap">
-            <table class="admin-event-table">
-                <caption class="sr-only">
-                    {mode === "pending"
-                        ? "待审核活动"
-                        : mode === "published"
-                          ? "已发布活动"
-                          : "已下线活动"}
-                </caption>
-                <thead>
+{events.length === 0 ? (
+    <div class="admin-empty">当前队列暂无活动</div>
+) : (
+    <div class="admin-table-wrap">
+        <table class="admin-event-table">
+            <caption class="sr-only">
+                {mode === "pending"
+                    ? "待审核活动"
+                    : mode === "published"
+                      ? "已发布活动"
+                      : "已下线活动"}
+            </caption>
+            <thead>
+                <tr>
+                    <>
+                        <th>活动</th>
+                        <th>时间地点</th>
+                        <th>分类</th>
+                        <th>来源与联系</th>
+                        <th>说明</th>
+                        <th>操作</th>
+                    </>
+                </tr>
+            </thead>
+            <tbody>
+                {events.map((event) => (
                     <tr>
-                        <>
-                            <th>活动</th>
-                            <th>时间地点</th>
-                            <th>分类</th>
-                            <th>来源与联系</th>
-                            <th>说明</th>
-                            <th>操作</th>
-                        </>
-                    </tr>
-                </thead>
-                <tbody>
-                    {events.map((event) => (
-                        <tr>
-                            <td data-label="活动">
-                                <strong>{event.title}</strong>
-                                <small>活动 #{event.id}</small>
-                                <Badge tone={statusTones[event.status] ?? "default"}>
-                                    {statusLabels[event.status] ?? event.status}
-                                </Badge>
-                            </td>
-                            <td data-label="时间与地点">
-                                <strong>{formatEventSchedule(event)}</strong>
-                                <span>{getDivisionLabel(event.division_code) ?? "未设置地区"}</span>
-                                <small>
-                                    {event.venue}
-                                    {event.address ? ` · ${event.address}` : ""}
-                                </small>
-                            </td>
-                            <td data-label="分类">
-                                <strong>{getEventTypeLabel(event.type)}</strong>
-                                <span>{getEventScaleLabel(event.scale)}</span>
-                                <small>
-                                    {event.tags ||
-                                        (event.tag_suggestions
-                                            ? `投稿建议: ${event.tag_suggestions}`
-                                            : "无标签")}
-                                </small>
-                            </td>
-                            <td data-label="来源与联系">
-                                <div class="admin-source-links">
+                        <td data-label="活动">
+                            <strong>{event.title}</strong>
+                            <small>活动 #{event.id}</small>
+                            <Badge tone={statusTones[event.status] ?? "default"}>
+                                {statusLabels[event.status] ?? event.status}
+                            </Badge>
+                        </td>
+                        <td data-label="时间与地点">
+                            <strong>{formatEventSchedule(event)}</strong>
+                            <span>{getDivisionLabel(event.division_code) ?? "未设置地区"}</span>
+                            <small>
+                                {event.venue}
+                                {event.address ? ` · ${event.address}` : ""}
+                            </small>
+                        </td>
+                        <td data-label="分类">
+                            <strong>{getEventTypeLabel(event.type)}</strong>
+                            <span>{getEventScaleLabel(event.scale)}</span>
+                            <small>
+                                {event.tags ||
+                                    (event.tag_suggestions
+                                        ? `投稿建议: ${event.tag_suggestions}`
+                                        : "无标签")}
+                            </small>
+                        </td>
+                        <td data-label="来源与联系">
+                            <div class="admin-source-links">
+                                <a
+                                    href={event.source_url}
+                                    target="_blank"
+                                    rel="nofollow noopener noreferrer"
+                                >
+                                    来源 <ExternalLink size={13} aria-hidden="true" />
+                                </a>
+                                {event.ticket_url ? (
                                     <a
-                                        href={event.source_url}
+                                        href={event.ticket_url}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
                                     >
-                                        来源 <ExternalLink size={13} aria-hidden="true" />
+                                        购票 <ExternalLink size={13} aria-hidden="true" />
                                     </a>
-                                    {event.ticket_url ? (
-                                        <a
-                                            href={event.ticket_url}
-                                            target="_blank"
-                                            rel="nofollow noopener noreferrer"
-                                        >
-                                            购票 <ExternalLink size={13} aria-hidden="true" />
-                                        </a>
-                                    ) : null}
-                                    {event.cover_url ? (
-                                        <a
-                                            href={event.cover_url}
-                                            target="_blank"
-                                            rel="nofollow noopener noreferrer"
-                                        >
-                                            封面 <ExternalLink size={13} aria-hidden="true" />
-                                        </a>
-                                    ) : null}
-                                </div>
-                                <small>{event.submitter_contact}</small>
-                            </td>
-                            <td data-label="补充说明">
-                                <span class="admin-description">
-                                    {event.description ?? "无活动说明"}
-                                </span>
-                                {event.qq_group ? <small>QQ群: {event.qq_group}</small> : null}
-                            </td>
-                            <td data-label="操作">
-                                <EventActions
-                                    eventId={event.id}
-                                    {mode}
-                                    hasTags={Boolean(event.tags)}
-                                    client:load
-                                />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    )
-}
+                                ) : null}
+                                {event.cover_url ? (
+                                    <a
+                                        href={event.cover_url}
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                    >
+                                        封面 <ExternalLink size={13} aria-hidden="true" />
+                                    </a>
+                                ) : null}
+                            </div>
+                            <small>{event.submitter_contact}</small>
+                        </td>
+                        <td data-label="补充说明">
+                            <span class="admin-description">
+                                {event.description ?? "无活动说明"}
+                            </span>
+                            {event.qq_group ? <small>QQ群: {event.qq_group}</small> : null}
+                        </td>
+                        <td data-label="操作">
+                            <EventActions
+                                eventId={event.id}
+                                {mode}
+                                hasTags={Boolean(event.tags)}
+                                client:load
+                            />
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
+)}

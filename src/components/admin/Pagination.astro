@@ -15,19 +15,15 @@ function hrefFor(nextPage: number) {
 ---
 
 <nav class="pagination" aria-label="分页">
-    {
-        page > 1 ? (
-            <Button href={hrefFor(page - 1)} rel="prev" variant="outline">
-                上一页
-            </Button>
-        ) : null
-    }
+    {page > 1 ? (
+        <Button href={hrefFor(page - 1)} rel="prev" variant="outline">
+            上一页
+        </Button>
+    ) : null}
     <span>第 {page} 页</span>
-    {
-        hasNext ? (
-            <Button href={hrefFor(page + 1)} rel="next" variant="outline">
-                下一页
-            </Button>
-        ) : null
-    }
+    {hasNext ? (
+        <Button href={hrefFor(page + 1)} rel="next" variant="outline">
+            下一页
+        </Button>
+    ) : null}
 </nav>

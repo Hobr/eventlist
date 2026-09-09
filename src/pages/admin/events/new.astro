@@ -63,202 +63,192 @@ const importedFieldCount = importPreview
 ---
 
 <AdminLayout title="增加活动" description="录入后立即发布到公开活动目录">
-    {
-        pageError ? (
-            <Alert tone="danger" class="admin-page-error">
-                {pageError}
-            </Alert>
-        ) : (
-            <div>
-                <div class="admin-return-row">
-                    <a href="/admin" class="admin-return-link">
-                        <ArrowLeft size={16} aria-hidden="true" />
-                        返回活动队列
-                    </a>
-                    <p class="admin-return-note">管理员创建后立即公开</p>
-                </div>
+    {pageError ? (
+        <Alert tone="danger" class="admin-page-error">
+            {pageError}
+        </Alert>
+    ) : (
+        <div>
+            <div class="admin-return-row">
+                <a href="/admin" class="admin-return-link">
+                    <ArrowLeft size={16} aria-hidden="true" />
+                    返回活动队列
+                </a>
+                <p class="admin-return-note">管理员创建后立即公开</p>
+            </div>
 
-                <section class="admin-import-section" aria-labelledby="bilibili-import-heading">
-                    <div class="admin-import-header">
-                        <div>
-                            <h2 id="bilibili-import-heading" class="admin-section-title">
-                                从会员购导入
-                            </h2>
-                            <p class="admin-section-note">
-                                输入活动 ID 后读取可用字段, 发布前仍可检查和修改
-                            </p>
-                        </div>
-                        <form method="get" action="/admin/events/new" class="admin-import-form">
-                            <div class="admin-import-input">
-                                <Label class="sr-only" for="bilibili_id">
-                                    会员购活动 ID
-                                </Label>
-                                <Input
-                                    id="bilibili_id"
-                                    name="bilibili_id"
-                                    type="number"
-                                    inputmode="numeric"
-                                    min="1"
-                                    max="9007199254740991"
-                                    step="1"
-                                    required
-                                    value={requestedBilibiliId ?? ""}
-                                    placeholder="会员购活动 ID"
-                                />
-                            </div>
-                            <Button type="submit">
-                                <FileImport size={16} aria-hidden="true" />
-                                导入
-                            </Button>
-                        </form>
+            <section class="admin-import-section" aria-labelledby="bilibili-import-heading">
+                <div class="admin-import-header">
+                    <div>
+                        <h2 id="bilibili-import-heading" class="admin-section-title">
+                            从会员购导入
+                        </h2>
+                        <p class="admin-section-note">
+                            输入活动 ID 后读取可用字段, 发布前仍可检查和修改
+                        </p>
                     </div>
-                    {importError ? (
-                        <Alert tone="danger" class="admin-import-alert">
-                            <p class="admin-import-error">{importError}</p>
-                            {importErrorDetails ? (
-                                <p class="admin-import-error-detail">
-                                    错误详情: {importErrorDetails}
-                                </p>
-                            ) : null}
-                            <p class="admin-import-error-note">下方表单仍可手动录入活动</p>
-                        </Alert>
-                    ) : null}
-                </section>
+                    <form method="get" action="/admin/events/new" class="admin-import-form">
+                        <div class="admin-import-input">
+                            <Label class="sr-only" for="bilibili_id">
+                                会员购活动 ID
+                            </Label>
+                            <Input
+                                id="bilibili_id"
+                                name="bilibili_id"
+                                type="number"
+                                inputmode="numeric"
+                                min="1"
+                                max="9007199254740991"
+                                step="1"
+                                required
+                                value={requestedBilibiliId ?? ""}
+                                placeholder="会员购活动 ID"
+                            />
+                        </div>
+                        <Button type="submit">
+                            <FileImport size={16} aria-hidden="true" />
+                            导入
+                        </Button>
+                    </form>
+                </div>
+                {importError ? (
+                    <Alert tone="danger" class="admin-import-alert">
+                        <p class="admin-import-error">{importError}</p>
+                        {importErrorDetails ? (
+                            <p class="admin-import-error-detail">错误详情: {importErrorDetails}</p>
+                        ) : null}
+                        <p class="admin-import-error-note">下方表单仍可手动录入活动</p>
+                    </Alert>
+                ) : null}
+            </section>
 
-                <AdminEventForm
-                    canonicalTags={canonicalTags}
-                    formId="create-event-form"
-                    cancelHref="/admin"
-                    submitButtonId="create-save-button"
-                    statusId="create-save-status"
-                    submitLabel="发布活动"
-                    statusText={
-                        hasExactDuplicate
-                            ? "该会员购活动已经存在, 不能重复发布"
-                            : "请至少选择一个规范标签, 新标签会在发布时加入标签库"
-                    }
-                    defaultDivisionCode={importPreview ? "" : runtimeEnv.DEFAULT_DIVISION_CODE}
-                    initialValues={importPreview?.values}
-                    sourceReadOnly={Boolean(importPreview)}
-                    submitDisabled={hasExactDuplicate}
-                    showRequiredIndicators
-                >
-                    {importPreview ? (
-                        <Fragment slot="metadata">
-                            <input
-                                type="hidden"
-                                name="import_provider"
-                                value={importPreview.provider}
-                            />
-                            <input
-                                type="hidden"
-                                name="bilibili_project_id"
-                                value={importPreview.projectId}
-                            />
-                            <section
-                                class="admin-import-preview"
-                                aria-labelledby="bilibili-result-heading"
+            <AdminEventForm
+                canonicalTags={canonicalTags}
+                formId="create-event-form"
+                cancelHref="/admin"
+                submitButtonId="create-save-button"
+                statusId="create-save-status"
+                submitLabel="发布活动"
+                statusText={
+                    hasExactDuplicate
+                        ? "该会员购活动已经存在, 不能重复发布"
+                        : "请至少选择一个规范标签, 新标签会在发布时加入标签库"
+                }
+                defaultDivisionCode={importPreview ? "" : runtimeEnv.DEFAULT_DIVISION_CODE}
+                initialValues={importPreview?.values}
+                sourceReadOnly={Boolean(importPreview)}
+                submitDisabled={hasExactDuplicate}
+                showRequiredIndicators
+            >
+                {importPreview ? (
+                    <Fragment slot="metadata">
+                        <input
+                            type="hidden"
+                            name="import_provider"
+                            value={importPreview.provider}
+                        />
+                        <input
+                            type="hidden"
+                            name="bilibili_project_id"
+                            value={importPreview.projectId}
+                        />
+                        <section
+                            class="admin-import-preview"
+                            aria-labelledby="bilibili-result-heading"
+                            aria-live="polite"
+                        >
+                            <div class="admin-import-preview-header">
+                                <div>
+                                    <h2
+                                        id="bilibili-result-heading"
+                                        class="admin-import-result-title"
+                                        tabindex="-1"
+                                        data-import-result
+                                    >
+                                        已读取 {importPreview.values.title}
+                                    </h2>
+                                    <p class="admin-import-result-note">
+                                        已填入 {importedFieldCount} 项, 来源 ID{" "}
+                                        {importPreview.projectId}
+                                    </p>
+                                </div>
+                                <a
+                                    href={importPreview.canonicalSourceUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    class="admin-import-link"
+                                >
+                                    打开会员购页面
+                                </a>
+                            </div>
+
+                            {missingFieldLabels.length > 0 ? (
+                                <Alert tone="neutral" class="admin-import-message" role="status">
+                                    <p>发布前需要补充: {missingFieldLabels.join(", ")}</p>
+                                </Alert>
+                            ) : null}
+
+                            {importPreview.warnings.length > 0 ? (
+                                <Alert tone="warning" class="admin-import-message">
+                                    {importPreview.warnings.map((warning) => (
+                                        <p>{warning.message}</p>
+                                    ))}
+                                </Alert>
+                            ) : null}
+
+                            {importPreview.exactDuplicate ? (
+                                <Alert tone="danger" class="admin-import-message">
+                                    <p>该会员购活动已经导入</p>
+                                    <a
+                                        class="admin-import-link"
+                                        href={`/admin/events/${importPreview.exactDuplicate.id}/edit`}
+                                    >
+                                        打开已有活动：{importPreview.exactDuplicate.title}
+                                    </a>
+                                </Alert>
+                            ) : null}
+
+                            <div
+                                id="bilibili-submit-warnings"
+                                class="admin-duplicate-warnings"
                                 aria-live="polite"
                             >
-                                <div class="admin-import-preview-header">
-                                    <div>
-                                        <h2
-                                            id="bilibili-result-heading"
-                                            class="admin-import-result-title"
-                                            tabindex="-1"
-                                            data-import-result
-                                        >
-                                            已读取 {importPreview.values.title}
-                                        </h2>
-                                        <p class="admin-import-result-note">
-                                            已填入 {importedFieldCount} 项, 来源 ID{" "}
-                                            {importPreview.projectId}
-                                        </p>
-                                    </div>
-                                    <a
-                                        href={importPreview.canonicalSourceUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        class="admin-import-link"
-                                    >
-                                        打开会员购页面
-                                    </a>
-                                </div>
-
-                                {missingFieldLabels.length > 0 ? (
-                                    <Alert
-                                        tone="neutral"
-                                        class="admin-import-message"
-                                        role="status"
-                                    >
-                                        <p>发布前需要补充: {missingFieldLabels.join(", ")}</p>
-                                    </Alert>
-                                ) : null}
-
-                                {importPreview.warnings.length > 0 ? (
-                                    <Alert tone="warning" class="admin-import-message">
-                                        {importPreview.warnings.map((warning) => (
-                                            <p>{warning.message}</p>
-                                        ))}
-                                    </Alert>
-                                ) : null}
-
-                                {importPreview.exactDuplicate ? (
-                                    <Alert tone="danger" class="admin-import-message">
-                                        <p>该会员购活动已经导入</p>
-                                        <a
-                                            class="admin-import-link"
-                                            href={`/admin/events/${importPreview.exactDuplicate.id}/edit`}
-                                        >
-                                            打开已有活动：{importPreview.exactDuplicate.title}
-                                        </a>
-                                    </Alert>
-                                ) : null}
-
-                                <div
-                                    id="bilibili-submit-warnings"
-                                    class="admin-duplicate-warnings"
-                                    aria-live="polite"
-                                >
-                                    {importPreview.duplicateCandidates.length > 0 ? (
-                                        <fieldset class="admin-warning-fieldset">
-                                            <legend class="admin-warning-legend">
-                                                发现疑似重复活动, 确认后才能发布
-                                            </legend>
-                                            {importPreview.duplicateCandidates.map(
-                                                ({ key, event }) => (
-                                                    <Checkbox
-                                                        name="confirmed_warning_keys"
-                                                        value={key}
-                                                        wrapperClass="admin-warning-option"
-                                                        required
-                                                        client:load
+                                {importPreview.duplicateCandidates.length > 0 ? (
+                                    <fieldset class="admin-warning-fieldset">
+                                        <legend class="admin-warning-legend">
+                                            发现疑似重复活动, 确认后才能发布
+                                        </legend>
+                                        {importPreview.duplicateCandidates.map(({ key, event }) => (
+                                            <Checkbox
+                                                name="confirmed_warning_keys"
+                                                value={key}
+                                                wrapperClass="admin-warning-option"
+                                                required
+                                                client:load
+                                            >
+                                                <span class="admin-warning-copy">
+                                                    我已检查
+                                                    <a
+                                                        href={`/admin/events/${event.id}/edit`}
+                                                        class="admin-warning-link"
+                                                        target="_blank"
                                                     >
-                                                        <span class="admin-warning-copy">
-                                                            我已检查
-                                                            <a
-                                                                href={`/admin/events/${event.id}/edit`}
-                                                                class="admin-warning-link"
-                                                                target="_blank"
-                                                            >
-                                                                {event.title}
-                                                            </a>
-                                                            ({event.start_date}, {event.venue}
-                                                            ), 仍要继续发布
-                                                        </span>
-                                                    </Checkbox>
-                                                )
-                                            )}
-                                        </fieldset>
-                                    ) : null}
-                                </div>
-                            </section>
-                        </Fragment>
-                    ) : null}
-                </AdminEventForm>
-            </div>
-        )
-    }
+                                                        {event.title}
+                                                    </a>
+                                                    ({event.start_date}, {event.venue}
+                                                    ), 仍要继续发布
+                                                </span>
+                                            </Checkbox>
+                                        ))}
+                                    </fieldset>
+                                ) : null}
+                            </div>
+                        </section>
+                    </Fragment>
+                ) : null}
+            </AdminEventForm>
+        </div>
+    )}
 </AdminLayout>
 
 <script>

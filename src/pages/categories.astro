@@ -68,91 +68,81 @@ const configuredScaleCount = EVENT_SCALES.length;
             <p>从活动标签、类型和规模开始, 直接进入对应的活动列表</p>
         </header>
 
-        {
-            cacheWarning ? (
-                <Alert tone="warning" role="status">
-                    {cacheWarning}
-                </Alert>
-            ) : null
-        }
-        {
-            errorMessage ? (
-                <Alert tone="danger">{errorMessage}</Alert>
-            ) : !hasTaxonomy ? (
-                <section class="taxonomy-empty" aria-label="分类状态">
-                    <h2>暂时没有可浏览的分类</h2>
-                    <p>已发布活动出现后, 分类会自动显示在这里</p>
-                </section>
-            ) : (
-                <div class="taxonomy-grid">
-                    {taxonomy.tags.length > 0 ? (
-                        <section aria-labelledby="tag-section-title">
-                            <div class="taxonomy-section-heading">
-                                <span class="taxonomy-icon">
-                                    <TagOutline size={18} aria-hidden="true" />
-                                </span>
-                                <h2 id="tag-section-title">标签</h2>
-                            </div>
-                            <ol class="taxonomy-list">
-                                {taxonomy.tags.map((item) => (
-                                    <li>
-                                        <a href={facetHref("tag", item.name)} class="taxonomy-link">
-                                            <span>{item.name}</span>
-                                            <small>{item.event_count} 场</small>
-                                        </a>
-                                    </li>
-                                ))}
-                            </ol>
-                        </section>
-                    ) : null}
-                    {typeItems.length > 0 ? (
-                        <section aria-labelledby="type-section-title">
-                            <div class="taxonomy-section-heading">
-                                <span class="taxonomy-icon">
-                                    <ShapesOutline size={18} aria-hidden="true" />
-                                </span>
-                                <h2 id="type-section-title">活动类型</h2>
-                            </div>
-                            <ol class="taxonomy-list">
-                                {typeItems.map((item) => (
-                                    <li>
-                                        <a
-                                            href={facetHref("type", item.name)}
-                                            class="taxonomy-link"
-                                        >
-                                            <span>{item.label}</span>
-                                            <small>{item.event_count} 场</small>
-                                        </a>
-                                    </li>
-                                ))}
-                            </ol>
-                        </section>
-                    ) : null}
-                    {scaleItems.length > 0 ? (
-                        <section aria-labelledby="scale-section-title">
-                            <div class="taxonomy-section-heading">
-                                <span class="taxonomy-icon">
-                                    <ScaleBalancedOutline size={18} aria-hidden="true" />
-                                </span>
-                                <h2 id="scale-section-title">活动规模</h2>
-                            </div>
-                            <ol class="taxonomy-list">
-                                {scaleItems.map((item) => (
-                                    <li>
-                                        <a
-                                            href={facetHref("scale", item.name)}
-                                            class="taxonomy-link"
-                                        >
-                                            <span>{item.label}</span>
-                                            <small>{item.event_count} 场</small>
-                                        </a>
-                                    </li>
-                                ))}
-                            </ol>
-                        </section>
-                    ) : null}
-                </div>
-            )
-        }
+        {cacheWarning ? (
+            <Alert tone="warning" role="status">
+                {cacheWarning}
+            </Alert>
+        ) : null}
+        {errorMessage ? (
+            <Alert tone="danger">{errorMessage}</Alert>
+        ) : !hasTaxonomy ? (
+            <section class="taxonomy-empty" aria-label="分类状态">
+                <h2>暂时没有可浏览的分类</h2>
+                <p>已发布活动出现后, 分类会自动显示在这里</p>
+            </section>
+        ) : (
+            <div class="taxonomy-grid">
+                {taxonomy.tags.length > 0 ? (
+                    <section aria-labelledby="tag-section-title">
+                        <div class="taxonomy-section-heading">
+                            <span class="taxonomy-icon">
+                                <TagOutline size={18} aria-hidden="true" />
+                            </span>
+                            <h2 id="tag-section-title">标签</h2>
+                        </div>
+                        <ol class="taxonomy-list">
+                            {taxonomy.tags.map((item) => (
+                                <li>
+                                    <a href={facetHref("tag", item.name)} class="taxonomy-link">
+                                        <span>{item.name}</span>
+                                        <small>{item.event_count} 场</small>
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                    </section>
+                ) : null}
+                {typeItems.length > 0 ? (
+                    <section aria-labelledby="type-section-title">
+                        <div class="taxonomy-section-heading">
+                            <span class="taxonomy-icon">
+                                <ShapesOutline size={18} aria-hidden="true" />
+                            </span>
+                            <h2 id="type-section-title">活动类型</h2>
+                        </div>
+                        <ol class="taxonomy-list">
+                            {typeItems.map((item) => (
+                                <li>
+                                    <a href={facetHref("type", item.name)} class="taxonomy-link">
+                                        <span>{item.label}</span>
+                                        <small>{item.event_count} 场</small>
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                    </section>
+                ) : null}
+                {scaleItems.length > 0 ? (
+                    <section aria-labelledby="scale-section-title">
+                        <div class="taxonomy-section-heading">
+                            <span class="taxonomy-icon">
+                                <ScaleBalancedOutline size={18} aria-hidden="true" />
+                            </span>
+                            <h2 id="scale-section-title">活动规模</h2>
+                        </div>
+                        <ol class="taxonomy-list">
+                            {scaleItems.map((item) => (
+                                <li>
+                                    <a href={facetHref("scale", item.name)} class="taxonomy-link">
+                                        <span>{item.label}</span>
+                                        <small>{item.event_count} 场</small>
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                    </section>
+                ) : null}
+            </div>
+        )}
     </div>
 </Layout>

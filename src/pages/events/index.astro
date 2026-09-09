@@ -142,77 +142,67 @@ try {
     <div class="catalogue-page" data-reveal>
         <header class="catalogue-header">
             <div>
-                <p class="catalogue-kicker">
-                    {timingCopy.kicker}
-                </p>
+                <p class="catalogue-kicker">{timingCopy.kicker}</p>
                 <h1>活动列表</h1>
-                <p class="catalogue-intro">
-                    {timingCopy.description}
-                </p>
+                <p class="catalogue-intro">{timingCopy.description}</p>
             </div>
             <div class="catalogue-count">
-                <strong>
-                    {String(events.length).padStart(2, "0")}
-                </strong>
+                <strong>{String(events.length).padStart(2, "0")}</strong>
                 <span>本页活动</span>
             </div>
         </header>
 
         <FilterBar types={types} scales={scales} tags={tags} filters={filters} client:load />
 
-        {
-            cacheWarning ? (
-                <Alert tone="warning" role="status">
-                    {cacheWarning}
-                </Alert>
-            ) : null
-        }
+        {cacheWarning ? (
+            <Alert tone="warning" role="status">
+                {cacheWarning}
+            </Alert>
+        ) : null}
 
-        {
-            errorMessage ? (
-                <Alert tone="danger">{errorMessage}</Alert>
-            ) : events.length > 0 ? (
-                <>
-                    <section aria-label="活动结果" class="catalogue-results">
-                        {events.map((event, index) => (
-                            <EventCard event={event} variant="row" priority={index < 3} />
-                        ))}
-                    </section>
-                    <nav class="pagination" aria-label="活动分页">
-                        {filters.page && filters.page > 1 ? (
-                            <Button
-                                href={nextHref(filters.page - 1)}
-                                rel="prev"
-                                variant="outline"
-                                size="sm"
-                            >
-                                <ChevronLeft size={16} aria-hidden="true" />
-                                上一页
-                            </Button>
-                        ) : null}
-                        <span>第 {filters.page} 页</span>
-                        {hasNext ? (
-                            <Button
-                                href={nextHref((filters.page ?? 1) + 1)}
-                                rel="next"
-                                variant="outline"
-                                size="sm"
-                            >
-                                下一页
-                                <ChevronRight size={16} aria-hidden="true" />
-                            </Button>
-                        ) : null}
-                    </nav>
-                </>
-            ) : (
-                <div class="catalogue-empty">
-                    <h2>{timingCopy.emptyTitle}</h2>
-                    <p>尝试移除部分筛选条件</p>
-                    <Button href="/events" variant="outline">
-                        重置筛选
-                    </Button>
-                </div>
-            )
-        }
+        {errorMessage ? (
+            <Alert tone="danger">{errorMessage}</Alert>
+        ) : events.length > 0 ? (
+            <>
+                <section aria-label="活动结果" class="catalogue-results">
+                    {events.map((event, index) => (
+                        <EventCard event={event} variant="row" priority={index < 3} />
+                    ))}
+                </section>
+                <nav class="pagination" aria-label="活动分页">
+                    {filters.page && filters.page > 1 ? (
+                        <Button
+                            href={nextHref(filters.page - 1)}
+                            rel="prev"
+                            variant="outline"
+                            size="sm"
+                        >
+                            <ChevronLeft size={16} aria-hidden="true" />
+                            上一页
+                        </Button>
+                    ) : null}
+                    <span>第 {filters.page} 页</span>
+                    {hasNext ? (
+                        <Button
+                            href={nextHref((filters.page ?? 1) + 1)}
+                            rel="next"
+                            variant="outline"
+                            size="sm"
+                        >
+                            下一页
+                            <ChevronRight size={16} aria-hidden="true" />
+                        </Button>
+                    ) : null}
+                </nav>
+            </>
+        ) : (
+            <div class="catalogue-empty">
+                <h2>{timingCopy.emptyTitle}</h2>
+                <p>尝试移除部分筛选条件</p>
+                <Button href="/events" variant="outline">
+                    重置筛选
+                </Button>
+            </div>
+        )}
     </div>
 </Layout>

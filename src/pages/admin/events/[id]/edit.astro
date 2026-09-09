@@ -54,36 +54,34 @@ const returnHref =
     title="编辑活动"
     description={eventRecord ? `活动 #${eventRecord.id} · 修改公开信息并保存` : "修改活动信息"}
 >
-    {
-        errorMessage || !eventRecord ? (
-            <Alert tone="danger" class="admin-page-error">
-                {errorMessage}
-            </Alert>
-        ) : (
-            <div>
-                <div class="admin-return-row">
-                    <a href={returnHref} class="admin-return-link">
-                        <ArrowLeft size={17} aria-hidden="true" />
-                        返回活动队列
-                    </a>
-                    <Badge tone={statusTones[eventRecord.status] ?? "default"}>
-                        {statusLabels[eventRecord.status] ?? eventRecord.status}
-                    </Badge>
-                </div>
-
-                <AdminEventForm
-                    eventRecord={eventRecord}
-                    canonicalTags={canonicalTags}
-                    formId="edit-event-form"
-                    cancelHref={returnHref}
-                    submitButtonId="edit-save-button"
-                    statusId="edit-save-status"
-                    submitLabel="保存修改"
-                    statusText="修改仅在保存后生效"
-                />
+    {errorMessage || !eventRecord ? (
+        <Alert tone="danger" class="admin-page-error">
+            {errorMessage}
+        </Alert>
+    ) : (
+        <div>
+            <div class="admin-return-row">
+                <a href={returnHref} class="admin-return-link">
+                    <ArrowLeft size={17} aria-hidden="true" />
+                    返回活动队列
+                </a>
+                <Badge tone={statusTones[eventRecord.status] ?? "default"}>
+                    {statusLabels[eventRecord.status] ?? eventRecord.status}
+                </Badge>
             </div>
-        )
-    }
+
+            <AdminEventForm
+                eventRecord={eventRecord}
+                canonicalTags={canonicalTags}
+                formId="edit-event-form"
+                cancelHref={returnHref}
+                submitButtonId="edit-save-button"
+                statusId="edit-save-status"
+                submitLabel="保存修改"
+                statusText="修改仅在保存后生效"
+            />
+        </div>
+    )}
 </AdminLayout>
 
 <script>

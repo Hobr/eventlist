@@ -26,17 +26,15 @@ events = events.slice(0, PAGE_SIZE);
 ---
 
 <AdminLayout title="已发布活动" description="维护正在公开展示的活动信息">
-    {
-        errorMessage ? (
-            <Alert tone="danger" class="admin-page-error">
-                {errorMessage}
-            </Alert>
-        ) : (
-            <div class="admin-queue">
-                <p class="admin-queue-count">本页 {events.length} 条已发布活动</p>
-                <EventTable events={events} mode="published" />
-                <Pagination page={page} hasNext={hasNext} />
-            </div>
-        )
-    }
+    {errorMessage ? (
+        <Alert tone="danger" class="admin-page-error">
+            {errorMessage}
+        </Alert>
+    ) : (
+        <div class="admin-queue">
+            <p class="admin-queue-count">本页 {events.length} 条已发布活动</p>
+            <EventTable events={events} mode="published" />
+            <Pagination page={page} hasNext={hasNext} />
+        </div>
+    )}
 </AdminLayout>

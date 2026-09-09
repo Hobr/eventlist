@@ -30,19 +30,26 @@ const pageTitle = `${title} - ${SITE_NAME}管理后台`;
         <title>{pageTitle}</title>
     </head>
     <body class="admin-body admin-density">
-        <a href="#admin-main" class="skip-link">跳至主要内容</a>
+        <a href="#admin-main" class="skip-link">
+            跳至主要内容
+        </a>
         <header class="admin-shell">
             <div class="admin-brand-row">
                 <a href="/admin" class="admin-brand">
                     <span aria-hidden="true">同</span>
-                    <strong>{SITE_NAME}<small>管理工作台</small></strong>
+                    <strong>
+                        {SITE_NAME}
+                        <small>管理工作台</small>
+                    </strong>
                 </a>
                 <div class="admin-mobile">
                     <AdminMobileNav {currentPath} {title} {adminLabel} client:load />
                 </div>
                 <div class="admin-identity">
                     <span>{adminLabel}</span>
-                    <a href="/">公开站点 <ArrowUpRight size={15} aria-hidden="true" /></a>
+                    <a href="/">
+                        公开站点 <ArrowUpRight size={15} aria-hidden="true" />
+                    </a>
                 </div>
             </div>
             <nav class="admin-route-nav" aria-label="管理后台导航">
@@ -53,6 +60,8 @@ const pageTitle = `${title} - ${SITE_NAME}管理后台`;
             <h1>{title}</h1>
             {description ? <p>{description}</p> : null}
         </div>
-        <main id="admin-main" class="admin-main"><slot /></main>
+        <main id="admin-main" class="admin-main">
+            <slot />
+        </main>
     </body>
 </html>
